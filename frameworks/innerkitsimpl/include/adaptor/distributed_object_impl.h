@@ -18,15 +18,14 @@
 #include <string>
 
 #include "distributed_object.h"
-#include "flat_object.h"
 #include "flat_object_store.h"
 
 namespace OHOS::ObjectStore {
 
 class DistributedObjectImpl : public DistributedObject {
 public:
-    DistributedObjectImpl();
-    DistributedObjectImpl(FlatObject *flatObject, FlatObjectStore *flatObjectStore);
+    DistributedObjectImpl(const std::string &sessionId, FlatObjectStore *flatObjectStore);
+
     ~DistributedObjectImpl();
     uint32_t PutDouble(const std::string &key, double value) override;
     uint32_t PutBoolean(const std::string &key, bool value) override;
@@ -34,15 +33,12 @@ public:
     uint32_t GetDouble(const std::string &key, double &value) override;
     uint32_t GetBoolean(const std::string &key, bool &value) override;
     uint32_t GetString(const std::string &key, std::string &value) override;
-    uint32_t GetObjectId(std::string &objectId) override;
+    std::string &GetSessionId() override;
     uint32_t GetType(const std::string &key, Type &type) override;
-    FlatObject *GetObject();
 
 private:
-    uint32_t UpdateObject();
-    FlatObject *flatObject_;
+    std::string sessionId_;
     FlatObjectStore *flatObjectStore_ = nullptr;
-    std::map<std::string, Type> keyType_;
 };
 } // namespace OHOS::ObjectStore
 

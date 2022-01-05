@@ -8,7 +8,7 @@ function joinSession(obj, sessionId) {
     }
 
     let object = distributedObject.createObjectSync(sessionId);
-	if (object == null || object == undefined) {
+    if (object == null || object == undefined) {
         console.error("create fail");
         return obj;
     }

@@ -26,16 +26,14 @@ namespace OHOS::ObjectStore {
 JSWatcher::JSWatcher(const napi_env env, DistributedObjectStore *objectStore, DistributedObject *object) : env_(env),
     objectStore_(objectStore), object_(object)
 {
-    std::string sessionId;
-    object->GetObjectId(sessionId);
     listeners_[EVENT_CHANGE].type_ = "change";
     listeners_[EVENT_STATUS].type_ = "status";
     std::shared_ptr<WatcherImpl> watcher = std::make_shared<WatcherImpl>(this);
     uint32_t ret = objectStore->Watch(object, watcher);
     if (ret != SUCCESS) {
-        LOG_ERROR("watch %s error", sessionId.c_str());
+        LOG_ERROR("watch %s error", object->GetSessionId().c_str());
     } else {
-        LOG_INFO("watch %s success", sessionId.c_str());
+        LOG_INFO("watch %s success", object->GetSessionId().c_str());
     }
 
 }
@@ -64,9 +62,7 @@ void JSWatcher::Off(const char *type, napi_value handler)
     if (event == EVENT_UNKNOWN) {
         return;
     }
-    std::string sessionId;
-    object_->GetObjectId(sessionId);
-    LOG_ERROR("del %{public}s", sessionId.c_str());
+    LOG_ERROR("del %{public}s", object_->GetSessionId().c_str());
     if (handler == nullptr) {
         listeners_[event].Clear(env_);
     } else {

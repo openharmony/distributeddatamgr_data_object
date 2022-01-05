@@ -16,7 +16,7 @@
 #ifndef OBJECT_STORAGE_ENGINE_H
 #define OBJECT_STORAGE_ENGINE_H
 
-#include <kv_store_observer.h>
+#include "kv_store_observer.h"
 
 #include <cstdint>
 #include <map>
@@ -46,13 +46,13 @@ public:
     virtual uint32_t Close() = 0;
     virtual uint32_t DeleteTable(const std::string &key) = 0;
     virtual uint32_t CreateTable(const std::string &key) = 0;
-    virtual uint32_t GetTable(const std::string &key, std::map<Field, Value> &result) = 0;
-    virtual uint32_t UpdateItems(const std::string &key, std::map<Field, Value> &data) = 0;
-    virtual uint32_t GetItem(const std::string &key, const Field &itemKey, Field &value) = 0;
+    virtual uint32_t GetTable(const std::string &key, std::map<std::string, Value> &result) = 0;
+    virtual uint32_t UpdateItems(const std::string &key, std::map<std::string, Value> &data) = 0;
+    virtual uint32_t UpdateItem(const std::string &key, const std::string &itemKey, Value &value) = 0;
+    virtual uint32_t GetItem(const std::string &key, const std::string &itemKey, Value &value) = 0;
     virtual uint32_t RegisterObserver(const std::string &key, std::shared_ptr<TableWatcher> watcher) = 0;
     virtual uint32_t UnRegisterObserver(const std::string &key) = 0;
     virtual uint32_t ChangeKey(const std::string &oldKey, const std::string &newKey) = 0;
-    virtual uint32_t ChangeSession(const std::string &objectId, const std::string &sessionId) = 0;
 };
 
 } // namespace OHOS::ObjectStore

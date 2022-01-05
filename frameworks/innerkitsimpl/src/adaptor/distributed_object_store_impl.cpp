@@ -26,12 +26,11 @@ DistributedObjectStoreImpl::DistributedObjectStoreImpl(FlatObjectStore *flatObje
 
 DistributedObjectStoreImpl::~DistributedObjectStoreImpl()
 {
-    delete flatObject_;
     delete flatObjectStore_;
 }
-DistributedObjectImpl *DistributedObjectStoreImpl::CacheObject(FlatObject *flatObject, FlatObjectStore *flatObjectStore)
+DistributedObjectImpl *DistributedObjectStoreImpl::CacheObject(const std::string &sessionId, FlatObjectStore *flatObjectStore)
 {
-    DistributedObjectImpl *object = new (std::nothrow) DistributedObjectImpl(flatObject, flatObjectStore);
+    DistributedObjectImpl *object = new (std::nothrow) DistributedObjectImpl(sessionId, flatObjectStore);
     if (object == nullptr) {
         return nullptr;
     }
@@ -50,21 +49,10 @@ DistributedObject *DistributedObjectStoreImpl::CreateObject(const std::string &s
         LOG_ERROR("DistributedObjectStoreImpl::CreateObject CreateTable err %d", status);
         return nullptr;
     }
-    flatObject_ = new (std::nothrow) FlatObject();
-    if (flatObject_ == nullptr) {
-        LOG_ERROR("no memory for FlatObjectStore malloc!");
-        return nullptr;
-    }
-    status = flatObjectStore_->Get(StringUtils::StrToBytes(sessionId), reinterpret_cast<FlatObject &>(flatObject_));
-    if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectStoreImpl::CreateObject get object failed %d", status);
-    }
-    flatObjectStore_->Put(*flatObject_);
-    LOG_INFO("create object for owner");
-    return CacheObject(flatObject_, flatObjectStore_);
+    return CacheObject(sessionId, flatObjectStore_);
 }
 
-uint32_t DistributedObjectStoreImpl::Sync(DistributedObject *object)
+uint32_t DistributedObjectStoreImpl::Sync(DistributedObject *object) // todo may delete
 {
     if (object == nullptr) {
         LOG_ERROR("DistributedObjectStoreImpl::Sync object err ");
@@ -74,7 +62,8 @@ uint32_t DistributedObjectStoreImpl::Sync(DistributedObject *object)
         LOG_ERROR("DistributedObjectStoreImpl::Sync object err ");
         return ERR_NULL_OBJECTSTORE;
     }
-    return flatObjectStore_->Put(*static_cast<DistributedObjectImpl *>(object)->GetObject());
+    return SUCCESS;
+   // return flatObjectStore_->Put(*static_cast<DistributedObjectImpl *>(object)->GetObject());
 }
 
 uint32_t DistributedObjectStoreImpl::DeleteObject(const std::string &sessionId)
@@ -83,7 +72,7 @@ uint32_t DistributedObjectStoreImpl::DeleteObject(const std::string &sessionId)
         LOG_ERROR("DistributedObjectStoreImpl::Sync object err ");
         return ERR_NULL_OBJECTSTORE;
     }
-    uint32_t status = flatObjectStore_->Delete(StringUtils::StrToBytes(sessionId));
+    uint32_t status = flatObjectStore_->Delete(sessionId);
     if (status != SUCCESS) {
         LOG_ERROR("DistributedObjectStoreImpl::DeleteObject store delete err %d", status);
         return status;
@@ -91,17 +80,11 @@ uint32_t DistributedObjectStoreImpl::DeleteObject(const std::string &sessionId)
     return SUCCESS;
 }
 
-uint32_t DistributedObjectStoreImpl::Get(const std::string &objectId, DistributedObject *object)
+uint32_t DistributedObjectStoreImpl::Get(const std::string &sessionId, DistributedObject *object)
 {
-    std::string oid;
     auto iter = objects_.begin();
     while (iter != objects_.end()) {
-        uint32_t ret = (*iter)->GetObjectId(oid);
-        if (ret != SUCCESS) {
-            LOG_ERROR("DistributedObjectStoreImpl::Get oid err, ret %d", ret);
-            return ret;
-        }
-        if (objectId == oid) {
+        if ( (*iter)->GetSessionId() == sessionId) {
             object = *iter;
             return SUCCESS;
         }
@@ -125,14 +108,8 @@ uint32_t DistributedObjectStoreImpl::Watch(DistributedObject *object, std::share
         LOG_ERROR("DistributedObjectStoreImpl::Watch already gets object");
         return ERR_EXIST;
     }
-    std::string objectId;
-    uint32_t status = object->GetObjectId(objectId);
-    if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectStoreImpl::Watch get objectId failed %d", status);
-        return status;
-    }
     std::shared_ptr<WatcherProxy> watcherProxy = std::make_shared<WatcherProxy>(watcher);
-    status = flatObjectStore_->Watch(StringUtils::StrToBytes(objectId), watcherProxy);
+    uint32_t status = flatObjectStore_->Watch(object->GetSessionId(), watcherProxy);
     if (status != SUCCESS) {
         LOG_ERROR("DistributedObjectStoreImpl::Watch failed %d", status);
         return status;
@@ -152,13 +129,7 @@ uint32_t DistributedObjectStoreImpl::UnWatch(DistributedObject *object)
         LOG_ERROR("DistributedObjectStoreImpl::Sync object err ");
         return ERR_NULL_OBJECTSTORE;
     }
-    std::string objectId;
-    uint32_t status = object->GetObjectId(objectId);
-    if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectStoreImpl::Watch get objectId failed %d", status);
-        return status;
-    }
-    status = flatObjectStore_->UnWatch(StringUtils::StrToBytes(objectId));
+    uint32_t status = flatObjectStore_->UnWatch(object->GetSessionId());
     if (status != SUCCESS) {
         LOG_ERROR("DistributedObjectStoreImpl::Watch failed %d", status);
         return status;
@@ -193,13 +164,6 @@ DistributedObjectStore *DistributedObjectStore::GetInstance()
             FlatObjectStore *flatObjectStore = new (std::nothrow) FlatObjectStore();
             if (flatObjectStore == nullptr) {
                 LOG_ERROR("no memory for FlatObjectStore malloc!");
-                return nullptr;
-            }
-
-            uint32_t errCode = flatObjectStore->Open();
-            if (errCode != SUCCESS) {
-                LOG_ERROR("open failed");
-                delete flatObjectStore;
                 return nullptr;
             }
             // Use instMemory to make sure this singleton not free before other object.

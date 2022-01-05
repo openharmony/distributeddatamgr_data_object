@@ -39,7 +39,7 @@ public:
     virtual uint32_t GetBoolean(const std::string &key, bool &value) = 0;
     virtual uint32_t GetString(const std::string &key, std::string &value) = 0;
     virtual uint32_t GetType(const std::string &key, Type &type) = 0;
-    virtual uint32_t GetObjectId(std::string &objectId) = 0;
+    virtual std::string &GetSessionId() = 0;
 };
 
 class ObjectWatcher : public FlatObjectWatcher {

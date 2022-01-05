@@ -20,30 +20,27 @@
 #include "string_utils.h"
 
 namespace OHOS::ObjectStore {
-
 FlatObjectStore::FlatObjectStore()
 {
     storageEngine_ = std::make_shared<FlatObjectStorageEngine>();
+    uint32_t status = storageEngine_->Open();
+    if (status != SUCCESS) {
+        LOG_ERROR("FlatObjectStore: Failed to open, error: open storage engine failure %d", status);
+    }
 }
 
 FlatObjectStore::~FlatObjectStore()
 {
-}
-
-uint32_t FlatObjectStore::Open()
-{
-    uint32_t status = storageEngine_->Open();
-    if (status != SUCCESS) {
-        LOG_ERROR("FlatObjectStore: Failed to open, error: open storage engine failure %d", status);
-        return status;
+    if (storageEngine_ != nullptr) {
+        storageEngine_->Close();
+        storageEngine_ = nullptr;
     }
-    return SUCCESS;
 }
 
 uint32_t FlatObjectStore::CreateObject(const std::string &sessionId)
 {
     if (!storageEngine_->opened_) {
-        LOG_ERROR("FlatObjectStore::CreateObject DB has not init");
+        LOG_ERROR("FlatObjectStore::DB has not inited");
         return ERR_DB_NOT_INIT;
     }
     uint32_t status = storageEngine_->CreateTable(sessionId);
@@ -54,61 +51,13 @@ uint32_t FlatObjectStore::CreateObject(const std::string &sessionId)
     return SUCCESS;
 }
 
-uint32_t FlatObjectStore::Put(const FlatObject &flatObject)
+uint32_t FlatObjectStore::Delete(const std::string &sessionId)
 {
     if (!storageEngine_->opened_) {
-        LOG_ERROR("FlatObjectStore::Put DB has not init");
+        LOG_ERROR("FlatObjectStore::DB has not inited");
         return ERR_DB_NOT_INIT;
     }
-    std::string sessionId;
-    uint32_t status = StringUtils::BytesToString(flatObject.GetId(), sessionId);
-    if (status != SUCCESS) {
-        LOG_ERROR("FlatObjectStore::Put get sessionId err %d", status);
-        return status;
-    }
-    status = storageEngine_->UpdateItems(sessionId, const_cast<std::map<Bytes, Bytes> &>(flatObject.GetFields()));
-    if (status != SUCCESS) {
-        LOG_ERROR("FlatObjectStore::Put updateItems err %d", status);
-    }
-    return SUCCESS;
-}
-
-uint32_t FlatObjectStore::Get(const Bytes &objectId, FlatObject &flatObject) const
-{
-    if (!storageEngine_->opened_) {
-        LOG_ERROR("FlatObjectStore::Get DB has not init");
-        return ERR_DB_NOT_INIT;
-    }
-    std::map<Bytes, Bytes> fields;
-    std::string sessionId;
-    uint32_t status = StringUtils::BytesToString(flatObject.GetId(), sessionId);
-    if (status != SUCCESS) {
-        LOG_ERROR("FlatObjectStore::Get get sessionId err %d", status);
-        return status;
-    }
-    status = storageEngine_->GetTable(sessionId, fields);
-    if (status != SUCCESS) {
-        LOG_ERROR("FlatObjectStore::Get getTable failed %d", status);
-        return status;
-    }
-    flatObject.SetFields(fields);
-    flatObject.SetId(objectId);
-    return SUCCESS;
-}
-
-uint32_t FlatObjectStore::Delete(const Bytes &objectId)
-{
-    if (!storageEngine_->opened_) {
-        LOG_ERROR("FlatObjectStore::Delete DB has not init");
-        return ERR_DB_NOT_INIT;
-    }
-    std::string sessionId;
-    uint32_t status = StringUtils::BytesToString(objectId, sessionId);
-    if (status != SUCCESS) {
-        LOG_ERROR("FlatObjectStore::Get get sessionId err %d", status);
-        return status;
-    }
-    status = storageEngine_->DeleteTable(sessionId);
+    uint32_t status = storageEngine_->DeleteTable(sessionId);
     if (status != SUCCESS) {
         LOG_ERROR("FlatObjectStore: Failed to delete object %d", status);
         return status;
@@ -116,34 +65,45 @@ uint32_t FlatObjectStore::Delete(const Bytes &objectId)
     return SUCCESS;
 }
 
-uint32_t FlatObjectStore::Watch(const Bytes &objectId, std::shared_ptr<FlatObjectWatcher> watcher)
+uint32_t FlatObjectStore::Watch(const std::string &sessionId, std::shared_ptr<FlatObjectWatcher> watcher)
 {
-    std::string sessionId;
-    uint32_t status = StringUtils::BytesToString(objectId, sessionId);
-    if (status != SUCCESS) {
-        LOG_ERROR("FlatObjectStore::Watch get sessionId failed %d", status);
-        return status;
+    if (!storageEngine_->opened_) {
+        LOG_ERROR("FlatObjectStore::DB has not inited");
+        return ERR_DB_NOT_INIT;
     }
-    status = storageEngine_->RegisterObserver(sessionId, watcher);
+    uint32_t status = storageEngine_->RegisterObserver(sessionId, watcher);
     if (status != SUCCESS) {
         LOG_ERROR("FlatObjectStore::Watch failed %d", status);
     }
     return status;
 }
 
-uint32_t FlatObjectStore::UnWatch(const Bytes &objectId)
+uint32_t FlatObjectStore::UnWatch(const std::string &sessionId)
 {
-    std::string sessionId;
-    uint32_t status = StringUtils::BytesToString(objectId, sessionId);
-    if (status != SUCCESS) {
-        LOG_ERROR("FlatObjectStore::Watch get sessionId failed %d", status);
-        return status;
+    if (!storageEngine_->opened_) {
+        LOG_ERROR("FlatObjectStore::DB has not inited");
+        return ERR_DB_NOT_INIT;
     }
-    status = storageEngine_->UnRegisterObserver(sessionId);
+    uint32_t status = storageEngine_->UnRegisterObserver(sessionId);
     if (status != SUCCESS) {
         LOG_ERROR("FlatObjectStore::Watch failed %d", status);
     }
     return status;
 }
 
+uint32_t FlatObjectStore::Put(const std::string &sessionId, const std::string &key, std::vector<uint8_t> value) {
+    if (!storageEngine_->opened_) {
+        LOG_ERROR("FlatObjectStore::DB has not inited");
+        return ERR_DB_NOT_INIT;
+    }
+    return storageEngine_->UpdateItem(sessionId, "p_" + key, value);
+}
+
+uint32_t FlatObjectStore::Get(std::string &sessionId, const std::string &key, Bytes &value) {
+    if (!storageEngine_->opened_) {
+        LOG_ERROR("FlatObjectStore::DB has not inited");
+        return ERR_DB_NOT_INIT;
+    }
+    return storageEngine_->GetItem(sessionId, key, value);
+}
 } // namespace OHOS::ObjectStore

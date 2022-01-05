@@ -14,7 +14,6 @@ add_library(hanlu
         frameworks/jskitsimpl/src/adaptor/js_distributedobjectstore.cpp
         frameworks/innerkitsimpl/src/adaptor/distributed_object_store_impl.cpp
         frameworks/innerkitsimpl/src/adaptor/distributed_object_impl.cpp
-        frameworks/innerkitsimpl/src/adaptor/flat_object.cpp
         frameworks/innerkitsimpl/src/adaptor/flat_object_storage_engine.cpp
         frameworks/innerkitsimpl/src/adaptor/flat_object_store.cpp
         frameworks/jskitsimpl/src/adaptor/js_watcher.cpp

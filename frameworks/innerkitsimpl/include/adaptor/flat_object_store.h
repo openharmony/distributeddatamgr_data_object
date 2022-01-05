@@ -19,7 +19,7 @@
 #include <memory>
 #include <string>
 
-#include "flat_object.h"
+#include "bytes.h"
 #include "flat_object_storage_engine.h"
 
 namespace OHOS::ObjectStore {
@@ -33,18 +33,15 @@ class FlatObjectStore {
 public:
     explicit FlatObjectStore();
     ~FlatObjectStore();
-    uint32_t Open();
     uint32_t CreateObject(const std::string &sessionId);
-    uint32_t Put(const FlatObject &flatObject);
-    uint32_t Get(const Bytes &objectId, FlatObject &flatObject) const;
-    uint32_t Delete(const Bytes &objectId);
-    uint32_t Watch(const Bytes &objectId, std::shared_ptr<FlatObjectWatcher> watcher);
-    uint32_t UnWatch(const Bytes &objectId);
+    uint32_t Delete(const std::string &objectId);
+    uint32_t Watch(const std::string &objectId, std::shared_ptr<FlatObjectWatcher> watcher);
+    uint32_t UnWatch(const std::string &objectId);
+    uint32_t Put(const std::string &sessionId, const std::string &key, std::vector<uint8_t> value);
+    uint32_t Get(std::string &sessionId, const std::string &key, Bytes &value);
 
 private:
     std::shared_ptr<FlatObjectStorageEngine> storageEngine_;
-    std::string bundleName_;
-    std::string storeName_;
 };
 } // namespace OHOS::ObjectStore
 

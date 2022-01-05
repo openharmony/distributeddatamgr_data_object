@@ -67,6 +67,10 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
         LOG_INFO("FlatObjectStorageEngine::CreateTable %s already created", key.c_str());
         return SUCCESS;
     }
+
+    DistributedDB::KvStoreConfig config;
+    config.dataDir = "/data/log";
+    storeManager_->SetKvStoreConfig(config);
     DistributedDB::KvStoreNbDelegate *kvStore = nullptr;
     DistributedDB::DBStatus status;
     DistributedDB::KvStoreNbDelegate::Option option = { true, true,
@@ -78,20 +82,20 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
             kvStore = kvStoreNbDelegate;
             LOG_INFO("create table result %{public}d", status);
         });
-    bool autoSync = true;
+    /* bool autoSync = true;
     DistributedDB::PragmaData data = static_cast<DistributedDB::PragmaData>(&autoSync);
     LOG_INFO("start Pragma");
     status = kvStore->Pragma(DistributedDB::AUTO_SYNC, data);
     if (status != DistributedDB::DBStatus::OK) {
         LOG_ERROR("FlatObjectStorageEngine::CreateTable %s getkvstore fail[%d]", key.c_str(), status);
         return ERR_DE_GETKV_FAIL;
-    }
+    } */
     LOG_INFO("create table %{public}s success", key.c_str());
     delegates.insert_or_assign(key, kvStore);
     return SUCCESS;
 }
 
-uint32_t FlatObjectStorageEngine::GetTable(const std::string &key, std::map<Field, Value> &result)
+uint32_t FlatObjectStorageEngine::GetTable(const std::string &key, std::map<std::string, Value> &result)
 {
     if (!opened_) {
         LOG_ERROR("not opened %{public}s", key.c_str());
@@ -119,13 +123,13 @@ uint32_t FlatObjectStorageEngine::GetTable(const std::string &key, std::map<Fiel
             LOG_INFO("FlatObjectStorageEngine::GetTable  GetEntry fail");
             return ERR_DB_ENTRY_FAIL;
         }
-        result.insert_or_assign(entry.key, entry.value);
+        result.insert_or_assign(StringUtils::BytesToStr(entry.key), entry.value);
         resultSet->MoveToNext();
     }
     return SUCCESS;
 }
 
-uint32_t FlatObjectStorageEngine::UpdateItems(const std::string &key, std::map<Field, Value> &data)
+uint32_t FlatObjectStorageEngine::UpdateItems(const std::string &key, std::map<std::string, Value> &data)
 {
     if (!opened_) {
         return ERR_DB_NOT_INIT;
@@ -140,7 +144,7 @@ uint32_t FlatObjectStorageEngine::UpdateItems(const std::string &key, std::map<F
     auto delegate = delegates.at(key);
     while (iter != data.end()) {
         DistributedDB::Entry entry;
-        entry.key = iter->first;
+        entry.key = StringUtils::StrToBytes(iter->first);
         entry.value = iter->second;
         items.insert(items.end(), entry);
         iter++;
@@ -152,6 +156,26 @@ uint32_t FlatObjectStorageEngine::UpdateItems(const std::string &key, std::map<F
         return ERR_CLOSE_STORAGE;
     }
     LOG_INFO("end PutBatch");
+    return SUCCESS;
+}
+
+uint32_t FlatObjectStorageEngine::UpdateItem(const std::string &key, const std::string &itemKey, Value &value) {
+    if (!opened_) {
+        return ERR_DB_NOT_INIT;
+    }
+    std::unique_lock<std::shared_mutex> lock(operationMutex_);
+    if (delegates.count(key) == 0) {
+        LOG_INFO("FlatObjectStorageEngine::GetTable %s not exist", key.c_str());
+        return ERR_DE_NOT_EXIST;
+    }
+    auto delegate = delegates.at(key);
+    LOG_INFO("start Put");
+    auto status = delegate->Put(StringUtils::StrToBytes(itemKey), value);
+    if (status != DistributedDB::DBStatus::OK) {
+        LOG_ERROR("%s PutBatch fail[%d]", key.c_str(), status);
+        return ERR_CLOSE_STORAGE;
+    }
+    LOG_INFO("end Put");
     return SUCCESS;
 }
 
@@ -176,7 +200,7 @@ uint32_t FlatObjectStorageEngine::DeleteTable(const std::string &key)
     return SUCCESS;
 }
 
-uint32_t FlatObjectStorageEngine::GetItem(const std::string &key, const Field &itemKey, Field &value)
+uint32_t FlatObjectStorageEngine::GetItem(const std::string &key, const std::string &itemKey, Value &value)
 {
     if (!opened_) {
         return ERR_DB_NOT_INIT;
@@ -187,11 +211,9 @@ uint32_t FlatObjectStorageEngine::GetItem(const std::string &key, const Field &i
         return ERR_DE_NOT_EXIST;
     }
     LOG_INFO("start Get %{public}s", key.c_str());
-    DistributedDB::DBStatus status = delegates.at(key)->Get(itemKey, value);
+    DistributedDB::DBStatus status = delegates.at(key)->Get(StringUtils::StrToBytes(itemKey), value);
     if (status != DistributedDB::DBStatus::OK) {
-        std::string itemStr;
-        StringUtils::BytesToString(itemKey, itemStr);
-        LOG_ERROR("FlatObjectStorageEngine::GetItem %s item not exist", itemStr.c_str());
+        LOG_ERROR("FlatObjectStorageEngine::GetItem %{public}s item fail %{public}d", itemKey.c_str(), status);
         return status;
     }
     LOG_INFO("end Get %{public}s", key.c_str());
@@ -283,11 +305,4 @@ uint32_t FlatObjectStorageEngine::ChangeKey(const std::string &oldKey, const std
     }
     return SUCCESS;
 }
-
-uint32_t FlatObjectStorageEngine::ChangeSession(const std::string &objectId, const std::string &sessionId)
-{
-    //todo
-    return SUCCESS;
-}
-
 } // namespace OHOS::ObjectStore
