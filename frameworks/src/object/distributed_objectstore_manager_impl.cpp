@@ -29,7 +29,6 @@ namespace {
 DistributedObjectStoreManagerImpl::~DistributedObjectStoreManagerImpl()
 {
     for (auto &store : stores_) {
-        // delete static_cast<DistributedObjectStoreImpl *>(store.second);
         delete store.second;
     }
 }

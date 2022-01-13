@@ -16,8 +16,6 @@
 #include "thread_pool.h"
 #include "objectstore_errors.h"
 
-#include <memory>
-
 namespace OHOS::ObjectStore {
 ThreadPool::ThreadPool(const std::string &name)
     : myName_(name), maxTaskNum_(0), running_(false)

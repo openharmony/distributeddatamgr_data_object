@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 
-#include <atomic>
-
 #include "distributed_objectstore_manager.h"
 #include "distributed_objectstore_manager_impl.h"
 

@@ -14,7 +14,6 @@
  */
 
 #include "operation_dispatcher.h"
-#include <algorithm>
 
 namespace OHOS::ObjectStore {
 OperationDispatcher &OperationDispatcher::GetInstance()

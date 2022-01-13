@@ -94,7 +94,7 @@ uint32_t DistributedObjectStoreImpl::Sync(DistributedObject *object)
         return ERR_INVAL;
     }
     // object is abstract, it must be DistributedObjectImpl pointer
-    return flatObjectStore_->Put(*dynamic_cast<DistributedObjectImpl *>(object)->GetObject());
+    return flatObjectStore_->Put(*static_cast<DistributedObjectImpl *>(object)->GetObject());
 }
 
 uint32_t DistributedObjectStoreImpl::Delete(DistributedObject *object)
@@ -103,7 +103,7 @@ uint32_t DistributedObjectStoreImpl::Delete(DistributedObject *object)
         return ERR_INVAL;
     }
     // object is abstract, it must be DistributedObjectImpl pointer
-    return flatObjectStore_->Delete(dynamic_cast<DistributedObjectImpl *>(object)->GetObject()->GetId());
+    return flatObjectStore_->Delete(static_cast<DistributedObjectImpl *>(object)->GetObject()->GetId());
 }
 
 uint32_t DistributedObjectStoreImpl::Get(const std::string &objectId, DistributedObject *object)
@@ -139,7 +139,7 @@ uint32_t DistributedObjectStoreImpl::Watch(DistributedObject *object, std::share
     std::shared_ptr<WatcherProxy> watcherProxy = std::make_shared<WatcherProxy>(watcher);
     // object is abstract, it must be DistributedObjectImpl pointer
     uint32_t ret = flatObjectStore_
-            ->Watch(dynamic_cast<DistributedObjectImpl *>(object)->GetObject()->GetId(), watcherProxy);
+            ->Watch(static_cast<DistributedObjectImpl *>(object)->GetObject()->GetId(), watcherProxy);
     if (ret != SUCCESS) {
         LOG_ERROR("DistributedObjectStoreImpl::Watch ret:%d", ret);
         return ret;
@@ -159,7 +159,7 @@ uint32_t DistributedObjectStoreImpl::UnWatch(DistributedObject *object)
         return SUCCESS;
     }
     std::shared_ptr<FlatObjectWatcher> proxy = watchers_.at(object);
-    Bytes objectId = dynamic_cast<DistributedObjectImpl *>(object)->GetObject()->GetId();
+    Bytes objectId = static_cast<DistributedObjectImpl *>(object)->GetObject()->GetId();
     flatObjectStore_->Unwatch(objectId, proxy);
     watchers_.erase(object);
     LOG_INFO("DistributedObjectStoreImpl:UnWatch object success.");

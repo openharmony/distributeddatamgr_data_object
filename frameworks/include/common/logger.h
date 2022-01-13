@@ -29,7 +29,6 @@ static const OHOS::HiviewDFX::HiLogLabel LABEL = { LOG_CORE, 0xD001650, "ObjectS
 }  // namespace OHOS::ObjectStore
 #else
 #include <stdio.h>
-#include <stdlib.h>
 
 #define LOG_DEBUG(fmt, ...) printf("[D][ObjectStore]%s: " fmt "\n", __FUNCTION__, ##__VA_ARGS__)
 #define LOG_ERROR(fmt, ...) printf("[E][ObjectStore]%s: " fmt "\n", __FUNCTION__, ##__VA_ARGS__)

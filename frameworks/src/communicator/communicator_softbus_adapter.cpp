@@ -117,7 +117,7 @@ uint32_t CommunicatorSoftbusAdapter::SendMsg(const std::string &networkId, const
     uint32_t dataSize, int32_t type)
 {
     int32_t ret = SUCCESS;
-    int32_t sessionId = 0;
+    int32_t sessionId;
     {
         std::unique_lock<std::mutex> sessionLock(operationMutex_);
         if (sessionDevDic_.count(networkId) == 0) {
