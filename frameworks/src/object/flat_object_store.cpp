@@ -121,6 +121,13 @@ uint32_t FlatObjectStore::Put(const FlatObject &flatObject)
             LOG_ERROR("FlatObjectStore: Failed to publish object after put");
         }
         return status;
+    }
+
+    uint32_t status = ObjectCoordinator::GetInstance().Put(flatObject.GetId(), flatObject.GetFields());
+    if (status != SUCCESS) {
+        LOG_ERROR("FlatObjectStore: Failed to put object to remote storage");
+    }
+    return status;
 }
 
 uint32_t FlatObjectStore::Get(const Bytes &objectId, FlatObject &flatObject) const
