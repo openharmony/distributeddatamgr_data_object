@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,11 +23,11 @@ namespace ObjectStore {
 class AppDataChangeListener {
 public:
     KVSTORE_API AppDataChangeListener() = default;
-    KVSTORE_API virtual ~AppDataChangeListener() {};
+    KVSTORE_API virtual ~AppDataChangeListener(){};
 
-    KVSTORE_API virtual void OnMessage(const DeviceInfo &info, const uint8_t *ptr, const int size,
-                                       const PipeInfo &pipeInfo) const = 0;
+    KVSTORE_API virtual void OnMessage(
+        const DeviceInfo &info, const uint8_t *ptr, const int size, const PipeInfo &pipeInfo) const = 0;
 };
-}  // namespace ObjectStore
-}  // namespace OHOS
-#endif  // APP_DISTRIBUTEDDATA_INCLUDE_DATA_CHANGE_LISTENER_H
+} // namespace ObjectStore
+} // namespace OHOS
+#endif // APP_DISTRIBUTEDDATA_INCLUDE_DATA_CHANGE_LISTENER_H

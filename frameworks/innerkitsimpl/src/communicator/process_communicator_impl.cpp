@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,6 +14,7 @@
  */
 
 #include "process_communicator_impl.h"
+
 #include <logger.h>
 
 namespace OHOS {
@@ -32,7 +33,7 @@ DBStatus ProcessCommunicatorImpl::Start(const std::string &processLabel)
 {
     LOG_INFO("init commProvider");
     thisProcessLabel_ = processLabel;
-    PipeInfo pi = {thisProcessLabel_};
+    PipeInfo pi = { thisProcessLabel_ };
     Status errCode = CommunicationProvider::GetInstance().Start(pi);
     if (errCode != Status::SUCCESS) {
         LOG_ERROR("commProvider_ Start Fail.");
@@ -43,7 +44,7 @@ DBStatus ProcessCommunicatorImpl::Start(const std::string &processLabel)
 
 DBStatus ProcessCommunicatorImpl::Stop()
 {
-    PipeInfo pi = {thisProcessLabel_};
+    PipeInfo pi = { thisProcessLabel_ };
     Status errCode = CommunicationProvider::GetInstance().Stop(pi);
     if (errCode != Status::SUCCESS) {
         LOG_ERROR("commProvider_ Stop Fail.");
@@ -59,7 +60,7 @@ DBStatus ProcessCommunicatorImpl::RegOnDeviceChange(const OnDeviceChange &callba
         onDeviceChangeHandler_ = callback;
     }
 
-    PipeInfo pi = {thisProcessLabel_};
+    PipeInfo pi = { thisProcessLabel_ };
     if (callback) {
         Status errCode = CommunicationProvider::GetInstance().StartWatchDeviceChange(this, pi);
         if (errCode != Status::SUCCESS) {
@@ -84,7 +85,7 @@ DBStatus ProcessCommunicatorImpl::RegOnDataReceive(const OnDataReceive &callback
         onDataReceiveHandler_ = callback;
     }
 
-    PipeInfo pi = {thisProcessLabel_};
+    PipeInfo pi = { thisProcessLabel_ };
     if (callback) {
         Status errCode = CommunicationProvider::GetInstance().StartWatchDataChange(this, pi);
         if (errCode != Status::SUCCESS) {
@@ -103,7 +104,7 @@ DBStatus ProcessCommunicatorImpl::RegOnDataReceive(const OnDataReceive &callback
 
 DBStatus ProcessCommunicatorImpl::SendData(const DeviceInfos &dstDevInfo, const uint8_t *data, uint32_t length)
 {
-    PipeInfo pi = {thisProcessLabel_};
+    PipeInfo pi = { thisProcessLabel_ };
     DeviceId destination;
     destination.deviceId = dstDevInfo.identifier;
     Status errCode = CommunicationProvider::GetInstance().SendData(pi, destination, data, static_cast<int>(length));
@@ -155,13 +156,13 @@ std::vector<DeviceInfos> ProcessCommunicatorImpl::GetRemoteOnlineDeviceInfosList
 
 bool ProcessCommunicatorImpl::IsSameProcessLabelStartedOnPeerDevice(const DeviceInfos &peerDevInfo)
 {
-    PipeInfo pi = {thisProcessLabel_};
-    DeviceId di = {peerDevInfo.identifier};
+    PipeInfo pi = { thisProcessLabel_ };
+    DeviceId di = { peerDevInfo.identifier };
     return CommunicationProvider::GetInstance().IsSameStartedOnPeer(pi, di);
 }
 
-void ProcessCommunicatorImpl::OnMessage(const DeviceInfo &info, const uint8_t *ptr, const int size,
-                                        __attribute__((unused)) const PipeInfo &pipeInfo) const
+void ProcessCommunicatorImpl::OnMessage(
+    const DeviceInfo &info, const uint8_t *ptr, const int size, __attribute__((unused)) const PipeInfo &pipeInfo) const
 {
     std::lock_guard<std::mutex> onDataReceiveLockGuard(onDataReceiveMutex_);
     if (onDataReceiveHandler_ == nullptr) {
@@ -184,5 +185,5 @@ void ProcessCommunicatorImpl::OnDeviceChanged(const DeviceInfo &info, const Devi
     devInfo.identifier = info.deviceId;
     onDeviceChangeHandler_(devInfo, (type == DeviceChangeType::DEVICE_ONLINE));
 }
-}  // namespace ObjectStore
-}  // namespace OHOS
+} // namespace ObjectStore
+} // namespace OHOS

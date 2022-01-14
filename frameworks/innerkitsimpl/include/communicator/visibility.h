@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,13 +15,12 @@
 
 #ifndef KVSTORE_API
 #ifdef _WIN32
-    #ifdef DB_DLL_EXPORT
-        #define KVSTORE_API __declspec(dllexport)
-    #else
-        #define KVSTORE_API
-    #endif
+#ifdef DB_DLL_EXPORT
+#define KVSTORE_API __declspec(dllexport)
 #else
-    #define KVSTORE_API __attribute__ ((visibility ("default")))
+#define KVSTORE_API
+#endif
+#else
+#define KVSTORE_API __attribute__((visibility("default")))
 #endif
 #endif
-

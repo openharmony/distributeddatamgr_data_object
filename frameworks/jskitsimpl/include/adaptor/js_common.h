@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,29 +17,33 @@
 #define JS_COMMON_H
 #include "hilog/log.h"
 namespace OHOS::ObjectStore {
-#define CHECK_EQUAL_WITH_RETURN_NULL(status, value) { \
-    if (status != value) {                      \
-        LOG_ERROR("error! %{public}d %{public}d", status, value); \
-        return nullptr;\
-    }                              \
-}
-#define CHECK_EQUAL_WITH_RETURN_VOID(status, value) { \
-    if (status != value) {                      \
-        LOG_ERROR("error! %{public}d %{public}d", status, value); \
-        return;\
-    }                              \
-}
-#define ASSERT_MATCH_ELSE_RETURN_VOID(condition) { \
-    if (!(condition)) {                      \
-        LOG_ERROR("error! %{public}s", #condition); \
-        return;\
-    }                              \
-}
-#define ASSERT_MATCH_ELSE_RETURN_NULL(condition) { \
-    if (!(condition)) {                      \
-        LOG_ERROR("error! %{public}s", #condition); \
-        return nullptr;\
-    }                              \
-}
-}
+#define CHECK_EQUAL_WITH_RETURN_NULL(status, value)                   \
+    {                                                                 \
+        if (status != value) {                                        \
+            LOG_ERROR("error! %{public}d %{public}d", status, value); \
+            return nullptr;                                           \
+        }                                                             \
+    }
+#define CHECK_EQUAL_WITH_RETURN_VOID(status, value)                   \
+    {                                                                 \
+        if (status != value) {                                        \
+            LOG_ERROR("error! %{public}d %{public}d", status, value); \
+            return;                                                   \
+        }                                                             \
+    }
+#define ASSERT_MATCH_ELSE_RETURN_VOID(condition)        \
+    {                                                   \
+        if (!(condition)) {                             \
+            LOG_ERROR("error! %{public}s", #condition); \
+            return;                                     \
+        }                                               \
+    }
+#define ASSERT_MATCH_ELSE_RETURN_NULL(condition)        \
+    {                                                   \
+        if (!(condition)) {                             \
+            LOG_ERROR("error! %{public}s", #condition); \
+            return nullptr;                             \
+        }                                               \
+    }
+} // namespace OHOS::ObjectStore
 #endif //JS_COMMON_H

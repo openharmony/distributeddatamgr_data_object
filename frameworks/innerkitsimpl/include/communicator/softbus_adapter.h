@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,10 +17,11 @@
 #define DISTRIBUTEDDATAFWK_SRC_SOFTBUS_ADAPTER_H
 #include <condition_variable>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <set>
 #include <tuple>
-#include <memory>
+
 #include "app_data_change_listener.h"
 #include "app_device_status_change_listener.h"
 #include "app_types.h"
@@ -35,8 +36,12 @@ enum IdType {
 };
 class Semaphore {
 public:
-    explicit Semaphore(unsigned int resCount) : count(resCount), data(-1) {}
-    ~Semaphore() {}
+    explicit Semaphore(unsigned int resCount) : count(resCount), data(-1)
+    {
+    }
+    ~Semaphore()
+    {
+    }
 
 public:
     int Wait()
@@ -103,8 +108,8 @@ public:
     Status StopWatchDataChange(const AppDataChangeListener *observer, const PipeInfo &pipeInfo);
 
     // Send data to other device, function will be called back after sent to notify send result.
-    Status SendData(const PipeInfo &pipeInfo, const DeviceId &deviceId, const uint8_t *ptr, int size,
-                    const MessageInfo &info);
+    Status SendData(
+        const PipeInfo &pipeInfo, const DeviceId &deviceId, const uint8_t *ptr, int size, const MessageInfo &info);
 
     bool IsSameStartedOnPeer(const struct PipeInfo &pipeInfo, const struct DeviceId &peer);
 
@@ -120,8 +125,7 @@ public:
 
     void DeleteSession(const std::string &sessionName);
 
-    void NotifyDataListeners(const uint8_t *ptr, const int size, const std::string &deviceId,
-        const PipeInfo &pipeInfo);
+    void NotifyDataListeners(const uint8_t *ptr, const int size, const std::string &deviceId, const PipeInfo &pipeInfo);
 
     int WaitSessionOpen();
 
@@ -130,26 +134,27 @@ public:
     int GetOpenSessionId();
 
     void SetOpenSessionId(const int &sessionId);
+
 private:
-    mutable std::mutex networkMutex_ {};
-    mutable std::map<std::string, std::tuple<std::string, std::string>> networkId2UuidUdid_ {};
-    DeviceInfo localInfo_ {};
+    mutable std::mutex networkMutex_{};
+    mutable std::map<std::string, std::tuple<std::string, std::string>> networkId2UuidUdid_{};
+    DeviceInfo localInfo_{};
     static std::shared_ptr<SoftBusAdapter> instance_;
     std::mutex deviceChangeMutex_;
-    std::set<const AppDeviceStatusChangeListener *> listeners_ {};
-    std::mutex dataChangeMutex_ {};
-    std::map<std::string, const AppDataChangeListener *> dataChangeListeners_ {};
-    std::mutex busSessionMutex_ {};
-    std::map<std::string, bool> busSessionMap_ {};
+    std::set<const AppDeviceStatusChangeListener *> listeners_{};
+    std::mutex dataChangeMutex_{};
+    std::map<std::string, const AppDataChangeListener *> dataChangeListeners_{};
+    std::mutex busSessionMutex_{};
+    std::map<std::string, bool> busSessionMap_{};
     bool flag_ = true; // only for br flag
-    INodeStateCb nodeStateCb_ {};
-    ISessionListener sessionListener_ {};
-    std::unique_ptr<Semaphore> semaphore_ {};
-    std::mutex notifyFlagMutex_ {};
+    INodeStateCb nodeStateCb_{};
+    ISessionListener sessionListener_{};
+    std::unique_ptr<Semaphore> semaphore_{};
+    std::mutex notifyFlagMutex_{};
     bool notifyFlag_ = false;
-    std::mutex openSessionIdMutex_ {};
+    std::mutex openSessionIdMutex_{};
     int openSessionId_ = -1;
 };
-}  // namespace ObjectStore
-}  // namespace OHOS
+} // namespace ObjectStore
+} // namespace OHOS
 #endif /* DISTRIBUTEDDATAFWK_SRC_SOFTBUS_ADAPTER_H */

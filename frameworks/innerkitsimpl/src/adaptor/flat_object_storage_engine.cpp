@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,9 +16,10 @@
 
 #include "logger.h"
 #include "objectstore_errors.h"
+#include "process_communicator_impl.h"
 #include "securec.h"
 #include "string_utils.h"
-#include "process_communicator_impl.h"
+#include "types_export.h"
 
 namespace OHOS::ObjectStore {
 FlatObjectStorageEngine::~FlatObjectStorageEngine()
@@ -77,8 +78,8 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
     }
     std::unique_lock<std::shared_mutex> lock(operationMutex_);
     if (delegates.count(key) != 0) {
-        LOG_INFO("FlatObjectStorageEngine::CreateTable %s already created", key.c_str());
-        return SUCCESS;
+        LOG_ERROR("FlatObjectStorageEngine::CreateTable %{public}s already created", key.c_str());
+        return ERR_EXIST;
     }
 
     DistributedDB::KvStoreConfig config;
@@ -100,7 +101,7 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
     LOG_INFO("start Pragma");
     status = kvStore->Pragma(DistributedDB::AUTO_SYNC, data);
     if (status != DistributedDB::DBStatus::OK) {
-        LOG_ERROR("FlatObjectStorageEngine::CreateTable %s getkvstore fail[%d]", key.c_str(), status);
+        LOG_ERROR("FlatObjectStorageEngine::CreateTable %{public}s getkvstore fail[%{public}d]", key.c_str(), status);
         return ERR_DE_GETKV_FAIL;
     }
     LOG_INFO("create table %{public}s success", key.c_str());
@@ -125,7 +126,7 @@ uint32_t FlatObjectStorageEngine::GetTable(const std::string &key, std::map<std:
     LOG_INFO("start GetEntries");
     DistributedDB::DBStatus status = delegates.at(key)->GetEntries(emptyKey, resultSet);
     if (status != DistributedDB::DBStatus::OK) {
-        LOG_INFO("FlatObjectStorageEngine::GetTable %s GetEntries fail", key.c_str());
+        LOG_INFO("FlatObjectStorageEngine::GetTable %{public}s GetEntries fail", key.c_str());
         return ERR_DB_GET_FAIL;
     }
     LOG_INFO("end GetEntries");
@@ -149,7 +150,7 @@ uint32_t FlatObjectStorageEngine::UpdateItems(const std::string &key, std::map<s
     }
     std::unique_lock<std::shared_mutex> lock(operationMutex_);
     if (delegates.count(key) == 0) {
-        LOG_INFO("FlatObjectStorageEngine::GetTable %s not exist", key.c_str());
+        LOG_INFO("FlatObjectStorageEngine::GetTable %{public}s not exist", key.c_str());
         return ERR_DE_NOT_EXIST;
     }
     auto iter = data.begin();
@@ -165,27 +166,28 @@ uint32_t FlatObjectStorageEngine::UpdateItems(const std::string &key, std::map<s
     LOG_INFO("start PutBatch");
     auto status = delegate->PutBatch(items);
     if (status != DistributedDB::DBStatus::OK) {
-        LOG_ERROR("%s PutBatch fail[%d]", key.c_str(), status);
+        LOG_ERROR("%{public}s PutBatch fail[%{public}d]", key.c_str(), status);
         return ERR_CLOSE_STORAGE;
     }
     LOG_INFO("end PutBatch");
     return SUCCESS;
 }
 
-uint32_t FlatObjectStorageEngine::UpdateItem(const std::string &key, const std::string &itemKey, Value &value) {
+uint32_t FlatObjectStorageEngine::UpdateItem(const std::string &key, const std::string &itemKey, Value &value)
+{
     if (!opened_) {
         return ERR_DB_NOT_INIT;
     }
     std::unique_lock<std::shared_mutex> lock(operationMutex_);
     if (delegates.count(key) == 0) {
-        LOG_INFO("FlatObjectStorageEngine::GetTable %s not exist", key.c_str());
+        LOG_INFO("FlatObjectStorageEngine::GetTable %{public}s not exist", key.c_str());
         return ERR_DE_NOT_EXIST;
     }
     auto delegate = delegates.at(key);
     LOG_INFO("start Put");
     auto status = delegate->Put(StringUtils::StrToBytes(itemKey), value);
     if (status != DistributedDB::DBStatus::OK) {
-        LOG_ERROR("%s PutBatch fail[%d]", key.c_str(), status);
+        LOG_ERROR("%{public}s PutBatch fail[%{public}d]", key.c_str(), status);
         return ERR_CLOSE_STORAGE;
     }
     LOG_INFO("end Put");
@@ -199,13 +201,14 @@ uint32_t FlatObjectStorageEngine::DeleteTable(const std::string &key)
     }
     std::unique_lock<std::shared_mutex> lock(operationMutex_);
     if (delegates.count(key) == 0) {
-        LOG_INFO("FlatObjectStorageEngine::GetTable %s not exist", key.c_str());
+        LOG_INFO("FlatObjectStorageEngine::GetTable %{public}s not exist", key.c_str());
         return ERR_DE_NOT_EXIST;
     }
     LOG_INFO("start DeleteTable %{public}s", key.c_str());
     auto status = storeManager_->CloseKvStore(delegates.at(key));
     if (status != DistributedDB::DBStatus::OK) {
-        LOG_ERROR("FlatObjectStorageEngine::CloseKvStore %s CloseKvStore fail[%d]", key.c_str(), status);
+        LOG_ERROR(
+            "FlatObjectStorageEngine::CloseKvStore %{public}s CloseKvStore fail[%{public}d]", key.c_str(), status);
         return ERR_CLOSE_STORAGE;
     }
     LOG_INFO("end DeleteTable");
@@ -241,7 +244,7 @@ uint32_t FlatObjectStorageEngine::RegisterObserver(const std::string &key, std::
     }
     std::unique_lock<std::shared_mutex> lock(operationMutex_);
     if (delegates.count(key) == 0) {
-        LOG_INFO("FlatObjectStorageEngine::RegisterObserver %s not exist", key.c_str());
+        LOG_INFO("FlatObjectStorageEngine::RegisterObserver %{public}s not exist", key.c_str());
         return ERR_DE_NOT_EXIST;
     }
     if (observerMap_.count(key) != 0) {
@@ -254,7 +257,7 @@ uint32_t FlatObjectStorageEngine::RegisterObserver(const std::string &key, std::
     DistributedDB::DBStatus status =
         delegate->RegisterObserver(tmpKey, DistributedDB::ObserverMode::OBSERVER_CHANGES_NATIVE, watcher.get());
     if (status != DistributedDB::DBStatus::OK) {
-        LOG_ERROR("FlatObjectStorageEngine::RegisterObserver watch err %d", status);
+        LOG_ERROR("FlatObjectStorageEngine::RegisterObserver watch err %{public}d", status);
         return ERR_REGISTER;
     }
     LOG_INFO("end RegisterObserver %{public}s", key.c_str());
@@ -270,7 +273,7 @@ uint32_t FlatObjectStorageEngine::UnRegisterObserver(const std::string &key)
     }
     std::unique_lock<std::shared_mutex> lock(operationMutex_);
     if (delegates.count(key) == 0) {
-        LOG_INFO("FlatObjectStorageEngine::RegisterObserver %s not exist", key.c_str());
+        LOG_INFO("FlatObjectStorageEngine::RegisterObserver %{public}s not exist", key.c_str());
         return ERR_DE_NOT_EXIST;
     }
     auto iter = observerMap_.find(key);
@@ -283,7 +286,7 @@ uint32_t FlatObjectStorageEngine::UnRegisterObserver(const std::string &key)
     LOG_INFO("start UnRegisterObserver %{public}s", key.c_str());
     DistributedDB::DBStatus status = delegate->UnRegisterObserver(watcher.get());
     if (status != DistributedDB::DBStatus::OK) {
-        LOG_ERROR("FlatObjectStorageEngine::UnRegisterObserver unRegister err %d", status);
+        LOG_ERROR("FlatObjectStorageEngine::UnRegisterObserver unRegister err %{public}d", status);
         return ERR_UNRIGSTER;
     }
     LOG_INFO("end UnRegisterObserver %{public}s", key.c_str());
@@ -299,7 +302,7 @@ uint32_t FlatObjectStorageEngine::ChangeKey(const std::string &oldKey, const std
     }
     std::unique_lock<std::shared_mutex> lock(operationMutex_);
     if (delegates.count(oldKey) == 0) {
-        LOG_INFO("FlatObjectStorageEngine::ChangeKey oldKey %s not exist", oldKey.c_str());
+        LOG_INFO("FlatObjectStorageEngine::ChangeKey oldKey %{public}s not exist", oldKey.c_str());
         return ERR_DE_NOT_EXIST;
     }
     DistributedDB::KvStoreNbDelegate *delegate = delegates.at(oldKey);
@@ -311,10 +314,38 @@ uint32_t FlatObjectStorageEngine::ChangeKey(const std::string &oldKey, const std
         std::shared_ptr<TableWatcher> watcher = iter->second;
         uint32_t status = RegisterObserver(newKey, watcher);
         if (status != DistributedDB::DBStatus::OK) {
-            LOG_ERROR("FlatObjectStorageEngine::ChangeKey watch err %d", status);
+            LOG_ERROR("FlatObjectStorageEngine::ChangeKey watch err %{public}d", status);
             return ERR_REGISTER;
         }
     }
     return SUCCESS;
+}
+
+void Watcher::OnChange(const DistributedDB::KvStoreChangedData &data)
+{
+    std::vector<std::string> changedData;
+    std::string tmp;
+    for (DistributedDB::Entry item : data.GetEntriesInserted()) {
+        tmp = StringUtils::BytesToStr(item.key);
+        LOG_INFO("inserted %{public}s", tmp.c_str());
+        // property key start with p_, 2 is p_ size
+        if (tmp.compare(0, 2, "p_") == 0) {
+            changedData.push_back(tmp.substr(2));
+        }
+    }
+    for (DistributedDB::Entry item : data.GetEntriesUpdated()) {
+        tmp = StringUtils::BytesToStr(item.key);
+        LOG_INFO("updated %{public}s", tmp.c_str());
+        // property key start with p_, 2 is p_ size
+        if (tmp.compare(0, 2, "p_") == 0) {
+            LOG_INFO("push %{public}s", tmp.substr(2).c_str());
+            changedData.push_back(tmp.substr(2));
+        }
+    }
+    this->OnChanged(sessionId_, changedData);
+}
+
+Watcher::Watcher(const std::string &sessionId) : sessionId_(sessionId)
+{
 }
 } // namespace OHOS::ObjectStore

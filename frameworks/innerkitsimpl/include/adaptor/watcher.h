@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,18 +19,20 @@
 #include <cstdint>
 
 #include "kv_store_delegate_manager.h"
+#include "logger.h"
+
 namespace OHOS::ObjectStore {
 class Watcher : public DistributedDB::KvStoreObserver {
 public:
+    Watcher(const std::string &sessionId);
     virtual ~Watcher() = default;
     virtual void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) = 0;
     virtual void OnDeleted(const std::string &sessionid) = 0;
-    virtual void OnChange(const DistributedDB::KvStoreChangedData &data)
-    {
-        std::list<DistributedDB::Entry> insertList = data.GetEntriesInserted();
-        std::list<DistributedDB::Entry> updateList = data.GetEntriesUpdated();
-        std::list<DistributedDB::Entry> deletedList = data.GetEntriesDeleted();
-    }
+
+    void OnChange(const DistributedDB::KvStoreChangedData &data) override;
+
+private:
+    std::string sessionId_;
 };
 } // namespace OHOS::ObjectStore
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,12 +16,11 @@
 #ifndef OBJECT_STORAGE_ENGINE_H
 #define OBJECT_STORAGE_ENGINE_H
 
-#include "kv_store_observer.h"
-
 #include <cstdint>
 #include <map>
 #include <vector>
 
+#include "kv_store_observer.h"
 #include "watcher.h"
 
 namespace OHOS::ObjectStore {
@@ -30,6 +29,10 @@ using Value = std::vector<uint8_t>;
 using Field = std::vector<uint8_t>;
 
 class TableWatcher : public Watcher {
+public:
+    TableWatcher(const std::string &sessionId) : Watcher(sessionId)
+    {
+    }
     void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override;
     void OnDeleted(const std::string &sessionid) override;
 };

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,33 +13,34 @@
  * limitations under the License.
  */
 
-#include "distributed_objectstore.h"
-#include "napi/native_api.h"
-#include "napi/native_node_api.h"
-#include <js_object_wrapper.h>
-#include <js_distributedobject.h>
-#include <js_distributedobjectstore.h>
-#include <logger.h>
-#include <js_common.h>
-#include <objectstore_errors.h>
+#include "js_distributedobjectstore.h"
 
+#include "distributed_objectstore.h"
+#include "js_common.h"
+#include "js_distributedobject.h"
+#include "js_object_wrapper.h"
+#include "logger.h"
+#include "napi/native_node_api.h"
+#include "objectstore_errors.h"
 
 namespace OHOS::ObjectStore {
 constexpr size_t TYPE_SIZE = 10;
-napi_value JSDistributedObjectStore::NewDistributedObject(napi_env env, DistributedObjectStore *objectStore, DistributedObject *object)
+napi_value JSDistributedObjectStore::NewDistributedObject(
+    napi_env env, DistributedObjectStore *objectStore, DistributedObject *object)
 {
     napi_value result;
     napi_status status = napi_new_instance(env, JSDistributedObject::GetCons(env), 0, nullptr, &result);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     JSObjectWrapper *objectWrapper = new JSObjectWrapper(objectStore, object);
-    status = napi_wrap( env, result, objectWrapper,
-                        [](napi_env env, void* data, void* hint) {
-                            auto objectWrapper = (JSObjectWrapper*)data;
-                            if (objectWrapper != nullptr) {
-                                delete objectWrapper;
-                            }
-                        },
-                        nullptr, nullptr);
+    status = napi_wrap(
+        env, result, objectWrapper,
+        [](napi_env env, void *data, void *hint) {
+            auto objectWrapper = (JSObjectWrapper *)data;
+            if (objectWrapper != nullptr) {
+                delete objectWrapper;
+            }
+        },
+        nullptr, nullptr);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     return result;
 }
@@ -52,7 +53,7 @@ napi_value JSDistributedObjectStore::JSCreateObjectSync(napi_env env, napi_callb
     size_t argc = 2;
     napi_value argv[2] = { 0 };
     napi_value thisVar = nullptr;
-    void* data = nullptr;
+    void *data = nullptr;
     char sessionId[SESSION_ID_SIZE] = { 0 };
     size_t sessionIdLen = 0;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
@@ -71,7 +72,7 @@ napi_value JSDistributedObjectStore::JSCreateObjectSync(napi_env env, napi_callb
             return nullptr;
         }
     }
-    DistributedObjectStore* objectInfo = DistributedObjectStore::GetInstance();
+    DistributedObjectStore *objectInfo = DistributedObjectStore::GetInstance();
     ASSERT_MATCH_ELSE_RETURN_NULL(objectInfo != nullptr);
     DistributedObject *object = objectInfo->CreateObject(sessionId);
     ASSERT_MATCH_ELSE_RETURN_NULL(object != nullptr);
@@ -86,26 +87,20 @@ napi_value JSDistributedObjectStore::JSDestroyObjectSync(napi_env env, napi_call
     size_t argc = 1;
     napi_value argv[1] = { 0 };
     napi_value thisVar = nullptr;
-    void* data = nullptr;
+    void *data = nullptr;
     char sessionId[SESSION_ID_SIZE] = { 0 };
     size_t sessionIdLen = 0;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     ASSERT_MATCH_ELSE_RETURN_NULL(argc >= requireArgc);
-    for (size_t i = 0; i < argc; i++) {
-        napi_valuetype valueType = napi_undefined;
-        status = napi_typeof(env, argv[i], &valueType);
-        CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
+    napi_valuetype valueType = napi_undefined;
+    status = napi_typeof(env, argv[0], &valueType);
+    CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
+    CHECK_EQUAL_WITH_RETURN_NULL(valueType, napi_string);
+    status = napi_get_value_string_utf8(env, argv[0], sessionId, SESSION_ID_SIZE, &sessionIdLen);
+    CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
 
-        if (i == 0 && valueType == napi_string) {
-            status = napi_get_value_string_utf8(env, argv[i], sessionId, SESSION_ID_SIZE, &sessionIdLen);
-            CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-        } else {
-            NAPI_ASSERT(env, false, "type mismatch");
-        }
-    }
-
-    DistributedObjectStore* objectInfo = DistributedObjectStore::GetInstance();
+    DistributedObjectStore *objectInfo = DistributedObjectStore::GetInstance();
     ASSERT_MATCH_ELSE_RETURN_NULL(objectInfo != nullptr);
     uint32_t ret = objectInfo->DeleteObject(sessionId);
     napi_value result = nullptr;
@@ -121,12 +116,13 @@ napi_value JSDistributedObjectStore::JSSync(napi_env env, napi_callback_info inf
     size_t argc = 1;
     napi_value argv[1] = { 0 };
     napi_value thisVar = nullptr;
-    void* data = nullptr;
-    JSObjectWrapper *objectWrapper = nullptr;;
+    void *data = nullptr;
+    JSObjectWrapper *objectWrapper = nullptr;
+    ;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     ASSERT_MATCH_ELSE_RETURN_NULL(argc >= requireArgc);
-    status = napi_unwrap(env, argv[0], (void**)&objectWrapper);
+    status = napi_unwrap(env, argv[0], (void **)&objectWrapper);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     ASSERT_MATCH_ELSE_RETURN_NULL(objectWrapper != nullptr);
     DistributedObjectStore *objectInfo = DistributedObjectStore::GetInstance();
@@ -146,7 +142,7 @@ napi_value JSDistributedObjectStore::JSOn(napi_env env, napi_callback_info info)
     size_t argc = 3;
     napi_value argv[3] = { 0 };
     napi_value thisVar = nullptr;
-    void* data = nullptr;
+    void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     ASSERT_MATCH_ELSE_RETURN_NULL(argc >= requireArgc);
@@ -171,7 +167,7 @@ napi_value JSDistributedObjectStore::JSOn(napi_env env, napi_callback_info info)
     ASSERT_MATCH_ELSE_RETURN_NULL(callbackType == napi_function);
 
     JSObjectWrapper *wrapper = nullptr;
-    status = napi_unwrap(env, argv[1], (void**)&wrapper);
+    status = napi_unwrap(env, argv[1], (void **)&wrapper);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     ASSERT_MATCH_ELSE_RETURN_NULL(wrapper != nullptr);
     wrapper->AddWatch(env, type, argv[2]);
@@ -188,7 +184,7 @@ napi_value JSDistributedObjectStore::JSOff(napi_env env, napi_callback_info info
     size_t argc = 3;
     napi_value argv[3] = { 0 };
     napi_value thisVar = nullptr;
-    void* data = nullptr;
+    void *data = nullptr;
     char type[TYPE_SIZE] = { 0 };
     size_t typeLen = 0;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
@@ -211,12 +207,14 @@ napi_value JSDistributedObjectStore::JSOff(napi_env env, napi_callback_info info
         }
     }
     JSObjectWrapper *wrapper = nullptr;
-    status = napi_unwrap(env, argv[1], (void**)&wrapper);
+    status = napi_unwrap(env, argv[1], (void **)&wrapper);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-    NAPI_ASSERT(env, wrapper != nullptr, "object wrapper is null");
+    ASSERT_MATCH_ELSE_RETURN_NULL(wrapper != nullptr);
     if (argc == requireArgc) {
+        LOG_INFO("delete all");
         wrapper->DeleteWatch(env, type);
     } else {
+        LOG_INFO("delete %{public}p", argv[2]);
         wrapper->DeleteWatch(env, type, argv[2]);
     }
     napi_value result = nullptr;
@@ -224,5 +222,4 @@ napi_value JSDistributedObjectStore::JSOff(napi_env env, napi_callback_info info
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     return result;
 }
-}
-
+} // namespace OHOS::ObjectStore

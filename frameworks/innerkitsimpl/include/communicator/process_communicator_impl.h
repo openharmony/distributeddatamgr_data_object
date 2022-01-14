@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,14 +17,16 @@
 #define PROCESS_COMMUNICATOR_IMPL_H
 
 #include <mutex>
-#include "iprocess_communicator.h"
+
 #include "communication_provider.h"
+#include "iprocess_communicator.h"
 
 namespace OHOS {
 namespace ObjectStore {
-class ProcessCommunicatorImpl : public DistributedDB::IProcessCommunicator,
-                                private AppDataChangeListener,
-                                private AppDeviceStatusChangeListener {
+class ProcessCommunicatorImpl
+    : public DistributedDB::IProcessCommunicator
+    , private AppDataChangeListener
+    , private AppDeviceStatusChangeListener {
 public:
     using DBStatus = DistributedDB::DBStatus;
     using OnDeviceChange = DistributedDB::OnDeviceChange;
@@ -45,9 +47,9 @@ public:
     KVSTORE_API DeviceInfos GetLocalDeviceInfos() override;
     KVSTORE_API std::vector<DeviceInfos> GetRemoteOnlineDeviceInfosList() override;
     KVSTORE_API bool IsSameProcessLabelStartedOnPeerDevice(const DeviceInfos &peerDevInfo) override;
+
 private:
-    void OnMessage(const DeviceInfo &info, const uint8_t *ptr, const int size,
-                   const PipeInfo &pipeInfo) const override;
+    void OnMessage(const DeviceInfo &info, const uint8_t *ptr, const int size, const PipeInfo &pipeInfo) const override;
     void OnDeviceChanged(const DeviceInfo &info, const DeviceChangeType &type) const override;
 
     std::string thisProcessLabel_;
@@ -56,11 +58,11 @@ private:
     mutable std::mutex onDeviceChangeMutex_;
     mutable std::mutex onDataReceiveMutex_;
 
-    static constexpr uint32_t MTU_SIZE = 4096; // the max transmission unit size(4K - 80B)
+    static constexpr uint32_t MTU_SIZE = 4096;        // the max transmission unit size(4K - 80B)
     static constexpr uint32_t MTU_SIZE_WATCH = 81920; // the max transmission unit size(80K)
     static constexpr const char *SMART_WATCH_TYPE = "SMART_WATCH";
     static constexpr const char *CHILDREN_WATCH_TYPE = "CHILDREN_WATCH";
 };
-}  // namespace ObjectStore
-}  // namespace OHOS
+} // namespace ObjectStore
+} // namespace OHOS
 #endif // PROCESS_COMMUNICATOR_IMPL_H

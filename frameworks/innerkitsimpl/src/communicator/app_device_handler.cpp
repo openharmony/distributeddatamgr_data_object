@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,6 +14,7 @@
  */
 
 #include "app_device_handler.h"
+
 #include <logger.h>
 
 namespace OHOS {
@@ -32,14 +33,14 @@ void AppDeviceHandler::Init()
     softbusAdapter_->Init();
 }
 
-Status AppDeviceHandler::StartWatchDeviceChange(const AppDeviceStatusChangeListener *observer,
-    __attribute__((unused)) const PipeInfo &pipeInfo)
+Status AppDeviceHandler::StartWatchDeviceChange(
+    const AppDeviceStatusChangeListener *observer, __attribute__((unused)) const PipeInfo &pipeInfo)
 {
     return softbusAdapter_->StartWatchDeviceChange(observer, pipeInfo);
 }
 
-Status AppDeviceHandler::StopWatchDeviceChange(const AppDeviceStatusChangeListener *observer,
-    __attribute__((unused)) const PipeInfo &pipeInfo)
+Status AppDeviceHandler::StopWatchDeviceChange(
+    const AppDeviceStatusChangeListener *observer, __attribute__((unused)) const PipeInfo &pipeInfo)
 {
     return softbusAdapter_->StopWatchDeviceChange(observer, pipeInfo);
 }
@@ -79,12 +80,12 @@ void AppDeviceHandler::UpdateRelationship(const std::string &networkid, const De
     return softbusAdapter_->UpdateRelationship(networkid, type);
 }
 
-std::string AppDeviceHandler::ToUUID(const std::string& id) const
+std::string AppDeviceHandler::ToUUID(const std::string &id) const
 {
     return softbusAdapter_->ToUUID(id);
 }
 
-std::string AppDeviceHandler::ToNodeID(const std::string& id, const std::string &nodeId) const
+std::string AppDeviceHandler::ToNodeID(const std::string &id, const std::string &nodeId) const
 {
     return softbusAdapter_->ToNodeID(id, nodeId);
 }
@@ -93,5 +94,5 @@ std::string AppDeviceHandler::ToBeAnonymous(const std::string &name)
 {
     return SoftBusAdapter::ToBeAnonymous(name);
 }
-}  // namespace ObjectStore
-}  // namespace OHOS
+} // namespace ObjectStore
+} // namespace OHOS

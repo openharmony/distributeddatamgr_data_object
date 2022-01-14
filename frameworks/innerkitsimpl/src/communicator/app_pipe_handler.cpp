@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,8 +14,10 @@
  */
 
 #include "app_pipe_handler.h"
-#include <string>
+
 #include <logger.h>
+
+#include <string>
 
 namespace OHOS {
 namespace ObjectStore {
@@ -26,15 +28,14 @@ AppPipeHandler::~AppPipeHandler()
     LOG_INFO("destructor pipeId: %{public}s", pipeInfo_.pipeId.c_str());
 }
 
-AppPipeHandler::AppPipeHandler(const PipeInfo &pipeInfo)
-    : pipeInfo_(pipeInfo)
+AppPipeHandler::AppPipeHandler(const PipeInfo &pipeInfo) : pipeInfo_(pipeInfo)
 {
     LOG_INFO("constructor pipeId: %{public}s", pipeInfo_.pipeId.c_str());
     softbusAdapter_ = SoftBusAdapter::GetInstance();
 }
 
-Status AppPipeHandler::SendData(const PipeInfo &pipeInfo, const DeviceId &deviceId, const uint8_t *ptr, int size,
-                                const MessageInfo &info)
+Status AppPipeHandler::SendData(
+    const PipeInfo &pipeInfo, const DeviceId &deviceId, const uint8_t *ptr, int size, const MessageInfo &info)
 {
     return softbusAdapter_->SendData(pipeInfo, deviceId, ptr, size, info);
 }
@@ -44,14 +45,14 @@ Status AppPipeHandler::StartWatchDataChange(const AppDataChangeListener *observe
     return softbusAdapter_->StartWatchDataChange(observer, pipeInfo);
 }
 
-Status AppPipeHandler::StopWatchDataChange(__attribute__((unused))const AppDataChangeListener *observer,
-                                           const PipeInfo &pipeInfo)
+Status AppPipeHandler::StopWatchDataChange(
+    __attribute__((unused)) const AppDataChangeListener *observer, const PipeInfo &pipeInfo)
 {
     return softbusAdapter_->StopWatchDataChange(observer, pipeInfo);
 }
 
-bool AppPipeHandler::IsSameStartedOnPeer(const struct PipeInfo &pipeInfo,
-                                         __attribute__((unused))const struct DeviceId &peer)
+bool AppPipeHandler::IsSameStartedOnPeer(
+    const struct PipeInfo &pipeInfo, __attribute__((unused)) const struct DeviceId &peer)
 {
     return softbusAdapter_->IsSameStartedOnPeer(pipeInfo, peer);
 }
@@ -70,5 +71,5 @@ int AppPipeHandler::RemoveSessionServer(const std::string &sessionName) const
 {
     return softbusAdapter_->RemoveSessionServerAdapter(sessionName);
 }
-}  // namespace ObjectStore
-}  // namespace OHOS
+} // namespace ObjectStore
+} // namespace OHOS

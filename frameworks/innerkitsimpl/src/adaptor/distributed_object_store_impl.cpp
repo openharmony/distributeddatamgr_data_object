@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,7 +28,9 @@ DistributedObjectStoreImpl::~DistributedObjectStoreImpl()
 {
     delete flatObjectStore_;
 }
-DistributedObjectImpl *DistributedObjectStoreImpl::CacheObject(const std::string &sessionId, FlatObjectStore *flatObjectStore)
+
+DistributedObjectImpl *DistributedObjectStoreImpl::CacheObject(
+    const std::string &sessionId, FlatObjectStore *flatObjectStore)
 {
     DistributedObjectImpl *object = new (std::nothrow) DistributedObjectImpl(sessionId, flatObjectStore);
     if (object == nullptr) {
@@ -38,6 +40,7 @@ DistributedObjectImpl *DistributedObjectStoreImpl::CacheObject(const std::string
     objects_.push_back(object);
     return object;
 }
+
 DistributedObject *DistributedObjectStoreImpl::CreateObject(const std::string &sessionId)
 {
     if (flatObjectStore_ == nullptr) {
@@ -46,7 +49,7 @@ DistributedObject *DistributedObjectStoreImpl::CreateObject(const std::string &s
     }
     int32_t status = flatObjectStore_->CreateObject(sessionId);
     if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectStoreImpl::CreateObject CreateTable err %d", status);
+        LOG_ERROR("DistributedObjectStoreImpl::CreateObject CreateTable err %{public}d", status);
         return nullptr;
     }
     return CacheObject(sessionId, flatObjectStore_);
@@ -63,7 +66,7 @@ uint32_t DistributedObjectStoreImpl::Sync(DistributedObject *object) // todo may
         return ERR_NULL_OBJECTSTORE;
     }
     return SUCCESS;
-   // return flatObjectStore_->Put(*static_cast<DistributedObjectImpl *>(object)->GetObject());
+    // return flatObjectStore_->Put(*static_cast<DistributedObjectImpl *>(object)->GetObject());
 }
 
 uint32_t DistributedObjectStoreImpl::DeleteObject(const std::string &sessionId)
@@ -74,7 +77,7 @@ uint32_t DistributedObjectStoreImpl::DeleteObject(const std::string &sessionId)
     }
     uint32_t status = flatObjectStore_->Delete(sessionId);
     if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectStoreImpl::DeleteObject store delete err %d", status);
+        LOG_ERROR("DistributedObjectStoreImpl::DeleteObject store delete err %{public}d", status);
         return status;
     }
     return SUCCESS;
@@ -84,7 +87,7 @@ uint32_t DistributedObjectStoreImpl::Get(const std::string &sessionId, Distribut
 {
     auto iter = objects_.begin();
     while (iter != objects_.end()) {
-        if ( (*iter)->GetSessionId() == sessionId) {
+        if ((*iter)->GetSessionId() == sessionId) {
             object = *iter;
             return SUCCESS;
         }
@@ -108,10 +111,10 @@ uint32_t DistributedObjectStoreImpl::Watch(DistributedObject *object, std::share
         LOG_ERROR("DistributedObjectStoreImpl::Watch already gets object");
         return ERR_EXIST;
     }
-    std::shared_ptr<WatcherProxy> watcherProxy = std::make_shared<WatcherProxy>(watcher);
+    std::shared_ptr<WatcherProxy> watcherProxy = std::make_shared<WatcherProxy>(watcher, object->GetSessionId());
     uint32_t status = flatObjectStore_->Watch(object->GetSessionId(), watcherProxy);
     if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectStoreImpl::Watch failed %d", status);
+        LOG_ERROR("DistributedObjectStoreImpl::Watch failed %{public}d", status);
         return status;
     }
     watchers_.insert_or_assign(object, watcherProxy);
@@ -131,7 +134,7 @@ uint32_t DistributedObjectStoreImpl::UnWatch(DistributedObject *object)
     }
     uint32_t status = flatObjectStore_->UnWatch(object->GetSessionId());
     if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectStoreImpl::Watch failed %d", status);
+        LOG_ERROR("DistributedObjectStoreImpl::Watch failed %{public}d", status);
         return status;
     }
     watchers_.erase(object);
@@ -139,14 +142,13 @@ uint32_t DistributedObjectStoreImpl::UnWatch(DistributedObject *object)
     return SUCCESS;
 }
 
-WatcherProxy::WatcherProxy(const std::shared_ptr<ObjectWatcher> objectWatcher) : objectWatcher_(objectWatcher)
+WatcherProxy::WatcherProxy(const std::shared_ptr<ObjectWatcher> objectWatcher, const std::string &sessionId)
+    : FlatObjectWatcher(sessionId), objectWatcher_(objectWatcher)
 {
-    LOG_INFO("hanlu create");
 }
 
 void WatcherProxy::OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData)
 {
-    LOG_INFO("hanlu inin");
     objectWatcher_->OnChanged(sessionid, changedData);
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,7 +16,7 @@
 #ifndef JSWATCHER_H
 #define JSWATCHER_H
 
-#include <distributed_objectstore.h>
+#include "distributed_objectstore.h"
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 namespace OHOS::ObjectStore {
@@ -27,29 +27,35 @@ enum Event {
 };
 struct EventHandler {
     napi_ref callbackRef = nullptr;
-    EventHandler* next = nullptr;
+    EventHandler *next = nullptr;
 };
 class EventListener {
 public:
-    EventListener() : type_(nullptr), handlers_(nullptr) {}
-    virtual ~EventListener() {}
+    EventListener() : type_(nullptr), handlers_(nullptr)
+    {
+    }
+    virtual ~EventListener()
+    {
+    }
     void Add(napi_env env, napi_value handler);
     void Del(napi_env env, napi_value handler);
     void Clear(napi_env env);
-    const char* type_;
-    EventHandler* handlers_;
+    const char *type_;
+    EventHandler *handlers_;
+
 private:
-    EventHandler* Find(napi_env env, napi_value handler);
+    EventHandler *Find(napi_env env, napi_value handler);
 };
 class JSWatcher {
 public:
     JSWatcher(const napi_env env, DistributedObjectStore *objectStore, DistributedObject *object);
 
     ~JSWatcher();
-    void On(const char* type, napi_value handler);
-    void Off(const char* type, napi_value handler = nullptr);
+    void On(const char *type, napi_value handler);
+    void Off(const char *type, napi_value handler = nullptr);
     void Emit(const char *type, const std::string &sessionId, const std::vector<std::string> &changeData);
-    Event Find(const char* type) const;
+    Event Find(const char *type) const;
+
 private:
     napi_env env_;
     EventListener listeners_[3];
@@ -59,15 +65,16 @@ private:
 
 class WatcherImpl : public ObjectWatcher {
 public:
-    WatcherImpl(JSWatcher *watcher);
-
+    WatcherImpl(JSWatcher *watcher, const std::string &sessionId) : ObjectWatcher(sessionId), watcher_(watcher)
+    {
+    }
     virtual ~WatcherImpl();
-
     void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override;
     void OnDeleted(const std::string &sessionid) override;
+
 private:
     JSWatcher *watcher_ = nullptr;
 };
-}
+} // namespace OHOS::ObjectStore
 
 #endif //JSWATCHER_H

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -54,21 +54,21 @@ Status AppPipeMgr::StopWatchDataChange(const AppDataChangeListener *observer, co
 }
 
 // Send data to other device, function will be called back after sent to notify send result.
-Status AppPipeMgr::SendData(const PipeInfo &pipeInfo, const DeviceId &deviceId, const uint8_t *ptr, int size,
-                            const MessageInfo &info)
+Status AppPipeMgr::SendData(
+    const PipeInfo &pipeInfo, const DeviceId &deviceId, const uint8_t *ptr, int size, const MessageInfo &info)
 {
-    if (size > MAX_TRANSFER_SIZE || size <= 0 || ptr == nullptr ||
-        pipeInfo.pipeId.empty() || deviceId.deviceId.empty()) {
-        LOG_WARN("Input is invalid, maxSize:%d, current size:%d", MAX_TRANSFER_SIZE, size);
+    if (size > MAX_TRANSFER_SIZE || size <= 0 || ptr == nullptr || pipeInfo.pipeId.empty()
+        || deviceId.deviceId.empty()) {
+        LOG_WARN("Input is invalid, maxSize:%{public}d, current size:%{public}d", MAX_TRANSFER_SIZE, size);
         return Status::ERROR;
     }
-    LOG_DEBUG("pipeInfo:%s ,size:%d", pipeInfo.pipeId.c_str(), size);
+    LOG_DEBUG("pipeInfo:%{public}s ,size:%{public}d", pipeInfo.pipeId.c_str(), size);
     std::shared_ptr<AppPipeHandler> appPipeHandler;
     {
         std::lock_guard<std::mutex> lock(dataBusMapMutex_);
         auto it = dataBusMap_.find(pipeInfo.pipeId);
         if (it == dataBusMap_.end()) {
-            LOG_WARN("pipeInfo:%s not found", pipeInfo.pipeId.c_str());
+            LOG_WARN("pipeInfo:%{public}s not found", pipeInfo.pipeId.c_str());
             return Status::KEY_NOT_FOUND;
         }
         appPipeHandler = it->second;
@@ -109,13 +109,13 @@ Status AppPipeMgr::Stop(const PipeInfo &pipeInfo)
         std::lock_guard<std::mutex> lock(dataBusMapMutex_);
         auto it = dataBusMap_.find(pipeInfo.pipeId);
         if (it == dataBusMap_.end()) {
-            LOG_WARN("pipeInfo:%s not found", pipeInfo.pipeId.c_str());
+            LOG_WARN("pipeInfo:%{public}s not found", pipeInfo.pipeId.c_str());
             return Status::KEY_NOT_FOUND;
         }
         appPipeHandler = it->second;
         int ret = appPipeHandler->RemoveSessionServer(pipeInfo.pipeId);
         if (ret != 0) {
-            LOG_WARN("Stop pipeInfo:%s ret:%d.", pipeInfo.pipeId.c_str(), ret);
+            LOG_WARN("Stop pipeInfo:%{public}s ret:%{public}d.", pipeInfo.pipeId.c_str(), ret);
             return Status::ERROR;
         }
         dataBusMap_.erase(pipeInfo.pipeId);
@@ -131,13 +131,13 @@ bool AppPipeMgr::IsSameStartedOnPeer(const struct PipeInfo &pipeInfo, const stru
         LOG_ERROR("pipeId or deviceId is empty. Return false.");
         return false;
     }
-    LOG_INFO("pipeInfo == [%s]", pipeInfo.pipeId.c_str());
+    LOG_INFO("pipeInfo == [%{public}s]", pipeInfo.pipeId.c_str());
     std::shared_ptr<AppPipeHandler> appPipeHandler;
     {
         std::lock_guard<std::mutex> lock(dataBusMapMutex_);
         auto it = dataBusMap_.find(pipeInfo.pipeId);
         if (it == dataBusMap_.end()) {
-            LOG_ERROR("pipeInfo:%s not found. Return false.", pipeInfo.pipeId.c_str());
+            LOG_ERROR("pipeInfo:%{public}s not found. Return false.", pipeInfo.pipeId.c_str());
             return false;
         }
         appPipeHandler = it->second;
@@ -155,12 +155,12 @@ void AppPipeMgr::SetMessageTransFlag(const PipeInfo &pipeInfo, bool flag)
         std::lock_guard<std::mutex> lock(dataBusMapMutex_);
         auto it = dataBusMap_.find(pipeInfo.pipeId);
         if (it == dataBusMap_.end()) {
-            LOG_WARN("pipeInfo:%s not found", pipeInfo.pipeId.c_str());
+            LOG_WARN("pipeInfo:%{public}s not found", pipeInfo.pipeId.c_str());
             return;
         }
         appPipeHandler = it->second;
     }
     appPipeHandler->SetMessageTransFlag(pipeInfo, flag);
 }
-}  // namespace ObjectStore
-}  // namespace OHOS
+} // namespace ObjectStore
+} // namespace OHOS

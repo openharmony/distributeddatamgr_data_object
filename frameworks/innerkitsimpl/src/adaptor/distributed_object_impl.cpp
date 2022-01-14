@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2021 Huawei Device Co., Ltd.
+* Copyright (c) 2022 Huawei Device Co., Ltd.
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
@@ -37,16 +37,16 @@ void PutNum(void *val, int32_t offset, int32_t valLen, Bytes &data)
     }
 }
 
-uint32_t GetNum(Bytes &data, int32_t offset, void* val, int32_t valLen)
+uint32_t GetNum(Bytes &data, int32_t offset, void *val, int32_t valLen)
 {
     uint8_t *value = (uint8_t *)val;
     int32_t len = offset + valLen;
-    if (data.size() != len) {
-        LOG_ERROR("DistributedObjectImpl:GetNum data.size() %d, offset %d, valLen %d",
-                  data.size(), offset, valLen);
+    if (data.size() < len) {
+        LOG_ERROR("DistributedObjectImpl:GetNum data.size() %{public}d, offset %{public}d, valLen %{public}d",
+            data.size(), offset, valLen);
         return ERR_DATA_LEN;
     }
-    for (int i = 0; i < valLen; i++) {
+    for (int32_t i = 0; i < valLen; i++) {
         value[i] = data[len - 1 - i];
     }
     return SUCCESS;
@@ -61,7 +61,7 @@ uint32_t DistributedObjectImpl::PutDouble(const std::string &key, double value)
     PutNum(&value, sizeof(type), sizeof(value), data);
     uint32_t status = flatObjectStore_->Put(sessionId_, key, data);
     if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectImpl::PutDouble setField err %d", status);
+        LOG_ERROR("DistributedObjectImpl::PutDouble setField err %{public}d", status);
     }
     return status;
 }
@@ -74,7 +74,7 @@ uint32_t DistributedObjectImpl::PutBoolean(const std::string &key, bool value)
     PutNum(&value, sizeof(type), sizeof(value), data);
     uint32_t status = flatObjectStore_->Put(sessionId_, key, data);
     if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectImpl::PutBoolean setField err %d", status);
+        LOG_ERROR("DistributedObjectImpl::PutBoolean setField err %{public}d", status);
     }
     return status;
 }
@@ -88,7 +88,7 @@ uint32_t DistributedObjectImpl::PutString(const std::string &key, const std::str
     data.insert(data.end(), dst.begin(), dst.end());
     uint32_t status = flatObjectStore_->Put(sessionId_, key, data);
     if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectImpl::PutString setField err %d", status);
+        LOG_ERROR("DistributedObjectImpl::PutString setField err %{public}d", status);
     }
     return status;
 }
@@ -99,32 +99,30 @@ uint32_t DistributedObjectImpl::GetDouble(const std::string &key, double &value)
     Bytes keyBytes = StringUtils::StrToBytes(key);
     uint32_t status = flatObjectStore_->Get(sessionId_, key, data);
     if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectImpl:GetDouble field not exist. %d %s", status, key.c_str());
+        LOG_ERROR("DistributedObjectImpl:GetDouble field not exist. %{public}d %{public}s", status, key.c_str());
         return status;
     }
     status = GetNum(data, sizeof(Type), &value, sizeof(value));
     if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectImpl::GetDouble getNum err. %d", status);
+        LOG_ERROR("DistributedObjectImpl::GetDouble getNum err. %{public}d", status);
     }
     return status;
 }
 
 uint32_t DistributedObjectImpl::GetBoolean(const std::string &key, bool &value)
 {
-    int32_t flag = 0;
     Bytes data;
     Bytes keyBytes = StringUtils::StrToBytes(key);
     uint32_t status = flatObjectStore_->Get(sessionId_, key, data);
     if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectImpl:GetBoolean field not exist. %d %s", status, key.c_str());
+        LOG_ERROR("DistributedObjectImpl:GetBoolean field not exist. %{public}d %{public}s", status, key.c_str());
         return status;
     }
-    status = GetNum(data, sizeof(Type), &flag, sizeof(flag));
+    status = GetNum(data, sizeof(Type), &value, sizeof(value));
     if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectImpl::GetBoolean getNum err. %d", status);
+        LOG_ERROR("DistributedObjectImpl::GetBoolean getNum err. %{public}d", status);
         return status;
     }
-    value = flag == 0 ? false : true;
     return SUCCESS;
 }
 
@@ -153,16 +151,19 @@ uint32_t DistributedObjectImpl::GetType(const std::string &key, Type &type)
     }
     status = GetNum(data, 0, &type, sizeof(type));
     if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectImpl::GetBoolean getNum err. %d", status);
+        LOG_ERROR("DistributedObjectImpl::GetBoolean getNum err. %{public}d", status);
         return status;
     }
     return SUCCESS;
 }
-std::string &DistributedObjectImpl::GetSessionId() {
+std::string &DistributedObjectImpl::GetSessionId()
+{
     return sessionId_;
 }
 
 DistributedObjectImpl::DistributedObjectImpl(const std::string &sessionId, FlatObjectStore *flatObjectStore)
-        : sessionId_(sessionId), flatObjectStore_(flatObjectStore) {}
+    : sessionId_(sessionId), flatObjectStore_(flatObjectStore)
+{
+}
 
 } // namespace OHOS::ObjectStore

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,9 +16,9 @@
 #ifndef DISTRIBUTEDDATAFWK_ARK_COMMUNICATION_PROVIDER_H
 #define DISTRIBUTEDDATAFWK_ARK_COMMUNICATION_PROVIDER_H
 
-#include "communication_provider_impl.h"
 #include "app_device_handler.h"
 #include "app_pipe_mgr.h"
+#include "communication_provider_impl.h"
 #include "nocopyable.h"
 
 namespace OHOS {
@@ -27,14 +27,15 @@ class ArkCommunicationProvider : public CommunicationProviderImpl {
 public:
     static CommunicationProvider &Init();
 
-    ~ArkCommunicationProvider() override {};
+    ~ArkCommunicationProvider() override{};
+
 private:
     DISALLOW_COPY_AND_MOVE(ArkCommunicationProvider);
     ArkCommunicationProvider();
-    AppPipeMgr appPipeMgrImpl_ {};
-    AppDeviceHandler appDeviceHandlerImpl_ {};
+    AppPipeMgr appPipeMgrImpl_{};
+    AppDeviceHandler appDeviceHandlerImpl_{};
     bool isInited = false;
 };
-}  // namespace ObjectStore
-}  // namespace OHOS
-#endif  // DISTRIBUTEDDATAFWK_ARK_COMMUNICATION_PROVIDER_H
+} // namespace ObjectStore
+} // namespace OHOS
+#endif // DISTRIBUTEDDATAFWK_ARK_COMMUNICATION_PROVIDER_H

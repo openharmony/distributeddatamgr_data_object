@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,13 +16,14 @@
 #ifndef DISTRIBUTEDDATAFWK_SRC_PIPE_HANDLER_H
 #define DISTRIBUTEDDATAFWK_SRC_PIPE_HANDLER_H
 
-#include <set>
-#include <mutex>
-#include <string>
 #include <map>
+#include <mutex>
+#include <set>
+#include <string>
+
+#include "app_data_change_listener.h"
 #include "app_types.h"
 #include "logger.h"
-#include "app_data_change_listener.h"
 #include "softbus_adapter.h"
 
 namespace OHOS {
@@ -37,8 +38,8 @@ public:
     // stop DataChangeListener to watch data change;
     Status StopWatchDataChange(const AppDataChangeListener *observer, const PipeInfo &pipeInfo);
     // Send data to other device, function will be called back after sent to notify send result.
-    Status SendData(const PipeInfo &pipeInfo, const DeviceId &deviceId, const uint8_t *ptr, int size,
-                    const MessageInfo &info);
+    Status SendData(
+        const PipeInfo &pipeInfo, const DeviceId &deviceId, const uint8_t *ptr, int size, const MessageInfo &info);
     bool IsSameStartedOnPeer(const struct PipeInfo &pipeInfo, const struct DeviceId &peer);
 
     void SetMessageTransFlag(const PipeInfo &pipeInfo, bool flag);
@@ -46,10 +47,11 @@ public:
     int CreateSessionServer(const std::string &sessionName) const;
 
     int RemoveSessionServer(const std::string &sessionName) const;
+
 private:
     PipeInfo pipeInfo_;
-    std::shared_ptr<SoftBusAdapter> softbusAdapter_ {};
+    std::shared_ptr<SoftBusAdapter> softbusAdapter_{};
 };
-}  // namespace ObjectStore
-}  // namespace OHOS
+} // namespace ObjectStore
+} // namespace OHOS
 #endif /* DISTRIBUTEDDATAFWK_SRC_PIPE_HANDLER_H */

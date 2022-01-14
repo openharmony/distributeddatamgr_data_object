@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,6 +14,7 @@
  */
 
 #include "communication_provider_impl.h"
+
 #include <logger.h>
 
 namespace OHOS {
@@ -35,14 +36,14 @@ Status CommunicationProviderImpl::Initialize()
     return Status::SUCCESS;
 }
 
-Status CommunicationProviderImpl::StartWatchDeviceChange(const AppDeviceStatusChangeListener *observer,
-    const PipeInfo &pipeInfo)
+Status CommunicationProviderImpl::StartWatchDeviceChange(
+    const AppDeviceStatusChangeListener *observer, const PipeInfo &pipeInfo)
 {
     return appDeviceHandler_.StartWatchDeviceChange(observer, pipeInfo);
 }
 
-Status CommunicationProviderImpl::StopWatchDeviceChange(const AppDeviceStatusChangeListener *observer,
-    const PipeInfo &pipeInfo)
+Status CommunicationProviderImpl::StopWatchDeviceChange(
+    const AppDeviceStatusChangeListener *observer, const PipeInfo &pipeInfo)
 {
     return appDeviceHandler_.StopWatchDeviceChange(observer, pipeInfo);
 }
@@ -67,8 +68,8 @@ Status CommunicationProviderImpl::StopWatchDataChange(const AppDataChangeListene
     return appPipeMgr_.StopWatchDataChange(observer, pipeInfo);
 }
 
-Status CommunicationProviderImpl::SendData(const PipeInfo &pipeInfo, const DeviceId &deviceId, const uint8_t *ptr,
-                                           int size, const MessageInfo &info)
+Status CommunicationProviderImpl::SendData(
+    const PipeInfo &pipeInfo, const DeviceId &deviceId, const uint8_t *ptr, int size, const MessageInfo &info)
 {
     return appPipeMgr_.SendData(pipeInfo, deviceId, ptr, size, info);
 }
@@ -121,5 +122,5 @@ void CommunicationProviderImpl::SetMessageTransFlag(const PipeInfo &pipeInfo, bo
 {
     appPipeMgr_.SetMessageTransFlag(pipeInfo, flag);
 }
-}  // namespace ObjectStore
-}  // namespace OHOS
+} // namespace ObjectStore
+} // namespace OHOS
