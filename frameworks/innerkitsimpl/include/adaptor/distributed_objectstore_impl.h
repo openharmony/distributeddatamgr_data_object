@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -26,7 +26,6 @@ namespace OHOS::ObjectStore {
 class WatcherProxy;
 class DistributedObjectStoreImpl : public DistributedObjectStore {
 public:
-    DistributedObjectStoreImpl() = default;// todo delete
     DistributedObjectStoreImpl(FlatObjectStore *flatObjectStore);
     ~DistributedObjectStoreImpl() override;
     uint32_t Get(const std::string &sessionId, DistributedObject *object) override;
@@ -46,7 +45,7 @@ private:
 
 class WatcherProxy : public FlatObjectWatcher {
 public:
-    WatcherProxy(const std::shared_ptr<ObjectWatcher> objectWatcher);
+    WatcherProxy(const std::shared_ptr<ObjectWatcher> objectWatcher, const std::string &sessionId);
     void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override;
     void OnDeleted(const std::string &sessionid) override;
 

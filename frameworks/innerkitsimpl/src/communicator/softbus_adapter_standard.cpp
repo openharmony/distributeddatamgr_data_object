@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,16 +13,17 @@
  * limitations under the License.
  */
 
-#include "softbus_adapter.h"
+#include <logger.h>
 
 #include <mutex>
 #include <thread>
+
 #include "kv_store_delegate_manager.h"
-#include <logger.h>
 #include "process_communicator_impl.h"
-#include "session.h"
-#include "softbus_bus_center.h"
 #include "securec.h"
+#include "session.h"
+#include "softbus_adapter.h"
+#include "softbus_bus_center.h"
 
 namespace OHOS {
 namespace ObjectStore {
@@ -41,12 +42,17 @@ using namespace std;
 
 class AppDeviceListenerWrap {
 public:
-    explicit AppDeviceListenerWrap() {}
-    ~AppDeviceListenerWrap() {}
+    explicit AppDeviceListenerWrap()
+    {
+    }
+    ~AppDeviceListenerWrap()
+    {
+    }
     static void SetDeviceHandler(SoftBusAdapter *handler);
     static void OnDeviceOnline(NodeBasicInfo *info);
     static void OnDeviceOffline(NodeBasicInfo *info);
     static void OnDeviceInfoChanged(NodeBasicInfoType type, NodeBasicInfo *info);
+
 private:
     static SoftBusAdapter *softBusAdapter_;
     static void NotifyAll(NodeBasicInfo *info, DeviceChangeType type);
@@ -60,10 +66,11 @@ public:
     static void OnSessionClosed(int sessionId);
     static void OnMessageReceived(int sessionId, const void *data, unsigned int dataLen);
     static void OnBytesReceived(int sessionId, const void *data, unsigned int dataLen);
+
 public:
     // notifiy all listeners when received message
-    static void NotifyDataListeners(const uint8_t *ptr, const int size, const std::string &deviceId,
-                             const PipeInfo &pipeInfo);
+    static void NotifyDataListeners(
+        const uint8_t *ptr, const int size, const std::string &deviceId, const PipeInfo &pipeInfo);
     static SoftBusAdapter *softBusAdapter_;
 };
 SoftBusAdapter *AppDataListenerWrap::softBusAdapter_;
@@ -72,8 +79,8 @@ std::shared_ptr<SoftBusAdapter> SoftBusAdapter::instance_;
 void AppDeviceListenerWrap::OnDeviceInfoChanged(NodeBasicInfoType type, NodeBasicInfo *info)
 {
     std::string uuid = softBusAdapter_->GetUuidByNodeId(std::string(info->networkId));
-    LOG_INFO("[InfoChange] type:%{public}d, id:%{public}s, name:%{public}s",
-        type, SoftBusAdapter::ToBeAnonymous(uuid).c_str(), info->deviceName);
+    LOG_INFO("[InfoChange] type:%{public}d, id:%{public}s, name:%{public}s", type,
+        SoftBusAdapter::ToBeAnonymous(uuid).c_str(), info->deviceName);
 }
 
 void AppDeviceListenerWrap::OnDeviceOffline(NodeBasicInfo *info)
@@ -87,8 +94,8 @@ void AppDeviceListenerWrap::OnDeviceOffline(NodeBasicInfo *info)
 void AppDeviceListenerWrap::OnDeviceOnline(NodeBasicInfo *info)
 {
     std::string uuid = softBusAdapter_->GetUuidByNodeId(std::string(info->networkId));
-    LOG_INFO("[Online] id:%{public}s, name:%{public}s, typeId:%{public}d",
-        SoftBusAdapter::ToBeAnonymous(uuid).c_str(), info->deviceName, info->deviceTypeId);
+    LOG_INFO("[Online] id:%{public}s, name:%{public}s, typeId:%{public}d", SoftBusAdapter::ToBeAnonymous(uuid).c_str(),
+        info->deviceName, info->deviceTypeId);
     NotifyAll(info, DeviceChangeType::DEVICE_ONLINE);
 }
 
@@ -100,7 +107,7 @@ void AppDeviceListenerWrap::SetDeviceHandler(SoftBusAdapter *handler)
 
 void AppDeviceListenerWrap::NotifyAll(NodeBasicInfo *info, DeviceChangeType type)
 {
-    DeviceInfo di = {std::string(info->networkId), std::string(info->deviceName), std::to_string(info->deviceTypeId)};
+    DeviceInfo di = { std::string(info->networkId), std::string(info->deviceName), std::to_string(info->deviceTypeId) };
     softBusAdapter_->NotifyAll(di, type);
 }
 
@@ -156,8 +163,8 @@ void SoftBusAdapter::Init()
     th.detach();
 }
 
-Status SoftBusAdapter::StartWatchDeviceChange(const AppDeviceStatusChangeListener *observer,
-    __attribute__((unused)) const PipeInfo &pipeInfo)
+Status SoftBusAdapter::StartWatchDeviceChange(
+    const AppDeviceStatusChangeListener *observer, __attribute__((unused)) const PipeInfo &pipeInfo)
 {
     LOG_INFO("begin");
     if (observer == nullptr) {
@@ -174,8 +181,8 @@ Status SoftBusAdapter::StartWatchDeviceChange(const AppDeviceStatusChangeListene
     return Status::SUCCESS;
 }
 
-Status SoftBusAdapter::StopWatchDeviceChange(const AppDeviceStatusChangeListener *observer,
-    __attribute__((unused)) const PipeInfo &pipeInfo)
+Status SoftBusAdapter::StopWatchDeviceChange(
+    const AppDeviceStatusChangeListener *observer, __attribute__((unused)) const PipeInfo &pipeInfo)
 {
     LOG_INFO("begin");
     if (observer == nullptr) {
@@ -210,7 +217,7 @@ void SoftBusAdapter::NotifyAll(const DeviceInfo &deviceInfo, const DeviceChangeT
                 continue;
             }
             if (device->GetChangeLevelType() == ChangeLevelType::HIGH) {
-                DeviceInfo di = {uuid, deviceInfo.deviceName, deviceInfo.deviceType};
+                DeviceInfo di = { uuid, deviceInfo.deviceName, deviceInfo.deviceType };
                 device->OnDeviceChanged(di, type);
                 break;
             }
@@ -221,7 +228,7 @@ void SoftBusAdapter::NotifyAll(const DeviceInfo &deviceInfo, const DeviceChangeT
                 continue;
             }
             if (device->GetChangeLevelType() == ChangeLevelType::LOW) {
-                DeviceInfo di = {uuid, deviceInfo.deviceName, deviceInfo.deviceType};
+                DeviceInfo di = { uuid, deviceInfo.deviceName, deviceInfo.deviceType };
                 device->OnDeviceChanged(di, DeviceChangeType::DEVICE_OFFLINE);
                 device->OnDeviceChanged(di, type);
             }
@@ -232,7 +239,7 @@ void SoftBusAdapter::NotifyAll(const DeviceInfo &deviceInfo, const DeviceChangeT
                 continue;
             }
             if (device->GetChangeLevelType() == ChangeLevelType::MIN) {
-                DeviceInfo di = {uuid, deviceInfo.deviceName, deviceInfo.deviceType};
+                DeviceInfo di = { uuid, deviceInfo.deviceName, deviceInfo.deviceType };
                 device->OnDeviceChanged(di, type);
             }
         }
@@ -256,7 +263,7 @@ std::vector<DeviceInfo> SoftBusAdapter::GetDeviceList() const
 
     for (int i = 0; i < infoNum; i++) {
         std::string uuid = GetUuidByNodeId(std::string(info[i].networkId));
-        DeviceInfo deviceInfo = {uuid, std::string(info[i].deviceName), std::to_string(info[i].deviceTypeId)};
+        DeviceInfo deviceInfo = { uuid, std::string(info[i].deviceName), std::to_string(info[i].deviceTypeId) };
         dis.push_back(deviceInfo);
     }
     if (info != NULL) {
@@ -278,17 +285,17 @@ DeviceInfo SoftBusAdapter::GetLocalDevice()
         return DeviceInfo();
     }
     std::string uuid = GetUuidByNodeId(std::string(info.networkId));
-    LOG_DEBUG("[LocalDevice] id:%{private}s, name:%{private}s, type:%{private}d",
-        ToBeAnonymous(uuid).c_str(), info.deviceName, info.deviceTypeId);
-    localInfo_ = {uuid, std::string(info.deviceName), std::to_string(info.deviceTypeId)};
+    LOG_DEBUG("[LocalDevice] id:%{private}s, name:%{private}s, type:%{private}d", ToBeAnonymous(uuid).c_str(),
+        info.deviceName, info.deviceTypeId);
+    localInfo_ = { uuid, std::string(info.deviceName), std::to_string(info.deviceTypeId) };
     return localInfo_;
 }
 
 std::string SoftBusAdapter::GetUuidByNodeId(const std::string &nodeId) const
 {
-    char uuid[ID_BUF_LEN] = {0};
-    int32_t ret = GetNodeKeyInfo("ohos.objectstore", nodeId.c_str(),
-        NodeDeivceInfoKey::NODE_KEY_UUID, reinterpret_cast<uint8_t *>(uuid), ID_BUF_LEN);
+    char uuid[ID_BUF_LEN] = { 0 };
+    int32_t ret = GetNodeKeyInfo("ohos.objectstore", nodeId.c_str(), NodeDeivceInfoKey::NODE_KEY_UUID,
+        reinterpret_cast<uint8_t *>(uuid), ID_BUF_LEN);
     if (ret != SOFTBUS_OK) {
         LOG_WARN("GetNodeKeyInfo error, nodeId:%{public}s", ToBeAnonymous(nodeId).c_str());
         return "";
@@ -298,9 +305,9 @@ std::string SoftBusAdapter::GetUuidByNodeId(const std::string &nodeId) const
 
 std::string SoftBusAdapter::GetUdidByNodeId(const std::string &nodeId) const
 {
-    char udid[ID_BUF_LEN] = {0};
-    int32_t ret = GetNodeKeyInfo("ohos.objectstore", nodeId.c_str(),
-        NodeDeivceInfoKey::NODE_KEY_UDID, reinterpret_cast<uint8_t *>(udid), ID_BUF_LEN);
+    char udid[ID_BUF_LEN] = { 0 };
+    int32_t ret = GetNodeKeyInfo("ohos.objectstore", nodeId.c_str(), NodeDeivceInfoKey::NODE_KEY_UDID,
+        reinterpret_cast<uint8_t *>(udid), ID_BUF_LEN);
     if (ret != SOFTBUS_OK) {
         LOG_WARN("GetNodeKeyInfo error, nodeId:%{public}s", ToBeAnonymous(nodeId).c_str());
         return "";
@@ -319,8 +326,8 @@ DeviceInfo SoftBusAdapter::GetLocalBasicInfo() const
     }
     LOG_DEBUG("[LocalBasicInfo] networkId:%{private}s, name:%{private}s, type:%{private}d",
         ToBeAnonymous(std::string(info.networkId)).c_str(), info.deviceName, info.deviceTypeId);
-    DeviceInfo localInfo = {std::string(info.networkId), std::string(info.deviceName),
-        std::to_string(info.deviceTypeId)};
+    DeviceInfo localInfo = { std::string(info.networkId), std::string(info.deviceName),
+        std::to_string(info.deviceTypeId) };
     return localInfo;
 }
 
@@ -340,8 +347,8 @@ std::vector<DeviceInfo> SoftBusAdapter::GetRemoteNodesBasicInfo() const
     LOG_DEBUG("GetAllNodeDeviceInfo success infoNum=%{public}d", infoNum);
 
     for (int i = 0; i < infoNum; i++) {
-        dis.push_back({std::string(info[i].networkId), std::string(info[i].deviceName),
-            std::to_string(info[i].deviceTypeId)});
+        dis.push_back(
+            { std::string(info[i].networkId), std::string(info[i].deviceName), std::to_string(info[i].deviceTypeId) });
     }
     if (info != NULL) {
         FreeNodeInfo(info);
@@ -363,7 +370,7 @@ void SoftBusAdapter::UpdateRelationship(const std::string &networkid, const Devi
             break;
         }
         case DeviceChangeType::DEVICE_ONLINE: {
-            std::pair<std::string, std::tuple<std::string, std::string>> value = {networkid, {uuid, udid}};
+            std::pair<std::string, std::tuple<std::string, std::string>> value = { networkid, { uuid, udid } };
             auto res = this->networkId2UuidUdid_.insert(std::move(value));
             if (!res.second) {
                 LOG_WARN("insert failed.");
@@ -377,7 +384,7 @@ void SoftBusAdapter::UpdateRelationship(const std::string &networkid, const Devi
     }
 }
 
-std::string SoftBusAdapter::ToUUID(const std::string& id) const
+std::string SoftBusAdapter::ToUUID(const std::string &id) const
 {
     lock_guard<mutex> lock(networkMutex_);
     auto res = networkId2UuidUdid_.find(id);
@@ -398,7 +405,7 @@ std::string SoftBusAdapter::ToUUID(const std::string& id) const
     return "";
 }
 
-std::string SoftBusAdapter::ToNodeID(const std::string& id, const std::string &nodeId) const
+std::string SoftBusAdapter::ToNodeID(const std::string &id, const std::string &nodeId) const
 {
     {
         lock_guard<mutex> lock(networkMutex_);
@@ -427,7 +434,7 @@ std::string SoftBusAdapter::ToNodeID(const std::string& id, const std::string &n
             }
             auto uuid = GetUuidByNodeId(std::string(info[i].networkId));
             auto udid = GetUdidByNodeId(std::string(info[i].networkId));
-            networkId2UuidUdid_.insert({info[i].networkId, {uuid, udid}});
+            networkId2UuidUdid_.insert({ info[i].networkId, { uuid, udid } });
             if (uuid == nodeId || udid == nodeId) {
                 networkId = info[i].networkId;
             }
@@ -455,7 +462,7 @@ std::string SoftBusAdapter::ToBeAnonymous(const std::string &name)
 std::shared_ptr<SoftBusAdapter> SoftBusAdapter::GetInstance()
 {
     static std::once_flag onceFlag;
-    std::call_once(onceFlag, [&] {instance_ = std::make_shared<SoftBusAdapter>(); });
+    std::call_once(onceFlag, [&] { instance_ = std::make_shared<SoftBusAdapter>(); });
     return instance_;
 }
 
@@ -472,12 +479,12 @@ Status SoftBusAdapter::StartWatchDataChange(const AppDataChangeListener *observe
         return Status::ERROR;
     }
     LOG_DEBUG("current appid %{public}s", pipeInfo.pipeId.c_str());
-    dataChangeListeners_.insert({pipeInfo.pipeId, observer});
+    dataChangeListeners_.insert({ pipeInfo.pipeId, observer });
     return Status::SUCCESS;
 }
 
-Status SoftBusAdapter::StopWatchDataChange(__attribute__((unused))const AppDataChangeListener *observer,
-                                           const PipeInfo &pipeInfo)
+Status SoftBusAdapter::StopWatchDataChange(
+    __attribute__((unused)) const AppDataChangeListener *observer, const PipeInfo &pipeInfo)
 {
     LOG_DEBUG("begin");
     lock_guard<mutex> lock(dataChangeMutex_);
@@ -488,18 +495,18 @@ Status SoftBusAdapter::StopWatchDataChange(__attribute__((unused))const AppDataC
     return Status::ERROR;
 }
 
-Status SoftBusAdapter::SendData(const PipeInfo &pipeInfo, const DeviceId &deviceId, const uint8_t *ptr, int size,
-                                const MessageInfo &info)
+Status SoftBusAdapter::SendData(
+    const PipeInfo &pipeInfo, const DeviceId &deviceId, const uint8_t *ptr, int size, const MessageInfo &info)
 {
     SessionAttribute attr;
     attr.dataType = TYPE_BYTES;
-    LOG_DEBUG("[SendData] to %{public}s ,session:%{public}s, size:%{public}d", ToBeAnonymous(deviceId.deviceId).c_str(),
-        pipeInfo.pipeId.c_str(), size);
-    int sessionId = OpenSession(pipeInfo.pipeId.c_str(), pipeInfo.pipeId.c_str(),
-        ToNodeID("", deviceId.deviceId).c_str(), "GROUP_ID", &attr);
+    LOG_DEBUG("[SendData] to %{public}s ,session:%{public}s, size:%{public}d",
+        ToBeAnonymous(deviceId.deviceId).c_str(), pipeInfo.pipeId.c_str(), size);
+    int sessionId = OpenSession(
+        pipeInfo.pipeId.c_str(), pipeInfo.pipeId.c_str(), ToNodeID("", deviceId.deviceId).c_str(), "GROUP_ID", &attr);
     if (sessionId < 0) {
-        LOG_WARN("OpenSession %{public}s, type:%{public}d failed, sessionId:%{public}d",
-            pipeInfo.pipeId.c_str(), info.msgType, sessionId);
+        LOG_WARN("OpenSession %{public}s, type:%{public}d failed, sessionId:%{public}d", pipeInfo.pipeId.c_str(),
+            info.msgType, sessionId);
         return Status::CREATE_SESSION_ERROR;
     }
     SetOpenSessionId(sessionId);
@@ -513,9 +520,9 @@ Status SoftBusAdapter::SendData(const PipeInfo &pipeInfo, const DeviceId &device
         LOG_ERROR("OpenSession callback result error");
         return Status::CREATE_SESSION_ERROR;
     }
-    LOG_DEBUG("[SendBytes] start,sessionId is %{public}d, size is %{public}d, session type is %{public}d.",
-        sessionId, size, attr.dataType);
-    int32_t ret = SendBytes(sessionId, (void*)ptr, size);
+    LOG_DEBUG("[SendBytes] start,sessionId is %{public}d, size is %{public}d, session type is %{public}d.", sessionId,
+        size, attr.dataType);
+    int32_t ret = SendBytes(sessionId, (void *)ptr, size);
     if (ret != SOFTBUS_OK) {
         LOG_ERROR("[SendBytes] to %{public}d failed, ret:%{public}d.", sessionId, ret);
         return Status::ERROR;
@@ -523,11 +530,11 @@ Status SoftBusAdapter::SendData(const PipeInfo &pipeInfo, const DeviceId &device
     return Status::SUCCESS;
 }
 
-bool SoftBusAdapter::IsSameStartedOnPeer(const struct PipeInfo &pipeInfo,
-                                         __attribute__((unused))const struct DeviceId &peer)
+bool SoftBusAdapter::IsSameStartedOnPeer(
+    const struct PipeInfo &pipeInfo, __attribute__((unused)) const struct DeviceId &peer)
 {
-    LOG_INFO("pipeInfo:%{public}s peer.deviceId:%{public}s", pipeInfo.pipeId.c_str(),
-        ToBeAnonymous(peer.deviceId).c_str());
+    LOG_INFO(
+        "pipeInfo:%{public}s peer.deviceId:%{public}s", pipeInfo.pipeId.c_str(), ToBeAnonymous(peer.deviceId).c_str());
     {
         lock_guard<mutex> lock(busSessionMutex_);
         if (busSessionMap_.find(pipeInfo.pipeId + peer.deviceId) != busSessionMap_.end()) {
@@ -537,21 +544,21 @@ bool SoftBusAdapter::IsSameStartedOnPeer(const struct PipeInfo &pipeInfo,
     }
     SessionAttribute attr;
     attr.dataType = TYPE_BYTES;
-    int sessionId = OpenSession(pipeInfo.pipeId.c_str(), pipeInfo.pipeId.c_str(), ToNodeID("", peer.deviceId).c_str(),
-        "GROUP_ID", &attr);
+    int sessionId = OpenSession(
+        pipeInfo.pipeId.c_str(), pipeInfo.pipeId.c_str(), ToNodeID("", peer.deviceId).c_str(), "GROUP_ID", &attr);
     LOG_INFO("[IsSameStartedOnPeer] sessionId=%{public}d", sessionId);
     if (sessionId == INVALID_SESSION_ID) {
         LOG_ERROR("OpenSession return null, pipeInfo:%{public}s. Return false.", pipeInfo.pipeId.c_str());
         return false;
     }
-    LOG_INFO("session started, pipeInfo:%{public}s. sessionId:%{public}d Return true. ",
-        pipeInfo.pipeId.c_str(), sessionId);
+    LOG_INFO("session started, pipeInfo:%{public}s. sessionId:%{public}d Return true. ", pipeInfo.pipeId.c_str(),
+        sessionId);
     return true;
 }
 
 void SoftBusAdapter::SetMessageTransFlag(const PipeInfo &pipeInfo, bool flag)
 {
-    LOG_INFO("pipeInfo: %s flag: %d", pipeInfo.pipeId.c_str(), static_cast<bool>(flag));
+    LOG_INFO("pipeInfo: %{public}s flag: %{public}d", pipeInfo.pipeId.c_str(), static_cast<bool>(flag));
     flag_ = flag;
 }
 
@@ -570,7 +577,7 @@ int SoftBusAdapter::RemoveSessionServerAdapter(const std::string &sessionName) c
 void SoftBusAdapter::InsertSession(const std::string &sessionName)
 {
     lock_guard<mutex> lock(busSessionMutex_);
-    busSessionMap_.insert({sessionName, true});
+    busSessionMap_.insert({ sessionName, true });
 }
 
 void SoftBusAdapter::DeleteSession(const std::string &sessionName)
@@ -579,16 +586,16 @@ void SoftBusAdapter::DeleteSession(const std::string &sessionName)
     busSessionMap_.erase(sessionName);
 }
 
-void SoftBusAdapter::NotifyDataListeners(const uint8_t *ptr, const int size, const std::string &deviceId,
-    const PipeInfo &pipeInfo)
+void SoftBusAdapter::NotifyDataListeners(
+    const uint8_t *ptr, const int size, const std::string &deviceId, const PipeInfo &pipeInfo)
 {
     LOG_DEBUG("begin");
     lock_guard<mutex> lock(dataChangeMutex_);
     auto it = dataChangeListeners_.find(pipeInfo.pipeId);
     if (it != dataChangeListeners_.end()) {
-        LOG_DEBUG("ready to notify, pipeName:%{public}s, deviceId:%{public}s.",
-            pipeInfo.pipeId.c_str(), ToBeAnonymous(deviceId).c_str());
-        DeviceInfo deviceInfo = {deviceId, "", ""};
+        LOG_DEBUG("ready to notify, pipeName:%{public}s, deviceId:%{public}s.", pipeInfo.pipeId.c_str(),
+            ToBeAnonymous(deviceId).c_str());
+        DeviceInfo deviceInfo = { deviceId, "", "" };
         it->second->OnMessage(deviceInfo, ptr, size, pipeInfo);
         return;
     }
@@ -725,9 +732,9 @@ void AppDataListenerWrap::OnMessageReceived(int sessionId, const void *data, uns
         return;
     }
     std::string peerUuid = softBusAdapter_->GetUuidByNodeId(std::string(peerDevId));
-    LOG_DEBUG("[MessageReceived] sessionId:%{public}d, peerSessionName:%{public}s, peerDevId:%{public}s",
-        sessionId, peerSessionName, SoftBusAdapter::ToBeAnonymous(peerUuid).c_str());
-    NotifyDataListeners(reinterpret_cast<const uint8_t *>(data), dataLen, peerUuid, {std::string(peerSessionName)});
+    LOG_DEBUG("[MessageReceived] sessionId:%{public}d, peerSessionName:%{public}s, peerDevId:%{public}s", sessionId,
+        peerSessionName, SoftBusAdapter::ToBeAnonymous(peerUuid).c_str());
+    NotifyDataListeners(reinterpret_cast<const uint8_t *>(data), dataLen, peerUuid, { std::string(peerSessionName) });
 }
 
 void AppDataListenerWrap::OnBytesReceived(int sessionId, const void *data, unsigned int dataLen)
@@ -749,15 +756,15 @@ void AppDataListenerWrap::OnBytesReceived(int sessionId, const void *data, unsig
         return;
     }
     std::string peerUuid = softBusAdapter_->GetUuidByNodeId(std::string(peerDevId));
-    LOG_DEBUG("[BytesReceived] sessionId:%{public}d, peerSessionName:%{public}s, peerDevId:%{public}s",
-        sessionId, peerSessionName, SoftBusAdapter::ToBeAnonymous(peerUuid).c_str());
-    NotifyDataListeners(reinterpret_cast<const uint8_t *>(data), dataLen, peerUuid, {std::string(peerSessionName)});
+    LOG_DEBUG("[BytesReceived] sessionId:%{public}d, peerSessionName:%{public}s, peerDevId:%{public}s", sessionId,
+        peerSessionName, SoftBusAdapter::ToBeAnonymous(peerUuid).c_str());
+    NotifyDataListeners(reinterpret_cast<const uint8_t *>(data), dataLen, peerUuid, { std::string(peerSessionName) });
 }
 
-void AppDataListenerWrap::NotifyDataListeners(const uint8_t *ptr, const int size, const std::string &deviceId,
-    const PipeInfo &pipeInfo)
+void AppDataListenerWrap::NotifyDataListeners(
+    const uint8_t *ptr, const int size, const std::string &deviceId, const PipeInfo &pipeInfo)
 {
     return softBusAdapter_->NotifyDataListeners(ptr, size, deviceId, pipeInfo);
 }
-}  // namespace ObjectStore
-}  // namespace OHOS
+} // namespace ObjectStore
+} // namespace OHOS

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,10 +16,11 @@
 #ifndef DISTRIBUTEDDATA_SRC_COMMUNICATION_PROVIDER_IMPL_H
 #define DISTRIBUTEDDATA_SRC_COMMUNICATION_PROVIDER_IMPL_H
 
-#include "communication_provider.h"
 #include <set>
+
 #include "app_device_handler.h"
 #include "app_pipe_mgr.h"
+#include "communication_provider.h"
 
 namespace OHOS {
 namespace ObjectStore {
@@ -64,14 +65,16 @@ public:
     std::vector<DeviceInfo> GetRemoteNodesBasicInfo() const override;
     std::string ToNodeId(const std::string &id) const override;
     void SetMessageTransFlag(const struct PipeInfo &pipeInfo, bool flag) override;
+
 protected:
     virtual Status Initialize();
 
     static std::mutex mutex_;
+
 private:
     AppPipeMgr &appPipeMgr_;
     AppDeviceHandler &appDeviceHandler_;
 };
-}  // namespace ObjectStore
-}  // namespace OHOS
+} // namespace ObjectStore
+} // namespace OHOS
 #endif /* DISTRIBUTEDDATA_SRC_COMMUNICATION_PROVIDER_IMPL_H */

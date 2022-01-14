@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,33 +16,22 @@
 #ifndef JS_DISTRIBUTEDDATAOBJECTSTORE_H
 #define JS_DISTRIBUTEDDATAOBJECTSTORE_H
 
+#include "distributed_objectstore.h"
+#include "js_native_api.h"
+#include "node_api.h"
 namespace OHOS::ObjectStore {
 constexpr size_t SESSION_ID_SIZE = 32;
-struct CreateObjectAsyncContext {
-    napi_env env = nullptr;
-    napi_async_work work = nullptr;
-    napi_deferred deferred = nullptr;
-    napi_ref callbackRef = nullptr;
-    char sessionId[SESSION_ID_SIZE] = { 0 };
-    size_t sessionIdLen = 0;
-    int32_t status = 0;
-    DistributedObjectStore *objectStore;
-    DistributedObject *object;
-
-};
-
 class JSDistributedObjectStore {
 public:
-    static napi_value JSCreateObject(napi_env env, napi_callback_info info);
     static napi_value JSCreateObjectSync(napi_env env, napi_callback_info info);
-    static napi_value JSDestroyObject(napi_env env, napi_callback_info info);
     static napi_value JSDestroyObjectSync(napi_env env, napi_callback_info info);
     static napi_value JSSync(napi_env env, napi_callback_info info);
     static napi_value JSOn(napi_env env, napi_callback_info info);
     static napi_value JSOff(napi_env env, napi_callback_info info);
-private:
-    static napi_value NewDistributedObject(napi_env env, DistributedObjectStore *objectStore, DistributedObject *object);
-};
-}
 
+private:
+    static napi_value NewDistributedObject(
+        napi_env env, DistributedObjectStore *objectStore, DistributedObject *object);
+};
+} // namespace OHOS::ObjectStore
 #endif //JS_DISTRIBUTEDDATAOBJECTSTORE_H

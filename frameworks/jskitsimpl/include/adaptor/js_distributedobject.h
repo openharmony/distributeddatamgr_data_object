@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,8 +16,8 @@
 #ifndef JS_DISTRIBUTEDOBJECT_H
 #define JS_DISTRIBUTEDOBJECT_H
 
-
 #include <js_native_api.h>
+
 #include "distributed_objectstore.h"
 #include "js_object_wrapper.h"
 namespace OHOS::ObjectStore {
@@ -32,12 +32,11 @@ public:
     static napi_value JSGet(napi_env env, napi_callback_info info);
     static napi_value JSPut(napi_env env, napi_callback_info info);
     static napi_value GetCons(napi_env env);
+
 private:
     static void DoPut(napi_env env, JSObjectWrapper *wrapper, char *key, napi_valuetype type, napi_value value);
     static void DoGet(napi_env env, JSObjectWrapper *wrapper, char *key, napi_value &value);
 };
-}
-
-
+} // namespace OHOS::ObjectStore
 
 #endif //HANLU_JS_DISTRIBUTEDOBJECT_H

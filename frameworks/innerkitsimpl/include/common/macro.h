@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,10 +17,10 @@
 #define MACRO_H
 
 namespace OHOS::ObjectStore {
-#define DISABLE_COPY_AND_MOVE(ClassName) \
-    ClassName(const ClassName &) = delete; \
-    ClassName(ClassName &&) = delete; \
-    ClassName& operator=(const ClassName &) = delete; \
-    ClassName& operator=(ClassName &&) = delete
-}
+#define DISABLE_COPY_AND_MOVE(ClassName)              \
+    ClassName(const ClassName &) = delete;            \
+    ClassName(ClassName &&) = delete;                 \
+    ClassName &operator=(const ClassName &) = delete; \
+    ClassName &operator=(ClassName &&) = delete
+} // namespace OHOS::ObjectStore
 #endif // MACRO_H

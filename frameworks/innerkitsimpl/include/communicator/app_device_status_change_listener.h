@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,14 +27,14 @@ enum class ChangeLevelType {
 };
 class AppDeviceStatusChangeListener {
 public:
-    KVSTORE_API virtual ~AppDeviceStatusChangeListener() {};
+    KVSTORE_API virtual ~AppDeviceStatusChangeListener(){};
     KVSTORE_API virtual void OnDeviceChanged(const DeviceInfo &info, const DeviceChangeType &type) const = 0;
     KVSTORE_API virtual ChangeLevelType GetChangeLevelType() const
     {
         return ChangeLevelType::LOW;
     }
 };
-}  // namespace ObjectStore
-}  // namespace OHOS
+} // namespace ObjectStore
+} // namespace OHOS
 
-#endif  // APP_DEVICE_STATUS_CHANGE_LISTENER_H
+#endif // APP_DEVICE_STATUS_CHANGE_LISTENER_H

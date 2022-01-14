@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,13 +23,13 @@ public:
     ObjectUtils() = delete;
     ~ObjectUtils() = delete;
 
-    static std::string GenObjectIdPrefix(const std::string &host, const std::string &user, const std::string &bundle,
-                                         const std::string &store);
+    static std::string GenObjectIdPrefix(
+        const std::string &host, const std::string &user, const std::string &bundle, const std::string &store);
 
     static std::string GetObjectHost(const std::string &objectId);
 
     static std::string GetObjectStoreName(const std::string &objectId);
 };
-}  // namespace OHOS::ObjectStore
+} // namespace OHOS::ObjectStore
 
 #endif

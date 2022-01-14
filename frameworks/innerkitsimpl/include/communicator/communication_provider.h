@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,6 +18,7 @@
 
 #include <memory>
 #include <vector>
+
 #include "app_data_change_listener.h"
 #include "app_device_status_change_listener.h"
 #include "app_types.h"
@@ -27,10 +28,10 @@ namespace ObjectStore {
 class CommunicationProvider {
 public:
     // constructor
-    KVSTORE_API CommunicationProvider() {};
+    KVSTORE_API CommunicationProvider(){};
 
     // destructor
-    KVSTORE_API virtual ~CommunicationProvider() {};
+    KVSTORE_API virtual ~CommunicationProvider(){};
 
     // add DeviceChangeListener to watch device change
     KVSTORE_API
@@ -50,7 +51,7 @@ public:
     // Send data to other device, function will be called back after sent to notify send result
     KVSTORE_API
     virtual Status SendData(const PipeInfo &pipeInfo, const DeviceId &deviceId, const uint8_t *ptr, int size,
-                            const MessageInfo &info = {MessageType::DEFAULT}) = 0;
+        const MessageInfo &info = { MessageType::DEFAULT }) = 0;
 
     // Get online deviceList
     KVSTORE_API virtual std::vector<DeviceInfo> GetDeviceList() const = 0;
@@ -80,6 +81,6 @@ public:
 
     KVSTORE_API virtual void SetMessageTransFlag(const PipeInfo &pipeInfo, bool flag) = 0;
 };
-}  // namespace ObjectStore
-}  // namespace OHOS
+} // namespace ObjectStore
+} // namespace OHOS
 #endif // DISTRIBUTEDDATA_COMMUNICATION_PROVIDER_H
