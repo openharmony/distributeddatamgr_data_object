@@ -59,6 +59,7 @@ ohos_shared_library("distributeddataobject") {
     "../../frameworks/innerkitsimpl/src/adaptor/distributed_object_store_impl.cpp",
     "../../frameworks/innerkitsimpl/src/adaptor/flat_object_storage_engine.cpp",
     "../../frameworks/innerkitsimpl/src/adaptor/flat_object_store.cpp",
+    "../../frameworks/innerkitsimpl/src/common/uv_queue.cpp",
     "../../frameworks/innerkitsimpl/src/communicator/app_device_handler.cpp",
     "../../frameworks/innerkitsimpl/src/communicator/app_pipe_handler.cpp",
     "../../frameworks/innerkitsimpl/src/communicator/app_pipe_mgr.cpp",
@@ -67,7 +68,6 @@ ohos_shared_library("distributeddataobject") {
     "../../frameworks/innerkitsimpl/src/communicator/communication_provider_impl.cpp",
     "../../frameworks/innerkitsimpl/src/communicator/process_communicator_impl.cpp",
     "../../frameworks/innerkitsimpl/src/communicator/softbus_adapter_standard.cpp",
-    "../../frameworks/innerkitsimpl/src/common/uv_queue.cpp",
     "../../frameworks/jskitsimpl/src/adaptor/js_distributedobject.cpp",
     "../../frameworks/jskitsimpl/src/adaptor/js_distributedobjectstore.cpp",
     "../../frameworks/jskitsimpl/src/adaptor/js_module_init.cpp",
@@ -82,9 +82,9 @@ ohos_shared_library("distributeddataobject") {
     ":distributed_data_object_js",
     "//foundation/ace/napi:ace_napi",
     "//foundation/distributeddatamgr/distributeddatamgr/services/distributeddataservice/libs/distributeddb:distributeddb",
+    "//third_party/libuv:uv_static",
     "//utils/native/base:utils",
     "//utils/native/base:utilsecurec",
-    "//third_party/libuv:uv_static",
   ]
   external_deps = [
     "dsoftbus_standard:softbus_client",
