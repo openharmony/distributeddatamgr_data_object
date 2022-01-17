@@ -40,7 +40,6 @@ public:
     uint32_t RegisterObserver(const std::string &key, std::shared_ptr<TableWatcher> watcher) override;
     uint32_t UnRegisterObserver(const std::string &key) override;
     uint32_t ChangeKey(const std::string &oldKey, const std::string &newKey) override;
-// todo 直接用storeManager_判斷
     bool isOpened_ = false;
 
 private:
