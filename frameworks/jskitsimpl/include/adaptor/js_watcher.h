@@ -20,6 +20,7 @@
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 #include "uv_queue.h"
+#include "flat_object_store.h"
 namespace OHOS::ObjectStore {
 enum Event {
     EVENT_UNKNOWN = -1,
@@ -64,9 +65,9 @@ private:
     DistributedObject *object_;
 };
 
-class WatcherImpl : public ObjectWatcher {
+class WatcherImpl : public ObjectWatcher, FlatObjectWatcher  {
 public:
-    WatcherImpl(JSWatcher *watcher, const std::string &sessionId) : ObjectWatcher(sessionId), watcher_(watcher)
+    WatcherImpl(JSWatcher *watcher, const std::string &sessionId) : FlatObjectWatcher(sessionId), watcher_(watcher)
     {
     }
     virtual ~WatcherImpl();

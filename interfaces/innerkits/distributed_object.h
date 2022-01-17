@@ -39,7 +39,7 @@ public:
     virtual std::string &GetSessionId() = 0;
 };
 
-class ObjectWatcher{
+class ObjectWatcher {
 public:
     virtual void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) = 0;
     virtual void OnDeleted(const std::string &sessionid) = 0;

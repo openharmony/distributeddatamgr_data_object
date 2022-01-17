@@ -34,7 +34,7 @@ public:
 private:
     DistributedObjectStore *objectStore_;
     DistributedObject *object_;
-    std::shared_ptr<JSWatcher> watcher_ = nullptr;
+    std::unique_ptr<JSWatcher> watcher_ = nullptr;
     std::shared_mutex watchMutex_{};
 };
 } // namespace OHOS::ObjectStore

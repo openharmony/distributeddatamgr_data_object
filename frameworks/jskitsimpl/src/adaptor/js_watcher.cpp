@@ -79,8 +79,6 @@ void JSWatcher::Emit(const char *type, const std::string &sessionId, const std::
         LOG_ERROR("empty change");
         return;
     }
-    std::string emitSessionId = changeData.at(0);
-    std::vector<std::string> emitChangedData = changeData;
     LOG_ERROR("start %{public}s, %{public}s", sessionId.c_str(), changeData.at(0).c_str());
     Event event = Find(type);
     if (event == EVENT_UNKNOWN) {
