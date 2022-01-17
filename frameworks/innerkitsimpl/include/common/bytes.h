@@ -22,7 +22,7 @@
 namespace OHOS::ObjectStore {
 using Bytes = std::vector<uint8_t>;
 static const char *FIELDS_PREFIX = "p_";
-static const int32_t FIELDS_PREFIX_LEN= 2;
+static const int32_t FIELDS_PREFIX_LEN = 2;
 } // namespace OHOS::ObjectStore
 
 #endif // BYTES_H
