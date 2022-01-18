@@ -28,7 +28,7 @@ class Distributed {
         });
     };
 
-    setSession(sessionId) {
+    setSessionId(sessionId) {
         if (sessionId == null || sessionId == undefined || sessionId.length == 0) {
             leaveSession(this.__proxy);
             return false;
@@ -145,6 +145,6 @@ function offWatch(type, obj, callback = undefined) {
 }
 
 export default {
-    distributed: newDistributed,
+    createDistributedObject: newDistributed,
     genSessionId: genSessionId
 }
