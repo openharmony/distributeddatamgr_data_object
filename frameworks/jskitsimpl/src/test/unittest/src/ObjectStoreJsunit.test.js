@@ -17,13 +17,14 @@ import distributedObject from '@ohos.data.distributedDataObject';
 
 var g_object = distributedObject.distributed({ name: "Amy", age: 18, isVis: false });
 var test_object = distributedObject.distributed({ name: "Eric", age: 81, isVis: true });
+var undefined_object = distributedObject.distributed({ name: undefined, age: undefined, isVis: undefined });
 const TAG = "OBJECTSTORE_TEST";
 
 function changeCallback(sessionId, changeData) {
     console.info("get init change111" + sessionId + " " + changeData);
     if (changeData != null && changeData != undefined) {
         changeData.forEach(element => {
-            console.info(TAG + "data changed 111 !" + element);
+            console.info(TAG + "data changed !" + element + " " + g_object[element]);
         });
     }
     console.info(TAG + "get init change111 end" + sessionId + " " + changeData);
@@ -33,7 +34,7 @@ function changeCallback2(sessionId, changeData) {
     console.info("get init change222" + sessionId + " " + changeData);
     if (changeData != null && changeData != undefined) {
         changeData.forEach(element => {
-            console.info(TAG + "data changed 222 !" + element);
+            console.info(TAG + "data changed !" + element + " " + test_object[element]);
         });
     }
     console.info(TAG + "get init change222 end" + sessionId + " " + changeData);
@@ -442,6 +443,86 @@ describe('objectStoreTest', function () {
 
         done()
         console.log(TAG + "************* testMultiObjectOff001 end *************");
+    })
+
+    /**
+     * @tc.name objectstore changeSession on test
+     * @tc.number testChangeSession001
+     * @tc.desc objects join session and on,then change sessionId
+     */
+    it('testChangeSession001', 0, function (done) {
+        console.log(TAG + "************* testChangeSession001 start *************");
+        g_object.setSession("session9");
+        if (g_object != undefined && g_object != null) {
+            expect("session9").assertEqual(g_object.__sessionId);
+        } else {
+            console.log(TAG + "testChangeSession001 joinSession session9 failed");
+        }
+        g_object.on("change", changeCallback);
+        console.info(TAG + " start call watch change");
+        if (g_object != undefined && g_object != null) {
+            if (g_object.isVis) {
+                g_object.name = "jack23";
+                g_object.age = 40;
+                g_object.isVis = false;
+            } else {
+                g_object.name = "jack24";
+                g_object.age = 41;
+                g_object.isVis = true;
+            }
+            expect(true).assertEqual(g_object.name == "jack23" || g_object.name == "jack24");
+            expect(true).assertEqual(g_object.age == 40 || g_object.age == 41);
+            console.info(TAG + " set data success!");
+        } else {
+            console.info(TAG + " object is null,set name fail");
+        }
+        g_object.setSession("session10");
+        if (g_object != undefined && g_object != null) {
+            expect("session10").assertEqual(g_object.__sessionId);
+        } else {
+            console.log(TAG + "testChangeSession001 joinSession session10 failed");
+        }
+        if (g_object != undefined && g_object != null) {
+            if (g_object.isVis) {
+                g_object.name = "jack23";
+                g_object.age = 40;
+                g_object.isVis = false;
+            } else {
+                g_object.name = "jack24";
+                g_object.age = 41;
+                g_object.isVis = true;
+            }
+            expect(true).assertEqual(g_object.name == "jack23" || g_object.name == "jack24");
+            expect(true).assertEqual(g_object.age == 40 || g_object.age == 41);
+            console.info(TAG + " set data success!");
+        } else {
+            console.info(TAG + " object is null,set name fail");
+        }
+
+        done()
+        console.log(TAG + "************* testChangeSession001 end *************");
+    })
+
+    /**
+     * @tc.name objectstore undefined type on test
+     * @tc.number testUndefinedType001
+     * @tc.desc object use undefined type,can not join session
+     */
+    it('testUndefinedType001', 0, function (done) {
+        console.log(TAG + "************* testUndefinedType001 start *************");
+        try{
+            g_object.setSession("session11");
+            if (g_object != undefined && g_object != null) {
+                expect("session11").assertEqual(g_object.__sessionId);
+            } else {
+                console.log(TAG + "testChangeSession001 joinSession session11 failed");
+            }
+        }catch(error){
+            console.error(error);
+        }
+
+        done()
+        console.log(TAG + "************* testUndefinedType001 end *************");
     })
 
 
