@@ -262,7 +262,7 @@ uint32_t FlatObjectStorageEngine::RegisterObserver(const std::string &key, std::
     std::vector<uint8_t> tmpKey;
     LOG_INFO("start RegisterObserver %{public}s", key.c_str());
     DistributedDB::DBStatus status =
-        delegate->RegisterObserver(tmpKey, DistributedDB::ObserverMode::OBSERVER_CHANGES_NATIVE, watcher.get());
+        delegate->RegisterObserver(tmpKey, DistributedDB::ObserverMode::OBSERVER_CHANGES_FOREIGN, watcher.get());
     if (status != DistributedDB::DBStatus::OK) {
         LOG_ERROR("FlatObjectStorageEngine::RegisterObserver watch err %{public}d", status);
         return ERR_REGISTER;
