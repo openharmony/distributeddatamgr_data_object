@@ -32,9 +32,7 @@ config("objectstore_config") {
 config("objectstore_public_config") {
   visibility = [ ":*" ]
 
-  include_dirs = [
-    "."
-  ]
+  include_dirs = [ "." ]
 }
 
 ohos_shared_library("distributeddataobject_impl") {

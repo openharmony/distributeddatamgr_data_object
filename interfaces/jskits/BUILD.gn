@@ -60,32 +60,32 @@ ohos_shared_library("distributeddataobject") {
     "../../frameworks/jskitsimpl/src/adaptor/js_module_init.cpp",
     "../../frameworks/jskitsimpl/src/adaptor/js_object_wrapper.cpp",
     "../../frameworks/jskitsimpl/src/adaptor/js_watcher.cpp",
-    "../../frameworks/jskitsimpl/src/common/uv_queue.cpp",
     "../../frameworks/jskitsimpl/src/common/js_util.cpp",
+    "../../frameworks/jskitsimpl/src/common/uv_queue.cpp",
   ]
 
   configs = [ ":objectstore_config" ]
 
   deps = [
     ":distributed_data_object_js",
+    "//foundation/aafwk/standard/frameworks/kits/ability/native:abilitykit_native",
     "//foundation/ace/napi:ace_napi",
     "//foundation/distributeddatamgr/distributeddatamgr/services/distributeddataservice/libs/distributeddb:distributeddb",
     "//foundation/distributeddatamgr/objectstore/interfaces/innerkits:distributeddataobject_impl",
     "//third_party/libuv:uv_static",
     "//utils/native/base:utils",
     "//utils/native/base:utilsecurec",
-    "//foundation/aafwk/standard/frameworks/kits/ability/native:abilitykit_native"
   ]
   external_deps = [
-    "dsoftbus_standard:softbus_client",
-    "hiviewdfx_hilog_native:libhilog",
-    "native_appdatamgr:native_appdatafwk",
-    "native_appdatamgr:native_rdb",
     "ability_runtime:ability_manager",
     "ability_runtime:app_manager",
     "ability_runtime:want",
     "appexecfwk_standard:appexecfwk_base",
-    "appexecfwk_standard:appexecfwk_core"
+    "appexecfwk_standard:appexecfwk_core",
+    "dsoftbus_standard:softbus_client",
+    "hiviewdfx_hilog_native:libhilog",
+    "native_appdatamgr:native_appdatafwk",
+    "native_appdatamgr:native_rdb",
   ]
 
   public_configs = [ ":objectstore_public_config" ]
