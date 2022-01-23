@@ -1,5 +1,5 @@
 const distributedObject = requireInternal("data.distributedDataObject");
-const SESSION_ID = "__sessionId"
+const SESSION_ID = "__sessionId";
 
 class Distributed {
     constructor(obj) {

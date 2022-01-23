@@ -55,11 +55,6 @@ DeviceInfo AppDeviceHandler::GetLocalDevice()
     return softbusAdapter_->GetLocalDevice();
 }
 
-std::string AppDeviceHandler::GetUuidByNodeId(const std::string &nodeId) const
-{
-    return softbusAdapter_->GetUuidByNodeId(nodeId);
-}
-
 DeviceInfo AppDeviceHandler::GetLocalBasicInfo() const
 {
     return softbusAdapter_->GetLocalBasicInfo();
@@ -75,24 +70,10 @@ std::string AppDeviceHandler::GetUdidByNodeId(const std::string &nodeId) const
     return softbusAdapter_->GetUdidByNodeId(nodeId);
 }
 
-void AppDeviceHandler::UpdateRelationship(const std::string &networkid, const DeviceChangeType &type)
-{
-    return softbusAdapter_->UpdateRelationship(networkid, type);
-}
-
-std::string AppDeviceHandler::ToUUID(const std::string &id) const
-{
-    return softbusAdapter_->ToUUID(id);
-}
-
 std::string AppDeviceHandler::ToNodeID(const std::string &id, const std::string &nodeId) const
 {
-    return softbusAdapter_->ToNodeID(id, nodeId);
+    return softbusAdapter_->ToNodeID(nodeId);
 }
 
-std::string AppDeviceHandler::ToBeAnonymous(const std::string &name)
-{
-    return SoftBusAdapter::ToBeAnonymous(name);
-}
 } // namespace ObjectStore
 } // namespace OHOS

@@ -89,11 +89,6 @@ bool CommunicationProviderImpl::IsSameStartedOnPeer(const PipeInfo &pipeInfo, co
     return appPipeMgr_.IsSameStartedOnPeer(pipeInfo, peer);
 }
 
-std::string CommunicationProviderImpl::GetUuidByNodeId(const std::string &nodeId) const
-{
-    return appDeviceHandler_.GetUuidByNodeId(nodeId);
-}
-
 DeviceInfo CommunicationProviderImpl::GetLocalBasicInfo() const
 {
     return appDeviceHandler_.GetLocalBasicInfo();
