@@ -15,9 +15,9 @@
 import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from 'deccjsunit/index'
 import distributedObject from '@ohos.data.distributedDataObject';
 
-var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
-var test_object = distributedObject.createDistributedObject({ name: "Eric", age: 81, isVis: true });
-var undefined_object = distributedObject.createDistributedObject({ name: undefined, age: undefined, isVis: undefined });
+var g_object = distributedObject.createDistributedObject({name: "Amy", age: 18, isVis: false});
+var test_object = distributedObject.createDistributedObject({name: "Eric", age: 81, isVis: true});
+var undefined_object = distributedObject.createDistributedObject({name: undefined, age: undefined, isVis: undefined});
 const TAG = "OBJECTSTORE_TEST";
 
 function changeCallback(sessionId, changeData) {
@@ -510,14 +510,14 @@ describe('objectStoreTest', function () {
      */
     it('testUndefinedType001', 0, function (done) {
         console.log(TAG + "************* testUndefinedType001 start *************");
-        try{
+        try {
             g_object.setSessionId("session11");
             if (g_object != undefined && g_object != null) {
                 expect("session11").assertEqual(g_object.__sessionId);
             } else {
                 console.log(TAG + "testChangeSession001 joinSession session11 failed");
             }
-        }catch(error){
+        } catch (error) {
             console.error(error);
         }
 

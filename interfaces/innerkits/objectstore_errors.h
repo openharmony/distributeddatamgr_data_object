@@ -18,7 +18,7 @@
 #include <stdint.h>
 
 namespace OHOS::ObjectStore {
-    constexpr uint32_t BASE_ERR_OFFSET = 1650;
+constexpr uint32_t BASE_ERR_OFFSET = 1650;
 
 /* module defined errors */
 constexpr uint32_t SUCCESS = 0;

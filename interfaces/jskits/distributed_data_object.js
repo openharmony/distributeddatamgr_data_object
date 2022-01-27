@@ -109,7 +109,7 @@ function joinSession(obj, sessionId) {
 
 function leaveSession(obj) {
     console.info("start leaveSession");
-    if (obj == null || obj[SESSION_ID] == undefined ||  obj[SESSION_ID] == null) {
+    if (obj == null || obj[SESSION_ID] == undefined || obj[SESSION_ID] == null) {
         console.warn("object is null");
         return;
     }
