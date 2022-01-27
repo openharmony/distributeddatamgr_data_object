@@ -18,12 +18,10 @@
 #include <stdint.h>
 
 namespace OHOS::ObjectStore {
-constexpr uint32_t MODULE_OBJECT_STORE = 2;
 constexpr uint32_t BASE_ERR_OFFSET = 1650;
 
 /* module defined errors */
 constexpr uint32_t SUCCESS = 0;
-constexpr uint32_t ERR_INVAL = BASE_ERR_OFFSET + 1;
 constexpr uint32_t ERR_EXIST = BASE_ERR_OFFSET + 2;
 constexpr uint32_t ERR_DATA_LEN = BASE_ERR_OFFSET + 3;
 constexpr uint32_t ERR_MOMEM = BASE_ERR_OFFSET + 4;
@@ -39,7 +37,6 @@ constexpr uint32_t ERR_NULL_OBJECTSTORE = BASE_ERR_OFFSET + 13;
 constexpr uint32_t ERR_GET_OBJECT = BASE_ERR_OFFSET + 14;
 constexpr uint32_t ERR_NO_OBSERVER = BASE_ERR_OFFSET + 15;
 constexpr uint32_t ERR_UNRIGSTER = BASE_ERR_OFFSET + 16;
-constexpr uint32_t ERR_KEY_TYPE = BASE_ERR_OFFSET + 17;
 } // namespace OHOS::ObjectStore
 
 #endif

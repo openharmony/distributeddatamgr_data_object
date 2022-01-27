@@ -17,10 +17,10 @@
 #define JSWATCHER_H
 
 #include "distributed_objectstore.h"
+#include "flat_object_store.h"
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 #include "uv_queue.h"
-#include "flat_object_store.h"
 namespace OHOS::ObjectStore {
 enum Event {
     EVENT_UNKNOWN = -1,

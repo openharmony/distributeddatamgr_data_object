@@ -24,18 +24,19 @@
 
 namespace OHOS::ObjectStore {
 class UvQueue {
-    using NapiArgsGenerator = std::function<void(napi_env env, napi_ref& fuc, int& argc, napi_value* argv)>;
+    using NapiArgsGenerator = std::function<void(napi_env env, napi_ref &fuc, int &argc, napi_value *argv)>;
 
 public:
     UvQueue(napi_env env);
     virtual ~UvQueue();
 
     void CallFunction(const std::string &sessionId, const std::vector<std::string> &changeData, napi_ref callback);
+
 private:
     napi_env env_ = nullptr;
     std::shared_mutex mutex_{};
     std::map<napi_ref, std::pair<std::string, std::vector<std::string>>> args_;
-    uv_loop_s* loop_ = nullptr;
+    uv_loop_s *loop_ = nullptr;
 };
-}
+} // namespace OHOS::ObjectStore
 #endif

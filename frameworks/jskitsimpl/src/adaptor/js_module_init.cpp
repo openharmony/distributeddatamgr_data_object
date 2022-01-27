@@ -24,10 +24,9 @@ using namespace OHOS::ObjectStore;
 
 extern const char _binary_distributed_data_object_js_start[];
 extern const char _binary_distributed_data_object_js_end[];
-/*
+
 extern const char _binary_distributed_data_object_abc_start[];
 extern const char _binary_distributed_data_object_abc_end[];
- */
 
 static napi_value DistributedDataObjectExport(napi_env env, napi_value exports)
 {
@@ -69,9 +68,8 @@ extern "C" __attribute__((visibility("default"))) void NAPI_data_distributedData
     }
 }
 
-/*
-extern "C" __attribute__((visibility("default"))) void NAPI_data_distributedDataObject_GetABCCode(const char** buf,
-                                                                                                 int* bufLen)
+extern "C" __attribute__((visibility("default"))) void NAPI_data_distributedDataObject_GetABCCode(
+    const char **buf, int *bufLen)
 {
     if (buf != nullptr) {
         *buf = _binary_distributed_data_object_abc_start;
@@ -80,7 +78,8 @@ extern "C" __attribute__((visibility("default"))) void NAPI_data_distributedData
     if (bufLen != nullptr) {
         *bufLen = _binary_distributed_data_object_abc_end - _binary_distributed_data_object_abc_start;
     }
-} */
+}
+
 // distributeddataobject module register
 static __attribute__((constructor)) void RegisterModule()
 {
