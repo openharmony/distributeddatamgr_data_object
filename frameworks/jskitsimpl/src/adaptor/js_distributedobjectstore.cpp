@@ -27,6 +27,7 @@
 
 namespace OHOS::ObjectStore {
 constexpr size_t TYPE_SIZE = 10;
+
 napi_value JSDistributedObjectStore::NewDistributedObject(
     napi_env env, DistributedObjectStore *objectStore, DistributedObject *object)
 {
@@ -173,6 +174,7 @@ napi_value JSDistributedObjectStore::JSOn(napi_env env, napi_callback_info info)
     napi_get_undefined(env, &result);
     return result;
 }
+
 // function off(type: 'change', object: DistributedObject, callback?: Callback<ChangedDataObserver>): void;
 // function off(type: 'status', object: DistributedObject, callback?: Callback<ObjectStatusObserver>): void;
 napi_value JSDistributedObjectStore::JSOff(napi_env env, napi_callback_info info)
@@ -220,6 +222,7 @@ napi_value JSDistributedObjectStore::JSOff(napi_env env, napi_callback_info info
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     return result;
 }
+
 std::string JSDistributedObjectStore::GetBundleName(napi_env env)
 {
     napi_value global = nullptr;

@@ -33,10 +33,11 @@ class Distributed {
             leaveSession(this.__proxy);
             return false;
         }
-        // leave last session
-        if (this.__proxy[SESSION_ID] != undefined && this.__proxy[SESSION_ID] != null) {
-            leaveSession(this.__proxy);
+        if (this.__proxy[SESSION_ID] == sessionId) {
+            console.info("same session has joined " + sessionId);
+            return true;
         }
+        leaveSession(this.__proxy);
         let object = joinSession(this.__proxy, sessionId);
         if (object != null) {
             this.__proxy = object;
@@ -109,7 +110,7 @@ function joinSession(obj, sessionId) {
 function leaveSession(obj) {
     console.info("start leaveSession");
     if (obj == null || obj[SESSION_ID] == undefined ||  obj[SESSION_ID] == null) {
-        console.error("object is null");
+        console.warn("object is null");
         return;
     }
     // disconnect,delete object

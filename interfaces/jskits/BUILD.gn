@@ -10,10 +10,34 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import("//ark/ts2abc/ts2panda/ts2abc_config.gni")
 import("//build/ohos.gni")
+import("//build/ohos/ace/ace.gni")
+import("//foundation/ace/ace_engine/ace_config.gni")
 
-group("build_module") {
-  deps = [ ":distributeddataobject" ]
+
+# compile .js to .abc.
+action("gen_distributed_data_object_abc") {
+  visibility = [ ":*" ]
+  script = "//ark/ts2abc/ts2panda/scripts/generate_js_bytecode.py"
+
+  args = [
+    "--src-js",
+    rebase_path("distributed_data_object.js"),
+    "--dst-file",
+    rebase_path(target_out_dir + "/distributed_data_object.abc"),
+    "--node",
+    rebase_path("${node_path}"),
+    "--frontend-tool-path",
+    rebase_path("${ts2abc_build_path}"),
+    "--node-modules",
+    rebase_path("${node_modules}"),
+  ]
+  deps = [
+    "//ark/ts2abc/ts2panda:ark_ts2abc_build",
+  ]
+  inputs = [ "distributed_data_object.js" ]
+  outputs = [ target_out_dir + "/distributed_data_object.abc" ]
 }
 
 config("objectstore_config") {
@@ -51,7 +75,17 @@ distributed_data_object_js_obj_path =
 gen_js_obj("distributed_data_object_js") {
   input = "distributed_data_object.js"
   output = distributed_data_object_js_obj_path
+  dep = ":gen_distributed_data_object_abc"
 }
+
+abc_output_path = get_label_info(":distributed_data_object_abc", "target_out_dir")
+distributed_data_object_abc_obj_path = abc_output_path + "/distributed_data_object_abc.o"
+gen_js_obj("distributed_data_object_abc") {
+  input = "$target_out_dir/distributed_data_object.abc"
+  output = distributed_data_object_abc_obj_path
+  dep = ":gen_distributed_data_object_abc"
+}
+
 ohos_shared_library("distributeddataobject") {
   part_name = "distributeddataobject"
   sources = [
@@ -68,6 +102,7 @@ ohos_shared_library("distributeddataobject") {
 
   deps = [
     ":distributed_data_object_js",
+    ":distributed_data_object_abc",
     "//foundation/aafwk/standard/frameworks/kits/ability/native:abilitykit_native",
     "//foundation/ace/napi:ace_napi",
     "//foundation/distributeddatamgr/distributeddatamgr/services/distributeddataservice/libs/distributeddb:distributeddb",
@@ -91,4 +126,8 @@ ohos_shared_library("distributeddataobject") {
   public_configs = [ ":objectstore_public_config" ]
   relative_install_dir = "module/data"
   subsystem_name = "distributeddataobject"
+}
+
+group("build_module") {
+  deps = [ ":distributeddataobject" ]
 }
