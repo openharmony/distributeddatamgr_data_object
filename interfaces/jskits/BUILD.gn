@@ -15,7 +15,6 @@ import("//build/ohos.gni")
 import("//build/ohos/ace/ace.gni")
 import("//foundation/ace/ace_engine/ace_config.gni")
 
-
 # compile .js to .abc.
 action("gen_distributed_data_object_abc") {
   visibility = [ ":*" ]
@@ -33,9 +32,7 @@ action("gen_distributed_data_object_abc") {
     "--node-modules",
     rebase_path("${node_modules}"),
   ]
-  deps = [
-    "//ark/ts2abc/ts2panda:ark_ts2abc_build",
-  ]
+  deps = [ "//ark/ts2abc/ts2panda:ark_ts2abc_build" ]
   inputs = [ "distributed_data_object.js" ]
   outputs = [ target_out_dir + "/distributed_data_object.abc" ]
 }
@@ -78,8 +75,10 @@ gen_js_obj("distributed_data_object_js") {
   dep = ":gen_distributed_data_object_abc"
 }
 
-abc_output_path = get_label_info(":distributed_data_object_abc", "target_out_dir")
-distributed_data_object_abc_obj_path = abc_output_path + "/distributed_data_object_abc.o"
+abc_output_path =
+    get_label_info(":distributed_data_object_abc", "target_out_dir")
+distributed_data_object_abc_obj_path =
+    abc_output_path + "/distributed_data_object_abc.o"
 gen_js_obj("distributed_data_object_abc") {
   input = "$target_out_dir/distributed_data_object.abc"
   output = distributed_data_object_abc_obj_path
@@ -101,8 +100,8 @@ ohos_shared_library("distributeddataobject") {
   configs = [ ":objectstore_config" ]
 
   deps = [
-    ":distributed_data_object_js",
     ":distributed_data_object_abc",
+    ":distributed_data_object_js",
     "//foundation/aafwk/standard/frameworks/kits/ability/native:abilitykit_native",
     "//foundation/ace/napi:ace_napi",
     "//foundation/distributeddatamgr/distributeddatamgr/services/distributeddataservice/libs/distributeddb:distributeddb",
