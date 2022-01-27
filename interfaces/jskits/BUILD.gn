@@ -15,6 +15,10 @@ import("//build/ohos.gni")
 import("//build/ohos/ace/ace.gni")
 import("//foundation/ace/ace_engine/ace_config.gni")
 
+group("build_module") {
+  deps = [ ":distributeddataobject" ]
+}
+
 # compile .js to .abc.
 action("gen_distributed_data_object_abc") {
   visibility = [ ":*" ]
@@ -125,8 +129,4 @@ ohos_shared_library("distributeddataobject") {
   public_configs = [ ":objectstore_public_config" ]
   relative_install_dir = "module/data"
   subsystem_name = "distributeddataobject"
-}
-
-group("build_module") {
-  deps = [ ":distributeddataobject" ]
 }
