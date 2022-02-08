@@ -24,18 +24,24 @@
 
 namespace OHOS::ObjectStore {
 class WatcherProxy;
+enum SyncStatus {
+    START,
+    FINISHED
+};
 class DistributedObjectStoreImpl : public DistributedObjectStore {
 public:
     DistributedObjectStoreImpl(FlatObjectStore *flatObjectStore);
     ~DistributedObjectStoreImpl() override;
     uint32_t Get(const std::string &sessionId, DistributedObject *object) override;
     DistributedObject *CreateObject(const std::string &sessionId) override;
-    uint32_t Sync(DistributedObject *object) override;
     uint32_t DeleteObject(const std::string &sessionId) override;
     uint32_t Watch(DistributedObject *object, std::shared_ptr<ObjectWatcher> watcher) override;
     uint32_t UnWatch(DistributedObject *object) override;
+    void TriggerSync() override;
+    void TriggerRestore(std::function<void()> notifier) override;
 
 private:
+    void UpdateStatus(SyncStatus status);
     DistributedObjectImpl *CacheObject(const std::string &sessionId, FlatObjectStore *flatObjectStore);
     FlatObjectStore *flatObjectStore_ = nullptr;
     std::map<DistributedObject *, std::shared_ptr<WatcherProxy>> watchers_;
@@ -47,7 +53,6 @@ class WatcherProxy : public FlatObjectWatcher {
 public:
     WatcherProxy(const std::shared_ptr<ObjectWatcher> objectWatcher, const std::string &sessionId);
     void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override;
-    void OnDeleted(const std::string &sessionid) override;
 
 private:
     std::shared_ptr<ObjectWatcher> objectWatcher_;

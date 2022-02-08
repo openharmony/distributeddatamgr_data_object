@@ -143,9 +143,6 @@ void SoftBusAdapter::Init()
 {
     LOG_INFO("begin");
     std::thread th = std::thread([&]() {
-        auto communicator = std::make_shared<ProcessCommunicatorImpl>();
-        auto retcom = DistributedDB::KvStoreDelegateManager::SetProcessCommunicator(communicator);
-        LOG_INFO("set communicator ret:%{public}d.", static_cast<int>(retcom));
         int i = 0;
         constexpr int RETRY_TIMES = 300;
         while (i++ < RETRY_TIMES) {

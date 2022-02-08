@@ -56,7 +56,7 @@ uint32_t DistributedObjectImpl::PutDouble(const std::string &key, double value)
     Type type = Type::TYPE_DOUBLE;
     PutNum(&type, 0, sizeof(type), data);
     PutNum(&value, sizeof(type), sizeof(value), data);
-    uint32_t status = flatObjectStore_->Put(sessionId_, key, data);
+    uint32_t status = flatObjectStore_->Put(sessionId_, FIELDS_PREFIX + key, data);
     if (status != SUCCESS) {
         LOG_ERROR("DistributedObjectImpl::PutDouble setField err %{public}d", status);
     }
@@ -69,7 +69,7 @@ uint32_t DistributedObjectImpl::PutBoolean(const std::string &key, bool value)
     Type type = Type::TYPE_BOOLEAN;
     PutNum(&type, 0, sizeof(type), data);
     PutNum(&value, sizeof(type), sizeof(value), data);
-    uint32_t status = flatObjectStore_->Put(sessionId_, key, data);
+    uint32_t status = flatObjectStore_->Put(sessionId_, FIELDS_PREFIX + key, data);
     if (status != SUCCESS) {
         LOG_ERROR("DistributedObjectImpl::PutBoolean setField err %{public}d", status);
     }
@@ -83,7 +83,7 @@ uint32_t DistributedObjectImpl::PutString(const std::string &key, const std::str
     PutNum(&type, 0, sizeof(type), data);
     Bytes dst = StringUtils::StrToBytes(value);
     data.insert(data.end(), dst.begin(), dst.end());
-    uint32_t status = flatObjectStore_->Put(sessionId_, key, data);
+    uint32_t status = flatObjectStore_->Put(sessionId_, FIELDS_PREFIX + key, data);
     if (status != SUCCESS) {
         LOG_ERROR("DistributedObjectImpl::PutString setField err %{public}d", status);
     }
@@ -94,7 +94,7 @@ uint32_t DistributedObjectImpl::GetDouble(const std::string &key, double &value)
 {
     Bytes data;
     Bytes keyBytes = StringUtils::StrToBytes(key);
-    uint32_t status = flatObjectStore_->Get(sessionId_, key, data);
+    uint32_t status = flatObjectStore_->Get(sessionId_, FIELDS_PREFIX + key, data);
     if (status != SUCCESS) {
         LOG_ERROR("DistributedObjectImpl:GetDouble field not exist. %{public}d %{public}s", status, key.c_str());
         return status;
@@ -110,7 +110,7 @@ uint32_t DistributedObjectImpl::GetBoolean(const std::string &key, bool &value)
 {
     Bytes data;
     Bytes keyBytes = StringUtils::StrToBytes(key);
-    uint32_t status = flatObjectStore_->Get(sessionId_, key, data);
+    uint32_t status = flatObjectStore_->Get(sessionId_, FIELDS_PREFIX + key, data);
     if (status != SUCCESS) {
         LOG_ERROR("DistributedObjectImpl:GetBoolean field not exist. %{public}d %{public}s", status, key.c_str());
         return status;
@@ -126,7 +126,7 @@ uint32_t DistributedObjectImpl::GetBoolean(const std::string &key, bool &value)
 uint32_t DistributedObjectImpl::GetString(const std::string &key, std::string &value)
 {
     Bytes data;
-    uint32_t status = flatObjectStore_->Get(sessionId_, key, data);
+    uint32_t status = flatObjectStore_->Get(sessionId_, FIELDS_PREFIX + key, data);
     if (status != SUCCESS) {
         LOG_ERROR("DistributedObjectImpl:GetString field not exist. %{public}d %{public}s", status, key.c_str());
         return status;
@@ -141,7 +141,7 @@ uint32_t DistributedObjectImpl::GetString(const std::string &key, std::string &v
 uint32_t DistributedObjectImpl::GetType(const std::string &key, Type &type)
 {
     Bytes data;
-    uint32_t status = flatObjectStore_->Get(sessionId_, key, data);
+    uint32_t status = flatObjectStore_->Get(sessionId_, FIELDS_PREFIX + key, data);
     if (status != SUCCESS) {
         LOG_ERROR("DistributedObjectImpl:GetString field not exist. %{public}d %{public}s", status, key.c_str());
         return status;

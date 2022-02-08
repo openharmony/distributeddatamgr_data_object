@@ -24,8 +24,6 @@
 
 namespace OHOS::ObjectStore {
 class UvQueue {
-    using NapiArgsGenerator = std::function<void(napi_env env, napi_ref &fuc, int &argc, napi_value *argv)>;
-
 public:
     UvQueue(napi_env env);
     virtual ~UvQueue();

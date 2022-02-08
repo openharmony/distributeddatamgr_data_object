@@ -29,7 +29,6 @@ public:
     {
     }
     void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override;
-    void OnDeleted(const std::string &sessionid) override;
 };
 
 class FlatObjectStore {

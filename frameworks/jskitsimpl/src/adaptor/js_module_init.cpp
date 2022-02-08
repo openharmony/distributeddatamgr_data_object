@@ -34,7 +34,6 @@ static napi_value DistributedDataObjectExport(napi_env env, napi_value exports)
     static napi_property_descriptor desc[] = {
         DECLARE_NAPI_FUNCTION("createObjectSync", JSDistributedObjectStore::JSCreateObjectSync),
         DECLARE_NAPI_FUNCTION("destroyObjectSync", JSDistributedObjectStore::JSDestroyObjectSync),
-        DECLARE_NAPI_FUNCTION("sync", JSDistributedObjectStore::JSSync),
         DECLARE_NAPI_FUNCTION("on", JSDistributedObjectStore::JSOn),
         DECLARE_NAPI_FUNCTION("off", JSDistributedObjectStore::JSOff),
     };

@@ -20,17 +20,15 @@
 #include "js_native_api.h"
 #include "node_api.h"
 namespace OHOS::ObjectStore {
-constexpr size_t SESSION_ID_SIZE = 32;
 class JSDistributedObjectStore {
 public:
     static napi_value JSCreateObjectSync(napi_env env, napi_callback_info info);
     static napi_value JSDestroyObjectSync(napi_env env, napi_callback_info info);
-    static napi_value JSSync(napi_env env, napi_callback_info info);
     static napi_value JSOn(napi_env env, napi_callback_info info);
     static napi_value JSOff(napi_env env, napi_callback_info info);
+    static std::string GetBundleName(napi_env env);
 
 private:
-    static std::string GetBundleName(napi_env env);
     static napi_value NewDistributedObject(
         napi_env env, DistributedObjectStore *objectStore, DistributedObject *object);
 };

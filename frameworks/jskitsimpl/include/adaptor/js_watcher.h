@@ -21,58 +21,98 @@
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 #include "uv_queue.h"
+
 namespace OHOS::ObjectStore {
-enum Event {
-    EVENT_UNKNOWN = -1,
-    EVENT_CHANGE,
-    EVENT_STATUS
-};
+class JSWatcher;
 struct EventHandler {
     napi_ref callbackRef = nullptr;
     EventHandler *next = nullptr;
 };
+
 class EventListener {
 public:
-    EventListener() : type_(nullptr), handlers_(nullptr)
+    EventListener() : handlers_(nullptr)
     {
     }
+
     virtual ~EventListener()
     {
     }
-    bool Add(napi_env env, napi_value handler);
-    bool Del(napi_env env, napi_value handler);
-    void Clear(napi_env env);
-    const char *type_;
+
+    virtual bool Add(napi_env env, napi_value handler);
+
+    virtual bool Del(napi_env env, napi_value handler);
+
+    virtual void Clear(napi_env env);
+
+    EventHandler *Find(napi_env env, napi_value handler);
     EventHandler *handlers_;
+};
+
+class ChangeEventListener : public EventListener {
+public:
+    ChangeEventListener(JSWatcher *watcher, DistributedObjectStore *objectStore, DistributedObject *object);
+
+    bool Add(napi_env env, napi_value handler) override;
+
+    bool Del(napi_env env, napi_value handler) override;
+
+    void Clear(napi_env env) override;
 
 private:
-    EventHandler *Find(napi_env env, napi_value handler);
+    bool isWatched_ = false;
+    DistributedObjectStore *objectStore_;
+    DistributedObject *object_;
+    JSWatcher *watcher_;
 };
+
+class StatusEventListener : public EventListener {
+public:
+    StatusEventListener(JSWatcher *watcher, DistributedObjectStore *objectStore, DistributedObject *object);
+
+    bool Add(napi_env env, napi_value handler) override;
+
+    bool Del(napi_env env, napi_value handler) override;
+
+    void Clear(napi_env env) override;
+
+private:
+  //  bool isWatched_ = false;
+  //  DistributedObjectStore *objectStore_;
+  //  DistributedObject *object_;
+  //  JSWatcher *watcher_;
+};
+
 class JSWatcher : public UvQueue {
 public:
     JSWatcher(const napi_env env, DistributedObjectStore *objectStore, DistributedObject *object);
 
     ~JSWatcher();
+
     void On(const char *type, napi_value handler);
+
     void Off(const char *type, napi_value handler = nullptr);
+
     void Emit(const char *type, const std::string &sessionId, const std::vector<std::string> &changeData);
-    Event Find(const char *type) const;
 
 private:
+    EventListener *Find(const char *type);
     napi_env env_;
-    EventListener listeners_[3];
-    DistributedObjectStore *objectStore_;
-    DistributedObject *object_;
+    ChangeEventListener *changeEventListener_;
+    StatusEventListener *statusEventListener_;
 };
 
-class WatcherImpl : public ObjectWatcher, FlatObjectWatcher  {
+class WatcherImpl
+    : public ObjectWatcher
+    , FlatObjectWatcher {
 public:
     WatcherImpl(JSWatcher *watcher, const std::string &sessionId) : FlatObjectWatcher(sessionId), watcher_(watcher)
     {
     }
+
     virtual ~WatcherImpl();
+
     void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override;
-    void OnDeleted(const std::string &sessionid) override;
 
 private:
     JSWatcher *watcher_ = nullptr;
