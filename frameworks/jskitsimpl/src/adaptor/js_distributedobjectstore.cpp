@@ -15,14 +15,13 @@
 
 #include "js_distributedobjectstore.h"
 
-#include "ability.h"
+#include "ability_context.h"
 #include "distributed_objectstore.h"
 #include "js_common.h"
 #include "js_distributedobject.h"
 #include "js_object_wrapper.h"
 #include "js_util.h"
 #include "logger.h"
-#include "napi/native_node_api.h"
 #include "objectstore_errors.h"
 
 namespace OHOS::ObjectStore {
@@ -101,32 +100,6 @@ napi_value JSDistributedObjectStore::JSDestroyObjectSync(napi_env env, napi_call
     ASSERT_MATCH_ELSE_RETURN_NULL(objectInfo != nullptr && objectWrapper->GetObject() != nullptr);
     objectWrapper->DeleteWatch(env, "change");
     uint32_t ret = objectInfo->DeleteObject(objectWrapper->GetObject()->GetSessionId());
-    napi_value result = nullptr;
-    napi_create_int32(env, ret, &result);
-    return result;
-}
-
-// function sync(object_: DistributedObject): number;
-napi_value JSDistributedObjectStore::JSSync(napi_env env, napi_callback_info info)
-{
-    LOG_INFO("start");
-    size_t requireArgc = 1;
-    size_t argc = 1;
-    napi_value argv[1] = { 0 };
-    napi_value thisVar = nullptr;
-    void *data = nullptr;
-    JSObjectWrapper *objectWrapper = nullptr;
-
-    napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
-    CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-    ASSERT_MATCH_ELSE_RETURN_NULL(argc >= requireArgc);
-    status = napi_unwrap(env, argv[0], (void **)&objectWrapper);
-    CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-    ASSERT_MATCH_ELSE_RETURN_NULL(objectWrapper != nullptr);
-    DistributedObjectStore *objectInfo =
-        DistributedObjectStore::GetInstance(JSDistributedObjectStore::GetBundleName(env));
-    ASSERT_MATCH_ELSE_RETURN_NULL(objectInfo != nullptr);
-    uint32_t ret = objectInfo->Sync(objectWrapper->GetObject());
     napi_value result = nullptr;
     napi_create_int32(env, ret, &result);
     return result;
@@ -225,26 +198,6 @@ napi_value JSDistributedObjectStore::JSOff(napi_env env, napi_callback_info info
 
 std::string JSDistributedObjectStore::GetBundleName(napi_env env)
 {
-    napi_value global = nullptr;
-    napi_status status = napi_get_global(env, &global);
-    if (status != napi_ok || global == nullptr) {
-        LOG_ERROR("Cannot get global instance for %{public}d", status);
-        return std::string();
-    }
-
-    napi_value abilityContext = nullptr;
-    status = napi_get_named_property(env, global, "ability", &abilityContext);
-    if (status != napi_ok || abilityContext == nullptr) {
-        LOG_ERROR("Cannot get ability context for %{public}d", status);
-        return std::string();
-    }
-
-    AppExecFwk::Ability *ability = nullptr;
-    status = napi_get_value_external(env, abilityContext, (void **)&ability);
-    if (status != napi_ok || ability == nullptr) {
-        LOG_ERROR("Get ability form property failed for %{public}d", status);
-        return std::string();
-    }
-    return ability->GetBundleName();
+    return AbilityRuntime::Context::GetApplicationContext()->GetBundleName();
 }
 } // namespace OHOS::ObjectStore

@@ -96,7 +96,7 @@ uint32_t FlatObjectStore::Put(const std::string &sessionId, const std::string &k
         LOG_ERROR("FlatObjectStore::DB has not inited");
         return ERR_DB_NOT_INIT;
     }
-    return storageEngine_->UpdateItem(sessionId, FIELDS_PREFIX + key, value);
+    return storageEngine_->UpdateItem(sessionId, key, value);
 }
 
 uint32_t FlatObjectStore::Get(std::string &sessionId, const std::string &key, Bytes &value)
@@ -105,6 +105,6 @@ uint32_t FlatObjectStore::Get(std::string &sessionId, const std::string &key, By
         LOG_ERROR("FlatObjectStore::DB has not inited");
         return ERR_DB_NOT_INIT;
     }
-    return storageEngine_->GetItem(sessionId, FIELDS_PREFIX + key, value);
+    return storageEngine_->GetItem(sessionId, key, value);
 }
 } // namespace OHOS::ObjectStore

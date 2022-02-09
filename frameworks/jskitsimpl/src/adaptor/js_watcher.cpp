@@ -15,74 +15,48 @@
 
 #include "js_watcher.h"
 
-#include <cstring>
-
 #include "js_util.h"
 #include "logger.h"
-#include "napi/native_api.h"
-#include "napi/native_node_api.h"
 #include "objectstore_errors.h"
-#include "uv.h"
 
 namespace OHOS::ObjectStore {
 JSWatcher::JSWatcher(const napi_env env, DistributedObjectStore *objectStore, DistributedObject *object)
-    : UvQueue(env), env_(env), objectStore_(objectStore), object_(object)
+    : UvQueue(env), env_(env)
 {
-    listeners_[EVENT_CHANGE].type_ = "change";
-    listeners_[EVENT_STATUS].type_ = "status";
+    changeEventListener_ = new ChangeEventListener(this, objectStore, object);
+    statusEventListener_ = new StatusEventListener(this, objectStore, object);
 }
 
 JSWatcher::~JSWatcher()
 {
-    listeners_[EVENT_CHANGE].Clear(env_);
-    listeners_[EVENT_STATUS].Clear(env_);
-    if (objectStore_ != nullptr) {
-        objectStore_->UnWatch(object_);
-    }
+    delete changeEventListener_;
+    delete statusEventListener_;
+    changeEventListener_ = nullptr;
+    statusEventListener_ = nullptr;
 }
 
 void JSWatcher::On(const char *type, napi_value handler)
 {
-    Event event = Find(type);
-    if (event == EVENT_UNKNOWN) {
+    EventListener *listener = Find(type);
+    if (listener == nullptr) {
+        LOG_ERROR("error type %{public}s", type);
         return;
     }
-    LOG_ERROR("add %{public}p", handler);
-    bool isEmpty = listeners_[event].Add(env_, handler);
-    if (isEmpty && event == EVENT_CHANGE) {
-        std::shared_ptr<WatcherImpl> watcher = std::make_shared<WatcherImpl>(this, object_->GetSessionId());
-        uint32_t ret = objectStore_->Watch(object_, watcher);
-        if (ret != SUCCESS) {
-            LOG_ERROR("watch %{public}s error", object_->GetSessionId().c_str());
-        } else {
-            LOG_INFO("watch %{public}s success", object_->GetSessionId().c_str());
-        }
-    }
+    listener->Add(env_, handler);
 }
 
 void JSWatcher::Off(const char *type, napi_value handler)
 {
-    Event event = Find(type);
-    if (event == EVENT_UNKNOWN) {
+    EventListener *listener = Find(type);
+    if (listener == nullptr) {
+        LOG_ERROR("error type %{public}s", type);
         return;
     }
-    LOG_INFO("start del %{public}s  %{public}p", object_->GetSessionId().c_str(), handler);
-    bool isEmpty = true;
     if (handler == nullptr) {
-        listeners_[event].Clear(env_);
+        listener->Clear(env_);
     } else {
-        isEmpty = listeners_[event].Del(env_, handler);
+        listener->Del(env_, handler);
     }
-    if (isEmpty && event == EVENT_CHANGE) {
-        std::shared_ptr<WatcherImpl> watcher = std::make_shared<WatcherImpl>(this, object_->GetSessionId());
-        uint32_t ret = objectStore_->UnWatch(object_);
-        if (ret != SUCCESS) {
-            LOG_ERROR("unWatch %{public}s error", object_->GetSessionId().c_str());
-        } else {
-            LOG_INFO("unWatch %{public}s success", object_->GetSessionId().c_str());
-        }
-    }
-    LOG_INFO("end %{public}s", object_->GetSessionId().c_str());
 }
 
 void JSWatcher::Emit(const char *type, const std::string &sessionId, const std::vector<std::string> &changeData)
@@ -92,25 +66,24 @@ void JSWatcher::Emit(const char *type, const std::string &sessionId, const std::
         return;
     }
     LOG_ERROR("start %{public}s, %{public}s", sessionId.c_str(), changeData.at(0).c_str());
-    Event event = Find(type);
-    if (event == EVENT_UNKNOWN) {
-        LOG_ERROR("unknow %{public}s", type);
+    EventListener *listener = Find(type);
+    if (listener == nullptr) {
+        LOG_ERROR("error type %{public}s", type);
         return;
     }
-    for (EventHandler *handler = listeners_[event].handlers_; handler != nullptr; handler = handler->next) {
+    for (EventHandler *handler = listener->handlers_; handler != nullptr; handler = handler->next) {
         CallFunction(sessionId, changeData, handler->callbackRef);
     }
 }
-
-Event JSWatcher::Find(const char *type) const
+EventListener *JSWatcher::Find(const char *type)
 {
-    Event result = EVENT_UNKNOWN;
-    if (!strcmp(listeners_[EVENT_CHANGE].type_, type)) {
-        result = EVENT_CHANGE;
-    } else if (!strcmp(listeners_[EVENT_STATUS].type_, type)) {
-        result = EVENT_STATUS;
+    if (!strcmp("change", type)) {
+        return changeEventListener_;
     }
-    return result;
+    if (!strcmp("status", type)) {
+        return statusEventListener_;
+    }
+    return nullptr;
 }
 
 EventHandler *EventListener::Find(napi_env env, napi_value handler)
@@ -187,11 +160,77 @@ void WatcherImpl::OnChanged(const std::string &sessionid, const std::vector<std:
     watcher_->Emit("change", sessionid, changedData);
 }
 
-void WatcherImpl::OnDeleted(const std::string &sessionid)
+WatcherImpl::~WatcherImpl()
 {
 }
 
-WatcherImpl::~WatcherImpl()
+bool ChangeEventListener::Add(napi_env env, napi_value handler)
 {
+    if (!isWatched_ && object_ != nullptr) {
+        std::shared_ptr<WatcherImpl> watcher = std::make_shared<WatcherImpl>(watcher_, object_->GetSessionId());
+        uint32_t ret = objectStore_->Watch(object_, watcher);
+        if (ret != SUCCESS) {
+            LOG_ERROR("Watch %{public}s error", object_->GetSessionId().c_str());
+        } else {
+            LOG_INFO("Watch %{public}s success", object_->GetSessionId().c_str());
+            isWatched_ = true;
+        }
+    }
+    return EventListener::Add(env, handler);
+}
+
+bool ChangeEventListener::Del(napi_env env, napi_value handler)
+{
+    bool isEmpty = EventListener::Del(env, handler);
+    if (isEmpty && isWatched_ && object_ != nullptr) {
+        uint32_t ret = objectStore_->UnWatch(object_);
+        if (ret != SUCCESS) {
+            LOG_ERROR("UnWatch %{public}s error", object_->GetSessionId().c_str());
+        } else {
+            LOG_INFO("UnWatch %{public}s success", object_->GetSessionId().c_str());
+            isWatched_ = false;
+        }
+    }
+    return isEmpty;
+}
+
+void ChangeEventListener::Clear(napi_env env)
+{
+    EventListener::Clear(env);
+    if (isWatched_ && object_ != nullptr) {
+        uint32_t ret = objectStore_->UnWatch(object_);
+        if (ret != SUCCESS) {
+            LOG_ERROR("UnWatch %{public}s error", object_->GetSessionId().c_str());
+        } else {
+            LOG_INFO("UnWatch %{public}s success", object_->GetSessionId().c_str());
+            isWatched_ = false;
+        }
+    }
+}
+
+ChangeEventListener::ChangeEventListener(
+    JSWatcher *watcher, DistributedObjectStore *objectStore, DistributedObject *object)
+    : objectStore_(objectStore), object_(object), watcher_(watcher)
+{
+}
+
+StatusEventListener::StatusEventListener(
+    JSWatcher *watcher, DistributedObjectStore *objectStore, DistributedObject *object)
+{
+}
+
+bool StatusEventListener::Add(napi_env env, napi_value handler)
+{
+    return EventListener::Add(env, handler);
+}
+
+bool StatusEventListener::Del(napi_env env, napi_value handler)
+{
+    return EventListener::Del(env, handler);
+}
+
+void StatusEventListener::Clear(napi_env env)
+{
+    EventListener::Clear(env);
 }
 } // namespace OHOS::ObjectStore

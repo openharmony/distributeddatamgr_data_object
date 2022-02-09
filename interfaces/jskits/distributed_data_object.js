@@ -26,6 +26,7 @@ class Distributed {
                 this.__proxy[SESSION_ID] = newValue;
             }
         });
+        console.info("constructor success ");
     };
 
     setSessionId(sessionId) {
@@ -53,7 +54,6 @@ class Distributed {
     off(type, callback) {
         offWatch(type, this.__proxy, callback);
     };
-
     __proxy;
 }
 
@@ -97,7 +97,9 @@ function joinSession(obj, sessionId) {
                 console.info("end set " + key + " " + newValue);
             }
         });
-        object[key] = obj[key];
+        if (obj[key] != undefined) {
+            object[key] = obj[key];
+        }
     });
 
     Object.defineProperty(object, SESSION_ID, {
@@ -113,16 +115,16 @@ function leaveSession(obj) {
         console.warn("object is null");
         return;
     }
-    // disconnect,delete object
-    distributedObject.destroyObjectSync(obj);
     Object.keys(obj).forEach(key => {
         Object.defineProperty(obj, key, {
-            value: obj[key],
+            value: obj.get(key),
             configurable: true,
             writable: true,
             enumerable: true,
         });
     });
+    // disconnect,delete object
+    distributedObject.destroyObjectSync(obj);
     delete obj[SESSION_ID];
 }
 

@@ -13,12 +13,16 @@
  * limitations under the License.
  */
 
+#include <thread>
+
 #include "distributed_object_impl.h"
 #include "distributed_objectstore_impl.h"
 #include "objectstore_errors.h"
 #include "string_utils.h"
 
 namespace OHOS::ObjectStore {
+#define TO_STRING(input) #input
+static constexpr char PROPERTY_STATUS_NAME[] = "status";
 DistributedObjectStoreImpl::DistributedObjectStoreImpl(FlatObjectStore *flatObjectStore)
     : flatObjectStore_(flatObjectStore)
 {
@@ -53,19 +57,6 @@ DistributedObject *DistributedObjectStoreImpl::CreateObject(const std::string &s
         return nullptr;
     }
     return CacheObject(sessionId, flatObjectStore_);
-}
-
-uint32_t DistributedObjectStoreImpl::Sync(DistributedObject *object) // todo may delete
-{
-    if (object == nullptr) {
-        LOG_ERROR("DistributedObjectStoreImpl::Sync object err ");
-        return ERR_NULL_OBJECT;
-    }
-    if (flatObjectStore_ == nullptr) {
-        LOG_ERROR("DistributedObjectStoreImpl::Sync object err ");
-        return ERR_NULL_OBJECTSTORE;
-    }
-    return SUCCESS;
 }
 
 uint32_t DistributedObjectStoreImpl::DeleteObject(const std::string &sessionId)
@@ -141,6 +132,56 @@ uint32_t DistributedObjectStoreImpl::UnWatch(DistributedObject *object)
     return SUCCESS;
 }
 
+void DistributedObjectStoreImpl::TriggerSync()
+{
+    UpdateStatus(TO_STRING(START));
+}
+
+void DistributedObjectStoreImpl::TriggerRestore(std::function<void()> notifier)
+{
+    std::thread th = std::thread([&]() {
+        constexpr uint32_t RETRY_TIMES = 50;
+        uint32_t i = 0;
+        uint32_t status = ERR_DB_NOT_INIT;
+        while (i++ < RETRY_TIMES) {
+            bool isFinished = true;
+            std::string syncStatus;
+            {
+                std::unique_lock<std::shared_mutex> cacheLock(dataMutex_);
+                for (auto item : objects_) {
+                    status = item->GetString(PROPERTY_STATUS_NAME, syncStatus);
+                    if (status != SUCCESS || syncStatus != TO_STRING(START)) {
+                        LOG_WARN("%{public}s not ready", item->GetSessionId().c_str());
+                        isFinished = false;
+                        break;
+                    }
+                }
+            }
+
+            if (isFinished) {
+                status = SUCCESS;
+                break;
+            }
+
+            std::this_thread::sleep_for(std::chrono::microseconds(100));
+        }
+        LOG_WARN("restore result %{public}d", status);
+        notifier();
+        UpdateStatus(TO_STRING(FINISHED));
+    });
+    th.detach();
+    return;
+}
+void DistributedObjectStoreImpl::UpdateStatus(const std::string &status)
+{
+    std::unique_lock<std::shared_mutex> cacheLock(dataMutex_);
+    LOG_INFO("update status to %{public}s", status.c_str());
+    for (auto item : objects_) {
+        item->PutString(PROPERTY_STATUS_NAME, status);
+    }
+    return;
+}
+
 WatcherProxy::WatcherProxy(const std::shared_ptr<ObjectWatcher> objectWatcher, const std::string &sessionId)
     : FlatObjectWatcher(sessionId), objectWatcher_(objectWatcher)
 {
@@ -151,11 +192,6 @@ void WatcherProxy::OnChanged(const std::string &sessionid, const std::vector<std
     objectWatcher_->OnChanged(sessionid, changedData);
 }
 
-void WatcherProxy::OnDeleted(const std::string &sessionid)
-{
-    objectWatcher_->OnDeleted(sessionid);
-}
-
 DistributedObjectStore *DistributedObjectStore::GetInstance(const std::string &bundleName)
 {
     static char instMemory[sizeof(DistributedObjectStoreImpl)];
@@ -163,7 +199,7 @@ DistributedObjectStore *DistributedObjectStore::GetInstance(const std::string &b
     static DistributedObjectStore *instPtr = nullptr;
     if (instPtr == nullptr) {
         std::lock_guard<std::mutex> lock(instLock_);
-        if (instPtr == nullptr) {
+        if (instPtr == nullptr && !bundleName.empty()) {
             LOG_INFO("new objectstore %{public}s", bundleName.c_str());
             FlatObjectStore *flatObjectStore = new (std::nothrow) FlatObjectStore(bundleName);
             if (flatObjectStore == nullptr) {

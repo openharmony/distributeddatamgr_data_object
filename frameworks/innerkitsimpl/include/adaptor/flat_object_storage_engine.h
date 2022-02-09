@@ -34,12 +34,10 @@ public:
     uint32_t DeleteTable(const std::string &key) override;
     uint32_t CreateTable(const std::string &key) override;
     uint32_t GetTable(const std::string &key, std::map<std::string, Value> &result) override;
-    uint32_t UpdateItems(const std::string &key, std::map<std::string, Value> &data) override;
     uint32_t UpdateItem(const std::string &key, const std::string &itemKey, Value &value) override;
     uint32_t GetItem(const std::string &key, const std::string &itemKey, Value &value) override;
     uint32_t RegisterObserver(const std::string &key, std::shared_ptr<TableWatcher> watcher) override;
     uint32_t UnRegisterObserver(const std::string &key) override;
-    uint32_t ChangeKey(const std::string &oldKey, const std::string &newKey) override;
     bool isOpened_ = false;
 
 private:

@@ -22,12 +22,13 @@ constexpr uint32_t BASE_ERR_OFFSET = 1650;
 
 /* module defined errors */
 constexpr uint32_t SUCCESS = 0;
+constexpr uint32_t ERR_DB_SET_PROCESS = BASE_ERR_OFFSET + 1;
 constexpr uint32_t ERR_EXIST = BASE_ERR_OFFSET + 2;
 constexpr uint32_t ERR_DATA_LEN = BASE_ERR_OFFSET + 3;
-constexpr uint32_t ERR_MOMEM = BASE_ERR_OFFSET + 4;
+constexpr uint32_t ERR_NOMEM = BASE_ERR_OFFSET + 4;
 constexpr uint32_t ERR_DB_NOT_INIT = BASE_ERR_OFFSET + 5;
-constexpr uint32_t ERR_DE_GETKV_FAIL = BASE_ERR_OFFSET + 6;
-constexpr uint32_t ERR_DE_NOT_EXIST = BASE_ERR_OFFSET + 7;
+constexpr uint32_t ERR_DB_GETKV_FAIL = BASE_ERR_OFFSET + 6;
+constexpr uint32_t ERR_DB_NOT_EXIST = BASE_ERR_OFFSET + 7;
 constexpr uint32_t ERR_DB_GET_FAIL = BASE_ERR_OFFSET + 8;
 constexpr uint32_t ERR_DB_ENTRY_FAIL = BASE_ERR_OFFSET + 9;
 constexpr uint32_t ERR_CLOSE_STORAGE = BASE_ERR_OFFSET + 10;

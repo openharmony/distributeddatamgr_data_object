@@ -57,6 +57,7 @@ config("objectstore_config") {
     "../../frameworks/innerkitsimpl/include/communicator",
     "../../interfaces/innerkits",
     "//third_party/bounds_checking_function/include",
+    "//foundation/aafwk/standard/frameworks/kits/appkit/native/ability_runtime/context",
   ]
 }
 
@@ -107,7 +108,7 @@ ohos_shared_library("distributeddataobject") {
     ":distributed_data_object_abc",
     ":distributed_data_object_js",
     "//foundation/aafwk/standard/frameworks/kits/ability/native:abilitykit_native",
-    "//foundation/ace/napi:ace_napi",
+    "//foundation/aafwk/standard/interfaces/innerkits/want:want",
     "//foundation/distributeddatamgr/distributeddatamgr/services/distributeddataservice/libs/distributeddb:distributeddb",
     "//foundation/distributeddatamgr/objectstore/interfaces/innerkits:distributeddataobject_impl",
     "//third_party/libuv:uv_static",
@@ -116,14 +117,10 @@ ohos_shared_library("distributeddataobject") {
   ]
   external_deps = [
     "ability_runtime:ability_manager",
-    "ability_runtime:app_manager",
-    "ability_runtime:want",
-    "bundle_framework:appexecfwk_base",
-    "bundle_framework:appexecfwk_core",
+    "ability_runtime:runtime",
     "dsoftbus_standard:softbus_client",
     "hiviewdfx_hilog_native:libhilog",
-    "native_appdatamgr:native_appdatafwk",
-    "native_appdatamgr:native_rdb",
+    "napi:ace_napi",
   ]
 
   public_configs = [ ":objectstore_public_config" ]
