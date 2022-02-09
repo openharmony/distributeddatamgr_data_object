@@ -15,14 +15,9 @@
 
 #include "js_watcher.h"
 
-#include <cstring>
-
 #include "js_util.h"
 #include "logger.h"
-#include "napi/native_api.h"
-#include "napi/native_node_api.h"
 #include "objectstore_errors.h"
-#include "uv.h"
 
 namespace OHOS::ObjectStore {
 JSWatcher::JSWatcher(const napi_env env, DistributedObjectStore *objectStore, DistributedObject *object)
@@ -213,12 +208,14 @@ void ChangeEventListener::Clear(napi_env env)
     }
 }
 
-ChangeEventListener::ChangeEventListener(JSWatcher *watcher, DistributedObjectStore *objectStore, DistributedObject *object)
+ChangeEventListener::ChangeEventListener(
+    JSWatcher *watcher, DistributedObjectStore *objectStore, DistributedObject *object)
     : objectStore_(objectStore), object_(object), watcher_(watcher)
 {
 }
 
-StatusEventListener::StatusEventListener(JSWatcher *watcher, DistributedObjectStore *objectStore, DistributedObject *object)
+StatusEventListener::StatusEventListener(
+    JSWatcher *watcher, DistributedObjectStore *objectStore, DistributedObject *object)
 {
 }
 

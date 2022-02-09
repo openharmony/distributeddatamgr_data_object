@@ -75,12 +75,6 @@ public:
     bool Del(napi_env env, napi_value handler) override;
 
     void Clear(napi_env env) override;
-
-private:
-  //  bool isWatched_ = false;
-  //  DistributedObjectStore *objectStore_;
-  //  DistributedObject *object_;
-  //  JSWatcher *watcher_;
 };
 
 class JSWatcher : public UvQueue {
@@ -102,9 +96,7 @@ private:
     StatusEventListener *statusEventListener_;
 };
 
-class WatcherImpl
-    : public ObjectWatcher
-    , FlatObjectWatcher {
+class WatcherImpl : public ObjectWatcher, public FlatObjectWatcher {
 public:
     WatcherImpl(JSWatcher *watcher, const std::string &sessionId) : FlatObjectWatcher(sessionId), watcher_(watcher)
     {
