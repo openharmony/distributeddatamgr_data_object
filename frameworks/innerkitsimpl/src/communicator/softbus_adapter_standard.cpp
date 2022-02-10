@@ -291,7 +291,7 @@ DeviceInfo SoftBusAdapter::GetLocalDevice()
 std::string SoftBusAdapter::GetUdidByNodeId(const std::string &nodeId) const
 {
     char udid[ID_BUF_LEN] = { 0 };
-    int32_t ret = GetNodeKeyInfo("ohos.objectstore", nodeId.c_str(), NodeDeivceInfoKey::NODE_KEY_UDID,
+    int32_t ret = GetNodeKeyInfo("ohos.objectstore", nodeId.c_str(), NodeDeviceInfoKey::NODE_KEY_UDID,
         reinterpret_cast<uint8_t *>(udid), ID_BUF_LEN);
     if (ret != SOFTBUS_OK) {
         LOG_WARN("GetNodeKeyInfo error, nodeId:%{public}s", ToBeAnonymous(nodeId).c_str());
