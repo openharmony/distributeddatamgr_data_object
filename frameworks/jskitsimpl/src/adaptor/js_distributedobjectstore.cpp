@@ -196,6 +196,10 @@ napi_value JSDistributedObjectStore::JSOff(napi_env env, napi_callback_info info
 
 std::string JSDistributedObjectStore::GetBundleName(napi_env env)
 {
-    return AbilityRuntime::Context::GetApplicationContext()->GetBundleName();
+    static std::string bundleName;
+    if (bundleName.empty()) {
+        bundleName = AbilityRuntime::Context::GetApplicationContext()->GetBundleName();
+    }
+    return bundleName;
 }
 } // namespace OHOS::ObjectStore
