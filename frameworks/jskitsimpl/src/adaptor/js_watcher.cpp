@@ -318,7 +318,7 @@ bool StatusEventListener::Add(napi_env env, napi_value handler)
 
 bool StatusEventListener::Del(napi_env env, napi_value handler)
 {
-    if(EventListener::Del(env, handler)) {
+    if (EventListener::Del(env, handler)) {
         LOG_INFO("Del status watch %{public}s", sessionId_.c_str());
         NotifierImpl::GetInstance()->DelWatcher(sessionId_);
         return true;
