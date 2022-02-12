@@ -204,21 +204,29 @@ void EventListener::Clear(napi_env env)
 bool EventListener::Del(napi_env env, napi_value handler)
 {
     EventHandler *temp = nullptr;
-    for (EventHandler *i = handlers_; i != nullptr; i = i->next) {
+    napi_status status;
+    for (EventHandler *i = handlers_; i != nullptr;) {
         napi_value callback = nullptr;
-        napi_get_reference_value(env, i->callbackRef, &callback);
+        status = napi_get_reference_value(env, i->callbackRef, &callback);
+        if (status != napi_ok) {
+            LOG_ERROR("error! %{public}d", status);
+            return false;
+        }
         bool isEquals = false;
         napi_strict_equals(env, handler, callback, &isEquals);
         if (isEquals) {
+            EventHandler *delData = i;
+            i = i->next;
             if (temp == nullptr) {
-                handlers_ = i->next;
+                handlers_ = delData->next;
             } else {
-                temp->next = i->next;
+                temp->next = delData->next;
             }
-            napi_delete_reference(env, i->callbackRef);
-            delete i;
+            napi_delete_reference(env, delData->callbackRef);
+            delete delData;
         } else {
             temp = i;
+            i = i->next;
         }
     }
     return handlers_ == nullptr;
