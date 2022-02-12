@@ -55,10 +55,12 @@ void NotifierImpl::OnChanged(
 {
     LOG_INFO(
         "status changed %{public}s %{public}s %{public}s", sessionId.c_str(), networkId.c_str(), onlineStatus.c_str());
-    for (auto item : watchers_) {
-        if (item.first == sessionId) {
-            item.second->Emit("status", sessionId, networkId, onlineStatus);
-        }
+    if (watchers_.count(sessionId) != 0) {
+        LOG_INFO(
+            "start emit %{public}s %{public}s %{public}s", sessionId.c_str(), networkId.c_str(), onlineStatus.c_str());
+        watchers_.at(sessionId)->Emit("status", sessionId, networkId, onlineStatus);
+        LOG_INFO(
+            "end emit %{public}s %{public}s %{public}s", sessionId.c_str(), networkId.c_str(), onlineStatus.c_str());
     }
 }
 NotifierImpl::~NotifierImpl()
