@@ -295,7 +295,7 @@ void JSDistributedObjectStore::RestoreWatchers(napi_env env, OHOS::ObjectStore::
             wrapper->AddWatch(env, CHANGE, callbackValue);
         }
     } else {
-        LOG_INFO("no callback %{public}s", sessionId.c_str()
+        LOG_INFO("no callback %{public}s", sessionId.c_str();
     if (g_statusCallBacks.count(sessionId) != 0) {
         LOG_INFO("restore status on %{public}s", sessionId.c_str());
         for (auto callback : g_statusCallBacks.at(sessionId)) {
