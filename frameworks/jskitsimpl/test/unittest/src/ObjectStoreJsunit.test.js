@@ -15,9 +15,16 @@
 import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from 'deccjsunit/index'
 import distributedObject from '@ohos.data.distributedDataObject';
 
-var g_object = distributedObject.createDistributedObject({name: "Amy", age: 18, isVis: false});
-var test_object = distributedObject.createDistributedObject({name: "Eric", age: 81, isVis: true});
-var undefined_object = distributedObject.createDistributedObject({name: undefined, age: undefined, isVis: undefined});
+var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
+var test_object = distributedObject.createDistributedObject({ name: "Eric", age: 81, isVis: true });
+var complex_object = distributedObject.createDistributedObject({
+    name: undefined,
+    age: undefined,
+    parent: undefined,
+    list: undefined
+});
+var undefined_object = distributedObject.createDistributedObject({ name: undefined, age: undefined, isVis: undefined });
+var baseLine = 1000; //1 second
 const TAG = "OBJECTSTORE_TEST";
 
 function changeCallback(sessionId, changeData) {
@@ -38,6 +45,21 @@ function changeCallback2(sessionId, changeData) {
         });
     }
     console.info(TAG + "get init change222 end" + sessionId + " " + changeData);
+}
+
+function statusCallback1(sessionId, networkId, status) {
+    console.info(TAG + "test init change111" + sessionId);
+    this.response += "\nstatus changed " + sessionId + " " + status + " " + networkId;
+}
+
+function statusCallback2(sessionId, networkId, status) {
+    console.info(TAG + "test init change222" + sessionId);
+    this.response += "\nstatus changed " + sessionId + " " + status + " " + networkId;
+}
+
+function statusCallback3(sessionId, networkId, status) {
+    console.info(TAG + "test init change333" + sessionId);
+    this.response += "\nstatus changed " + sessionId + " " + status + " " + networkId;
 }
 
 describe('objectStoreTest', function () {
@@ -61,9 +83,10 @@ describe('objectStoreTest', function () {
 
 
     /**
-     * @tc.name objectstore on test
-     * @tc.number testOn001
-     * @tc.desc object join session and on,object can receive callback when data has been changed
+     * @tc.name: testOn001
+     * @tc.desc: object join session and on,object can receive callback when data has been changed
+     * @tc.type: FUNC
+     * @tc.require: I4H3LS
      */
     it('testOn001', 0, function (done) {
         console.log(TAG + "************* testOn001 start *************");
@@ -85,8 +108,8 @@ describe('objectStoreTest', function () {
                 g_object.age = 8;
                 g_object.isVis = true;
             }
-            expect(true).assertEqual(g_object.name == "jack1" || g_object.name == "jack2");
-            expect(true).assertEqual(g_object.age == 19 || g_object.age == 8);
+            expect(g_object.name == "jack1" || g_object.name == "jack2");
+            expect(g_object.age == 19 || g_object.age == 8);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -97,9 +120,10 @@ describe('objectStoreTest', function () {
     })
 
     /**
-     * @tc.name objectstore on test
-     * @tc.number testOn002
+     * @tc.name: testOn002
      * @tc.desc object join session and no on,obejct can not receive callback when data has been changed
+     * @tc.type: FUNC
+     * @tc.require: I4H3LS
      */
     it('testOn002', 0, function (done) {
         console.log(TAG + "************* testOn002 start *************");
@@ -119,8 +143,8 @@ describe('objectStoreTest', function () {
                 g_object.age = 21;
                 g_object.isVis = true;
             }
-            expect(true).assertEqual(g_object.name == "jack3" || g_object.name == "jack4");
-            expect(true).assertEqual(g_object.age == 20 || g_object.age == 21);
+            expect(g_object.name == "jack3" || g_object.name == "jack4");
+            expect(g_object.age == 20 || g_object.age == 21);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -131,9 +155,10 @@ describe('objectStoreTest', function () {
     })
 
     /**
-     * @tc.name objectstore on test
-     * @tc.number testOn003
-     * @tc.desc object join session and on,then object change data twice,object can receive two callbacks when data has been changed
+     * @tc.name: testOn003
+     * @tc.desc: object join session and on,then object change data twice,object can receive two callbacks when data has been changed
+     * @tc.type: FUNC
+     * @tc.require: I4H3LS
      */
     it('testOn003', 0, function (done) {
         console.log(TAG + "************* testOn003 start *************");
@@ -155,8 +180,8 @@ describe('objectStoreTest', function () {
                 g_object.age = 21;
                 g_object.isVis = true;
             }
-            expect(true).assertEqual(g_object.name == "jack3" || g_object.name == "jack4");
-            expect(true).assertEqual(g_object.age == 20 || g_object.age == 21);
+            expect(g_object.name == "jack3" || g_object.name == "jack4");
+            expect(g_object.age == 20 || g_object.age == 21);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -171,8 +196,8 @@ describe('objectStoreTest', function () {
                 g_object.age = 1;
                 g_object.isVis = true;
             }
-            expect(true).assertEqual(g_object.name == "ja3" || g_object.name == "ja4");
-            expect(true).assertEqual(g_object.age == 2 || g_object.age == 1);
+            expect(g_object.name == "ja3" || g_object.name == "ja4");
+            expect(g_object.age == 2 || g_object.age == 1);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -183,9 +208,10 @@ describe('objectStoreTest', function () {
     })
 
     /**
-     * @tc.name objectstore on test
-     * @tc.number testOn004
+     * @tc.name: testOn004
      * @tc.desc object join session and on,then object do not change data,object can not receive callbacks
+     * @tc.type: FUNC
+     * @tc.require: I4H3LS
      */
     it('testOn004', 0, function (done) {
         console.log(TAG + "************* testOn004 start *************");
@@ -204,9 +230,10 @@ describe('objectStoreTest', function () {
     })
 
     /**
-     * @tc.name objectstore off test
-     * @tc.number testOff001
+     * @tc.name testOff001
      * @tc.desc object join session and on&off,object can not receive callback after off
+     * @tc.type: FUNC
+     * @tc.require: I4H3LS
      */
     it('testOff001', 0, function (done) {
         console.log(TAG + "************* testOff001 start *************");
@@ -228,8 +255,8 @@ describe('objectStoreTest', function () {
                 g_object.age = 23;
                 g_object.isVis = true;
             }
-            expect(true).assertEqual(g_object.name == "jack5" || g_object.name == "jack6");
-            expect(true).assertEqual(g_object.age == 22 || g_object.age == 23);
+            expect(g_object.name == "jack5" || g_object.name == "jack6");
+            expect(g_object.age == 22 || g_object.age == 23);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -246,8 +273,8 @@ describe('objectStoreTest', function () {
                 g_object.age = 25;
                 g_object.isVis = true;
             }
-            expect(true).assertEqual(g_object.name == "jack7" || g_object.name == "jack8");
-            expect(true).assertEqual(g_object.age == 24 || g_object.age == 25);
+            expect(g_object.name == "jack7" || g_object.name == "jack8");
+            expect(g_object.age == 24 || g_object.age == 25);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -258,9 +285,10 @@ describe('objectStoreTest', function () {
     })
 
     /**
-     * @tc.name objectstore off test
-     * @tc.number testOff002
+     * @tc.name:testOff002
      * @tc.desc object join session and off,object can not receive callback
+     * @tc.type: FUNC
+     * @tc.require: I4H3LS
      */
     it('testOff002', 0, function (done) {
         console.log(TAG + "************* testOff002 start *************");
@@ -282,8 +310,8 @@ describe('objectStoreTest', function () {
                 g_object.age = 27;
                 g_object.isVis = true;
             }
-            expect(true).assertEqual(g_object.name == "jack9" || g_object.name == "jack10");
-            expect(true).assertEqual(g_object.age == 26 || g_object.age == 27);
+            expect(g_object.name == "jack9" || g_object.name == "jack10");
+            expect(g_object.age == 26 || g_object.age == 27);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -294,9 +322,10 @@ describe('objectStoreTest', function () {
     })
 
     /**
-     * @tc.name objectstore MultiObject on test
-     * @tc.number testMultiObjectOn001
-     * @tc.desc two objects join session and on,then object change data,user can receive two callbacks from two objects
+     * @tc.name: testMultiObjectOn001
+     * @tc.desc: two objects join session and on,then object change data,user can receive two callbacks from two objects
+     * @tc.type: FUNC
+     * @tc.require: I4H3LS
      */
     it('testMultiObjectOn001', 0, function (done) {
         console.log(TAG + "************* testMultiObjectOn001 start *************");
@@ -325,8 +354,8 @@ describe('objectStoreTest', function () {
                 g_object.age = 29;
                 g_object.isVis = true;
             }
-            expect(true).assertEqual(g_object.name == "jack11" || g_object.name == "jack12");
-            expect(true).assertEqual(g_object.age == 28 || g_object.age == 29);
+            expect(g_object.name == "jack11" || g_object.name == "jack12");
+            expect(g_object.age == 28 || g_object.age == 29);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -341,8 +370,8 @@ describe('objectStoreTest', function () {
                 test_object.age = 31;
                 test_object.isVis = true;
             }
-            expect(true).assertEqual(test_object.name == "jack13" || test_object.name == "jack14");
-            expect(true).assertEqual(test_object.age == 30 || test_object.age == 31);
+            expect(test_object.name == "jack13" || test_object.name == "jack14");
+            expect(test_object.age == 30 || test_object.age == 31);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -353,9 +382,10 @@ describe('objectStoreTest', function () {
     })
 
     /**
-     * @tc.name objectstore MultiObject on test
-     * @tc.number testMultiObjectOff001
-     * @tc.desc two objects join session and on&off,then two objects can not receive callbacks
+     * @tc.name: testMultiObjectOff001
+     * @tc.desc: two objects join session and on&off,then two objects can not receive callbacks
+     * @tc.type: FUNC
+     * @tc.require: I4H3LS
      */
     it('testMultiObjectOff001', 0, function (done) {
         console.log(TAG + "************* testMultiObjectOff001 start *************");
@@ -384,8 +414,8 @@ describe('objectStoreTest', function () {
                 g_object.age = 33;
                 g_object.isVis = true;
             }
-            expect(true).assertEqual(g_object.name == "jack15" || g_object.name == "jack16");
-            expect(true).assertEqual(g_object.age == 32 || g_object.age == 33);
+            expect(g_object.name == "jack15" || g_object.name == "jack16");
+            expect(g_object.age == 32 || g_object.age == 33);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -400,8 +430,8 @@ describe('objectStoreTest', function () {
                 test_object.age = 35;
                 test_object.isVis = true;
             }
-            expect(true).assertEqual(test_object.name == "jack17" || test_object.name == "jack18");
-            expect(true).assertEqual(test_object.age == 34 || test_object.age == 35);
+            expect(test_object.name == "jack17" || test_object.name == "jack18");
+            expect(test_object.age == 34 || test_object.age == 35);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -417,8 +447,8 @@ describe('objectStoreTest', function () {
                 g_object.age = 37;
                 g_object.isVis = true;
             }
-            expect(true).assertEqual(g_object.name == "jack19" || g_object.name == "jack20");
-            expect(true).assertEqual(g_object.age == 36 || g_object.age == 37);
+            expect(g_object.name == "jack19" || g_object.name == "jack20");
+            expect(g_object.age == 36 || g_object.age == 37);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -434,8 +464,8 @@ describe('objectStoreTest', function () {
                 test_object.age = 39;
                 test_object.isVis = true;
             }
-            expect(true).assertEqual(test_object.name == "jack21" || test_object.name == "jack22");
-            expect(true).assertEqual(test_object.age == 38 || test_object.age == 39);
+            expect(test_object.name == "jack21" || test_object.name == "jack22");
+            expect(test_object.age == 38 || test_object.age == 39);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -446,9 +476,10 @@ describe('objectStoreTest', function () {
     })
 
     /**
-     * @tc.name objectstore changeSession on test
-     * @tc.number testChangeSession001
-     * @tc.desc objects join session and on,then change sessionId
+     * @tc.name: testChangeSession001
+     * @tc.desc: objects join session and on,then change sessionId
+     * @tc.type: FUNC
+     * @tc.require: I4H3LS
      */
     it('testChangeSession001', 0, function (done) {
         console.log(TAG + "************* testChangeSession001 start *************");
@@ -470,8 +501,8 @@ describe('objectStoreTest', function () {
                 g_object.age = 41;
                 g_object.isVis = true;
             }
-            expect(true).assertEqual(g_object.name == "jack23" || g_object.name == "jack24");
-            expect(true).assertEqual(g_object.age == 40 || g_object.age == 41);
+            expect(g_object.name == "jack23" || g_object.name == "jack24");
+            expect(g_object.age == 40 || g_object.age == 41);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -492,8 +523,8 @@ describe('objectStoreTest', function () {
                 g_object.age = 41;
                 g_object.isVis = true;
             }
-            expect(true).assertEqual(g_object.name == "jack23" || g_object.name == "jack24");
-            expect(true).assertEqual(g_object.age == 40 || g_object.age == 41);
+            expect(g_object.name == "jack23" || g_object.name == "jack24");
+            expect(g_object.age == 40 || g_object.age == 41);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -504,9 +535,10 @@ describe('objectStoreTest', function () {
     })
 
     /**
-     * @tc.name objectstore undefined type on test
-     * @tc.number testUndefinedType001
-     * @tc.desc object use undefined type,can not join session
+     * @tc.name: testUndefinedType001
+     * @tc.desc: object use undefined type,can not join session
+     * @tc.type: FUNC
+     * @tc.require: I4H3LS
      */
     it('testUndefinedType001', 0, function (done) {
         console.log(TAG + "************* testUndefinedType001 start *************");
@@ -518,13 +550,227 @@ describe('objectStoreTest', function () {
                 console.log(TAG + "testChangeSession001 joinSession session11 failed");
             }
         } catch (error) {
-            console.error(error);
+            console.error(TAG + error);
         }
 
         done()
         console.log(TAG + "************* testUndefinedType001 end *************");
     })
 
+    /**
+     * @tc.name: testGenSessionId001
+     * @tc.desc: object generate random sessionId
+     * @tc.type: FUNC
+     * @tc.require: I4H3LS
+     */
+    it('testGenSessionId001', 0, function (done) {
+        console.log(TAG + "************* testGenSessionId001 start *************");
+        var sessionId = distributedObject.genSessionId();
+        expect(sessionId != null && sessionId.length > 0 && typeof (sessionId) == 'string');
+
+        done()
+        console.log(TAG + "************* testGenSessionId001 end *************");
+    })
+
+    /**
+     * @tc.name: testGenSessionId002
+     * @tc.desc: object generate 2 random sessionId and not equal
+     * @tc.type: FUNC
+     * @tc.require: I4H3LS
+     */
+    it('testGenSessionId002', 0, function (done) {
+        console.log(TAG + "************* testGenSessionId001 start *************");
+        var sessionId1 = distributedObject.genSessionId();
+        var sessionId2 = distributedObject.genSessionId();
+        expect(sessionId1 != sessionId2);
+
+        done()
+        console.log(TAG + "************* testGenSessionId002 end *************");
+    })
+
+    /**
+     * @tc.name: testOnStatus001
+     * @tc.desc: object set a listener to watch another object online/offline
+     * @tc.type: FUNC
+     * @tc.require: I4H3M8
+     */
+    it('testOnStatus001', 0, function (done) {
+        console.log(TAG + "************* testOnStatus001 start *************");
+        console.log(TAG + "start watch status");
+        g_object.on("status", statusCallback1);
+        console.log(TAG + "watch success");
+
+        done()
+        console.log(TAG + "************* testOnStatus001 end *************");
+    })
+
+    /**
+     * @tc.name: testOnStatus002
+     * @tc.desc: object set several listener and can unset specified listener
+     * @tc.type: FUNC
+     * @tc.require: I4H3M8
+     */
+    it('testOnStatus002', 0, function (done) {
+        console.log(TAG + "************* testOnStatus001 start *************");
+        console.log(TAG + "start watch status");
+        g_object.on("status", statusCallback1);
+        g_object.on("status", statusCallback2);
+        g_object.on("status", statusCallback3);
+        console.log(TAG + "watch success");
+        console.log(TAG + "start call unwatch status");
+        g_object.off("status", statusCallback1);
+        console.log(TAG + "unwatch success");
+
+        done()
+        console.log(TAG + "************* testOnStatus002 end *************");
+    })
+
+    /**
+     * @tc.name: testOnStatus003
+     * @tc.desc: object set several listener and can unWatch all watcher
+     * @tc.type: FUNC
+     * @tc.require: I4H3M8
+     */
+    it('testOnStatus002', 0, function (done) {
+        console.log(TAG + "************* testOnStatus001 start *************");
+        console.log(TAG + "start watch status");
+        g_object.on("status", statusCallback1);
+        g_object.on("status", statusCallback2);
+        g_object.on("status", statusCallback3);
+        console.log(TAG + "watch success");
+        console.log(TAG + "start call unwatch status");
+        g_object.off("status");
+        console.log(TAG + "unwatch success");
+
+        done()
+        console.log(TAG + "************* testOnStatus003 end *************");
+    })
+
+    /**
+     * @tc.name: testComplex001
+     * @tc.desc: object can get/set complex data
+     * @tc.type: FUNC
+     * @tc.require: I4H3M8
+     */
+    it('testComplex001', 0, function (done) {
+        console.log(TAG + "************* testComplex001 start *************");
+        complex_object.setSessionId("session12");
+        if (complex_object != undefined && complex_object != null) {
+            expect("session12").assertEqual(complex_object.__sessionId);
+        } else {
+            console.log(TAG + "testOnComplex001 joinSession session12 failed");
+        }
+        if (complex_object.isVis) {
+            complex_object.name = "jack";
+            complex_object.age = 19;
+            complex_object.isVis = false;
+            complex_object.parent = { mother: "jack mom", father: "jack Dad" };
+            complex_object.list = [{ mother: "jack mom" }, { father: "jack Dad" }];
+        } else {
+            complex_object.name = "jack1";
+            complex_object.age = 8;
+            complex_object.isVis = true;
+            complex_object.parent = { mother: "jack1 mom", father: "jack1 Dad" };
+            complex_object.list = [{ mother: "jack1 mom" }, { father: "jack1 Dad" }];
+        }
+        expect(complex_object.name == "jack" || complex_object.name == "jack1");
+        expect(complex_object.age == 19 || complex_object.age == 8);
+        expect(complex_object.parent == { mother: "jack1 mom", father: "jack1 Dad" } ||
+        complex_object.parent == { mother: "jack1 mom", father: "jack1 Dad" });
+        expect(complex_object.list == [{ mother: "jack1 mom", father: "jack1 Dad" }] ||
+        complex_object.list == [{ mother: "jack1 mom", father: "jack1 Dad" }]);
+
+        done()
+        console.log(TAG + "************* testComplex001 end *************");
+    })
+
+    /**
+     * @tc.name: testMaxSize001
+     * @tc.desc: object can get/set data under 4MB size
+     * @tc.type: FUNC
+     * @tc.require: I4H3M8
+     */
+    it('testMaxSize001', 0, function (done) {
+        console.log(TAG + "************* testMaxSize001 start *************");
+        g_object.setSessionId("session13");
+        if (g_object != undefined && g_object != null) {
+            expect("session13").assertEqual(g_object.__sessionId);
+        } else {
+            console.log(TAG + "testMaxSize001 joinSession session13 failed");
+        }
+        //maxString = 32byte
+        var maxString = "12345678123456781234567812345678".repeat((4 * 1024 * 1024) / 32);
+        if (g_object != undefined && g_object != null) {
+            if (g_object.isVis) {
+                g_object.name = maxString;
+                g_object.age = 42;
+                g_object.isVis = false;
+            } else {
+                g_object.name = maxString;
+                g_object.age = 43;
+                g_object.isVis = true;
+            }
+            expect(g_object.name == maxString);
+            console.log(TAG + "get/set maxSize string success");
+        } else {
+            console.info(TAG + " object is null,set name fail");
+        }
+
+        done()
+        console.log(TAG + "************* testMaxSize001 end *************");
+    })
+
+    /**
+     * @tc.name: testPerformance001
+     * @tc.desc: performanceTest for set/get data
+     * @tc.type: FUNC
+     * @tc.require: I4H3M8
+     */
+    it('testPerformance001', 0, function (done) {
+        console.log(TAG + "************* testPerformance001 start *************");
+        var st1;
+        var totalTime = 0;
+        for (var i = 0;i < 100; i++) {
+            st1 = Date.now();
+            complex_object.setSessionId("session14");
+            if (complex_object != undefined && complex_object != null) {
+                expect("session14").assertEqual(complex_object.__sessionId);
+            } else {
+                console.log(TAG + "testPerformance001 joinSession session14 failed");
+            }
+            console.info(TAG + " start call watch change");
+            g_object.on("change", changeCallback);
+            console.info(TAG + "on change success");
+            if (complex_object.isVis) {
+                complex_object.name = "jack2";
+                complex_object.age = 20;
+                complex_object.isVis = false;
+                complex_object.parent = { mother: "jack1 mom1", father: "jack1 Dad1" };
+                complex_object.list = [{ mother: "jack1 mom1" }, { father: "jack1 Dad1" }];
+            } else {
+                complex_object.name = "jack3";
+                complex_object.age = 21;
+                complex_object.isVis = true;
+                complex_object.parent = { mother: "jack1 mom2", father: "jack1 Dad2" };
+                complex_object.list = [{ mother: "jack2 mom2" }, { father: "jack2 Dad2" }];
+            }
+            expect(complex_object.name == "jack2" || complex_object.name == "jack3");
+            expect(complex_object.age == 20 || complex_object.age == 21);
+            expect(complex_object.parent == { mother: "jack1 mom1", father: "jack1 Dad1" } ||
+            complex_object.parent == { mother: "jack2 mom2", father: "jack2 Dad2" });
+            expect(complex_object.list == [{ mother: "jack1 mom1", father: "jack1 Dad1" }] ||
+            complex_object.list == [{ mother: "jack2 mom2", father: "jack2 Dad2" }]);
+
+            console.log(TAG + "start unWatch change");
+            complex_object.off("change");
+            console.log(TAG + "end unWatch success");
+            totalTime += Date.now() - st1;
+        }
+        console.log(TAG + "totalTime = " + totalTime / 100);
+        expect(totalTime < baseLine);
+        done()
+        console.log(TAG + "************* testPerformance001 end *************");
+    })
 
     console.log(TAG + "*************Unit Test End*************");
 })
