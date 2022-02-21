@@ -15,16 +15,7 @@
 import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from 'deccjsunit/index'
 import distributedObject from '@ohos.data.distributedDataObject';
 
-var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
-var test_object = distributedObject.createDistributedObject({ name: "Eric", age: 81, isVis: true });
-var complex_object = distributedObject.createDistributedObject({
-    name: undefined,
-    age: undefined,
-    parent: undefined,
-    list: undefined
-});
-var undefined_object = distributedObject.createDistributedObject({ name: undefined, age: undefined, isVis: undefined });
-var baseLine = 1000; //1 second
+var baseLine = 500; //0.5 second
 const TAG = "OBJECTSTORE_TEST";
 
 function changeCallback(sessionId, changeData) {
@@ -295,6 +286,7 @@ describe('objectStoreTest', function () {
         } else {
             console.log(TAG + "testMultiObjectOn001 joinSession failed");
         }
+        var test_object = distributedObject.createDistributedObject({ name: "Eric", age: 81, isVis: true });
         test_object.setSessionId("testSession1");
         if (test_object != undefined && test_object != null) {
             expect("testSession1").assertEqual(test_object.__sessionId);
@@ -426,7 +418,7 @@ describe('objectStoreTest', function () {
         }
         g_object.setSessionId("session10");
         if (g_object != undefined && g_object != null) {
-            expect("session10" == test_object.__sessionId);
+            expect("session10" == g_object.__sessionId);
         } else {
             console.log(TAG + "testChangeSession001 joinSession session10 failed");
         }
@@ -453,11 +445,11 @@ describe('objectStoreTest', function () {
      */
     it('testUndefinedType001', 0, function (done) {
         console.log(TAG + "************* testUndefinedType001 start *************");
-        var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
+        var undefined_object = distributedObject.createDistributedObject({ name: undefined, age: undefined, isVis: undefined });
         try {
-            g_object.setSessionId("session11");
-            if (g_object != undefined && g_object != null) {
-                expect("session11" == g_object.__sessionId);
+            undefined_object.setSessionId("session11");
+            if (undefined_object != undefined && undefined_object != null) {
+                expect("session11" == undefined_object.__sessionId);
             } else {
                 console.log(TAG + "testChangeSession001 joinSession session11 failed");
             }
@@ -634,7 +626,12 @@ describe('objectStoreTest', function () {
      */
     it('testPerformance001', 0, function (done) {
         console.log(TAG + "************* testPerformance001 start *************");
-        var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
+        var complex_object = distributedObject.createDistributedObject({
+            name: undefined,
+            age: undefined,
+            parent: undefined,
+            list: undefined
+        });
         var st1;
         var totalTime = 0;
         var setSessionIdTime = 0;
@@ -652,7 +649,7 @@ describe('objectStoreTest', function () {
             }
             console.info(TAG + " start call watch change");
             st1 = Date.now();
-            g_object.on("change", changeCallback);
+            complex_object.on("change", changeCallback);
             onTime += Date.now() - st1;
             console.info(TAG + "on change success");
             st1 = Date.now();
@@ -677,7 +674,7 @@ describe('objectStoreTest', function () {
             totalTime += offTime;
             console.log(TAG + "end unWatch success");
         }
-        console.log(TAG + "totalTime = " + totalTime / 100);
+        console.log(TAG + "totalTime = " + (totalTime / 100));
         expect(totalTime < baseLine);
         done()
         console.log(TAG + "************* testPerformance001 end *************");
