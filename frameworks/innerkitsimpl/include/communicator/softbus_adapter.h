@@ -111,13 +111,9 @@ public:
 
     void NotifyDataListeners(const uint8_t *ptr, const int size, const std::string &deviceId, const PipeInfo &pipeInfo);
 
-    int WaitSessionOpen();
+    int WaitSessionOpen(const std::string &deviceId);
 
-    void NotifySessionOpen(const int &state);
-
-    int GetOpenSessionId();
-
-    void SetOpenSessionId(const int &sessionId);
+    void NotifySessionOpen(const std::string &deviceId, const int &state);
 
     std::string ToNodeID(const std::string &nodeId) const;
 
@@ -137,9 +133,7 @@ private:
     ISessionListener sessionListener_{};
     std::unique_ptr<Semaphore> semaphore_{};
     std::mutex notifyFlagMutex_{};
-    bool notifyFlag_ = false;
-    std::mutex openSessionIdMutex_{};
-    int openSessionId_ = -1;
+    std::map <std::string, bool> notifyFlag_;
 };
 } // namespace ObjectStore
 } // namespace OHOS
