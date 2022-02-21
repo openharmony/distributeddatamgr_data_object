@@ -31,7 +31,7 @@ function changeCallback(sessionId, changeData) {
     console.info("get init change111" + sessionId + " " + changeData);
     if (changeData != null && changeData != undefined) {
         changeData.forEach(element => {
-            console.info(TAG + "data changed !" + element + " " + g_object[element]);
+            console.info(TAG + "data changed !" + element);
         });
     }
     console.info(TAG + "get init change111 end" + sessionId + " " + changeData);
@@ -41,7 +41,7 @@ function changeCallback2(sessionId, changeData) {
     console.info("get init change222" + sessionId + " " + changeData);
     if (changeData != null && changeData != undefined) {
         changeData.forEach(element => {
-            console.info(TAG + "data changed !" + element + " " + test_object[element]);
+            console.info(TAG + "data changed !" + element);
         });
     }
     console.info(TAG + "get init change222 end" + sessionId + " " + changeData);
@@ -90,26 +90,21 @@ describe('objectStoreTest', function () {
      */
     it('testOn001', 0, function (done) {
         console.log(TAG + "************* testOn001 start *************");
+        var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
         g_object.setSessionId("session1");
         if (g_object != undefined && g_object != null) {
-            expect("session1").assertEqual(g_object.__sessionId);
+            expect("session1" == g_object.__sessionId);
         } else {
             console.log(TAG + "testOn001 joinSession failed");
         }
         console.info(TAG + " start call watch change");
         g_object.on("change", changeCallback);
         if (g_object != undefined && g_object != null) {
-            if (g_object.isVis) {
-                g_object.name = "jack1";
-                g_object.age = 19;
-                g_object.isVis = false;
-            } else {
-                g_object.name = "jack2";
-                g_object.age = 8;
-                g_object.isVis = true;
-            }
-            expect(g_object.name == "jack1" || g_object.name == "jack2");
-            expect(g_object.age == 19 || g_object.age == 8);
+            g_object.name = "jack1";
+            g_object.age = 19;
+            g_object.isVis = true;
+            expect(g_object.name == "jack1");
+            expect(g_object.age == 19);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -127,24 +122,19 @@ describe('objectStoreTest', function () {
      */
     it('testOn002', 0, function (done) {
         console.log(TAG + "************* testOn002 start *************");
+        var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
         g_object.setSessionId("session2");
         if (g_object != undefined && g_object != null) {
-            expect("session2").assertEqual(g_object.__sessionId);
+            expect("session2" == g_object.__sessionId);
         } else {
             console.log(TAG + "testOn002 joinSession failed");
         }
         if (g_object != undefined && g_object != null) {
-            if (g_object.isVis) {
-                g_object.name = "jack3";
-                g_object.age = 20;
-                g_object.isVis = false;
-            } else {
-                g_object.name = "jack4";
-                g_object.age = 21;
-                g_object.isVis = true;
-            }
-            expect(g_object.name == "jack3" || g_object.name == "jack4");
-            expect(g_object.age == 20 || g_object.age == 21);
+            g_object.name = "jack1";
+            g_object.age = 19;
+            g_object.isVis = true;
+            expect(g_object.name == "jack1");
+            expect(g_object.age == 19);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -162,42 +152,26 @@ describe('objectStoreTest', function () {
      */
     it('testOn003', 0, function (done) {
         console.log(TAG + "************* testOn003 start *************");
+        var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
         g_object.setSessionId("session3");
         if (g_object != undefined && g_object != null) {
-            expect("session3").assertEqual(g_object.__sessionId);
+            expect("session3" == g_object.__sessionId);
         } else {
             console.log(TAG + "testOn003 joinSession failed");
         }
         g_object.on("change", changeCallback);
         console.info(TAG + " start call watch change");
         if (g_object != undefined && g_object != null) {
-            if (g_object.isVis) {
-                g_object.name = "jack3";
-                g_object.age = 20;
-                g_object.isVis = false;
-            } else {
-                g_object.name = "jack4";
-                g_object.age = 21;
-                g_object.isVis = true;
-            }
-            expect(g_object.name == "jack3" || g_object.name == "jack4");
-            expect(g_object.age == 20 || g_object.age == 21);
-            console.info(TAG + " set data success!");
-        } else {
-            console.info(TAG + " object is null,set name fail");
-        }
-        if (g_object != undefined && g_object != null) {
-            if (g_object.isVis) {
-                g_object.name = "ja3";
-                g_object.age = 2;
-                g_object.isVis = false;
-            } else {
-                g_object.name = "ja4";
-                g_object.age = 1;
-                g_object.isVis = true;
-            }
-            expect(g_object.name == "ja3" || g_object.name == "ja4");
-            expect(g_object.age == 2 || g_object.age == 1);
+            g_object.name = "jack1";
+            g_object.age = 19;
+            g_object.isVis = true;
+            expect(g_object.name == "jack1");
+            expect(g_object.age == 19);
+            g_object.name = "jack2";
+            g_object.age = 20;
+            g_object.isVis = false;
+            expect(g_object.name == "jack2");
+            expect(g_object.age == 20);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -215,9 +189,10 @@ describe('objectStoreTest', function () {
      */
     it('testOn004', 0, function (done) {
         console.log(TAG + "************* testOn004 start *************");
+        var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
         g_object.setSessionId("session4");
         if (g_object != undefined && g_object != null) {
-            expect("session4").assertEqual(g_object.__sessionId);
+            expect("session4" == g_object.__sessionId);
         } else {
             console.log(TAG + "testOn004 joinSession failed");
         }
@@ -237,26 +212,21 @@ describe('objectStoreTest', function () {
      */
     it('testOff001', 0, function (done) {
         console.log(TAG + "************* testOff001 start *************");
+        var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
         g_object.setSessionId("session5");
         if (g_object != undefined && g_object != null) {
-            expect("session5").assertEqual(g_object.__sessionId);
+            expect("session5" == g_object.__sessionId);
         } else {
             console.log(TAG + "testOff001 joinSession failed");
         }
         g_object.on("change", changeCallback);
         console.info(TAG + " start call watch change");
         if (g_object != undefined && g_object != null) {
-            if (g_object.isVis) {
-                g_object.name = "jack5";
-                g_object.age = 22;
-                g_object.isVis = false;
-            } else {
-                g_object.name = "jack6";
-                g_object.age = 23;
-                g_object.isVis = true;
-            }
-            expect(g_object.name == "jack5" || g_object.name == "jack6");
-            expect(g_object.age == 22 || g_object.age == 23);
+            g_object.name = "jack1";
+            g_object.age = 19;
+            g_object.isVis = true;
+            expect(g_object.name == "jack1");
+            expect(g_object.age == 19);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -264,17 +234,11 @@ describe('objectStoreTest', function () {
         g_object.off("change");
         console.info(TAG + " end call watch change");
         if (g_object != undefined && g_object != null) {
-            if (g_object.isVis) {
-                g_object.name = "jack7";
-                g_object.age = 24;
-                g_object.isVis = false;
-            } else {
-                g_object.name = "jack8";
-                g_object.age = 25;
-                g_object.isVis = true;
-            }
-            expect(g_object.name == "jack7" || g_object.name == "jack8");
-            expect(g_object.age == 24 || g_object.age == 25);
+            g_object.name = "jack2";
+            g_object.age = 20;
+            g_object.isVis = false;
+            expect(g_object.name == "jack2");
+            expect(g_object.age == 20);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -292,26 +256,21 @@ describe('objectStoreTest', function () {
      */
     it('testOff002', 0, function (done) {
         console.log(TAG + "************* testOff002 start *************");
+        var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
         g_object.setSessionId("session6");
         if (g_object != undefined && g_object != null) {
-            expect("session6").assertEqual(g_object.__sessionId);
+            expect("session6" == g_object.__sessionId);
         } else {
             console.log(TAG + "testOff002 joinSession failed");
         }
         g_object.off("change");
         console.info(TAG + " end call watch change");
         if (g_object != undefined && g_object != null) {
-            if (g_object.isVis) {
-                g_object.name = "jack9";
-                g_object.age = 26;
-                g_object.isVis = false;
-            } else {
-                g_object.name = "jack10";
-                g_object.age = 27;
-                g_object.isVis = true;
-            }
-            expect(g_object.name == "jack9" || g_object.name == "jack10");
-            expect(g_object.age == 26 || g_object.age == 27);
+            g_object.name = "jack1";
+            g_object.age = 19;
+            g_object.isVis = true;
+            expect(g_object.name == "jack1");
+            expect(g_object.age == 19);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -329,9 +288,10 @@ describe('objectStoreTest', function () {
      */
     it('testMultiObjectOn001', 0, function (done) {
         console.log(TAG + "************* testMultiObjectOn001 start *************");
+        var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
         g_object.setSessionId("session7");
         if (g_object != undefined && g_object != null) {
-            expect("session7").assertEqual(g_object.__sessionId);
+            expect("session7" == g_object.__sessionId);
         } else {
             console.log(TAG + "testMultiObjectOn001 joinSession failed");
         }
@@ -345,33 +305,16 @@ describe('objectStoreTest', function () {
         test_object.on("change", changeCallback2);
         console.info(TAG + " start call watch change");
         if (g_object != undefined && g_object != null) {
-            if (g_object.isVis) {
-                g_object.name = "jack11";
-                g_object.age = 28;
-                g_object.isVis = false;
-            } else {
-                g_object.name = "jack12";
-                g_object.age = 29;
-                g_object.isVis = true;
-            }
-            expect(g_object.name == "jack11" || g_object.name == "jack12");
-            expect(g_object.age == 28 || g_object.age == 29);
-            console.info(TAG + " set data success!");
-        } else {
-            console.info(TAG + " object is null,set name fail");
-        }
-        if (test_object != undefined && test_object != null) {
-            if (test_object.isVis) {
-                test_object.name = "jack13";
-                test_object.age = 30;
-                test_object.isVis = false;
-            } else {
-                test_object.name = "jack14";
-                test_object.age = 31;
-                test_object.isVis = true;
-            }
-            expect(test_object.name == "jack13" || test_object.name == "jack14");
-            expect(test_object.age == 30 || test_object.age == 31);
+            g_object.name = "jack1";
+            g_object.age = 19;
+            g_object.isVis = true;
+            expect(g_object.name == "jack1");
+            expect(g_object.age == 19);
+            g_object.name = "jack2";
+            g_object.age = 20;
+            g_object.isVis = false;
+            expect(g_object.name == "jack2");
+            expect(g_object.age == 20);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -389,83 +332,62 @@ describe('objectStoreTest', function () {
      */
     it('testMultiObjectOff001', 0, function (done) {
         console.log(TAG + "************* testMultiObjectOff001 start *************");
+        var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
         g_object.setSessionId("session8");
         if (g_object != undefined && g_object != null) {
-            expect("session8").assertEqual(g_object.__sessionId);
+            expect("session8" == g_object.__sessionId);
         } else {
             console.log(TAG + "testMultiObjectOn002 joinSession failed");
         }
+        var test_object = distributedObject.createDistributedObject({ name: "Eric", age: 81, isVis: true });
         test_object.setSessionId("testSession2");
         if (test_object != undefined && test_object != null) {
-            expect("testSession2").assertEqual(test_object.__sessionId);
+            expect("testSession2" == test_object.__sessionId);
         } else {
             console.log(TAG + "testMultiObjectOn002 joinSession failed");
         }
+        console.log(TAG + " start call watch change")
         g_object.on("change", changeCallback);
         test_object.on("change", changeCallback2);
-        console.info(TAG + " start call watch change");
+        console.info(TAG + " watch success");
         if (g_object != undefined && g_object != null) {
-            if (g_object.isVis) {
-                g_object.name = "jack15";
-                g_object.age = 32;
-                g_object.isVis = false;
-            } else {
-                g_object.name = "jack16";
-                g_object.age = 33;
-                g_object.isVis = true;
-            }
-            expect(g_object.name == "jack15" || g_object.name == "jack16");
-            expect(g_object.age == 32 || g_object.age == 33);
+            g_object.name = "jack1";
+            g_object.age = 19;
+            g_object.isVis = true;
+            expect(g_object.name == "jack1");
+            expect(g_object.age == 19);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
         }
         if (test_object != undefined && test_object != null) {
-            if (test_object.isVis) {
-                test_object.name = "jack17";
-                test_object.age = 34;
-                test_object.isVis = false;
-            } else {
-                test_object.name = "jack18";
-                test_object.age = 35;
-                test_object.isVis = true;
-            }
-            expect(test_object.name == "jack17" || test_object.name == "jack18");
-            expect(test_object.age == 34 || test_object.age == 35);
+            test_object.name = "jack2";
+            test_object.age = 20;
+            test_object.isVis = false;
+            expect(test_object.name == "jack2");
+            expect(test_object.age == 20);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
         }
         g_object.off("change");
         if (g_object != undefined && g_object != null) {
-            if (g_object.isVis) {
-                g_object.name = "jack19";
-                g_object.age = 36;
-                g_object.isVis = false;
-            } else {
-                g_object.name = "jack20";
-                g_object.age = 37;
-                g_object.isVis = true;
-            }
-            expect(g_object.name == "jack19" || g_object.name == "jack20");
-            expect(g_object.age == 36 || g_object.age == 37);
+            g_object.name = "jack3";
+            g_object.age = 21;
+            g_object.isVis = false;
+            expect(g_object.name == "jack3");
+            expect(g_object.age == 21);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
         }
         test_object.off("change");
         if (test_object != undefined && test_object != null) {
-            if (test_object.isVis) {
-                test_object.name = "jack21";
-                test_object.age = 38;
-                test_object.isVis = false;
-            } else {
-                test_object.name = "jack22";
-                test_object.age = 39;
-                test_object.isVis = true;
-            }
-            expect(test_object.name == "jack21" || test_object.name == "jack22");
-            expect(test_object.age == 38 || test_object.age == 39);
+            test_object.name = "jack4";
+            test_object.age = 22;
+            test_object.isVis = true;
+            expect(test_object.name == "jack4");
+            expect(test_object.age == 22);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -483,48 +405,37 @@ describe('objectStoreTest', function () {
      */
     it('testChangeSession001', 0, function (done) {
         console.log(TAG + "************* testChangeSession001 start *************");
+        var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
         g_object.setSessionId("session9");
         if (g_object != undefined && g_object != null) {
-            expect("session9").assertEqual(g_object.__sessionId);
+            expect("session9" == g_object.__sessionId);
         } else {
             console.log(TAG + "testChangeSession001 joinSession session9 failed");
         }
         g_object.on("change", changeCallback);
         console.info(TAG + " start call watch change");
         if (g_object != undefined && g_object != null) {
-            if (g_object.isVis) {
-                g_object.name = "jack23";
-                g_object.age = 40;
-                g_object.isVis = false;
-            } else {
-                g_object.name = "jack24";
-                g_object.age = 41;
-                g_object.isVis = true;
-            }
-            expect(g_object.name == "jack23" || g_object.name == "jack24");
-            expect(g_object.age == 40 || g_object.age == 41);
+            g_object.name = "jack1";
+            g_object.age = 19;
+            g_object.isVis = true;
+            expect(g_object.name == "jack1");
+            expect(g_object.age == 19);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
         }
         g_object.setSessionId("session10");
         if (g_object != undefined && g_object != null) {
-            expect("session10").assertEqual(g_object.__sessionId);
+            expect("session10" == test_object.__sessionId);
         } else {
             console.log(TAG + "testChangeSession001 joinSession session10 failed");
         }
         if (g_object != undefined && g_object != null) {
-            if (g_object.isVis) {
-                g_object.name = "jack23";
-                g_object.age = 40;
-                g_object.isVis = false;
-            } else {
-                g_object.name = "jack24";
-                g_object.age = 41;
-                g_object.isVis = true;
-            }
-            expect(g_object.name == "jack23" || g_object.name == "jack24");
-            expect(g_object.age == 40 || g_object.age == 41);
+            g_object.name = "jack2";
+            g_object.age = 20;
+            g_object.isVis = false;
+            expect(g_object.name == "jack2");
+            expect(g_object.age == 20);
             console.info(TAG + " set data success!");
         } else {
             console.info(TAG + " object is null,set name fail");
@@ -542,10 +453,11 @@ describe('objectStoreTest', function () {
      */
     it('testUndefinedType001', 0, function (done) {
         console.log(TAG + "************* testUndefinedType001 start *************");
+        var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
         try {
             g_object.setSessionId("session11");
             if (g_object != undefined && g_object != null) {
-                expect("session11").assertEqual(g_object.__sessionId);
+                expect("session11" == g_object.__sessionId);
             } else {
                 console.log(TAG + "testChangeSession001 joinSession session11 failed");
             }
@@ -597,6 +509,7 @@ describe('objectStoreTest', function () {
     it('testOnStatus001', 0, function (done) {
         console.log(TAG + "************* testOnStatus001 start *************");
         console.log(TAG + "start watch status");
+        var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
         g_object.on("status", statusCallback1);
         console.log(TAG + "watch success");
 
@@ -613,6 +526,7 @@ describe('objectStoreTest', function () {
     it('testOnStatus002', 0, function (done) {
         console.log(TAG + "************* testOnStatus001 start *************");
         console.log(TAG + "start watch status");
+        var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
         g_object.on("status", statusCallback1);
         g_object.on("status", statusCallback2);
         g_object.on("status", statusCallback3);
@@ -634,6 +548,7 @@ describe('objectStoreTest', function () {
     it('testOnStatus002', 0, function (done) {
         console.log(TAG + "************* testOnStatus001 start *************");
         console.log(TAG + "start watch status");
+        var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
         g_object.on("status", statusCallback1);
         g_object.on("status", statusCallback2);
         g_object.on("status", statusCallback3);
@@ -654,31 +569,27 @@ describe('objectStoreTest', function () {
      */
     it('testComplex001', 0, function (done) {
         console.log(TAG + "************* testComplex001 start *************");
+        var complex_object = distributedObject.createDistributedObject({
+            name: undefined,
+            age: undefined,
+            parent: undefined,
+            list: undefined
+        });
         complex_object.setSessionId("session12");
         if (complex_object != undefined && complex_object != null) {
-            expect("session12").assertEqual(complex_object.__sessionId);
+            expect("session12" == complex_object.__sessionId);
         } else {
             console.log(TAG + "testOnComplex001 joinSession session12 failed");
         }
-        if (complex_object.isVis) {
-            complex_object.name = "jack";
-            complex_object.age = 19;
-            complex_object.isVis = false;
-            complex_object.parent = { mother: "jack mom", father: "jack Dad" };
-            complex_object.list = [{ mother: "jack mom" }, { father: "jack Dad" }];
-        } else {
-            complex_object.name = "jack1";
-            complex_object.age = 8;
-            complex_object.isVis = true;
-            complex_object.parent = { mother: "jack1 mom", father: "jack1 Dad" };
-            complex_object.list = [{ mother: "jack1 mom" }, { father: "jack1 Dad" }];
-        }
-        expect(complex_object.name == "jack" || complex_object.name == "jack1");
-        expect(complex_object.age == 19 || complex_object.age == 8);
-        expect(complex_object.parent == { mother: "jack1 mom", father: "jack1 Dad" } ||
-        complex_object.parent == { mother: "jack1 mom", father: "jack1 Dad" });
-        expect(complex_object.list == [{ mother: "jack1 mom", father: "jack1 Dad" }] ||
-        complex_object.list == [{ mother: "jack1 mom", father: "jack1 Dad" }]);
+        complex_object.name = "jack";
+        complex_object.age = 19;
+        complex_object.isVis = false;
+        complex_object.parent = { mother: "jack mom", father: "jack Dad" };
+        complex_object.list = [{ mother: "jack mom" }, { father: "jack Dad" }];
+        expect(complex_object.name == "jack");
+        expect(complex_object.age == 19);
+        expect(complex_object.parent == { mother: "jack1 mom", father: "jack1 Dad" });
+        expect(complex_object.list == [{ mother: "jack1 mom", father: "jack1 Dad" }]);
 
         done()
         console.log(TAG + "************* testComplex001 end *************");
@@ -692,24 +603,19 @@ describe('objectStoreTest', function () {
      */
     it('testMaxSize001', 0, function (done) {
         console.log(TAG + "************* testMaxSize001 start *************");
+        var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
         g_object.setSessionId("session13");
         if (g_object != undefined && g_object != null) {
-            expect("session13").assertEqual(g_object.__sessionId);
+            expect("session13" == g_object.__sessionId);
         } else {
             console.log(TAG + "testMaxSize001 joinSession session13 failed");
         }
         //maxString = 32byte
-        var maxString = "12345678123456781234567812345678".repeat((4 * 1024 * 1024) / 32);
+        var maxString = "12345678123456781234567812345678".repeat(131072);
         if (g_object != undefined && g_object != null) {
-            if (g_object.isVis) {
-                g_object.name = maxString;
-                g_object.age = 42;
-                g_object.isVis = false;
-            } else {
-                g_object.name = maxString;
-                g_object.age = 43;
-                g_object.isVis = true;
-            }
+            g_object.name = maxString;
+            g_object.age = 42;
+            g_object.isVis = false;
             expect(g_object.name == maxString);
             console.log(TAG + "get/set maxSize string success");
         } else {
@@ -728,43 +634,48 @@ describe('objectStoreTest', function () {
      */
     it('testPerformance001', 0, function (done) {
         console.log(TAG + "************* testPerformance001 start *************");
+        var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
         var st1;
         var totalTime = 0;
+        var setSessionIdTime = 0;
+        var setTime = 0;
+        var onTime = 0;
+        var offTime = 0;
         for (var i = 0;i < 100; i++) {
             st1 = Date.now();
             complex_object.setSessionId("session14");
+            setSessionIdTime += Date.now() - st1;
             if (complex_object != undefined && complex_object != null) {
-                expect("session14").assertEqual(complex_object.__sessionId);
+                expect("session14" == complex_object.__sessionId);
             } else {
                 console.log(TAG + "testPerformance001 joinSession session14 failed");
             }
             console.info(TAG + " start call watch change");
+            st1 = Date.now();
             g_object.on("change", changeCallback);
+            onTime += Date.now() - st1;
             console.info(TAG + "on change success");
-            if (complex_object.isVis) {
-                complex_object.name = "jack2";
-                complex_object.age = 20;
-                complex_object.isVis = false;
-                complex_object.parent = { mother: "jack1 mom1", father: "jack1 Dad1" };
-                complex_object.list = [{ mother: "jack1 mom1" }, { father: "jack1 Dad1" }];
-            } else {
-                complex_object.name = "jack3";
-                complex_object.age = 21;
-                complex_object.isVis = true;
-                complex_object.parent = { mother: "jack1 mom2", father: "jack1 Dad2" };
-                complex_object.list = [{ mother: "jack2 mom2" }, { father: "jack2 Dad2" }];
-            }
-            expect(complex_object.name == "jack2" || complex_object.name == "jack3");
-            expect(complex_object.age == 20 || complex_object.age == 21);
-            expect(complex_object.parent == { mother: "jack1 mom1", father: "jack1 Dad1" } ||
-            complex_object.parent == { mother: "jack2 mom2", father: "jack2 Dad2" });
-            expect(complex_object.list == [{ mother: "jack1 mom1", father: "jack1 Dad1" }] ||
-            complex_object.list == [{ mother: "jack2 mom2", father: "jack2 Dad2" }]);
+            st1 = Date.now();
+            complex_object.name = "jack2";
+            complex_object.age = 20;
+            complex_object.isVis = false;
+            complex_object.parent = { mother: "jack1 mom1", father: "jack1 Dad1" };
+            complex_object.list = [{ mother: "jack1 mom1" }, { father: "jack1 Dad1" }];
+            setTime += Date.now() - st1;
+            expect(complex_object.name == "jack2");
+            expect(complex_object.age == 20);
+            expect(complex_object.parent == { mother: "jack1 mom1", father: "jack1 Dad1" });
+            expect(complex_object.list == [{ mother: "jack1 mom1", father: "jack1 Dad1" }]);
 
             console.log(TAG + "start unWatch change");
+            st1 = Date.now();
             complex_object.off("change");
+            offTime += Date.now() - st1;
+            totalTime += setSessionIdTime;
+            totalTime += setTime;
+            totalTime += onTime;
+            totalTime += offTime;
             console.log(TAG + "end unWatch success");
-            totalTime += Date.now() - st1;
         }
         console.log(TAG + "totalTime = " + totalTime / 100);
         expect(totalTime < baseLine);
