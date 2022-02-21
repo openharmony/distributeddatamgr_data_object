@@ -460,10 +460,10 @@ Status SoftBusAdapter::SendData(
     attr.dataType = TYPE_BYTES;
     LOG_DEBUG("[SendData] to %{public}s ,session:%{public}s, size:%{public}d",
         ToBeAnonymous(deviceId.deviceId).c_str(), pipeInfo.pipeId.c_str(), size);
-  {
-    lock_guard<mutex> lock(notifyFlagMutex_);
-    notifyFlag_[deviceId.deviceId] = false;
-  }
+    {
+        lock_guard<mutex> lock(notifyFlagMutex_);
+        notifyFlag_[deviceId.deviceId] = false;
+    }
     int sessionId = OpenSession(
         pipeInfo.pipeId.c_str(), pipeInfo.pipeId.c_str(), ToNodeID(deviceId.deviceId).c_str(), "GROUP_ID", &attr);
     if (sessionId < 0) {
@@ -565,7 +565,8 @@ void SoftBusAdapter::NotifyDataListeners(
     LOG_WARN("no listener %{public}s.", pipeInfo.pipeId.c_str());
 }
 
-int SoftBusAdapter::WaitSessionOpen(const string &deviceId) {
+int SoftBusAdapter::WaitSessionOpen(const string &deviceId)
+{
     {
         lock_guard<mutex> lock(notifyFlagMutex_);
         if (notifyFlag_.count(deviceId) != 0 && notifyFlag_[deviceId]) {
@@ -576,7 +577,8 @@ int SoftBusAdapter::WaitSessionOpen(const string &deviceId) {
     return semaphore_->Wait();
 }
 
-void SoftBusAdapter::NotifySessionOpen(const string &deviceId, const int &state) {
+void SoftBusAdapter::NotifySessionOpen(const string &deviceId, const int &state)
+{
     {
         lock_guard<mutex> lock(notifyFlagMutex_);
         if (notifyFlag_.count(deviceId) != 0) {
