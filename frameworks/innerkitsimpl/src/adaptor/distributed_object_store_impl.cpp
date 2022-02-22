@@ -32,7 +32,7 @@ DistributedObjectStoreImpl::~DistributedObjectStoreImpl()
     delete flatObjectStore_;
 }
 
-DistributedObjectImpl *DistributedObjectStoreImpl::CacheObject(
+DistributedObject *DistributedObjectStoreImpl::CacheObject(
     const std::string &sessionId, FlatObjectStore *flatObjectStore)
 {
     DistributedObjectImpl *object = new (std::nothrow) DistributedObjectImpl(sessionId, flatObjectStore);
@@ -139,7 +139,7 @@ void DistributedObjectStoreImpl::TriggerRestore(std::function<void()> notifier)
 {
     std::thread th = std::thread([=]() {
         bool isFinished;
-        int16_t i = 0;
+        int16_t i;
         constexpr static int16_t MAX_RETRY_SIZE = 5000;
         std::map<std::string, SyncStatus> syncStatus;
         for (auto &item : objects_) {
@@ -168,8 +168,13 @@ void DistributedObjectStoreImpl::TriggerRestore(std::function<void()> notifier)
                             syncStatus[item->GetSessionId()] = result;
                         };
                         LOG_INFO("start sync %{public}s", item->GetSessionId().c_str());
-                        syncStatus[item->GetSessionId()] = SYNCING;
-                        flatObjectStore_->SyncAllData(item->GetSessionId(), onComplete);
+                        uint32_t result = flatObjectStore_->SyncAllData(item->GetSessionId(), onComplete);
+                        if (result == SUCCESS) {
+                            syncStatus[item->GetSessionId()] = SYNCING;
+                        } else if (result == ERR_SINGLE_DEVICE) {
+                            // single device, do not retry
+                            syncStatus[item->GetSessionId()] = SYNC_SUCCESS;
+                        }
                     }
                 }
             }

@@ -116,12 +116,12 @@ uint32_t FlatObjectStore::SetStatusNotifier(std::shared_ptr<StatusWatcher> notif
     }
     return storageEngine_->SetStatusNotifier(notifier);
 }
-void FlatObjectStore::SyncAllData(
-    const std::string &sessionId, const std::function<void(const std::map<std::string, DistributedDB::DBStatus> &)> &onComplete)
+uint32_t FlatObjectStore::SyncAllData(const std::string &sessionId,
+    const std::function<void(const std::map<std::string, DistributedDB::DBStatus> &)> &onComplete)
 {
     if (!storageEngine_->isOpened_) {
         LOG_ERROR("FlatObjectStore::DB has not inited");
-        return;
+        return ERR_DB_NOT_INIT;
     }
     return storageEngine_->SyncAllData(sessionId, onComplete);
 }
