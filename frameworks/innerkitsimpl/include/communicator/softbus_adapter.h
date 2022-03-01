@@ -138,7 +138,6 @@ private:
     ISessionListener sessionListener_{};
     std::mutex statusMutex_ {};
     std::map<int32_t, std::shared_ptr<BlockData<int32_t>>> sessionsStatus_;
-
 };
 } // namespace ObjectStore
 } // namespace OHOS
