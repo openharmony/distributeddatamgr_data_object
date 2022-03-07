@@ -29,7 +29,7 @@ void PutNum(void *val, uint32_t offset, uint32_t valLen, Bytes &data)
         data.resize(len);
     }
 
-    for (int i = 0; i < valLen; i++) {
+    for (uint32_t i = 0; i < valLen; i++) {
         // 8 bit = 1 byte
         data[offset + i] = *(static_cast<uint64_t *>(val)) >> ((valLen - i - 1) * 8);
     }
