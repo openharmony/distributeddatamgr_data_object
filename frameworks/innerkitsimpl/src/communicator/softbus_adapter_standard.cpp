@@ -261,7 +261,7 @@ std::vector<DeviceInfo> SoftBusAdapter::GetDeviceList() const
         DeviceInfo deviceInfo = { udid, std::string(info[i].deviceName), std::to_string(info[i].deviceTypeId) };
         dis.push_back(deviceInfo);
     }
-    if (info != NULL) {
+    if (info != nullptr) {
         FreeNodeInfo(info);
     }
     return dis;
@@ -334,7 +334,7 @@ std::vector<DeviceInfo> SoftBusAdapter::GetRemoteNodesBasicInfo() const
         dis.push_back(
             { std::string(info[i].networkId), std::string(info[i].deviceName), std::to_string(info[i].deviceTypeId) });
     }
-    if (info != NULL) {
+    if (info != nullptr) {
         FreeNodeInfo(info);
     }
     return dis;
@@ -396,7 +396,7 @@ std::string SoftBusAdapter::ToNodeID(const std::string &nodeId) const
             }
         }
     }
-    if (info != NULL) {
+    if (info != nullptr) {
         FreeNodeInfo(info);
     }
     return networkId;

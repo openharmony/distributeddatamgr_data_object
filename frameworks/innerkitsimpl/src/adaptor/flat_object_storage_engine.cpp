@@ -321,7 +321,9 @@ uint32_t FlatObjectStorageEngine::SetStatusNotifier(std::shared_ptr<StatusWatche
 uint32_t FlatObjectStorageEngine::SyncAllData(const std::string &sessionId,
     const std::function<void(const std::map<std::string, DistributedDB::DBStatus> &)> &onComplete)
 {
+    LOG_INFO("start");
     std::vector<DeviceInfo> devices = SoftBusAdapter::GetInstance()->GetDeviceList();
+    LOG_INFO("start %{public}d", devices.size());
     std::vector<std::string> deviceIds;
     DistributedDB::KvStoreNbDelegate *kvstore = delegates_.at(sessionId);
     for (auto item : devices) {
@@ -331,11 +333,13 @@ uint32_t FlatObjectStorageEngine::SyncAllData(const std::string &sessionId,
         LOG_INFO("single device,no need sync");
         return ERR_SINGLE_DEVICE;
     }
+    LOG_INFO("start sync %{public}s", sessionId.c_str());
     DistributedDB::DBStatus status = kvstore->Sync(deviceIds, DistributedDB::SyncMode::SYNC_MODE_PULL_ONLY, onComplete);
     if (status != DistributedDB::DBStatus::OK) {
         LOG_ERROR("FlatObjectStorageEngine::UnRegisterObserver unRegister err %{public}d", status);
         return ERR_UNRIGSTER;
     }
+    LOG_INFO("end sync %{public}s", sessionId.c_str());
     return SUCCESS;
 }
 
