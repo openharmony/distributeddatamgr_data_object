@@ -120,6 +120,7 @@ ohos_shared_library("distributeddataobject") {
     "ability_runtime:runtime",
     "dsoftbus_standard:softbus_client",
     "hiviewdfx_hilog_native:libhilog",
+    "ipc:ipc_core",
     "napi:ace_napi",
   ]
 
