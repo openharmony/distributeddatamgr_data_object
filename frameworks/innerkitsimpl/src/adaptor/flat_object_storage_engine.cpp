@@ -321,9 +321,7 @@ uint32_t FlatObjectStorageEngine::SetStatusNotifier(std::shared_ptr<StatusWatche
 uint32_t FlatObjectStorageEngine::SyncAllData(const std::string &sessionId,
     const std::function<void(const std::map<std::string, DistributedDB::DBStatus> &)> &onComplete)
 {
-    LOG_INFO("start");
     std::vector<DeviceInfo> devices = SoftBusAdapter::GetInstance()->GetDeviceList();
-    LOG_INFO("start %{public}d", devices.size());
     std::vector<std::string> deviceIds;
     DistributedDB::KvStoreNbDelegate *kvstore = delegates_.at(sessionId);
     for (auto item : devices) {
