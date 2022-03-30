@@ -40,6 +40,7 @@ private:
     static void DelCallback(napi_env env, std::map<std::string, std::list<napi_ref>> &callbacks,
         const std::string &sessionId, napi_value callback = nullptr);
     static void RestoreWatchers(napi_env env, JSObjectWrapper *wrapper, const std::string &objectId);
+    static bool CheckSyncPermission(napi_env env);
 };
 } // namespace OHOS::ObjectStore
 #endif // JS_DISTRIBUTEDDATAOBJECTSTORE_H

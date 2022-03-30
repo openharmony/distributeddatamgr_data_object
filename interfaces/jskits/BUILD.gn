@@ -121,6 +121,7 @@ ohos_shared_library("distributeddataobject") {
     "dsoftbus_standard:softbus_client",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
+    "access_token:libaccesstoken_sdk",
     "napi:ace_napi",
   ]
 
