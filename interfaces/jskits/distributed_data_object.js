@@ -45,7 +45,7 @@ class Distributed {
         });
         this.__objectId = randomNum();
         console.info("constructor success ");
-    };
+    }
 
     setSessionId(sessionId) {
         if (sessionId == null || sessionId == "") {
@@ -63,17 +63,17 @@ class Distributed {
             return true;
         }
         return false;
-    };
+    }
 
     on(type, callback) {
         onWatch(type, this.__proxy, callback);
         distributedObject.recordCallback(type, this.__objectId, callback);
-    };
+    }
 
     off(type, callback) {
         offWatch(type, this.__proxy, callback);
         distributedObject.deleteCallback(type, this.__objectId, callback);
-    };
+    }
 
     __proxy;
     __objectId;
@@ -160,12 +160,14 @@ function leaveSession(obj) {
         return;
     }
     Object.keys(obj).forEach(key => {
-        Object.defineProperty(obj, key, {
-            value: obj[key],
-            configurable: true,
-            writable: true,
-            enumerable: true,
-        });
+        if (key != "_napiwrapper") {
+            Object.defineProperty(obj, key, {
+                value: obj[key],
+                configurable: true,
+                writable: true,
+                enumerable: true,
+            });
+        }
     });
     // disconnect,delete object
     distributedObject.destroyObjectSync(obj);

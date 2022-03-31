@@ -18,6 +18,7 @@
 #include <cstring>
 
 #include "ability_context.h"
+#include "accesstoken_kit.h"
 #include "distributed_objectstore.h"
 #include "js_common.h"
 #include "js_distributedobject.h"
@@ -28,6 +29,7 @@
 
 namespace OHOS::ObjectStore {
 constexpr size_t TYPE_SIZE = 10;
+const std::string DISTRIBUTED_DATASYNC = "ohos.permission.DISTRIBUTED_DATASYNC";
 static std::map<std::string, std::list<napi_ref>> g_statusCallBacks;
 static std::map<std::string, std::list<napi_ref>> g_changeCallBacks;
 
@@ -94,7 +96,10 @@ napi_value JSDistributedObjectStore::NewDistributedObject(
     status = napi_wrap(
         env, result, objectWrapper,
         [](napi_env env, void *data, void *hint) {
+            LOG_INFO("start delete object");
             auto objectWrapper = (JSObjectWrapper *)data;
+            DistributedObjectStore::GetInstance(JSDistributedObjectStore::GetBundleName(env))
+                ->DeleteObject(objectWrapper->GetObject()->GetSessionId());
             if (objectWrapper != nullptr) {
                 delete objectWrapper;
             }
@@ -109,6 +114,10 @@ napi_value JSDistributedObjectStore::NewDistributedObject(
 napi_value JSDistributedObjectStore::JSCreateObjectSync(napi_env env, napi_callback_info info)
 {
     LOG_INFO("start JSCreateObjectSync");
+    if (!JSDistributedObjectStore::CheckSyncPermission(env)) {
+        LOG_INFO("no permission ohos.permission.DISTRIBUTED_DATASYNC");
+        return nullptr;
+    }
     size_t requireArgc = 2;
     size_t argc = 2;
     napi_value argv[2] = { 0 };
@@ -398,5 +407,17 @@ napi_value JSDistributedObjectStore::JSDeleteCallback(napi_env env, napi_callbac
     napi_value result = nullptr;
     napi_get_undefined(env, &result);
     return result;
+}
+
+bool JSDistributedObjectStore::CheckSyncPermission(napi_env env)
+{
+    int32_t ret = Security::AccessToken::AccessTokenKit::VerifyAccessToken(
+        AbilityRuntime::Context::GetApplicationContext()->GetApplicationInfo()->accessTokenId, DISTRIBUTED_DATASYNC);
+    if (ret == Security::AccessToken::PermissionState::PERMISSION_DENIED) {
+        LOG_ERROR("VerifyPermission %{public}d: PERMISSION_DENIED",
+            AbilityRuntime::Context::GetApplicationContext()->GetApplicationInfo()->accessTokenId);
+        return false;
+    }
+    return true;
 }
 } // namespace OHOS::ObjectStore
