@@ -14,17 +14,16 @@
  */
 
 import distributedObject from '@ohos.data.distributedDataObject'
-import worker from '@ohos.worker';
 import featureAbility from '@ohos.ability.featureAbility';
 
 function grantPermission() {
-    console.info('hanlu grantPermission');
+    console.info('grantPermission');
     let context = featureAbility.getContext();
     context.requestPermissionsFromUser(['ohos.permission.DISTRIBUTED_DATASYNC'], 666, function (result) {
         console.info(`result.requestCode=${result.requestCode}`)
 
     })
-    console.info('hanlu end grantPermission');
+    console.info('end grantPermission');
 }
 export default class DistributedDataModel {
     documentList = [];
@@ -63,7 +62,6 @@ export default class DistributedDataModel {
     }
 
     setStatusCallback(callback) {
-        console.info("ininin");
         if (this.#statusCallback == callback) {
             console.info("same callback");
             return;
