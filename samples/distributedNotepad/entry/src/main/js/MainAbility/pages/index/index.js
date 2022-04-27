@@ -33,14 +33,12 @@ export default {
                 this.dataModel.distributedObject.documentSize = size;
             }
         });
-		// 要在callback里刷新界面，则需要将正确的this绑定给callback
-        this.dataModel.distributedObject.on("change", this.changeCallback.bind(this));
     },
     onInit() {
         console.info("objectstore in index page ");
         console.info(JSON.stringify(this.dataModel.documentList));
         console.info(JSON.stringify(distr.g_dataModel.distributedObject.documentList));
-        distr.g_dataModel.setCallback(this.changeCallback);
+        distr.g_dataModel.setCallback(this.changeCallback.bind(this));
         distr.g_dataModel.setStatusCallback((sessionId, networkId, status) => {
             console.info("objectstore status change ${networkId} ${status}");
             if (status == "online") {
