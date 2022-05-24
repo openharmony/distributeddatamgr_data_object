@@ -272,51 +272,6 @@ describe('objectStoreTest', function () {
     })
 
     /**
-     * @tc.name: testMultiObjectOn001
-     * @tc.desc: two objects join session and on,then object change data,user can receive two callbacks from two objects
-     * @tc.type: FUNC
-     * @tc.require: I4H3LS
-     */
-    it('testMultiObjectOn001', 0, function (done) {
-        console.log(TAG + "************* testMultiObjectOn001 start *************");
-        var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
-        g_object.setSessionId("session7");
-        if (g_object != undefined && g_object != null) {
-            expect("session7" == g_object.__sessionId);
-        } else {
-            console.log(TAG + "testMultiObjectOn001 joinSession failed");
-        }
-        var test_object = distributedObject.createDistributedObject({ name: "Eric", age: 81, isVis: true });
-        test_object.setSessionId("testSession1");
-        if (test_object != undefined && test_object != null) {
-            expect("testSession1").assertEqual(test_object.__sessionId);
-        } else {
-            console.log(TAG + "testMultiObjectOn001 joinSession failed");
-        }
-        g_object.on("change", changeCallback);
-        test_object.on("change", changeCallback2);
-        console.info(TAG + " start call watch change");
-        if (g_object != undefined && g_object != null) {
-            g_object.name = "jack1";
-            g_object.age = 19;
-            g_object.isVis = true;
-            expect(g_object.name == "jack1");
-            expect(g_object.age == 19);
-            g_object.name = "jack2";
-            g_object.age = 20;
-            g_object.isVis = false;
-            expect(g_object.name == "jack2");
-            expect(g_object.age == 20);
-            console.info(TAG + " set data success!");
-        } else {
-            console.info(TAG + " object is null,set name fail");
-        }
-
-        done()
-        console.log(TAG + "************* testMultiObjectOn001 end *************");
-    })
-
-    /**
      * @tc.name: testMultiObjectOff001
      * @tc.desc: two objects join session and on&off,then two objects can not receive callbacks
      * @tc.type: FUNC
