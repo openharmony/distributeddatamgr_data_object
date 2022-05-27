@@ -31,6 +31,25 @@ public:
     void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override;
 };
 
+class CacheManager {
+public:
+    CacheManager();
+    uint32_t Save(const std::string &bundleName, const std::string &sessionId, const std::string &deviceId,
+        const std::map<std::string, std::vector<uint8_t>> &objectData);
+    uint32_t RevokeSave(const std::string &bundleName, const std::string &sessionId);
+    int32_t ResumeObject(const std::string &bundleName, const std::string &sessionId,
+                         std::function<void(const std::map<std::string, std::vector<uint8_t>> &data)> &callback);
+private:
+    int32_t SaveObject(const std::string &bundleName, const std::string &sessionId,
+        const std::vector<std::string> &deviceList, const std::map<std::string, std::vector<uint8_t>> &objectData,
+        const std::function<void(const std::map<std::string, int32_t> &)> &callback);
+    int32_t RevokeSaveObject(
+        const std::string &bundleName, const std::string &sessionId, std::function<void(int32_t)> &callback);
+    bool isProcessing_;
+    std::mutex mutex_;
+    std::condition_variable condition_;
+};
+
 class FlatObjectStore {
 public:
     explicit FlatObjectStore(const std::string &bundleName);
@@ -44,9 +63,13 @@ public:
     uint32_t SetStatusNotifier(std::shared_ptr<StatusWatcher> sharedPtr);
     uint32_t SyncAllData(const std::string &sessionId,
         const std::function<void(const std::map<std::string, DistributedDB::DBStatus> &)> &onComplete);
+    uint32_t Save(const std::string &sessionId, const std::string &deviceId);
+    uint32_t RevokeSave(const std::string &sessionId);
 
 private:
     std::shared_ptr<FlatObjectStorageEngine> storageEngine_;
+    std::unique_ptr<CacheManager> cacheManager_;
+    std::string bundleName_;
 };
 } // namespace OHOS::ObjectStore
 

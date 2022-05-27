@@ -112,21 +112,6 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
         std::unique_lock<std::shared_mutex> lock(operationMutex_);
         delegates_.insert_or_assign(key, kvStore);
     }
-
-    auto onComplete = [key, this](const std::map<std::string, DistributedDB::DBStatus> &devices) {
-        LOG_INFO("complete");
-        for (auto item : devices) {
-            LOG_INFO("%{public}s pull data result %{public}d in device %{public}s", key.c_str(), item.second,
-                SoftBusAdapter::GetInstance()->ToNodeID(item.first).c_str());
-        }
-        if (statusWatcher_ != nullptr) {
-            for (auto item : devices) {
-                statusWatcher_->OnChanged(key, SoftBusAdapter::GetInstance()->ToNodeID(item.first),
-                    item.second == DistributedDB::OK ? "online" : "offline");
-            }
-        }
-    };
-    SyncAllData(key, onComplete);
     return SUCCESS;
 }
 
@@ -177,6 +162,37 @@ uint32_t FlatObjectStorageEngine::UpdateItem(const std::string &key, const std::
     auto delegate = delegates_.at(key);
     LOG_INFO("start Put");
     auto status = delegate->Put(StringUtils::StrToBytes(itemKey), value);
+    if (status != DistributedDB::DBStatus::OK) {
+        LOG_ERROR("%{public}s Put fail[%{public}d]", key.c_str(), status);
+        return ERR_CLOSE_STORAGE;
+    }
+    LOG_INFO("put success");
+    return SUCCESS;
+}
+
+uint32_t FlatObjectStorageEngine::UpdateItems(
+    const std::string &key, const std::map<std::string, std::vector<uint8_t>> &data)
+{
+    if (!isOpened_ || data.size() == 0) {
+        return ERR_DB_NOT_INIT;
+    }
+    std::unique_lock<std::shared_mutex> lock(operationMutex_);
+    if (delegates_.count(key) == 0) {
+        LOG_INFO("FlatObjectStorageEngine::UpdateItems %{public}s not exist", key.c_str());
+        return ERR_DB_NOT_EXIST;
+    }
+
+    std::vector<DistributedDB::Entry> entries;
+    for (auto &item : data) {
+        DistributedDB::Entry entry = {
+            .key = StringUtils::StrToBytes(item.first),
+            .value = item.second
+        };
+        entries.emplace_back(entry);
+    }
+    auto delegate = delegates_.at(key);
+    LOG_INFO("start PutBatch");
+    auto status = delegate->PutBatch(entries);
     if (status != DistributedDB::DBStatus::OK) {
         LOG_ERROR("%{public}s PutBatch fail[%{public}d]", key.c_str(), status);
         return ERR_CLOSE_STORAGE;
@@ -311,7 +327,7 @@ uint32_t FlatObjectStorageEngine::SetStatusNotifier(std::shared_ptr<StatusWatche
                     }
                 }
             };
-            SyncAllData(storeId, onComplete);
+            SyncAllData(storeId, std::vector<std::string>({deviceId}), onComplete);
         } else {
             statusWatcher_->OnChanged(storeId, SoftBusAdapter::GetInstance()->ToNodeID(deviceId), "offline");
         }
@@ -322,7 +338,7 @@ uint32_t FlatObjectStorageEngine::SetStatusNotifier(std::shared_ptr<StatusWatche
     return SUCCESS;
 }
 
-uint32_t FlatObjectStorageEngine::SyncAllData(const std::string &sessionId,
+uint32_t FlatObjectStorageEngine::SyncAllData(const std::string &sessionId, const std::vector<std::string> &deviceIds,
     const std::function<void(const std::map<std::string, DistributedDB::DBStatus> &)> &onComplete)
 {
     LOG_INFO("start");
@@ -331,12 +347,7 @@ uint32_t FlatObjectStorageEngine::SyncAllData(const std::string &sessionId,
         LOG_ERROR("FlatObjectStorageEngine::SyncAllData %{public}s already deleted", sessionId.c_str());
         return ERR_DB_NOT_EXIST;
     }
-    std::vector<DeviceInfo> devices = SoftBusAdapter::GetInstance()->GetDeviceList();
-    std::vector<std::string> deviceIds;
     DistributedDB::KvStoreNbDelegate *kvstore = delegates_.at(sessionId);
-    for (auto item : devices) {
-        deviceIds.push_back(item.deviceId);
-    }
     if (deviceIds.empty()) {
         LOG_INFO("single device,no need sync");
         return ERR_SINGLE_DEVICE;
@@ -348,6 +359,31 @@ uint32_t FlatObjectStorageEngine::SyncAllData(const std::string &sessionId,
         return ERR_UNRIGSTER;
     }
     LOG_INFO("end sync %{public}s", sessionId.c_str());
+    return SUCCESS;
+}
+
+uint32_t FlatObjectStorageEngine::GetItems(const std::string &key, std::map<std::string, std::vector<uint8_t>> &data)
+{
+    if (!isOpened_) {
+        LOG_ERROR("FlatObjectStorageEngine::GetItems %{public}s not init", key.c_str());
+        return ERR_DB_NOT_INIT;
+    }
+    std::unique_lock<std::shared_mutex> lock(operationMutex_);
+    if (delegates_.count(key) == 0) {
+        LOG_ERROR("FlatObjectStorageEngine::GetItems %{public}s not exist", key.c_str());
+        return ERR_DB_NOT_EXIST;
+    }
+    LOG_INFO("start Get %{public}s", key.c_str());
+    std::vector<DistributedDB::Entry> entries;
+    DistributedDB::DBStatus status = delegates_.at(key)->GetEntries(StringUtils::StrToBytes(""), entries);
+    if (status != DistributedDB::DBStatus::OK) {
+        LOG_ERROR("FlatObjectStorageEngine::GetItems item fail status = %{public}d", status);
+        return status;
+    }
+    for (auto &item : entries) {
+        data[StringUtils::BytesToStr(item.key)] = item.value;
+    }
+    LOG_INFO("end Get %{public}s", key.c_str());
     return SUCCESS;
 }
 
