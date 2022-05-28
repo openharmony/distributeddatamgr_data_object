@@ -30,4 +30,4 @@ private:
 };
 } // namespace OHOS::ObjectStore
 
-#endif //OBJECT_CLIENT_ADAPTOR_H
+#endif // OBJECT_CLIENT_ADAPTOR_H

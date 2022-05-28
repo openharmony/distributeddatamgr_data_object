@@ -184,10 +184,7 @@ uint32_t FlatObjectStorageEngine::UpdateItems(
 
     std::vector<DistributedDB::Entry> entries;
     for (auto &item : data) {
-        DistributedDB::Entry entry = {
-            .key = StringUtils::StrToBytes(item.first),
-            .value = item.second
-        };
+        DistributedDB::Entry entry = { .key = StringUtils::StrToBytes(item.first), .value = item.second };
         entries.emplace_back(entry);
     }
     auto delegate = delegates_.at(key);
@@ -327,7 +324,7 @@ uint32_t FlatObjectStorageEngine::SetStatusNotifier(std::shared_ptr<StatusWatche
                     }
                 }
             };
-            SyncAllData(storeId, std::vector<std::string>({deviceId}), onComplete);
+            SyncAllData(storeId, std::vector<std::string>({ deviceId }), onComplete);
         } else {
             statusWatcher_->OnChanged(storeId, SoftBusAdapter::GetInstance()->ToNodeID(deviceId), "offline");
         }

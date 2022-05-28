@@ -13,10 +13,12 @@
  * limitations under the License.
  */
 
-#include "object_client_adaptor.h"
+#include "client_adaptor.h"
+
+#include <thread>
+
 #include "logger.h"
 #include "iservice_registry.h"
-#include <thread>
 
 namespace OHOS::ObjectStore {
 sptr<OHOS::DistributedObject::ObjectServiceProxy> ClientAdaptor::GetObjectService()
@@ -54,7 +56,7 @@ sptr<DistributedKv::KvStoreDataServiceProxy> ClientAdaptor::GetDistributedDataMa
             continue;
         }
         LOG_INFO("get distributed data manager success");
-        return iface_cast<DistributedKv::KvStoreDataServiceProxy>(remoteObject); //TODO ADD DEATH REGISTER
+        return iface_cast<DistributedKv::KvStoreDataServiceProxy>(remoteObject);
     }
 
     LOG_ERROR("get distributed data manager failed");
