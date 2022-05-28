@@ -233,7 +233,8 @@ napi_value JSDistributedObject::JSSave(napi_env env, napi_callback_info info)
     auto output = [env, ctxt](napi_value &result) {
         if (ctxt->status == napi_ok) {
             ctxt->status = napi_new_instance(env,
-                JSDistributedObject::GetSaveResultCons(env, ctxt->object->GetSessionId(), ctxt->version, ctxt->deviceId),
+                JSDistributedObject::GetSaveResultCons(env, ctxt->object->GetSessionId(),
+                    ctxt->version, ctxt->deviceId),
                 0, nullptr, &result);
             CHECK_STATUS_RETURN_VOID(ctxt, "output failed!");
         }
