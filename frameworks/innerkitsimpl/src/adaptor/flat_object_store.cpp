@@ -58,7 +58,7 @@ uint32_t FlatObjectStore::CreateObject(const std::string &sessionId)
     std::function<void(const std::map<std::string, std::vector<uint8_t>> &data)> callback =
         [sessionId, this](
             const std::map<std::string, std::vector<uint8_t>> &data) {
-            LOG_INFO("objectstore, retrieve result = %{public}d", data.size());
+            LOG_INFO("objectstore, retrieve result = %{public}lu", data.size());
             if (data.size() > 0) {
                 auto result = storageEngine_->UpdateItems(sessionId, data);
                 if (result != SUCCESS) {
