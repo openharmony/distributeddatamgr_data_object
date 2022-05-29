@@ -68,7 +68,7 @@ public:
 
 private:
     std::shared_ptr<FlatObjectStorageEngine> storageEngine_;
-    std::unique_ptr<CacheManager> cacheManager_;
+    CacheManager *cacheManager_;
     std::string bundleName_;
 };
 } // namespace OHOS::ObjectStore

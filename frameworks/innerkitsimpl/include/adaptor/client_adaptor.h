@@ -21,12 +21,12 @@
 namespace OHOS::ObjectStore {
 class ClientAdaptor {
 public:
-    static sptr<OHOS::DistributedObject::ObjectServiceProxy> GetObjectService();
+    static sptr<OHOS::DistributedObject::IObjectService> GetObjectService();
 private:
     static constexpr int32_t DISTRIBUTED_KV_DATA_SERVICE_ABILITY_ID = 1301;
     static constexpr int32_t GET_SA_RETRY_TIMES = 3;
     static constexpr int32_t RETRY_INTERVAL = 1;
-    static sptr<OHOS::DistributedKv::KvStoreDataServiceProxy> GetDistributedDataManager();
+    static sptr<OHOS::DistributedKv::IKvStoreDataService> GetDistributedDataManager();
 };
 } // namespace OHOS::ObjectStore
 

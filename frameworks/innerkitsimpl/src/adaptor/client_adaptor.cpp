@@ -21,9 +21,9 @@
 #include "iservice_registry.h"
 
 namespace OHOS::ObjectStore {
-sptr<OHOS::DistributedObject::ObjectServiceProxy> ClientAdaptor::GetObjectService()
+sptr<OHOS::DistributedObject::IObjectService> ClientAdaptor::GetObjectService()
 {
-    static sptr<OHOS::DistributedKv::KvStoreDataServiceProxy> distributedDataMgr_;
+    static sptr<OHOS::DistributedKv::IKvStoreDataService> distributedDataMgr_;
     if (distributedDataMgr_ == nullptr) {
         distributedDataMgr_ = GetDistributedDataManager();
     }
@@ -37,10 +37,10 @@ sptr<OHOS::DistributedObject::ObjectServiceProxy> ClientAdaptor::GetObjectServic
         LOG_ERROR("get object service failed");
         return nullptr;
     }
-    return iface_cast<DistributedObject::ObjectServiceProxy>(remote);
+    return iface_cast<DistributedObject::IObjectService>(remote);
 }
 
-sptr<DistributedKv::KvStoreDataServiceProxy> ClientAdaptor::GetDistributedDataManager()
+sptr<DistributedKv::IKvStoreDataService> ClientAdaptor::GetDistributedDataManager()
 {
     int retry = 0;
     while (++retry <= GET_SA_RETRY_TIMES) {
@@ -56,7 +56,7 @@ sptr<DistributedKv::KvStoreDataServiceProxy> ClientAdaptor::GetDistributedDataMa
             continue;
         }
         LOG_INFO("get distributed data manager success");
-        return iface_cast<DistributedKv::KvStoreDataServiceProxy>(remoteObject);
+        return iface_cast<DistributedKv::IKvStoreDataService>(remoteObject);
     }
 
     LOG_ERROR("get distributed data manager failed");

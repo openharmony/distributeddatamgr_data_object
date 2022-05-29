@@ -32,7 +32,7 @@ FlatObjectStore::FlatObjectStore(const std::string &bundleName)
     if (status != SUCCESS) {
         LOG_ERROR("FlatObjectStore: Failed to open, error: open storage engine failure %{public}d", status);
     }
-    cacheManager_ = std::make_unique<CacheManager>();
+    cacheManager_ = new CacheManager();
 }
 
 FlatObjectStore::~FlatObjectStore()
@@ -41,7 +41,10 @@ FlatObjectStore::~FlatObjectStore()
         storageEngine_->Close();
         storageEngine_ = nullptr;
     }
-    cacheManager_ = nullptr;
+    if (cacheManager_ != nullptr) {
+        delete cacheManager_;
+        cacheManager_ = nullptr;
+    }
 }
 
 uint32_t FlatObjectStore::CreateObject(const std::string &sessionId)
@@ -236,7 +239,7 @@ int32_t CacheManager::SaveObject(const std::string &bundleName, const std::strin
     const std::vector<std::string> &deviceList, const std::map<std::string, std::vector<uint8_t>> &objectData,
     const std::function<void(const std::map<std::string, int32_t> &)> &callback)
 {
-    sptr<OHOS::DistributedObject::ObjectServiceProxy> proxy = ClientAdaptor::GetObjectService();
+    sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
     if (proxy == nullptr) {
         LOG_ERROR("proxy is nullptr.");
         return ERR_NULL_PTR;
@@ -253,7 +256,7 @@ int32_t CacheManager::SaveObject(const std::string &bundleName, const std::strin
 int32_t CacheManager::RevokeSaveObject(
     const std::string &bundleName, const std::string &sessionId, std::function<void(int32_t)> &callback)
 {
-    sptr<OHOS::DistributedObject::ObjectServiceProxy> proxy = ClientAdaptor::GetObjectService();
+    sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
     if (proxy == nullptr) {
         LOG_ERROR("proxy is nullptr.");
         return ERR_NULL_PTR;
@@ -270,7 +273,7 @@ int32_t CacheManager::RevokeSaveObject(
 int32_t CacheManager::ResumeObject(const std::string &bundleName, const std::string &sessionId,
     std::function<void(const std::map<std::string, std::vector<uint8_t>> &data)> &callback)
 {
-    sptr<OHOS::DistributedObject::ObjectServiceProxy> proxy = ClientAdaptor::GetObjectService();
+    sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
     if (proxy == nullptr) {
         LOG_ERROR("proxy is nullptr.");
         return ERR_NULL_PTR;
