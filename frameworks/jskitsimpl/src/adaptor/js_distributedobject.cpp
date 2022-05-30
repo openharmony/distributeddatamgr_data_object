@@ -266,7 +266,7 @@ napi_value JSDistributedObject::JSSave(napi_env env, napi_callback_info info)
 // revokeSave(): Promise<RevokeSaveSuccessResponse>;
 napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info info)
 {
-    LOG_DEBUG("JSSave()");
+    LOG_DEBUG("JSRevokeSave()");
     struct RevokeSaveContext : public ContextBase {
         DistributedObject *object;
     };
@@ -324,7 +324,7 @@ napi_value JSDistributedObject::GetSaveResultCons(
     ASSERT_MATCH_ELSE_RETURN_NULL(status == napi_ok);
     napi_property_descriptor desc[] = {
         DECLARE_NAPI_PROPERTY("sessionId", napiSessionId),
-        DECLARE_NAPI_PROPERTY("version", napiDeviceId),
+        DECLARE_NAPI_PROPERTY("version", napiVersion),
         DECLARE_NAPI_PROPERTY("deviceId", napiDeviceId)
     };
 
