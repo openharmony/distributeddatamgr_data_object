@@ -23,16 +23,16 @@
 namespace OHOS::ObjectStore {
 sptr<OHOS::DistributedObject::IObjectService> ClientAdaptor::GetObjectService()
 {
-    static sptr<OHOS::DistributedKv::IKvStoreDataService> distributedDataMgr_;
-    if (distributedDataMgr_ == nullptr) {
-        distributedDataMgr_ = GetDistributedDataManager();
+    static sptr<OHOS::DistributedKv::IKvStoreDataService> distributedDataMgr;
+    if (distributedDataMgr == nullptr) {
+        distributedDataMgr = GetDistributedDataManager();
     }
-    if (distributedDataMgr_ == nullptr) {
+    if (distributedDataMgr == nullptr) {
         LOG_ERROR("get distributed data manager failed");
         return nullptr;
     }
 
-    auto remote = distributedDataMgr_->GetObjectService();
+    auto remote = distributedDataMgr->GetObjectService();
     if (remote == nullptr) {
         LOG_ERROR("get object service failed");
         return nullptr;

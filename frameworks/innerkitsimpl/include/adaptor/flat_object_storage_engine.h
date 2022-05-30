@@ -18,7 +18,7 @@
 
 #include <cstdint>
 #include <map>
-#include <shared_mutex>
+#include <mutex>
 #include <vector>
 
 #include "kv_store_delegate_manager.h"
@@ -46,7 +46,7 @@ public:
     bool isOpened_ = false;
 
 private:
-    std::shared_mutex operationMutex_{};
+    std::mutex operationMutex_{};
     std::shared_ptr<DistributedDB::KvStoreDelegateManager> storeManager_;
     std::map<std::string, DistributedDB::KvStoreNbDelegate *> delegates_;
     std::map<std::string, std::shared_ptr<TableWatcher>> observerMap_;

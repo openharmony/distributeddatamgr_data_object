@@ -66,7 +66,7 @@ uint32_t FlatObjectStorageEngine::Close()
         LOG_INFO("FlatObjectStorageEngine::Close has been closed!");
         return SUCCESS;
     }
-    std::unique_lock<std::shared_mutex> lock(operationMutex_);
+    std::lock_guard<std::mutex> lock(operationMutex_);
     storeManager_ = nullptr;
     isOpened_ = false;
     return SUCCESS;
@@ -78,7 +78,7 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
         return ERR_DB_NOT_INIT;
     }
     {
-        std::unique_lock<std::shared_mutex> lock(operationMutex_);
+        std::lock_guard<std::mutex> lock(operationMutex_);
         if (delegates_.count(key) != 0) {
             LOG_ERROR("FlatObjectStorageEngine::CreateTable %{public}s already created", key.c_str());
             return ERR_EXIST;
@@ -109,7 +109,7 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
     }
     LOG_INFO("create table %{public}s success", key.c_str());
     {
-        std::unique_lock<std::shared_mutex> lock(operationMutex_);
+        std::lock_guard<std::mutex> lock(operationMutex_);
         delegates_.insert_or_assign(key, kvStore);
     }
     return SUCCESS;
@@ -121,7 +121,7 @@ uint32_t FlatObjectStorageEngine::GetTable(const std::string &key, std::map<std:
         LOG_ERROR("not opened %{public}s", key.c_str());
         return ERR_DB_NOT_INIT;
     }
-    std::unique_lock<std::shared_mutex> lock(operationMutex_);
+    std::lock_guard<std::mutex> lock(operationMutex_);
     if (delegates_.count(key) == 0) {
         LOG_INFO("FlatObjectStorageEngine::GetTable %{public}s not exist", key.c_str());
         return ERR_DB_NOT_EXIST;
@@ -154,7 +154,7 @@ uint32_t FlatObjectStorageEngine::UpdateItem(const std::string &key, const std::
     if (!isOpened_) {
         return ERR_DB_NOT_INIT;
     }
-    std::unique_lock<std::shared_mutex> lock(operationMutex_);
+    std::lock_guard<std::mutex> lock(operationMutex_);
     if (delegates_.count(key) == 0) {
         LOG_INFO("FlatObjectStorageEngine::GetTable %{public}s not exist", key.c_str());
         return ERR_DB_NOT_EXIST;
@@ -176,7 +176,7 @@ uint32_t FlatObjectStorageEngine::UpdateItems(
     if (!isOpened_ || data.size() == 0) {
         return ERR_DB_NOT_INIT;
     }
-    std::unique_lock<std::shared_mutex> lock(operationMutex_);
+    std::lock_guard<std::mutex> lock(operationMutex_);
     if (delegates_.count(key) == 0) {
         LOG_INFO("FlatObjectStorageEngine::UpdateItems %{public}s not exist", key.c_str());
         return ERR_DB_NOT_EXIST;
@@ -203,7 +203,7 @@ uint32_t FlatObjectStorageEngine::DeleteTable(const std::string &key)
     if (!isOpened_) {
         return ERR_DB_NOT_INIT;
     }
-    std::unique_lock<std::shared_mutex> lock(operationMutex_);
+    std::lock_guard<std::mutex> lock(operationMutex_);
     if (delegates_.count(key) == 0) {
         LOG_INFO("FlatObjectStorageEngine::GetTable %{public}s not exist", key.c_str());
         return ERR_DB_NOT_EXIST;
@@ -225,7 +225,7 @@ uint32_t FlatObjectStorageEngine::GetItem(const std::string &key, const std::str
     if (!isOpened_) {
         return ERR_DB_NOT_INIT;
     }
-    std::unique_lock<std::shared_mutex> lock(operationMutex_);
+    std::lock_guard<std::mutex> lock(operationMutex_);
     if (delegates_.count(key) == 0) {
         LOG_ERROR("FlatObjectStorageEngine::GetItem %{public}s not exist", key.c_str());
         return ERR_DB_NOT_EXIST;
@@ -246,7 +246,7 @@ uint32_t FlatObjectStorageEngine::RegisterObserver(const std::string &key, std::
         LOG_ERROR("FlatObjectStorageEngine::RegisterObserver kvStore has not init");
         return ERR_DB_NOT_INIT;
     }
-    std::unique_lock<std::shared_mutex> lock(operationMutex_);
+    std::lock_guard<std::mutex> lock(operationMutex_);
     if (delegates_.count(key) == 0) {
         LOG_INFO("FlatObjectStorageEngine::RegisterObserver %{public}s not exist", key.c_str());
         return ERR_DB_NOT_EXIST;
@@ -275,7 +275,7 @@ uint32_t FlatObjectStorageEngine::UnRegisterObserver(const std::string &key)
         LOG_ERROR("FlatObjectStorageEngine::RegisterObserver kvStore has not init");
         return ERR_DB_NOT_INIT;
     }
-    std::unique_lock<std::shared_mutex> lock(operationMutex_);
+    std::lock_guard<std::mutex> lock(operationMutex_);
     if (delegates_.count(key) == 0) {
         LOG_INFO("FlatObjectStorageEngine::RegisterObserver %{public}s not exist", key.c_str());
         return ERR_DB_NOT_EXIST;
@@ -339,7 +339,7 @@ uint32_t FlatObjectStorageEngine::SyncAllData(const std::string &sessionId, cons
     const std::function<void(const std::map<std::string, DistributedDB::DBStatus> &)> &onComplete)
 {
     LOG_INFO("start");
-    std::unique_lock<std::shared_mutex> lock(operationMutex_);
+    std::lock_guard<std::mutex> lock(operationMutex_);
     if (delegates_.count(sessionId) == 0) {
         LOG_ERROR("FlatObjectStorageEngine::SyncAllData %{public}s already deleted", sessionId.c_str());
         return ERR_DB_NOT_EXIST;
@@ -365,7 +365,7 @@ uint32_t FlatObjectStorageEngine::GetItems(const std::string &key, std::map<std:
         LOG_ERROR("FlatObjectStorageEngine::GetItems %{public}s not init", key.c_str());
         return ERR_DB_NOT_INIT;
     }
-    std::unique_lock<std::shared_mutex> lock(operationMutex_);
+    std::lock_guard<std::mutex> lock(operationMutex_);
     if (delegates_.count(key) == 0) {
         LOG_ERROR("FlatObjectStorageEngine::GetItems %{public}s not exist", key.c_str());
         return ERR_DB_NOT_EXIST;
