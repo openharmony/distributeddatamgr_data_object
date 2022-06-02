@@ -72,12 +72,12 @@ uint32_t DistributedObjectStoreImpl::DeleteObject(const std::string &sessionId)
     return SUCCESS;
 }
 
-uint32_t DistributedObjectStoreImpl::Get(const std::string &sessionId, DistributedObject *object)
+uint32_t DistributedObjectStoreImpl::Get(const std::string &sessionId, DistributedObject &object)
 {
     auto iter = objects_.begin();
     while (iter != objects_.end()) {
         if ((*iter)->GetSessionId() == sessionId) {
-            object = *iter;
+            object = *(*iter);
             return SUCCESS;
         }
         iter++;
