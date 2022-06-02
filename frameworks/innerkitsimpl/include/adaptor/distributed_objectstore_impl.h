@@ -34,7 +34,7 @@ class DistributedObjectStoreImpl : public DistributedObjectStore {
 public:
     DistributedObjectStoreImpl(FlatObjectStore *flatObjectStore);
     ~DistributedObjectStoreImpl() override;
-    uint32_t Get(const std::string &sessionId, DistributedObject *object) override;
+    uint32_t Get(const std::string &sessionId, DistributedObject **object) override;
     DistributedObject *CreateObject(const std::string &sessionId) override;
     uint32_t DeleteObject(const std::string &sessionId) override;
     uint32_t Watch(DistributedObject *object, std::shared_ptr<ObjectWatcher> watcher) override;
@@ -45,6 +45,7 @@ public:
 
 private:
     DistributedObject *CacheObject(const std::string &sessionId, FlatObjectStore *flatObjectStore);
+    void RemoveCacheObject(const std::string &sessionId);
     FlatObjectStore *flatObjectStore_ = nullptr;
     std::map<DistributedObject *, std::shared_ptr<WatcherProxy>> watchers_;
     std::shared_mutex dataMutex_{};
