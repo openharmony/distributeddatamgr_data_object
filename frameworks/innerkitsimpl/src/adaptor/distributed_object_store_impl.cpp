@@ -45,6 +45,21 @@ DistributedObject *DistributedObjectStoreImpl::CacheObject(
     return object;
 }
 
+void DistributedObjectStoreImpl::RemoveCacheObject(const std::string &sessionId)
+{
+    std::unique_lock<std::shared_mutex> cacheLock(dataMutex_);
+    auto iter = objects_.begin();
+    while (iter != objects_.end()) {
+        if ((*iter)->GetSessionId() == sessionId) {
+            delete *iter;
+            iter = objects_.erase(iter);
+        } else {
+            iter++;
+        }
+    }
+    return;
+}
+
 DistributedObject *DistributedObjectStoreImpl::CreateObject(const std::string &sessionId)
 {
     DistributedKv::DdsTrace trace(std::string("DistributedObjectImpl::") + std::string(__FUNCTION__),
@@ -74,15 +89,16 @@ uint32_t DistributedObjectStoreImpl::DeleteObject(const std::string &sessionId)
         LOG_ERROR("DistributedObjectStoreImpl::DeleteObject store delete err %{public}d", status);
         return status;
     }
+    RemoveCacheObject(sessionId);
     return SUCCESS;
 }
 
-uint32_t DistributedObjectStoreImpl::Get(const std::string &sessionId, DistributedObject *object)
+uint32_t DistributedObjectStoreImpl::Get(const std::string &sessionId, DistributedObject **object)
 {
     auto iter = objects_.begin();
     while (iter != objects_.end()) {
         if ((*iter)->GetSessionId() == sessionId) {
-            object = *iter;
+            *object = *iter;
             return SUCCESS;
         }
         iter++;

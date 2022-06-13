@@ -55,6 +55,10 @@ uint32_t FlatObjectStorageEngine::Open(const std::string &bundleName)
         LOG_ERROR("FlatObjectStorageEngine::make shared fail");
         return ERR_NOMEM;
     }
+
+    DistributedDB::KvStoreConfig config;
+    config.dataDir = "/data/log";
+    storeManager_->SetKvStoreConfig(config);
     isOpened_ = true;
     LOG_INFO("FlatObjectDatabase::Open Succeed");
     return SUCCESS;
@@ -84,10 +88,6 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
             return ERR_EXIST;
         }
     }
-
-    DistributedDB::KvStoreConfig config;
-    config.dataDir = "/data/log";
-    storeManager_->SetKvStoreConfig(config);
     DistributedDB::KvStoreNbDelegate *kvStore = nullptr;
     DistributedDB::DBStatus status;
     DistributedDB::KvStoreNbDelegate::Option option = { true, true,
