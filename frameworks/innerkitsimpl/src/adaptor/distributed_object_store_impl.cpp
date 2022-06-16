@@ -15,6 +15,7 @@
 
 #include <thread>
 
+#include "dds_trace.h"
 #include "distributed_object_impl.h"
 #include "distributed_objectstore_impl.h"
 #include "objectstore_errors.h"
@@ -61,6 +62,8 @@ void DistributedObjectStoreImpl::RemoveCacheObject(const std::string &sessionId)
 
 DistributedObject *DistributedObjectStoreImpl::CreateObject(const std::string &sessionId)
 {
+    DistributedDataDfx::DdsTrace trace(std::string("DistributedObjectImpl::") + std::string(__FUNCTION__),
+        DistributedDataDfx::TraceSwitch::TRACE_CHAIN_ON);
     if (flatObjectStore_ == nullptr) {
         LOG_ERROR("DistributedObjectStoreImpl::CreateObject store not opened!");
         return nullptr;
@@ -75,6 +78,8 @@ DistributedObject *DistributedObjectStoreImpl::CreateObject(const std::string &s
 
 uint32_t DistributedObjectStoreImpl::DeleteObject(const std::string &sessionId)
 {
+    DistributedDataDfx::DdsTrace trace(std::string("DistributedObjectImpl::") + std::string(__FUNCTION__),
+        DistributedDataDfx::TraceSwitch::TRACE_CHAIN_ON);
     if (flatObjectStore_ == nullptr) {
         LOG_ERROR("DistributedObjectStoreImpl::Sync object err ");
         return ERR_NULL_OBJECTSTORE;
