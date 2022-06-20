@@ -23,6 +23,23 @@
       "moduleName": "entry",
       "moduleType": "entry"
     },
+    "defPermissions": [
+      {
+        "availableScope": [],
+        "grantMode": "user_grant",
+        "name": "ohos.permission.DISTRIBUTED_DATASYNC"
+      }
+    ],
+    "reqPermissions": [
+      {
+        "name": "ohos.permission.GRANT_SENSITIVE_PERMISSIONS",
+        "reason": "ceshi"
+      },
+      {
+        "name": "ohos.permission.DISTRIBUTED_DATASYNC",
+        "reason": "ceshi"
+      }
+    ],
     "abilities": [
       {
         "visible": true,
