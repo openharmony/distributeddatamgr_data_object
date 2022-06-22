@@ -187,9 +187,9 @@ uint32_t CacheManager::Save(const std::string &bundleName, const std::string &se
     const std::map<std::string, std::vector<uint8_t>> &objectData)
 {
     std::unique_lock<std::mutex> lck(mutex_);
-    std::vector<std::string> deviceList = { deviceId };
+    //std::vector<std::string> deviceList = { deviceId };
     BlockData<int32_t> blockData;
-    int32_t status = SaveObject(bundleName, sessionId, deviceList, objectData,
+    int32_t status = SaveObject(bundleName, sessionId, deviceId, objectData,
         [this, &deviceId, &blockData](const std::map<std::string, int32_t> &results) {
             LOG_INFO("CacheManager::task callback");
             if (results.count(deviceId) != 0) {
@@ -228,7 +228,7 @@ uint32_t CacheManager::RevokeSave(const std::string &bundleName, const std::stri
 }
 
 int32_t CacheManager::SaveObject(const std::string &bundleName, const std::string &sessionId,
-    const std::vector<std::string> &deviceList, const std::map<std::string, std::vector<uint8_t>> &objectData,
+    const std::string &deviceId, const std::map<std::string, std::vector<uint8_t>> &objectData,
     const std::function<void(const std::map<std::string, int32_t> &)> &callback)
 {
     sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
@@ -237,7 +237,7 @@ int32_t CacheManager::SaveObject(const std::string &bundleName, const std::strin
         return ERR_NULL_PTR;
     }
     sptr<IObjectSaveCallback> objectSaveCallback = new ObjectSaveCallback(callback);
-    int32_t status = proxy->ObjectStoreSave(bundleName, sessionId, deviceList, objectData, objectSaveCallback);
+    int32_t status = proxy->ObjectStoreSave(bundleName, sessionId, deviceId, objectData, objectSaveCallback);
     if (status != SUCCESS) {
         LOG_ERROR("object save failed code=%d.", static_cast<int>(status));
     }

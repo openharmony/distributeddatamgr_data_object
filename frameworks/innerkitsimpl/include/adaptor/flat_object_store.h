@@ -42,7 +42,7 @@ public:
                          std::function<void(const std::map<std::string, std::vector<uint8_t>> &data)> &callback);
 private:
     int32_t SaveObject(const std::string &bundleName, const std::string &sessionId,
-        const std::vector<std::string> &deviceList, const std::map<std::string, std::vector<uint8_t>> &objectData,
+        const std::string &deviceId, const std::map<std::string, std::vector<uint8_t>> &objectData,
         const std::function<void(const std::map<std::string, int32_t> &)> &callback);
     int32_t RevokeSaveObject(
         const std::string &bundleName, const std::string &sessionId, std::function<void(int32_t)> &callback);
