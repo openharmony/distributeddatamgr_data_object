@@ -84,6 +84,10 @@ napi_value JSDistributedObject::JSPut(napi_env env, napi_callback_info info)
     status = napi_unwrap(env, thisVar, (void **)&wrapper);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     ASSERT_MATCH_ELSE_RETURN_NULL(wrapper != nullptr);
+    if (wrapper->isUndefined(key, valueType)) {
+        return nullptr;
+    }
+    wrapper->DeleteUndefined(key);
     DoPut(env, wrapper, key, valueType, argv[1]);
     LOG_INFO("put %{public}s success", key);
     return nullptr;

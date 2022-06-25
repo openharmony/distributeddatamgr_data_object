@@ -30,12 +30,15 @@ public:
     DistributedObject *GetObject();
     bool AddWatch(napi_env env, const char *type, napi_value handler);
     void DeleteWatch(napi_env env, const char *type, napi_value handler = nullptr);
+    bool isUndefined(char *value, napi_valuetype valueType);
+    void DeleteUndefined(char *value);
 
 private:
     DistributedObjectStore *objectStore_;
     DistributedObject *object_;
     std::unique_ptr<JSWatcher> watcher_ = nullptr;
     std::shared_mutex watchMutex_{};
+    std::vector<std::string> undefinedKeyList;
 };
 } // namespace OHOS::ObjectStore
 

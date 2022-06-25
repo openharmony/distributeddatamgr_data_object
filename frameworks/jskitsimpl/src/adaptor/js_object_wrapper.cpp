@@ -14,6 +14,7 @@
  */
 
 #include "js_object_wrapper.h"
+#include "algorithm"
 
 #include "logger.h"
 namespace OHOS::ObjectStore {
@@ -58,6 +59,25 @@ void JSObjectWrapper::DeleteWatch(napi_env env, const char *type, napi_value han
         LOG_INFO("JSObjectWrapper::DeleteWatch %{public}s", type);
     } else {
         LOG_ERROR("JSObjectWrapper::DeleteWatch watcher_ is null");
+    }
+}
+
+bool JSObjectWrapper::isUndefined(char *value, napi_valuetype valueType) {
+    if (valueType != napi_undefined) {
+        return false;
+    }
+    std::string tmpStr = value;
+    if (find(undefinedKeyList.begin(), undefinedKeyList.end(), tmpStr) == undefinedKeyList.end()) {
+        undefinedKeyList.push_back(tmpStr);
+    }
+    return true;
+}
+
+void JSObjectWrapper::DeleteUndefined(char *value) {
+    std::string tmpStr = value;
+    auto it = find(undefinedKeyList.begin(), undefinedKeyList.end(), tmpStr);
+    if (it != undefinedKeyList.end()) {
+        undefinedKeyList.erase(it);
     }
 }
 } // namespace OHOS::ObjectStore
