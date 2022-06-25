@@ -18,6 +18,7 @@ const SESSION_ID = "__sessionId";
 const VERSION = "__version";
 const COMPLEX_TYPE = "[COMPLEX]";
 const STRING_TYPE = "[STRING]";
+const NULL_TYPE = "[NULL]"
 const JS_ERROR = 1;
 
 class Distributed {
@@ -139,6 +140,8 @@ function joinSession(obj, objectId, sessionId) {
                         result = result.substr(STRING_TYPE.length);
                     } else if (result.startsWith(COMPLEX_TYPE)) {
                         result = JSON.parse(result.substr(COMPLEX_TYPE.length))
+                    } else if (result.startsWith(NULL_TYPE)) {
+                        result = null;
                     } else {
                         console.error("error type " + result);
                     }
@@ -154,6 +157,10 @@ function joinSession(obj, objectId, sessionId) {
                     console.info("set " + key + " " + value);
                 } else if (typeof newValue == "string") {
                     let value = STRING_TYPE + newValue;
+                    object.put(key, value);
+                    console.info("set " + key + " " + value);
+                } else if (newValue === null) {
+                    let value = NULL_TYPE;
                     object.put(key, value);
                     console.info("set " + key + " " + value);
                 } else {
