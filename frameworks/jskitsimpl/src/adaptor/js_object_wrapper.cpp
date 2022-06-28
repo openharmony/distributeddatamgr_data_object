@@ -60,4 +60,31 @@ void JSObjectWrapper::DeleteWatch(napi_env env, const char *type, napi_value han
         LOG_ERROR("JSObjectWrapper::DeleteWatch watcher_ is null");
     }
 }
+
+bool JSObjectWrapper::isUndefined(char *value)
+{
+    std::string tmpStr = value;
+    auto it = std::find(undefinedProperties.begin(), undefinedProperties.end(), tmpStr);
+    if (it == undefinedProperties.end()) {
+        return false;
+    }
+    return true;
+}
+
+void JSObjectWrapper::AddUndefined(char *value)
+{
+    std::string tmpStr = value;
+    if (std::find(undefinedProperties.begin(), undefinedProperties.end(), tmpStr) == undefinedProperties.end()) {
+        undefinedProperties.push_back(tmpStr);
+    }
+}
+
+void JSObjectWrapper::DeleteUndefined(char *value)
+{
+    std::string tmpStr = value;
+    auto it = std::find(undefinedProperties.begin(), undefinedProperties.end(), tmpStr);
+    if (it != undefinedProperties.end()) {
+        undefinedProperties.erase(it);
+    }
+}
 } // namespace OHOS::ObjectStore

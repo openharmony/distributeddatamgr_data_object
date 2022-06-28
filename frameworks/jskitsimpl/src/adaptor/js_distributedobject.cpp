@@ -56,6 +56,10 @@ napi_value JSDistributedObject::JSGet(napi_env env, napi_callback_info info)
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     ASSERT_MATCH_ELSE_RETURN_NULL(wrapper != nullptr);
     napi_value result = nullptr;
+    if (wrapper->isUndefined(key)) {
+        napi_get_undefined(env, &result);
+        return result;
+    }
     DoGet(env, wrapper, key, result);
     return result;
 }
@@ -84,6 +88,11 @@ napi_value JSDistributedObject::JSPut(napi_env env, napi_callback_info info)
     status = napi_unwrap(env, thisVar, (void **)&wrapper);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     ASSERT_MATCH_ELSE_RETURN_NULL(wrapper != nullptr);
+    if (valueType == napi_undefined) {
+        wrapper->AddUndefined(key);
+        return nullptr;
+    }
+    wrapper->DeleteUndefined(key);
     DoPut(env, wrapper, key, valueType, argv[1]);
     LOG_INFO("put %{public}s success", key);
     return nullptr;
