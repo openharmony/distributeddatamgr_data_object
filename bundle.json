@@ -51,7 +51,7 @@
                 "distributeddatamgr",
                 "napi",
                 "common",
-                "samgr_standard",
+                "samgr",
                 "ipc",
                 "hiviewdfx_hilog_native",
                 "libuv",
