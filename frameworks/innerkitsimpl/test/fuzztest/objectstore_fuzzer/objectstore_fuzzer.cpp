@@ -22,7 +22,6 @@
 using namespace OHOS::ObjectStore;
 
 namespace OHOS {
-
 bool PutDoubleFuzz(const uint8_t *data, size_t size)
 {
     bool result = false;
@@ -33,7 +32,7 @@ bool PutDoubleFuzz(const uint8_t *data, size_t size)
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
     DistributedObject *object = objectStore->CreateObject(sessionId);
     uint32_t ret = object->PutDouble(skey, sval);
-    if(!ret) {
+    if (!ret) {
         result = true;
     }
     objectStore->DeleteObject(sessionId);
@@ -49,11 +48,11 @@ bool PutBooleanFuzz(const uint8_t *data, size_t size)
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
     DistributedObject *object = objectStore->CreateObject(sessionId);
     uint32_t ret = object->PutBoolean(skey, true);
-    if(!ret) {
+    if (!ret) {
         result = true;
     }
     ret = object->PutBoolean(skey, false);
-    if(ret) {
+    if (ret) {
         result = false;
     }
     objectStore->DeleteObject(sessionId);
@@ -70,7 +69,7 @@ bool PutStringFuzz(const uint8_t *data, size_t size)
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
     DistributedObject *object = objectStore->CreateObject(sessionId);
     uint32_t ret = object->PutString(skey, sval);
-    if(!ret) {
+    if (!ret) {
         result = true;
     }
     objectStore->DeleteObject(sessionId);
@@ -91,7 +90,7 @@ bool PutComplexFuzz(const uint8_t *data, size_t size)
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
     DistributedObject *object = objectStore->CreateObject(sessionId);
     uint32_t ret = object->PutComplex(skey, value);
-    if(!ret) {
+    if (!ret) {
         result = true;
     }
     objectStore->DeleteObject(sessionId);
@@ -108,9 +107,9 @@ bool GetDoubleFuzz(const uint8_t *data, size_t size)
     std::string skey(data, data + size);
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    if(SUCCESS == object->PutDouble(skey, sval)) {
+    if (SUCCESS == object->PutDouble(skey, sval)) {
         uint32_t ret = object->GetDouble(skey, val);
-        if(!ret) {
+        if (!ret) {
             result = true;
         }
     }
@@ -126,9 +125,9 @@ bool GetBooleanFuzz(const uint8_t *data, size_t size)
     std::string skey(data, data + size);
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    if(SUCCESS ==  object->PutBoolean(skey, true)) {
+    if (SUCCESS ==  object->PutBoolean(skey, true)) {
         uint32_t ret = object->GetBoolean(skey, val);
-        if(!ret) {
+        if (!ret) {
             result = true;
         }
     }
@@ -138,7 +137,7 @@ bool GetBooleanFuzz(const uint8_t *data, size_t size)
 
 bool GetStringFuzz(const uint8_t *data, size_t size)
 {
-    bool result= false;
+    bool result = false;
     std::string bundleName = "com.example.myapplication";
     std::string sessionId = "123456";
     std::string skey(data, data + size);
@@ -146,9 +145,9 @@ bool GetStringFuzz(const uint8_t *data, size_t size)
     std::string val;
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    if(SUCCESS ==  object->PutString(skey, sval)) {
+    if (SUCCESS ==  object->PutString(skey, sval)) {
         uint32_t ret = object->GetString(skey, val);
-        if(!ret) {
+        if (!ret) {
             result = true;
         }
     }
@@ -170,9 +169,9 @@ bool GetComplexFuzz(const uint8_t *data, size_t size)
     }
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    if(SUCCESS == object->PutComplex(skey, svalue)) {
+    if (SUCCESS == object->PutComplex(skey, svalue)) {
         uint32_t ret = object->GetComplex(skey, val);
-        if(!ret) {
+        if (!ret) {
             result = true;
         }
     }
