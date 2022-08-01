@@ -120,8 +120,12 @@ napi_value JSDistributedObjectStore::NewDistributedObject(
 // function createObjectSync(sessionId: string, objectId:string): DistributedObject;
 napi_value JSDistributedObjectStore::JSCreateObjectSync(napi_env env, napi_callback_info info)
 {
+    if (IsSandBox()) {
+        LOG_WARN("entering sandbox app.");
+        return nullptr;
+    }
     LOG_INFO("start JSCreateObjectSync");
-    if (!JSDistributedObjectStore::CheckSyncPermission(env)) {
+    if (!JSDistributedObjectStore::CheckSyncPermission()) {
         LOG_INFO("no permission ohos.permission.DISTRIBUTED_DATASYNC");
         return nullptr;
     }
@@ -415,7 +419,7 @@ napi_value JSDistributedObjectStore::JSDeleteCallback(napi_env env, napi_callbac
     return result;
 }
 
-bool JSDistributedObjectStore::CheckSyncPermission(napi_env env)
+bool JSDistributedObjectStore::CheckSyncPermission()
 {
     int32_t ret = Security::AccessToken::AccessTokenKit::VerifyAccessToken(
         AbilityRuntime::Context::GetApplicationContext()->GetApplicationInfo()->accessTokenId, DISTRIBUTED_DATASYNC);
@@ -425,5 +429,16 @@ bool JSDistributedObjectStore::CheckSyncPermission(napi_env env)
         return false;
     }
     return true;
+}
+
+// don't create distributed data object while this application is sandbox
+bool JSDistributedObjectStore::IsSandBox()
+{
+    int32_t dlpFlag = Security::AccessToken::AccessTokenKit::GetHapDlpFlag(
+        AbilityRuntime::Context::GetApplicationContext()->GetApplicationInfo()->accessTokenId);
+    if (dlpFlag != 0) {
+        return true;
+    }
+    return false;
 }
 } // namespace OHOS::ObjectStore
