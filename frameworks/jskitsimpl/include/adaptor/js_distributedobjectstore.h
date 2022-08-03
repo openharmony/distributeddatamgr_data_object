@@ -38,9 +38,10 @@ private:
         const std::string &objectId, napi_value callback);
     static void DelCallback(napi_env env, std::map<std::string, std::list<napi_ref>> &callbacks,
         const std::string &sessionId, napi_value callback = nullptr);
-    static bool CheckSyncPermission(napi_env env);
+    static bool CheckSyncPermission();
     static void RestoreWatchers(napi_env env, JSObjectWrapper *wrapper, const std::string &objectId);
     static std::string GetBundleName(napi_env env);
+    static bool IsSandBox();
 };
 } // namespace OHOS::ObjectStore
 #endif // JS_DISTRIBUTEDDATAOBJECTSTORE_H
