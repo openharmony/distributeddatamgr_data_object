@@ -52,7 +52,7 @@ bool PutBooleanFuzz(const uint8_t *data, size_t size)
         result = true;
     }
     ret = object->PutBoolean(skey, false);
-    if (ret) {
+    if (ret != SUCCESS) {
         result = false;
     }
     objectStore->DeleteObject(sessionId);
@@ -84,7 +84,7 @@ bool PutComplexFuzz(const uint8_t *data, size_t size)
     size_t sum = 10;
     std::string skey(data, data + size);
     std::vector<uint8_t> value;
-    for (int i = 0; i < sum; i ++) {
+    for (int i = 0; i < sum; i++) {
         value.push_back(*data + i);
     }
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
@@ -164,7 +164,7 @@ bool GetComplexFuzz(const uint8_t *data, size_t size)
     std::string skey(data, data + size);
     std::vector<uint8_t> svalue;
     std::vector<uint8_t> val;
-    for (int i = 0; i < sum; i ++) {
+    for (int i = 0; i < sum; i++) {
         svalue.push_back(*data + i);
     }
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
