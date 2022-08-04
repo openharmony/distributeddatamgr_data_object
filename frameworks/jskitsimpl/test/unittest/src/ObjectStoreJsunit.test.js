@@ -657,7 +657,6 @@ describe('objectStoreTest',function () {
             console.log(TAG + "start unWatch change");
             complex_object.off("change");
             console.log(TAG + "end unWatch success");
-            count++;
         }
         var endTime = new Date().getTime();
         var totalTime = endTime - startTime;
