@@ -23,7 +23,7 @@ config("objectstore_config") {
     "../../frameworks/innerkitsimpl/include/communicator",
     "../../interfaces/innerkits",
     "//third_party/bounds_checking_function/include",
-    "//foundation/distributeddatamgr/distributeddatamgr/services/distributeddataservice/adapter/include/dfx",
+    "//foundation/distributeddatamgr/datamgr_service/services/distributeddataservice/adapter/include/dfx",
   ]
 }
 
@@ -57,14 +57,14 @@ ohos_shared_library("distributeddataobject_impl") {
   ldflags = [ "-Wl,--exclude-libs=libdistributeddata_dfx_static.a" ]
 
   deps = [
-    "//foundation/distributeddatamgr/distributeddatamgr/services/distributeddataservice/adapter/dfx:distributeddata_dfx_static",
-    "//foundation/distributeddatamgr/distributeddatamgr/services/distributeddataservice/libs/distributeddb:distributeddb",
+    "//foundation/distributeddatamgr/datamgr_service/services/distributeddataservice/adapter/dfx:distributeddata_dfx_static",
+    "//foundation/distributeddatamgr/kv_store/frameworks/innerkitsimpl/kvdb/distributeddb:distributeddb",
     "//third_party/bounds_checking_function:libsec_static",
     "//third_party/libuv:uv",
   ]
   external_deps = [
     "c_utils:utils",
-    "distributeddatamgr:distributeddata_inner",
+    "kv_store:distributeddata_inner",
     "dsoftbus:softbus_client",
     "hitrace_native:hitrace_meter",
     "hitrace_native:libhitrace",
