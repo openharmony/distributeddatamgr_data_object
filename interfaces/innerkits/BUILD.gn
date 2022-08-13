@@ -69,8 +69,7 @@ ohos_shared_library("distributeddataobject_impl") {
     "hitrace_native:libhitrace",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
-    "kv_store:distributeddata_inner",
-    "samgr_standard:samgr_proxy",
+    "samgr:samgr_proxy",
   ]
   public_configs = [ ":objectstore_public_config" ]
   relative_install_dir = "module/data"
