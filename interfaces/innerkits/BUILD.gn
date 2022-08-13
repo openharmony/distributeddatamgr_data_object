@@ -64,6 +64,7 @@ ohos_shared_library("distributeddataobject_impl") {
   ]
   external_deps = [
     "c_utils:utils",
+    "kv_store:distributeddata_inner",
     "dsoftbus:softbus_client",
     "hitrace_native:hitrace_meter",
     "hitrace_native:libhitrace",
