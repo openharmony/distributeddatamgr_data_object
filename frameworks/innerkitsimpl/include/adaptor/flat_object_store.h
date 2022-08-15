@@ -64,10 +64,13 @@ public:
         const std::function<void(const std::map<std::string, DistributedDB::DBStatus> &)> &onComplete);
     uint32_t Save(const std::string &sessionId, const std::string &deviceId);
     uint32_t RevokeSave(const std::string &sessionId);
-
+    void CheckRetrieveCache(const std::string &sessionId);
+    
 private:
     std::shared_ptr<FlatObjectStorageEngine> storageEngine_;
     CacheManager *cacheManager_;
+    std::mutex mutex_;
+    std::vector<std::string> retrievedCache_ {};
     std::string bundleName_;
 };
 } // namespace OHOS::ObjectStore

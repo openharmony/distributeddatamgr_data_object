@@ -40,6 +40,7 @@ public:
     uint32_t Watch(DistributedObject *object, std::shared_ptr<ObjectWatcher> watcher) override;
     uint32_t UnWatch(DistributedObject *object) override;
     uint32_t SetStatusNotifier(std::shared_ptr<StatusNotifier> notifier) override;
+    void NotifyCachedStatus(const std::string &sessionId) override;
     void TriggerSync() override;
     void TriggerRestore(std::function<void()> notifier) override;
 
@@ -48,8 +49,8 @@ private:
     void RemoveCacheObject(const std::string &sessionId);
     FlatObjectStore *flatObjectStore_ = nullptr;
     std::map<DistributedObject *, std::shared_ptr<WatcherProxy>> watchers_;
-    std::shared_mutex dataMutex_{};
-    std::vector<DistributedObject *> objects_{};
+    std::shared_mutex dataMutex_ {};
+    std::vector<DistributedObject *> objects_ {};
 };
 class StatusNotifierProxy : public StatusWatcher {
 public:

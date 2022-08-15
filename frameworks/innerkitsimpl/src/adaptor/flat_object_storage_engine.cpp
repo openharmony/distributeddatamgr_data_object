@@ -404,6 +404,15 @@ uint32_t FlatObjectStorageEngine::GetItems(const std::string &key, std::map<std:
     return SUCCESS;
 }
 
+void FlatObjectStorageEngine::NotifyStatus(const std::string &sessionId, const std::string &deviceId,
+                                           const std::string &status)
+{
+    if (statusWatcher_ == nullptr) {
+        return;
+    }
+    statusWatcher_->OnChanged(sessionId, deviceId, status);
+}
+    
 void Watcher::OnChange(const DistributedDB::KvStoreChangedData &data)
 {
     std::vector<std::string> changedData;
