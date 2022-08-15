@@ -61,6 +61,12 @@ uint32_t FlatObjectStore::CreateObject(const std::string &sessionId)
             const std::map<std::string, std::vector<uint8_t>> &data) {
             if (data.size() > 0) {
                 LOG_INFO("objectstore, retrieve success");
+                {
+                    std::lock_guard<std::mutex> lck(mutex_);
+                    if (find(retrievedCache_.begin(), retrievedCache_.end(), sessionId) == retrievedCache_.end()) {
+                        retrievedCache_.push_back(sessionId);
+                    }
+                }
                 auto result = storageEngine_->UpdateItems(sessionId, data);
                 if (result != SUCCESS) {
                     LOG_ERROR("UpdateItems failed, status = %{public}d", result);
@@ -179,6 +185,16 @@ uint32_t FlatObjectStore::RevokeSave(const std::string &sessionId)
     return cacheManager_->RevokeSave(bundleName_, sessionId);
 }
 
+void FlatObjectStore::CheckRetrieveCache(const std::string &sessionId)
+{
+    std::lock_guard<std::mutex> lck(mutex_);
+    auto iter = find(retrievedCache_.begin(), retrievedCache_.end(), sessionId);
+    if (iter != retrievedCache_.end()) {
+        storageEngine_->NotifyStatus(*iter, "local", "restored");
+        retrievedCache_.erase(iter);
+    }
+}
+
 CacheManager::CacheManager()
 {
 }
@@ -269,8 +285,8 @@ int32_t CacheManager::ResumeObject(const std::string &bundleName, const std::str
         LOG_ERROR("proxy is nullptr.");
         return ERR_NULL_PTR;
     }
-    sptr<IObjectRetrieveCallback> objectRevokeSaveCallback = new ObjectRetrieveCallback(callback);
-    int32_t status = proxy->ObjectStoreRetrieve(bundleName, sessionId, objectRevokeSaveCallback);
+    sptr<IObjectRetrieveCallback> objectRetrieveCallback = new ObjectRetrieveCallback(callback);
+    int32_t status = proxy->ObjectStoreRetrieve(bundleName, sessionId, objectRetrieveCallback);
     if (status != SUCCESS) {
         LOG_ERROR("object resume failed code=%d.", static_cast<int>(status));
     }

@@ -37,6 +37,7 @@ public:
     virtual uint32_t Watch(DistributedObject *object, std::shared_ptr<ObjectWatcher> objectWatcher) = 0;
     virtual uint32_t UnWatch(DistributedObject *object) = 0;
     virtual uint32_t SetStatusNotifier(std::shared_ptr<StatusNotifier> notifier) = 0;
+    virtual void NotifyCachedStatus(const std::string &sessionId) = 0;
     virtual void TriggerSync();
     virtual void TriggerRestore(std::function<void()> notifier);
 };

@@ -233,6 +233,11 @@ uint32_t DistributedObjectStoreImpl::SetStatusNotifier(std::shared_ptr<StatusNot
     return status;
 }
 
+void DistributedObjectStoreImpl::NotifyCachedStatus(const std::string &sessionId)
+{
+    flatObjectStore_->CheckRetrieveCache(sessionId);
+}
+
 WatcherProxy::WatcherProxy(const std::shared_ptr<ObjectWatcher> objectWatcher, const std::string &sessionId)
     : FlatObjectWatcher(sessionId), objectWatcher_(objectWatcher)
 {

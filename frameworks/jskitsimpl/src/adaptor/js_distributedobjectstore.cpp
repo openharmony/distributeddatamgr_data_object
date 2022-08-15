@@ -113,6 +113,7 @@ napi_value JSDistributedObjectStore::NewDistributedObject(
         },
         nullptr, nullptr);
     RestoreWatchers(env, objectWrapper, objectId);
+    objectStore->NotifyCachedStatus(object->GetSessionId());
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     return result;
 }

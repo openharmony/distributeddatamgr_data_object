@@ -44,7 +44,7 @@ public:
     uint32_t SyncAllData(const std::string &sessionId, const std::vector<std::string> &deviceIds,
         const std::function<void(const std::map<std::string, DistributedDB::DBStatus> &)> &onComplete);
     bool isOpened_ = false;
-
+    void NotifyStatus(const std::string &sessionId, const std::string &deviceId, const std::string &status);
 private:
     std::mutex operationMutex_{};
     std::shared_ptr<DistributedDB::KvStoreDelegateManager> storeManager_;
