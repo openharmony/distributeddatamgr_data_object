@@ -195,6 +195,7 @@ uint32_t DistributedObjectImpl::GetComplex(const std::string &key, std::vector<u
         LOG_ERROR("DistributedObjectImpl:GetString field not exist. %{public}d %{public}s", status, key.c_str());
         return status;
     }
+    value.erase(value.begin(), value.begin() + sizeof(Type));
     return status;
 }
 
