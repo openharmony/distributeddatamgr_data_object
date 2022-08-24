@@ -75,7 +75,23 @@ uint32_t FlatObjectStore::CreateObject(const std::string &sessionId)
                 LOG_INFO("objectstore, retrieve empty");
             }
         };
+    std::function<void(const std::map<std::string, std::vector<uint8_t>> &data)> remoteResumeCallback =
+            [sessionId, this](
+                    const std::map<std::string, std::vector<uint8_t>> &data) {
+                LOG_INFO("SubscribeDataChange callback success.");
+                std::map<std::string, std::vector<uint8_t>> filteredData = data;
+                FilterData(sessionId, filteredData);
+                if (!filteredData.empty()) {
+                    auto status = storageEngine_->UpdateItems(sessionId, filteredData);
+                    if (status != SUCCESS) {
+                        LOG_ERROR("UpdateItems failed, status = %{public}d", status);
+                    }
+                    storageEngine_->NotifyChange(sessionId, filteredData);
+                }
+                storageEngine_->NotifyStatus(sessionId, "local", "online");
+            };
     cacheManager_->ResumeObject(bundleName_, sessionId, callback);
+    cacheManager_->SubscribeDataChange(bundleName_, sessionId, remoteResumeCallback);
     return SUCCESS;
 }
 
@@ -195,6 +211,16 @@ void FlatObjectStore::CheckRetrieveCache(const std::string &sessionId)
     }
 }
 
+void FlatObjectStore::FilterData(const std::string &sessionId,
+                                 std::map<std::string, std::vector<uint8_t>> &data)
+{
+    std::map<std::string, std::vector<uint8_t>> allData {};
+    storageEngine_->GetItems(sessionId, allData);
+    for (const auto &item : allData) {
+        data.erase(item.first);
+    }
+}
+
 CacheManager::CacheManager()
 {
 }
@@ -291,6 +317,23 @@ int32_t CacheManager::ResumeObject(const std::string &bundleName, const std::str
         LOG_ERROR("object resume failed code=%d.", static_cast<int>(status));
     }
     LOG_INFO("object resume successful");
+    return status;
+}
+
+int32_t CacheManager::SubscribeDataChange(const std::string &bundleName, const std::string &sessionId,
+    std::function<void(const std::map<std::string, std::vector<uint8_t>> &data)> &callback)
+{
+    sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
+    if (proxy == nullptr) {
+        LOG_ERROR("proxy is nullptr.");
+        return ERR_NULL_PTR;
+    }
+    sptr<IObjectChangeCallback> objectChangeCallback = new ObjectChangeCallback(callback);
+    int32_t status = proxy->RegisterDataObserver(bundleName, sessionId, objectChangeCallback);
+    if (status != SUCCESS) {
+        LOG_ERROR("object remote resume failed code=%d.", static_cast<int>(status));
+    }
+    LOG_INFO("object remote resume successful");
     return status;
 }
 } // namespace OHOS::ObjectStore
