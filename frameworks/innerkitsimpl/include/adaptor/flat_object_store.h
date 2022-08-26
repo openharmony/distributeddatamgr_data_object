@@ -29,7 +29,7 @@ public:
     FlatObjectWatcher(const std::string &sessionId) : TableWatcher(sessionId)
     {
     }
-    void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override;
+    virtual void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) = 0;
 };
 
 class CacheManager {
