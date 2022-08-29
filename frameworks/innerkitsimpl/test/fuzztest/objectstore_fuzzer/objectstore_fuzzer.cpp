@@ -48,7 +48,7 @@ uint32_t SetUpTestCase()
 bool PutDoubleFuzz(const uint8_t *data, size_t size)
 {
     bool result = false;
-    if(SUCCESS != SetUpTestCase()) {
+    if (SUCCESS != SetUpTestCase()) {
         return false;
     }
     double sval = static_cast<double>(size);
@@ -64,7 +64,7 @@ bool PutDoubleFuzz(const uint8_t *data, size_t size)
 bool PutBooleanFuzz(const uint8_t *data, size_t size)
 {
     bool result = false;
-    if(SUCCESS != SetUpTestCase()) {
+    if (SUCCESS != SetUpTestCase()) {
         return false;
     }
     std::string skey(data, data + size);
@@ -83,7 +83,7 @@ bool PutBooleanFuzz(const uint8_t *data, size_t size)
 bool PutStringFuzz(const uint8_t *data, size_t size)
 {
     bool result = false;
-    if(SUCCESS != SetUpTestCase()) {
+    if (SUCCESS != SetUpTestCase()) {
         return false;
     }
     std::string skey(data, data + size);
@@ -99,7 +99,7 @@ bool PutStringFuzz(const uint8_t *data, size_t size)
 bool PutComplexFuzz(const uint8_t *data, size_t size)
 {
     bool result = false;
-    if(SUCCESS != SetUpTestCase()) {
+    if (SUCCESS != SetUpTestCase()) {
         return false;
     }
     size_t sum = 10;
@@ -119,7 +119,7 @@ bool PutComplexFuzz(const uint8_t *data, size_t size)
 bool GetDoubleFuzz(const uint8_t *data, size_t size)
 {
     bool result = false;
-    if(SUCCESS != SetUpTestCase()) {
+    if (SUCCESS != SetUpTestCase()) {
         return false;
     }
     double sval = static_cast<double>(size);
@@ -138,7 +138,7 @@ bool GetDoubleFuzz(const uint8_t *data, size_t size)
 bool GetBooleanFuzz(const uint8_t *data, size_t size)
 {
     bool val, result = false;
-    if(SUCCESS != SetUpTestCase()) {
+    if (SUCCESS != SetUpTestCase()) {
         return false;
     }
     std::string skey(data, data + size);
@@ -155,7 +155,7 @@ bool GetBooleanFuzz(const uint8_t *data, size_t size)
 bool GetStringFuzz(const uint8_t *data, size_t size)
 {
     bool result = false;
-    if(SUCCESS != SetUpTestCase()) {
+    if (SUCCESS != SetUpTestCase()) {
         return false;
     }
     std::string skey(data, data + size);
@@ -174,7 +174,7 @@ bool GetStringFuzz(const uint8_t *data, size_t size)
 bool GetComplexFuzz(const uint8_t *data, size_t size)
 {
     bool result = false;
-    if(SUCCESS != SetUpTestCase()) {
+    if (SUCCESS != SetUpTestCase()) {
         return false;
     }
     size_t sum = 10;
