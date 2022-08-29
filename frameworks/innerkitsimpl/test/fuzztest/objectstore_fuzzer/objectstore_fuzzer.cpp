@@ -20,162 +20,177 @@
 #include "objectstore_errors.h"
 
 using namespace OHOS::ObjectStore;
-
 namespace OHOS {
+static DistributedObject *object_ = nullptr;
+static DistributedObjectStore *objectStore_ = nullptr;
+constexpr const char *SESSIONID = "123456";
+
+uint32_t SetUpTestCase()
+{
+    std::string bundleName = "com.example.myapplication";
+    DistributedObjectStore *objectStore = nullptr;
+    DistributedObject *object = nullptr;
+    objectStore = DistributedObjectStore::GetInstance(bundleName);
+    if (objectStore != nullptr) {
+        objectStore_ = objectStore;
+        object = objectStore_->CreateObject(SESSIONID);
+        if (object != nullptr) {
+            object_ = object;
+            return SUCCESS;
+        } else {
+            return ERR_EXIST;
+        }
+    } else {
+        return ERR_EXIST;
+    }
+}
+
 bool PutDoubleFuzz(const uint8_t *data, size_t size)
 {
     bool result = false;
-    std::string bundleName = "com.example.myapplication";
-    std::string sessionId = "123456";
+    if (SUCCESS != SetUpTestCase()) {
+        return false;
+    }
     double sval = static_cast<double>(size);
     std::string skey(data, data + size);
-    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    DistributedObject *object = objectStore->CreateObject(sessionId);
-    uint32_t ret = object->PutDouble(skey, sval);
+    uint32_t ret = object_->PutDouble(skey, sval);
     if (!ret) {
         result = true;
     }
-    objectStore->DeleteObject(sessionId);
+    objectStore_->DeleteObject(SESSIONID);
     return result;
 }
 
 bool PutBooleanFuzz(const uint8_t *data, size_t size)
 {
     bool result = false;
-    std::string bundleName = "com.example.myapplication";
-    std::string sessionId = "123456";
+    if (SUCCESS != SetUpTestCase()) {
+        return false;
+    }
     std::string skey(data, data + size);
-    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    DistributedObject *object = objectStore->CreateObject(sessionId);
-    uint32_t ret = object->PutBoolean(skey, true);
+    uint32_t ret = object_->PutBoolean(skey, true);
     if (!ret) {
         result = true;
     }
-    ret = object->PutBoolean(skey, false);
+    ret = object_->PutBoolean(skey, false);
     if (ret != SUCCESS) {
         result = false;
     }
-    objectStore->DeleteObject(sessionId);
+    objectStore_->DeleteObject(SESSIONID);
     return result;
 }
 
 bool PutStringFuzz(const uint8_t *data, size_t size)
 {
     bool result = false;
-    std::string bundleName = "com.example.myapplication";
-    std::string sessionId = "123456";
+    if (SUCCESS != SetUpTestCase()) {
+        return false;
+    }
     std::string skey(data, data + size);
     std::string sval(data, data + size);
-    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    DistributedObject *object = objectStore->CreateObject(sessionId);
-    uint32_t ret = object->PutString(skey, sval);
+    uint32_t ret = object_->PutString(skey, sval);
     if (!ret) {
         result = true;
     }
-    objectStore->DeleteObject(sessionId);
+    objectStore_->DeleteObject(SESSIONID);
     return result;
 }
 
 bool PutComplexFuzz(const uint8_t *data, size_t size)
 {
     bool result = false;
-    std::string bundleName = "com.example.myapplication";
-    std::string sessionId = "123456";
+    if (SUCCESS != SetUpTestCase()) {
+        return false;
+    }
     size_t sum = 10;
     std::string skey(data, data + size);
     std::vector<uint8_t> value;
-    for (int i = 0; i < sum; i++) {
+    for (size_t i = 0; i < sum; i++) {
         value.push_back(*data + i);
     }
-    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    DistributedObject *object = objectStore->CreateObject(sessionId);
-    uint32_t ret = object->PutComplex(skey, value);
+    uint32_t ret = object_->PutComplex(skey, value);
     if (!ret) {
         result = true;
     }
-    objectStore->DeleteObject(sessionId);
+    objectStore_->DeleteObject(SESSIONID);
     return result;
 }
 
 bool GetDoubleFuzz(const uint8_t *data, size_t size)
 {
     bool result = false;
-    std::string bundleName = "com.example.myapplication";
-    std::string sessionId = "123456";
+    if (SUCCESS != SetUpTestCase()) {
+        return false;
+    }
     double sval = static_cast<double>(size);
     double val;
     std::string skey(data, data + size);
-    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    DistributedObject *object = objectStore->CreateObject(sessionId);
-    if (SUCCESS == object->PutDouble(skey, sval)) {
-        uint32_t ret = object->GetDouble(skey, val);
+    if (SUCCESS == object_->PutDouble(skey, sval)) {
+        uint32_t ret = object_->GetDouble(skey, val);
         if (!ret) {
             result = true;
         }
     }
-    objectStore->DeleteObject(sessionId);
+    objectStore_->DeleteObject(SESSIONID);
     return result;
 }
 
 bool GetBooleanFuzz(const uint8_t *data, size_t size)
 {
     bool val, result = false;
-    std::string bundleName = "com.example.myapplication";
-    std::string sessionId = "123456";
+    if (SUCCESS != SetUpTestCase()) {
+        return false;
+    }
     std::string skey(data, data + size);
-    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    DistributedObject *object = objectStore->CreateObject(sessionId);
-    if (SUCCESS ==  object->PutBoolean(skey, true)) {
-        uint32_t ret = object->GetBoolean(skey, val);
+    if (SUCCESS ==  object_->PutBoolean(skey, true)) {
+        uint32_t ret = object_->GetBoolean(skey, val);
         if (!ret) {
             result = true;
         }
     }
-    objectStore->DeleteObject(sessionId);
+    objectStore_->DeleteObject(SESSIONID);
     return result;
 }
 
 bool GetStringFuzz(const uint8_t *data, size_t size)
 {
     bool result = false;
-    std::string bundleName = "com.example.myapplication";
-    std::string sessionId = "123456";
+    if (SUCCESS != SetUpTestCase()) {
+        return false;
+    }
     std::string skey(data, data + size);
     std::string sval(data, data + size);
     std::string val;
-    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    DistributedObject *object = objectStore->CreateObject(sessionId);
-    if (SUCCESS ==  object->PutString(skey, sval)) {
-        uint32_t ret = object->GetString(skey, val);
+    if (SUCCESS ==  object_->PutString(skey, sval)) {
+        uint32_t ret = object_->GetString(skey, val);
         if (!ret) {
             result = true;
         }
     }
-    objectStore->DeleteObject(sessionId);
+    objectStore_->DeleteObject(SESSIONID);
     return result;
 }
 
 bool GetComplexFuzz(const uint8_t *data, size_t size)
 {
     bool result = false;
-    std::string bundleName = "com.example.myapplication";
-    std::string sessionId = "123456";
+    if (SUCCESS != SetUpTestCase()) {
+        return false;
+    }
     size_t sum = 10;
     std::string skey(data, data + size);
     std::vector<uint8_t> svalue;
     std::vector<uint8_t> val;
-    for (int i = 0; i < sum; i++) {
+    for (size_t i = 0; i < sum; i++) {
         svalue.push_back(*data + i);
     }
-    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    DistributedObject *object = objectStore->CreateObject(sessionId);
-    if (SUCCESS == object->PutComplex(skey, svalue)) {
-        uint32_t ret = object->GetComplex(skey, val);
+    if (SUCCESS == object_->PutComplex(skey, svalue)) {
+        uint32_t ret = object_->GetComplex(skey, val);
         if (!ret) {
             result = true;
         }
     }
-    objectStore->DeleteObject(sessionId);
+    objectStore_->DeleteObject(SESSIONID);
     return result;
 }
 }
