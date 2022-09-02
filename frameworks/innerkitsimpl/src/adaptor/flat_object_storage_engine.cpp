@@ -412,6 +412,20 @@ void FlatObjectStorageEngine::NotifyStatus(const std::string &sessionId, const s
     }
     statusWatcher_->OnChanged(sessionId, deviceId, status);
 }
+
+void FlatObjectStorageEngine::NotifyChange(const std::string &sessionId,
+                                           const std::map<std::string, std::vector<uint8_t>> &changedData)
+{
+    std::lock_guard<std::mutex> lock(operationMutex_);
+    if (observerMap_.count(sessionId) == 0) {
+        return;
+    }
+    std::vector<std::string> data {};
+    for (const auto &item : changedData) {
+        data.push_back(item.first);
+    }
+    observerMap_[sessionId]->OnChanged(sessionId, data);
+}
     
 void Watcher::OnChange(const DistributedDB::KvStoreChangedData &data)
 {

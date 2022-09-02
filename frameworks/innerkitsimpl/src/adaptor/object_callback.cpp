@@ -44,4 +44,15 @@ ObjectRetrieveCallback::ObjectRetrieveCallback(
     : callback_(callback)
 {
 }
+
+void ObjectChangeCallback::Completed(const std::map<std::string, std::vector<uint8_t>> &results)
+{
+    callback_(results);
+}
+
+ObjectChangeCallback::ObjectChangeCallback(
+    const std::function<void(const std::map<std::string, std::vector<uint8_t>> &)> &callback)
+    : callback_(callback)
+{
+}
 } // namespace OHOS::DistributedKv

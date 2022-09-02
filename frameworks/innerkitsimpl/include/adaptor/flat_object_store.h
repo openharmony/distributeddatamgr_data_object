@@ -40,6 +40,8 @@ public:
     uint32_t RevokeSave(const std::string &bundleName, const std::string &sessionId);
     int32_t ResumeObject(const std::string &bundleName, const std::string &sessionId,
                          std::function<void(const std::map<std::string, std::vector<uint8_t>> &data)> &callback);
+    int32_t SubscribeDataChange(const std::string &bundleName, const std::string &sessionId,
+                               std::function<void(const std::map<std::string, std::vector<uint8_t>> &data)> &callback);
 private:
     int32_t SaveObject(const std::string &bundleName, const std::string &sessionId,
         const std::string &deviceId, const std::map<std::string, std::vector<uint8_t>> &objectData,
@@ -65,6 +67,8 @@ public:
     uint32_t Save(const std::string &sessionId, const std::string &deviceId);
     uint32_t RevokeSave(const std::string &sessionId);
     void CheckRetrieveCache(const std::string &sessionId);
+    void FilterData(const std::string &sessionId,
+                    std::map<std::string, std::vector<uint8_t>> &data);
     
 private:
     std::shared_ptr<FlatObjectStorageEngine> storageEngine_;

@@ -45,6 +45,7 @@ public:
         const std::function<void(const std::map<std::string, DistributedDB::DBStatus> &)> &onComplete);
     bool isOpened_ = false;
     void NotifyStatus(const std::string &sessionId, const std::string &deviceId, const std::string &status);
+    void NotifyChange(const std::string &sessionId, const std::map<std::string, std::vector<uint8_t>> &changedData);
 private:
     std::mutex operationMutex_{};
     std::shared_ptr<DistributedDB::KvStoreDelegateManager> storeManager_;

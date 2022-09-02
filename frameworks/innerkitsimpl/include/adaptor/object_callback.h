@@ -47,6 +47,15 @@ public:
 private:
     const std::function<void(const std::map<std::string, std::vector<uint8_t>> &)> callback_;
 };
+
+class ObjectChangeCallback : public ObjectChangeCallbackStub {
+public:
+    ObjectChangeCallback(const std::function<void(const std::map<std::string, std::vector<uint8_t>> &)> &callback);
+    void Completed(const std::map<std::string, std::vector<uint8_t>> &results) override;
+
+private:
+    const std::function<void(const std::map<std::string, std::vector<uint8_t>> &)> callback_;
+};
 } // namespace DistributedKv
 } // namespace OHOS
 
