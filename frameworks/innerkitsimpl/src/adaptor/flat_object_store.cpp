@@ -88,7 +88,7 @@ uint32_t FlatObjectStore::CreateObject(const std::string &sessionId)
                     }
                     storageEngine_->NotifyChange(sessionId, filteredData);
                 }
-                storageEngine_->NotifyStatus(sessionId, "local", "online");
+                storageEngine_->NotifyStatus(sessionId, "local", "restored");
             };
     cacheManager_->ResumeObject(bundleName_, sessionId, callback);
     cacheManager_->SubscribeDataChange(bundleName_, sessionId, remoteResumeCallback);
@@ -106,6 +106,7 @@ uint32_t FlatObjectStore::Delete(const std::string &sessionId)
         LOG_ERROR("FlatObjectStore: Failed to delete object %{public}d", status);
         return status;
     }
+    cacheManager_->UnregisterDataChange(bundleName_, sessionId);
     return SUCCESS;
 }
 
@@ -328,12 +329,30 @@ int32_t CacheManager::SubscribeDataChange(const std::string &bundleName, const s
         LOG_ERROR("proxy is nullptr.");
         return ERR_NULL_PTR;
     }
-    sptr<IObjectChangeCallback> objectChangeCallback = new ObjectChangeCallback(callback);
-    int32_t status = proxy->RegisterDataObserver(bundleName, sessionId, objectChangeCallback);
+    sptr<IObjectChangeCallback> objectRemoteResumeCallback = new ObjectChangeCallback(callback);
+    DistributedKv::AppId appId;
+    appId.appId = bundleName;
+    ClientAdaptor::RegisterClientDeathListener(appId, objectRemoteResumeCallback->AsObject());
+    int32_t status = proxy->RegisterDataObserver(bundleName, sessionId, objectRemoteResumeCallback);
     if (status != SUCCESS) {
         LOG_ERROR("object remote resume failed code=%d.", static_cast<int>(status));
     }
     LOG_INFO("object remote resume successful");
+    return status;
+}
+
+int32_t CacheManager::UnregisterDataChange(const std::string &bundleName, const std::string &sessionId)
+{
+    sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
+    if (proxy == nullptr) {
+        LOG_ERROR("proxy is nullptr.");
+        return ERR_NULL_PTR;
+    }
+    int32_t status = proxy->UnregisterDataChangeObserver(bundleName, sessionId);
+    if (status != SUCCESS) {
+        LOG_ERROR("object remote resume failed code=%d.", static_cast<int>(status));
+    }
+    LOG_INFO("object unregister data change observer successful");
     return status;
 }
 } // namespace OHOS::ObjectStore
