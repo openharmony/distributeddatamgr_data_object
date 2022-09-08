@@ -58,7 +58,7 @@ ohos_shared_library("distributeddataobject_impl") {
 
   deps = [
     "//foundation/distributeddatamgr/datamgr_service/services/distributeddataservice/adapter/dfx:distributeddata_dfx_static",
-    "//foundation/distributeddatamgr/kv_store/frameworks/innerkitsimpl/kvdb/distributeddb:distributeddb",
+    "//foundation/distributeddatamgr/kv_store/frameworks/libs/distributeddb:distributeddb",
     "//third_party/bounds_checking_function:libsec_static",
     "//third_party/libuv:uv",
   ]
