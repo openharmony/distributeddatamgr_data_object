@@ -34,6 +34,8 @@ public:
     void AddUndefined(char *value);
     void DeleteUndefined(char *value);
     void DestroyObject();
+    void SetObjectId(const std::string &objectId);
+    std::string GetObjectId();
 
 private:
     DistributedObjectStore *objectStore_;
@@ -41,6 +43,8 @@ private:
     std::unique_ptr<JSWatcher> watcher_ = nullptr;
     std::shared_mutex watchMutex_{};
     std::vector<std::string> undefinedProperties;
+    std::string objectId_;
+
 };
 } // namespace OHOS::ObjectStore
 

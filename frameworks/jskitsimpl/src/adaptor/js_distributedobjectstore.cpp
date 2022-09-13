@@ -91,9 +91,11 @@ napi_value JSDistributedObjectStore::NewDistributedObject(
     napi_env env, DistributedObjectStore *objectStore, DistributedObject *object, const std::string &objectId)
 {
     napi_value result;
+    static std::mutex instLock_;
     napi_status status = napi_new_instance(env, JSDistributedObject::GetCons(env), 0, nullptr, &result);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     JSObjectWrapper *objectWrapper = new JSObjectWrapper(objectStore, object);
+    objectWrapper->SetObjectId(objectId);
     status = napi_wrap(
         env, result, objectWrapper,
         [](napi_env env, void *data, void *hint) {
@@ -106,6 +108,13 @@ napi_value JSDistributedObjectStore::NewDistributedObject(
                 delete objectWrapper;
                 return;
             }
+
+            {
+                std::lock_guard<std::mutex> lock(instLock_);
+                g_changeCallBacks.erase(objectWrapper->GetObjectId());
+                g_statusCallBacks.erase(objectWrapper->GetObjectId());
+            }
+
             LOG_INFO("start delete object");
             DistributedObjectStore::GetInstance(JSDistributedObjectStore::GetBundleName(env))
                 ->DeleteObject(objectWrapper->GetObject()->GetSessionId());
