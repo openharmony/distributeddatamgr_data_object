@@ -24,7 +24,7 @@ ohos_js_unittest("ObjectStoreJsTest") {
     certificate_profile = "./openharmony_sx.p7b"
   } else {
     deps = [ "//test/developertest/adapter/examples/app_info/test/common/main:get_app_info_test_lib" ]
-    entry_app_dep = [ "//test/developertest/adapter/examples/app_info/test/common/shell:build_shell_execute" ]
+    entry_app_dep = [ "//test/testfwk/developer_test/adapter/examples/app_info/test/common/shell:build_shell_execute" ]
   }
 }
 
