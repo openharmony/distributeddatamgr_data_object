@@ -56,6 +56,7 @@ config("objectstore_config") {
     "../../interfaces/innerkits",
     "//third_party/bounds_checking_function/include",
     "//foundation/ability/ability_runtime/interfaces/kits/native/appkit/ability_runtime/context",
+    "//foundation/distributeddatamgr/kv_store/frameworks/common",
   ]
 }
 

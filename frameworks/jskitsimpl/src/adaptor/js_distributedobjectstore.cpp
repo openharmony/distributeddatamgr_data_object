@@ -31,43 +31,43 @@
 namespace OHOS::ObjectStore {
 constexpr size_t TYPE_SIZE = 10;
 const std::string DISTRIBUTED_DATASYNC = "ohos.permission.DISTRIBUTED_DATASYNC";
-static std::map<std::string, std::list<napi_ref>> g_statusCallBacks;
-static std::map<std::string, std::list<napi_ref>> g_changeCallBacks;
+static ConcurrentMap<std::string, std::list<napi_ref>> g_statusCallBacks;
+static ConcurrentMap<std::string, std::list<napi_ref>> g_changeCallBacks;
 
-void JSDistributedObjectStore::AddCallback(napi_env env, std::map<std::string, std::list<napi_ref>> &callbacks,
+void JSDistributedObjectStore::AddCallback(napi_env env, ConcurrentMap<std::string, std::list<napi_ref>> &callbacks,
     const std::string &objectId, napi_value callback)
 {
     LOG_INFO("add callback %{public}s", objectId.c_str());
     napi_ref ref = nullptr;
     napi_status status = napi_create_reference(env, callback, 1, &ref);
     CHECK_EQUAL_WITH_RETURN_VOID(status, napi_ok);
-    if (callbacks.count(objectId) != 0) {
-        auto lists = callbacks.at(objectId);
+    if (callbacks.Find(objectId).first) {
+        auto lists = callbacks.Find(objectId).second;
         lists.push_back(ref);
-        callbacks.insert_or_assign(objectId, lists);
+        callbacks.InsertOrAssign(objectId, lists);
     } else {
         std::list<napi_ref> lists = { ref };
-        callbacks.insert_or_assign(objectId, lists);
+        callbacks.InsertOrAssign(objectId, lists);
     }
 }
-void JSDistributedObjectStore::DelCallback(napi_env env, std::map<std::string, std::list<napi_ref>> &callbacks,
+void JSDistributedObjectStore::DelCallback(napi_env env, ConcurrentMap<std::string, std::list<napi_ref>> &callbacks,
     const std::string &sessionId, napi_value callback)
 {
     LOG_INFO("del callback %{public}s", sessionId.c_str());
     napi_status status;
     if (callback == nullptr) {
-        if (callbacks.count(sessionId) != 0) {
-            for (auto ref : callbacks.at(sessionId)) {
+        if (callbacks.Find(sessionId).first) {
+            for (auto ref : callbacks.Find(sessionId).second) {
                 status = napi_delete_reference(env, ref);
                 CHECK_EQUAL_WITH_RETURN_VOID(status, napi_ok);
             }
-            callbacks.erase(sessionId);
+            callbacks.Erase(sessionId);
         }
         return;
     }
     napi_value callbackTmp;
-    if (callbacks.count(sessionId) != 0) {
-        auto lists = callbacks.at(sessionId);
+    if (callbacks.Find(sessionId).first) {
+        auto lists = callbacks.Find(sessionId).second;
         for (auto iter = lists.begin(); iter != lists.end();) {
             status = napi_get_reference_value(env, *iter, &callbackTmp);
             CHECK_EQUAL_WITH_RETURN_VOID(status, napi_ok);
@@ -81,9 +81,9 @@ void JSDistributedObjectStore::DelCallback(napi_env env, std::map<std::string, s
             }
         }
         if (lists.empty()) {
-            callbacks.erase(sessionId);
+            callbacks.Erase(sessionId);
         } else {
-            callbacks.insert_or_assign(sessionId, lists);
+            callbacks.InsertOrAssign(sessionId, lists);
         }
     }
 }
@@ -109,8 +109,9 @@ napi_value JSDistributedObjectStore::NewDistributedObject(
                 delete objectWrapper;
                 return;
             }
-            g_changeCallBacks.erase(objectWrapper->GetObjectId());
-            g_statusCallBacks.erase(objectWrapper->GetObjectId());
+
+            g_changeCallBacks.Erase(objectWrapper->GetObjectId());
+            g_statusCallBacks.Erase(objectWrapper->GetObjectId());
             LOG_INFO("start delete object");
             DistributedObjectStore::GetInstance(JSDistributedObjectStore::GetBundleName(env))
                 ->DeleteObject(objectWrapper->GetObject()->GetSessionId());
@@ -118,6 +119,7 @@ napi_value JSDistributedObjectStore::NewDistributedObject(
         },
         nullptr, nullptr);
     RestoreWatchers(env, objectWrapper, objectId);
+
     objectStore->NotifyCachedStatus(object->GetSessionId());
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     return result;
@@ -299,9 +301,9 @@ void JSDistributedObjectStore::RestoreWatchers(napi_env env, JSObjectWrapper *wr
     napi_status status;
     napi_value callbackValue;
     LOG_DEBUG("start restore %{public}s", objectId.c_str());
-    if (g_changeCallBacks.count(objectId) != 0) {
+    if (g_changeCallBacks.Find(objectId).first) {
         LOG_INFO("restore change on %{public}s", objectId.c_str());
-        for (auto callback : g_changeCallBacks.at(objectId)) {
+        for (auto callback : g_changeCallBacks.Find(objectId).second) {
             status = napi_get_reference_value(env, callback, &callbackValue);
             if (status != napi_ok) {
                 LOG_ERROR("error! %{public}d", status);
@@ -312,9 +314,9 @@ void JSDistributedObjectStore::RestoreWatchers(napi_env env, JSObjectWrapper *wr
     } else {
         LOG_INFO("no callback %{public}s", objectId.c_str());
     }
-    if (g_statusCallBacks.count(objectId) != 0) {
+    if (g_statusCallBacks.Find(objectId).first) {
         LOG_INFO("restore status on %{public}s", objectId.c_str());
-        for (auto callback : g_statusCallBacks.at(objectId)) {
+        for (auto callback : g_statusCallBacks.Find(objectId).second) {
             status = napi_get_reference_value(env, callback, &callbackValue);
             if (status != napi_ok) {
                 LOG_ERROR("error! %{public}d", status);
