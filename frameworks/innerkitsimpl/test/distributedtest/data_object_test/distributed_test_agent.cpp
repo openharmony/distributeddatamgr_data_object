@@ -40,7 +40,7 @@ constexpr HiLogLabel LABEL = {LOG_CORE, 0, "DistributedTestAgent"};
 const std::string DISTRIBUTED_DATASYNC = "ohos.permission.DISTRIBUTED_DATASYNC";
 const std::string BUNDLENAME = "com.example.myapplication";
 const std::string SESSIONID = "123456";
-constexpr int MAX_RETRY_TIMES = 10;
+constexpr int MAX_RETRY_TIMES = 15;
 
 class DistributedTestAgent : public DistributedAgent {
 public:
@@ -264,18 +264,13 @@ int DistributedTestAgent::GetItem(const std::string &strMsg, std::string &strRet
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(200)); 
             times++;
-        }   
-
-        if (!watcherPtr->GetDataStatus())
-        {
-           return -1; 
-        }
-        
+        }           
         std::string Getvalue ="GetItem";        
         uint32_t status = object->GetString("name", Getvalue);
         if (status != SUCCESS) {
             return -1;
-        }    
+        }
+        objectStore->UnWatch(object);
         strReturnValue = Getvalue;
     }
     return strReturnValue.size();
