@@ -91,12 +91,10 @@ napi_value JSDistributedObjectStore::NewDistributedObject(
     napi_env env, DistributedObjectStore *objectStore, DistributedObject *object, const std::string &objectId)
 {
     napi_value result;
-    static std::mutex instLock_;
     napi_status status = napi_new_instance(env, JSDistributedObject::GetCons(env), 0, nullptr, &result);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     JSObjectWrapper *objectWrapper = new JSObjectWrapper(objectStore, object);
     objectWrapper->SetObjectId(objectId);
-    std::lock_guard<std::mutex> lock(instLock_);
     status = napi_wrap(
         env, result, objectWrapper,
         [](napi_env env, void *data, void *hint) {

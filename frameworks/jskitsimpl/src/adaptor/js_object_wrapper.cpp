@@ -101,5 +101,4 @@ std::string JSObjectWrapper::GetObjectId(){
     return objectId_;
 }
 
-
 } // namespace OHOS::ObjectStore
