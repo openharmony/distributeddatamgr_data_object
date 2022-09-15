@@ -40,6 +40,7 @@ constexpr HiLogLabel LABEL = {LOG_CORE, 0, "DistributedTestAgent"};
 const std::string DISTRIBUTED_DATASYNC = "ohos.permission.DISTRIBUTED_DATASYNC";
 const std::string BUNDLENAME = "com.example.myapplication";
 const std::string SESSIONID = "123456";
+constexpr int MAX_RETRY_TIMES = 10;
 
 class DistributedTestAgent : public DistributedAgent {
 public:
@@ -59,6 +60,60 @@ private:
     using MsgFunc = int (DistributedTestAgent::*)(const std::string &, std::string &);
     std::map<std::string, MsgFunc> msgFunMap_;
 };
+
+class ObjectWatcherImpl : public ObjectWatcher {
+public:
+    bool GetDataStatus();
+    void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override;
+    virtual ~ObjectWatcherImpl();
+private:
+    bool dataChanged_ = false;
+};
+
+class StatusNotifierImpl : public StatusNotifier {
+public:
+    std::string GetOnlineStatus();
+    void OnChanged(
+        const std::string &sessionId, const std::string &networkId, const std::string &onlineStatus) override;
+    virtual ~StatusNotifierImpl();
+private:
+    std::string onlineStatus_ = "offline";
+};
+
+ObjectWatcherImpl::~ObjectWatcherImpl()
+{
+}
+
+bool ObjectWatcherImpl::GetDataStatus()
+{
+    return dataChanged_;
+}
+
+void ObjectWatcherImpl::OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData)
+{
+    if (changedData.empty()) {
+        HiLog::Info(LABEL, "empty change");
+        return;
+    }
+    HiLog::Info(LABEL, "start %{public}s, %{public}s", sessionid.c_str(), changedData.at(0).c_str());
+    dataChanged_ = true;
+}
+
+StatusNotifierImpl::~StatusNotifierImpl()
+{
+}
+
+std::string StatusNotifierImpl::GetOnlineStatus()
+{
+    return onlineStatus_;
+}
+
+void StatusNotifierImpl::OnChanged(const std::string &sessionId, const std::string &networkId, const std::string &onlineStatus)
+{
+    HiLog::Info(
+        LABEL,"status changed %{public}s %{public}s %{public}s", sessionId.c_str(), networkId.c_str(), onlineStatus.c_str());
+    onlineStatus_ = onlineStatus;
+}
 
 DistributedObjectStore *DistributedTestAgent::object_ = nullptr;
 
@@ -87,7 +142,6 @@ bool DistributedTestAgent::TearDown()
 
 int DistributedTestAgent::OnProcessMsg(const std::string &strMsg, int len, std::string &strReturnValue, int returnBufL)
 {
-
     return DistributedTestAgent::ProcessMsg(strMsg, strReturnValue);
 }
 
@@ -163,15 +217,27 @@ int DistributedTestAgent::RecallMessage(const std::string &strMsg, std::string &
 
 int DistributedTestAgent::PutItem(const std::string &strMsg, std::string &strReturnValue)
 {
-    std::string bundleName = BUNDLENAME;
-    GrantPermission(bundleName, DISTRIBUTED_DATASYNC);
+    GrantPermission(BUNDLENAME, DISTRIBUTED_DATASYNC);
     std::string sessionId = SESSIONID;
-    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(BUNDLENAME);
     if ( objectStore != nullptr)
     {
         DistributedObject *object = objectStore->CreateObject(sessionId);
         DistributedTestAgent::object_ = objectStore;
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+        auto notifierPtr = std::make_shared<StatusNotifierImpl>();
+        objectStore->SetStatusNotifier(notifierPtr);
+        int times = 0;
+        while (times < MAX_RETRY_TIMES && notifierPtr->GetOnlineStatus() != "online")
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(200)); 
+            times++;
+        }    
+
+        if (notifierPtr->GetOnlineStatus() != "online")
+        {
+            return -1;
+        }
+        
         uint32_t status = object->PutDouble("salary", 100.5);
         if (status != SUCCESS) {
             return -1;
@@ -183,15 +249,28 @@ int DistributedTestAgent::PutItem(const std::string &strMsg, std::string &strRet
 
 int DistributedTestAgent::GetItem(const std::string &strMsg, std::string &strReturnValue)
 {
-    std::string bundleName = BUNDLENAME;
-    GrantPermission(bundleName, DISTRIBUTED_DATASYNC);
+    GrantPermission(BUNDLENAME, DISTRIBUTED_DATASYNC);
     std::string sessionId = SESSIONID;
-    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(BUNDLENAME);
     if ( objectStore != nullptr)
     {
         DistributedObject *object = objectStore->CreateObject(sessionId);
         DistributedTestAgent::object_ = objectStore;
-        std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+
+        auto watcherPtr = std::make_shared<ObjectWatcherImpl>();
+        objectStore->Watch(object, watcherPtr);
+        int times = 0;
+        while (times < MAX_RETRY_TIMES && !watcherPtr->GetDataStatus())
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(200)); 
+            times++;
+        }   
+
+        if (!watcherPtr->GetDataStatus())
+        {
+           return -1; 
+        }
+        
         std::string Getvalue ="GetItem";        
         uint32_t status = object->GetString("name", Getvalue);
         if (status != SUCCESS) {
@@ -204,11 +283,10 @@ int DistributedTestAgent::GetItem(const std::string &strMsg, std::string &strRet
 
 int DistributedTestAgent::RevokeSave(const std::string &strMsg, std::string &strReturnValue)
 {
-    std::string bundleName = BUNDLENAME;
-    GrantPermission(bundleName, DISTRIBUTED_DATASYNC);
+    GrantPermission(BUNDLENAME, DISTRIBUTED_DATASYNC);
     std::string sessionId = SESSIONID;
     std::string putValue = "zhangsan";
-    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(BUNDLENAME);
     if (objectStore != nullptr)
     {
         DistributedObject *object = objectStore->CreateObject(sessionId);
@@ -238,7 +316,7 @@ int DistributedTestAgent::DestroyObject(const std::string &strMsg, std::string &
 {
     if ( DistributedTestAgent::object_ != nullptr)
     {
-        DistributedTestAgent::object_->DeleteObject("123456");
+        DistributedTestAgent::object_->DeleteObject(SESSIONID);
         DistributedTestAgent::object_ = nullptr;
         strReturnValue = "DestroyObjectDone";
     }

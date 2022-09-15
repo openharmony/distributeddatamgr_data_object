@@ -35,7 +35,7 @@ using namespace OHOS::ObjectStore;
 using namespace OHOS::Security::AccessToken;
 
 namespace  {
-constexpr int MSG_LENGTH = 100;
+constexpr int MAX_RETRY_TIMES = 10;
 constexpr HiLogLabel LABEL = {LOG_CORE, 0, "DistributedTest"};
 const std::string DISTRIBUTED_DATASYNC = "ohos.permission.DISTRIBUTED_DATASYNC";
 const std::string BUNDLENAME = "com.example.myapplication";
@@ -181,7 +181,7 @@ HWTEST_F(DistributedTest, SendMessageCase, TestSize.Level1)
     int ret;
     std::string returvalue;
     std::string msgBuf = "recall";
-    ret = SendMessage(AGENT_NO::ONE, msgBuf, MSG_LENGTH,
+    ret = SendMessage(AGENT_NO::ONE, msgBuf, msgBuf.size(),
         [&](const std::string &szreturnbuf, int rlen)->bool {
         returvalue = szreturnbuf;
         return true;
@@ -216,7 +216,7 @@ HWTEST_F(DistributedTest, Put_Get_001, TestSize.Level1)
 
     std::string msgBuf = "GetItem";
     std::string returvalue;
-    int result = SendMessage(AGENT_NO::ONE, msgBuf, MSG_LENGTH,
+    int result = SendMessage(AGENT_NO::ONE, msgBuf, msgBuf.size(),
         [&](const std::string &szreturnbuf, int rlen)->bool {
         returvalue = szreturnbuf;
         return true;
@@ -228,7 +228,7 @@ HWTEST_F(DistributedTest, Put_Get_001, TestSize.Level1)
     EXPECT_EQ(SUCCESS, ret);
 
     msgBuf = "DestroyObject";
-    result = SendMessage(AGENT_NO::ONE, msgBuf, MSG_LENGTH,
+    result = SendMessage(AGENT_NO::ONE, msgBuf, msgBuf.size(),
         [&](const std::string &szreturnbuf, int rlen)->bool {
         return true;
     });
@@ -242,34 +242,46 @@ HWTEST_F(DistributedTest, Put_Get_001, TestSize.Level1)
  */
 HWTEST_F(DistributedTest, Put_Get_002, TestSize.Level1)
 {   
-    std::string bundleName = BUNDLENAME;
-    GrantPermission(bundleName, DISTRIBUTED_DATASYNC);
+    GrantPermission(BUNDLENAME, DISTRIBUTED_DATASYNC);
     std::string sessionId = SESSIONID;
-    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(BUNDLENAME);
     EXPECT_NE(nullptr, objectStore);
-
     DistributedObject *object = objectStore->CreateObject(sessionId);
     EXPECT_NE(nullptr, object);
 
+    auto watcherPtr = std::make_shared<ObjectWatcherImpl>();
+    uint32_t ret = objectStore->Watch(object, watcherPtr);
+    EXPECT_EQ(SUCCESS, ret);
+
     std::string msgBuf = "PutItem";
     std::string returvalue;
-    int result = SendMessage(AGENT_NO::ONE, msgBuf, MSG_LENGTH,
+    int result = SendMessage(AGENT_NO::ONE, msgBuf, msgBuf.size(),
         [&](const std::string &szreturnbuf, int rlen)->bool {
         returvalue = szreturnbuf;
         return true;
     });
-
     EXPECT_TRUE(result > 0);
     EXPECT_EQ(returvalue, "PutSuccsess");
-    std::this_thread::sleep_for(std::chrono::milliseconds(3000)); 
+
+    int times = 1;
+    while (times < MAX_RETRY_TIMES && !watcherPtr->GetDataStatus())
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(200)); 
+        times++;
+    }   
+    EXPECT_TRUE(watcherPtr->GetDataStatus());
+
     double value = 0.0;
     object->GetDouble("salary", value);
     EXPECT_EQ(value, 100.5);
-    uint32_t ret = objectStore->DeleteObject(sessionId);
+
+    ret = objectStore->UnWatch(object);
+    EXPECT_EQ(SUCCESS, ret);
+    ret = objectStore->DeleteObject(sessionId);
     EXPECT_EQ(SUCCESS, ret);
 
     msgBuf = "DestroyObject";
-    result = SendMessage(AGENT_NO::ONE, msgBuf, MSG_LENGTH,
+    result = SendMessage(AGENT_NO::ONE, msgBuf, msgBuf.size(),
         [&](const std::string &szreturnbuf, int rlen)->bool {
         return true;
     });
@@ -283,15 +295,13 @@ HWTEST_F(DistributedTest, Put_Get_002, TestSize.Level1)
  */
 HWTEST_F(DistributedTest, save_001, TestSize.Level1)
 {
-    std::string bundleName = BUNDLENAME;
-    GrantPermission(bundleName, DISTRIBUTED_DATASYNC);
+    GrantPermission(BUNDLENAME, DISTRIBUTED_DATASYNC);
     std::string sessionId = SESSIONID;
-    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(BUNDLENAME);
     EXPECT_NE(nullptr, objectStore);
 
     DistributedObject *object = objectStore->CreateObject(sessionId);
     EXPECT_NE(nullptr, object);
-
     uint32_t ret = object->PutString("name", "zhangsan");
     EXPECT_EQ(SUCCESS, ret);
 
@@ -303,23 +313,21 @@ HWTEST_F(DistributedTest, save_001, TestSize.Level1)
     std::string networkId =SoftBusAdapter::GetInstance()->ToNodeID(deviceIds[0]);
     ret = object->Save(networkId);
     EXPECT_EQ(SUCCESS, ret);
-
     ret = objectStore->DeleteObject(sessionId);
     EXPECT_EQ(SUCCESS, ret);
 
     std::string msgBuf = "GetItem";
     std::string returvalue;
-    int result = SendMessage(AGENT_NO::ONE, msgBuf, MSG_LENGTH,
+    int result = SendMessage(AGENT_NO::ONE, msgBuf, msgBuf.size(),
         [&](const std::string &szreturnbuf, int rlen)->bool {
         returvalue = szreturnbuf;
         return true;
     });
-
     EXPECT_TRUE(result > 0);
     EXPECT_EQ(returvalue, "zhangsan");
 
     msgBuf = "DestroyObject";
-    result = SendMessage(AGENT_NO::ONE, msgBuf, MSG_LENGTH,
+    result = SendMessage(AGENT_NO::ONE, msgBuf, msgBuf.size(),
         [&](const std::string &szreturnbuf, int rlen)->bool {
         return true;
     });
@@ -335,22 +343,19 @@ HWTEST_F(DistributedTest, RevokeSave_001, TestSize.Level1)
 {
     std::string msgBuf = "RevokeSave";
     std::string returvalue;
-    int result = SendMessage(AGENT_NO::ONE, msgBuf, MSG_LENGTH,
+    int result = SendMessage(AGENT_NO::ONE, msgBuf, msgBuf.size(),
         [&](const std::string &szreturnbuf, int rlen)->bool {
         returvalue = szreturnbuf;
         return true;
     });
     EXPECT_TRUE(result > 0);
 
-    std::string bundleName = BUNDLENAME;
-    GrantPermission(bundleName, DISTRIBUTED_DATASYNC);
+    GrantPermission(BUNDLENAME, DISTRIBUTED_DATASYNC);
     std::string sessionId = SESSIONID;
-    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(BUNDLENAME);
     EXPECT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000)); 
+    EXPECT_NE(nullptr, object);   
     std::string Getvalue ="GetItem";
     uint32_t ret = object->GetString("name", Getvalue);
     EXPECT_NE(SUCCESS, ret);
@@ -367,10 +372,9 @@ HWTEST_F(DistributedTest, RevokeSave_001, TestSize.Level1)
  */
 HWTEST_F(DistributedTest, Watch_001, TestSize.Level1)
 {
-    std::string bundleName = BUNDLENAME;
-    GrantPermission(bundleName, DISTRIBUTED_DATASYNC);
+    GrantPermission(BUNDLENAME, DISTRIBUTED_DATASYNC);
     std::string sessionId = SESSIONID;
-    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(BUNDLENAME);
     EXPECT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
     EXPECT_NE(nullptr, object);
@@ -381,25 +385,27 @@ HWTEST_F(DistributedTest, Watch_001, TestSize.Level1)
 
     std::string msgBuf = "PutItem";
     std::string returvalue;
-    int result = SendMessage(AGENT_NO::ONE, msgBuf, MSG_LENGTH,
+    int result = SendMessage(AGENT_NO::ONE, msgBuf, msgBuf.size(),
         [&](const std::string &szreturnbuf, int rlen)->bool {
         returvalue = szreturnbuf;
         return true;
     });
-
     EXPECT_TRUE(result > 0);
-    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-    EXPECT_NE(nullptr, watcherPtr);
-    EXPECT_TRUE(watcherPtr->GetDataStatus());
 
+    int times = 1;
+    while (times < MAX_RETRY_TIMES && !watcherPtr->GetDataStatus())
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(200)); 
+        times++;
+    }   
+    EXPECT_TRUE(watcherPtr->GetDataStatus());
     ret = objectStore->UnWatch(object);
     EXPECT_EQ(SUCCESS, ret);
-
     ret = objectStore->DeleteObject(sessionId);
     EXPECT_EQ(SUCCESS, ret);
 
     msgBuf = "DestroyObject";
-    result = SendMessage(AGENT_NO::ONE, msgBuf, MSG_LENGTH,
+    result = SendMessage(AGENT_NO::ONE, msgBuf, msgBuf.size(),
         [&](const std::string &szreturnbuf, int rlen)->bool {
         return true;
     });
@@ -413,10 +419,9 @@ HWTEST_F(DistributedTest, Watch_001, TestSize.Level1)
  */
 HWTEST_F(DistributedTest, UnWatch_001, TestSize.Level1)
 {
-    std::string bundleName = BUNDLENAME;
-    GrantPermission(bundleName, DISTRIBUTED_DATASYNC);
+    GrantPermission(BUNDLENAME, DISTRIBUTED_DATASYNC);
     std::string sessionId = SESSIONID;
-    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(BUNDLENAME);
     EXPECT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
     EXPECT_NE(nullptr, object);
@@ -430,22 +435,20 @@ HWTEST_F(DistributedTest, UnWatch_001, TestSize.Level1)
 
     std::string msgBuf = "PutItem";
     std::string returvalue;
-    int result = SendMessage(AGENT_NO::ONE, msgBuf, MSG_LENGTH,
+    int result = SendMessage(AGENT_NO::ONE, msgBuf, msgBuf.size(),
         [&](const std::string &szreturnbuf, int rlen)->bool {
         returvalue = szreturnbuf;
         return true;
     });
-
     EXPECT_TRUE(result > 0);
-    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+
     EXPECT_NE(nullptr, watcherPtr);
     EXPECT_FALSE(watcherPtr->GetDataStatus());
-
     ret = objectStore->DeleteObject(sessionId);
     EXPECT_EQ(SUCCESS, ret);
 
     msgBuf = "DestroyObject";
-    result = SendMessage(AGENT_NO::ONE, msgBuf, MSG_LENGTH,
+    result = SendMessage(AGENT_NO::ONE, msgBuf, msgBuf.size(),
         [&](const std::string &szreturnbuf, int rlen)->bool {
         return true;
     });
@@ -459,10 +462,9 @@ HWTEST_F(DistributedTest, UnWatch_001, TestSize.Level1)
  */
 HWTEST_F(DistributedTest, SetStatusNotifier_001, TestSize.Level1)
 {
-    std::string bundleName = BUNDLENAME;
-    GrantPermission(bundleName, DISTRIBUTED_DATASYNC);
+    GrantPermission(BUNDLENAME, DISTRIBUTED_DATASYNC);
     std::string sessionId = SESSIONID;
-    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(BUNDLENAME);
     EXPECT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
     EXPECT_NE(nullptr, object);
@@ -473,21 +475,27 @@ HWTEST_F(DistributedTest, SetStatusNotifier_001, TestSize.Level1)
 
     std::string msgBuf = "PutItem";
     std::string returvalue;
-    int result = SendMessage(AGENT_NO::ONE, msgBuf, MSG_LENGTH,
+    int result = SendMessage(AGENT_NO::ONE, msgBuf, msgBuf.size(),
         [&](const std::string &szreturnbuf, int rlen)->bool {
         returvalue = szreturnbuf;
         return true;
     });
 
     EXPECT_TRUE(result > 0);
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-    EXPECT_NE(nullptr, notifierPtr);
+
+    int times = 0;
+    while (times < MAX_RETRY_TIMES && notifierPtr->GetOnlineStatus() != "online")
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(200)); 
+        times++;
+    }    
     EXPECT_EQ(notifierPtr->GetOnlineStatus(),"online");
+
     ret = objectStore->DeleteObject(sessionId);
     EXPECT_EQ(SUCCESS, ret);
 
     msgBuf = "DestroyObject";
-    result = SendMessage(AGENT_NO::ONE, msgBuf, MSG_LENGTH,
+    result = SendMessage(AGENT_NO::ONE, msgBuf, msgBuf.size(),
         [&](const std::string &szreturnbuf, int rlen)->bool {
         return true;
     });
