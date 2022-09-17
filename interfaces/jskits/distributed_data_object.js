@@ -102,7 +102,7 @@ class Distributed {
 }
 
 function randomNum() {
-    return Math.random().toString(10).slice(-8);
+    return distributedObject.randomNum();
 }
 
 function newDistributed(obj) {

@@ -33,11 +33,13 @@ public:
     static napi_value JSPut(napi_env env, napi_callback_info info);
     static napi_value JSSave(napi_env env, napi_callback_info info);
     static napi_value JSRevokeSave(napi_env env, napi_callback_info info);
+    static napi_value randomNum(napi_env env, napi_callback_info info);
     static napi_value GetCons(napi_env env);
 
 private:
     static void DoPut(napi_env env, JSObjectWrapper *wrapper, char *key, napi_valuetype type, napi_value value);
     static void DoGet(napi_env env, JSObjectWrapper *wrapper, char *key, napi_value &value);
+    static int Random(void);
     static napi_value GetSaveResultCons(napi_env env, std::string &sessionId, double version, std::string deviceId);
     static napi_value GetRevokeSaveResultCons(napi_env env, std::string &sessionId);
 };
