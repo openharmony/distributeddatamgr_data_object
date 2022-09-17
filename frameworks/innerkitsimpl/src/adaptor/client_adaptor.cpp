@@ -19,20 +19,22 @@
 
 #include "logger.h"
 #include "iservice_registry.h"
+#include "objectstore_errors.h"
 
 namespace OHOS::ObjectStore {
+sptr<OHOS::DistributedKv::IKvStoreDataService> ClientAdaptor::distributedDataMgr_ = nullptr;
+
 sptr<OHOS::DistributedObject::IObjectService> ClientAdaptor::GetObjectService()
 {
-    static sptr<OHOS::DistributedKv::IKvStoreDataService> distributedDataMgr;
-    if (distributedDataMgr == nullptr) {
-        distributedDataMgr = GetDistributedDataManager();
+    if (distributedDataMgr_ == nullptr) {
+        distributedDataMgr_ = GetDistributedDataManager();
     }
-    if (distributedDataMgr == nullptr) {
+    if (distributedDataMgr_ == nullptr) {
         LOG_ERROR("get distributed data manager failed");
         return nullptr;
     }
 
-    auto remote = distributedDataMgr->GetObjectService();
+    auto remote = distributedDataMgr_->GetObjectService();
     if (remote == nullptr) {
         LOG_ERROR("get object service failed");
         return nullptr;
@@ -61,5 +63,23 @@ sptr<DistributedKv::IKvStoreDataService> ClientAdaptor::GetDistributedDataManage
 
     LOG_ERROR("get distributed data manager failed");
     return nullptr;
+}
+
+uint32_t ClientAdaptor::RegisterClientDeathListener(DistributedKv::AppId &appId, sptr<IRemoteObject> remoteObject)
+{
+    if (distributedDataMgr_ == nullptr) {
+        distributedDataMgr_ = GetDistributedDataManager();
+    }
+    if (distributedDataMgr_ == nullptr) {
+        LOG_ERROR("get distributed data manager failed");
+        return ERR_EXIST;
+    }
+    
+    auto status = distributedDataMgr_->RegisterClientDeathObserver(appId, remoteObject);
+    if (status != SUCCESS) {
+        LOG_ERROR("RegisterClientDeathObserver failed");
+        return ERR_EXIST;
+    }
+    return SUCCESS;
 }
 }
