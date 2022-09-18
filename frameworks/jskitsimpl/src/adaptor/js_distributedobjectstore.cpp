@@ -457,6 +457,7 @@ napi_value JSDistributedObjectStore::randomNum(napi_env env, napi_callback_info 
 
     napi_value result = nullptr;
     napi_status status = napi_create_string_utf8(env, str, sizeof(str)/sizeof(char), &result);
+    CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     return result;
 }
 
