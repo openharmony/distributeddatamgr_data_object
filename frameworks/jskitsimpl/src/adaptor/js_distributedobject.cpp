@@ -16,8 +16,6 @@
 #include "js_distributedobject.h"
 
 #include <cstring>
-#include <unistd.h>
-#include <fcntl.h>
 
 #include "js_common.h"
 #include "js_object_wrapper.h"
