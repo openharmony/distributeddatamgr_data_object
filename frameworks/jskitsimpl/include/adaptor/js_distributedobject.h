@@ -18,7 +18,7 @@
 
 #include <js_native_api.h>
 
-#include "distributed_objectstore.h"git 
+#include "distributed_objectstore.h" 
 #include "js_object_wrapper.h"
 namespace OHOS::ObjectStore {
 struct ConstructContext {
