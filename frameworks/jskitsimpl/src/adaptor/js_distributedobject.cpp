@@ -28,10 +28,6 @@
 
 namespace OHOS::ObjectStore {
 constexpr size_t KEY_SIZE = 64;
-const char MIN_NUMERIC_CHAR = '0';
-const int DIGIT = 10;
-const char TRAILING_CHAR = '\0';
-const int DESCRIPTION_LENGTH = 16;
 
 napi_value JSDistributedObject::JSConstructor(napi_env env, napi_callback_info info)
 {
@@ -122,7 +118,6 @@ napi_value JSDistributedObject::GetCons(napi_env env)
         DECLARE_NAPI_FUNCTION("get", JSDistributedObject::JSGet),
         DECLARE_NAPI_FUNCTION("save", JSDistributedObject::JSSave),
         DECLARE_NAPI_FUNCTION("revokeSave", JSDistributedObject::JSRevokeSave),
-        DECLARE_NAPI_FUNCTION("randomNum", JSDistributedObject::randomNum),
     };
 
     napi_status status = napi_define_class(env, distributedObjectName, strlen(distributedObjectName),
@@ -134,34 +129,6 @@ napi_value JSDistributedObject::GetCons(napi_env env)
         CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     }
     return distributedObjectClass;
-}
-
-int JSDistributedObject::Random(void)
-{
-#ifndef O_RDONLY
-#define O_RDONLY 0u
-#endif
-    int r = -1;
-    int fd = open("/dev/random", O_RDONLY);
-    fd = open("/dev/random", O_RDONLY);
-    if (fd > 0) {
-        read(fd, &r, sizeof(int));
-    }
-    close(fd);
-    return r;
-}
-
-napi_value JSDistributedObject::randomNum(napi_env env, napi_callback_info info)
-{
-    int i;
-    char str[DESCRIPTION_LENGTH];
-    for (i = 0; i < DESCRIPTION_LENGTH - 1; ++i) {
-        str[i] = MIN_NUMERIC_CHAR + abs(Random() % DIGIT);
-    }
-    str[i] = TRAILING_CHAR;
-    napi_value result = nullptr;
-    napi_create_string_utf8(env, str, sizeof(str)/sizeof(char), &result);
-    return result;
 }
 
 void JSDistributedObject::DoPut(

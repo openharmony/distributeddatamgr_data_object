@@ -32,6 +32,7 @@ public:
     static napi_value JSOff(napi_env env, napi_callback_info info);
     static napi_value JSRecordCallback(napi_env env, napi_callback_info info);
     static napi_value JSDeleteCallback(napi_env env, napi_callback_info info);
+    static napi_value randomNum(napi_env env, napi_callback_info info);
 private:
     static napi_value NewDistributedObject(
         napi_env env, DistributedObjectStore *objectStore, DistributedObject *object, const std::string &objectId);
@@ -43,6 +44,7 @@ private:
     static void RestoreWatchers(napi_env env, JSObjectWrapper *wrapper, const std::string &objectId);
     static std::string GetBundleName(napi_env env);
     static bool IsSandBox();
+    static int Random();
 };
 } // namespace OHOS::ObjectStore
 #endif // JS_DISTRIBUTEDDATAOBJECTSTORE_H
