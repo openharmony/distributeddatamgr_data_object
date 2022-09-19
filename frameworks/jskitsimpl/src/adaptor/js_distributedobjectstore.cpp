@@ -16,9 +16,7 @@
 #include "js_distributedobjectstore.h"
 
 #include <cstring>
-#include <unistd.h>
-#include <fcntl.h>
-
+#include <random>
 #include "ability_context.h"
 #include "accesstoken_kit.h"
 #include "application_context.h"
@@ -32,10 +30,7 @@
 
 namespace OHOS::ObjectStore {
 constexpr size_t TYPE_SIZE = 10;
-const char MIN_NUMERIC_CHAR = '0';
-const int DIGIT = 10;
-const char TRAILING_CHAR = '\0';
-const int DESCRIPTION_LENGTH = 16;
+const int MIN_NUMERIC = 999999;
 const std::string DISTRIBUTED_DATASYNC = "ohos.permission.DISTRIBUTED_DATASYNC";
 static ConcurrentMap<std::string, std::list<napi_ref>> g_statusCallBacks;
 static ConcurrentMap<std::string, std::list<napi_ref>> g_changeCallBacks;
@@ -431,32 +426,14 @@ napi_value JSDistributedObjectStore::JSDeleteCallback(napi_env env, napi_callbac
     return result;
 }
 
-int JSDistributedObjectStore::Random()
-{
-#ifndef O_RDONLY
-#define O_RDONLY 0u
-#endif
-    int r = -1;
-    int fd = open("/dev/random", O_RDONLY);
-    fd = open("/dev/random", O_RDONLY);
-    if (fd > 0) {
-        read(fd, &r, sizeof(int));
-    }
-    close(fd);
-    return r;
-}
-
 napi_value JSDistributedObjectStore::randomNum(napi_env env, napi_callback_info info)
 {
-    int i;
-    char str[DESCRIPTION_LENGTH];
-    for (i = 0; i < DESCRIPTION_LENGTH - 1; ++i) {
-        str[i] = MIN_NUMERIC_CHAR + abs(Random() % DIGIT);
-    }
-    str[i] = TRAILING_CHAR;
+    std::random_device randomDevice;
+    std::uniform_int_distribution<int> distribution(MIN_NUMERIC, std::numeric_limits<int>::max());
+    std::string str = std::to_string(distribution(randomDevice));
 
     napi_value result = nullptr;
-    napi_status status = napi_create_string_utf8(env, str, sizeof(str)/sizeof(char), &result);
+    napi_status status = napi_create_string_utf8(env, str.c_str(), str.size(), &result);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     return result;
 }

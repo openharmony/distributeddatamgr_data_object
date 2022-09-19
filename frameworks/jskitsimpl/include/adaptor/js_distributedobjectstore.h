@@ -44,7 +44,6 @@ private:
     static void RestoreWatchers(napi_env env, JSObjectWrapper *wrapper, const std::string &objectId);
     static std::string GetBundleName(napi_env env);
     static bool IsSandBox();
-    static int Random();
 };
 } // namespace OHOS::ObjectStore
 #endif // JS_DISTRIBUTEDDATAOBJECTSTORE_H
