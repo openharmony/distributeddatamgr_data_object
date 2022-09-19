@@ -92,4 +92,13 @@ void JSObjectWrapper::DestroyObject()
 {
     object_ = nullptr;
 }
+
+void JSObjectWrapper::SetObjectId(const std::string &objectId){
+    objectId_ = objectId;
+}
+
+std::string JSObjectWrapper::GetObjectId(){
+    return objectId_;
+}
+
 } // namespace OHOS::ObjectStore

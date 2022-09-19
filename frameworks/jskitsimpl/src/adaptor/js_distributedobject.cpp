@@ -26,6 +26,7 @@
 
 namespace OHOS::ObjectStore {
 constexpr size_t KEY_SIZE = 64;
+
 napi_value JSDistributedObject::JSConstructor(napi_env env, napi_callback_info info)
 {
     LOG_INFO("start");
