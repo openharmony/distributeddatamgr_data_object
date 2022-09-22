@@ -116,10 +116,10 @@ ohos_shared_library("distributeddataobject") {
     "//third_party/libuv:uv",
   ]
   external_deps = [
+    "ability_runtime:app_context",
     "access_token:libaccesstoken_sdk",
     "hiviewdfx_hilog_native:libhilog",
     "napi:ace_napi",
-    "ability_runtime:app_context",
   ]
 
   public_configs = [ ":objectstore_public_config" ]
