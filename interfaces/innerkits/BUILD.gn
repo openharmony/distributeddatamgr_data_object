@@ -54,7 +54,7 @@ ohos_shared_library("distributeddataobject_impl") {
 
   configs = [ ":objectstore_config" ]
 
-  ldflags = [ "-Wl,--exclude-libs=libdistributeddata_dfx_static.a" ]
+  ldflags = [ "-Wl,--exclude-libs=ALL" ]
 
   deps = [
     "//foundation/distributeddatamgr/datamgr_service/services/distributeddataservice/adapter/dfx:distributeddata_dfx_static",
