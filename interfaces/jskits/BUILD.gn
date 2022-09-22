@@ -57,6 +57,9 @@ config("objectstore_config") {
     "//third_party/bounds_checking_function/include",
     "//foundation/ability/ability_runtime/interfaces/kits/native/appkit/ability_runtime/context",
     "//foundation/distributeddatamgr/kv_store/frameworks/common",
+    "//foundation/distributeddatamgr/kv_store/frameworks/libs/distributeddb/interfaces/include",
+    "//foundation/distributeddatamgr/kv_store/frameworks/libs/distributeddb/interfaces/include/relational",
+    "//foundation/distributeddatamgr/kv_store/frameworks/libs/distributeddb/include",
   ]
 }
 
@@ -109,22 +112,14 @@ ohos_shared_library("distributeddataobject") {
     ":distributed_data_object_abc",
     ":distributed_data_object_js",
     "//foundation/ability/ability_runtime/frameworks/native/ability/native:abilitykit_native",
-    "//foundation/ability/ability_runtime/frameworks/native/appkit:app_context",
     "//foundation/distributeddatamgr/data_object/interfaces/innerkits:distributeddataobject_impl",
-    "//foundation/distributeddatamgr/kv_store/frameworks/libs/distributeddb:distributeddb",
-    "//third_party/bounds_checking_function:libsec_static",
     "//third_party/libuv:uv",
   ]
   external_deps = [
-    "ability_base:want",
-    "ability_runtime:ability_manager",
-    "ability_runtime:runtime",
     "access_token:libaccesstoken_sdk",
-    "c_utils:utils",
-    "dsoftbus:softbus_client",
     "hiviewdfx_hilog_native:libhilog",
-    "ipc:ipc_core",
     "napi:ace_napi",
+    "ability_runtime:app_context",
   ]
 
   public_configs = [ ":objectstore_public_config" ]
