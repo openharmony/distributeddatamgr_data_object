@@ -41,8 +41,6 @@ public:
     uint32_t UnWatch(DistributedObject *object) override;
     uint32_t SetStatusNotifier(std::shared_ptr<StatusNotifier> notifier) override;
     void NotifyCachedStatus(const std::string &sessionId) override;
-    void TriggerSync() override;
-    void TriggerRestore(std::function<void()> notifier) override;
 
 private:
     DistributedObject *CacheObject(const std::string &sessionId, FlatObjectStore *flatObjectStore);
