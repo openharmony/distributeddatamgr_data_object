@@ -41,18 +41,23 @@ function changeCallback2(sessionId, changeData) {
 }
 
 function statusCallback1(sessionId, networkId, status) {
-    console.info(TAG + "statusCallback1" + sessionId);
+    console.info(TAG + "statusCallback1" + " " + sessionId);
     this.response += "\nstatus changed " + sessionId + " " + status + " " + networkId;
 }
 
 function statusCallback2(sessionId, networkId, status) {
-    console.info(TAG + "statusCallback2" + sessionId);
+    console.info(TAG + "statusCallback2" + " " + sessionId);
     this.response += "\nstatus changed " + sessionId + " " + status + " " + networkId;
 }
 
 function statusCallback3(sessionId, networkId, status) {
-    console.info(TAG + "statusCallback3" + sessionId);
+    console.info(TAG + "statusCallback3" + " " + sessionId);
     this.response += "\nstatus changed " + sessionId + " " + status + " " + networkId;
+}
+
+function statusCallback4(sessionId, networkId, status) {
+    console.info(TAG + "statusCallback4" + " " + sessionId);
+    expect("restored" == status).assertEqual(true);
 }
 
 const TIMEOUT = 1500;
@@ -736,6 +741,35 @@ describe('objectStoreTest',function () {
 
         console.log(TAG + "************* testRevokeSave001 end *************");
         g_object.setSessionId("");
+
+    })
+
+    /**
+     * @tc.name: OnstatusRestored
+     * @tc.desc: test local device data restored
+     * @tc.type: FUNC
+     * @tc.require: I5OXHH
+     */
+    it('OnstatusRestored001', 0, async function () {
+        console.log(TAG + "************* OnstatusRestored001 start *************");
+        var g_object = distributedObject.createDistributedObject({ name: undefined, age: undefined, isVis: undefined });
+        g_object.setSessionId("123456");
+        g_object.name = "jack";
+        g_object.age = 19;
+        g_object.isVis = true;
+
+        let result = await g_object.save("local");
+        expect(result.sessionId == "123456").assertEqual(true);
+        expect(result.version == g_object.__version).assertEqual(true);
+        expect(result.deviceId == "local").assertEqual(true);
+
+        g_object.setSessionId("");
+
+        g_object.on("status", statusCallback4);
+
+        g_object.setSessionId("123456");
+
+        console.log(TAG + "************* OnstatusRestored001 end *************");
 
     })
 
