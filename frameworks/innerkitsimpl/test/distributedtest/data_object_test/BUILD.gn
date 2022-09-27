@@ -34,6 +34,7 @@ ohos_distributedtest("DistributedTest") {
 
   external_deps = [
     "access_token:libaccesstoken_sdk",
+    "access_token:libnativetoken",
     "c_utils:utils",
     "data_object:distributeddataobject_impl",
     "dsoftbus:softbus_client",
@@ -54,6 +55,7 @@ ohos_distributedtest("DistributedTestAgent") {
 
   external_deps = [
     "access_token:libaccesstoken_sdk",
+    "access_token:libnativetoken",
     "c_utils:utils",
     "data_object:distributeddataobject_impl",
     "dsoftbus:softbus_client",
