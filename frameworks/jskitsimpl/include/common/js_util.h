@@ -16,7 +16,9 @@
 #define OHOS_JS_UTIL_H
 #include <cstdint>
 #include <map>
+#include <string>
 #include <variant>
+#include <vector>
 
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
