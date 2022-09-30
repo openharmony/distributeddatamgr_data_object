@@ -18,6 +18,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <functional>
 
 #include "distributed_object.h"
 
