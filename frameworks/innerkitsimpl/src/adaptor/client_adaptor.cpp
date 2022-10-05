@@ -34,7 +34,7 @@ sptr<OHOS::DistributedObject::IObjectService> ClientAdaptor::GetObjectService()
         return nullptr;
     }
 
-    auto remote = distributedDataMgr_->GetObjectService();
+    auto remote = distributedDataMgr_->GetFeatureInterface("data_object");
     if (remote == nullptr) {
         LOG_ERROR("get object service failed");
         return nullptr;
