@@ -1,4 +1,4 @@
-# 分布式数据对象
+# 分布式数据对象部件
 ## 简介
 分布式数据对象管理框架是一款面向对象的内存数据管理框架，向应用开发者提供内存对象的创建、查询、删除、修改、订阅等基本数据对象的管理能力，同时具备分布式能力，满足超级终端场景下，相同应用多设备间的数据对象协同需求。
 
@@ -82,3 +82,4 @@ import distributedObject from '@ohos.data.distributedDataObject'
 - [分布式数据对象API文档](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-data-distributedobject.md)
 - [distributeddatamgr\_datamgr](https://gitee.com/openharmony/distributeddatamgr_datamgr)
 - [third\_party\_sqlite](https://gitee.com/openharmony/third_party_sqlite)
+- **[distributeddatamgr\_data\_object](https://gitee.com/openharmony/distributeddatamgr_data_object)**
