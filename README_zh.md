@@ -35,7 +35,11 @@
 ├── picture               # 资源图库
 └── samples               # 开发实例
 ```
+**图 1**  分布式数据对象实现图<a name="fig1"></a>
 
+![](pictures/data_object_architecture.png)
+
+每定义一个分布式数据对象都会创建一个分布式内存数据库，通过sessionId来标识。当对分布式数据对象进行读写操作时，实际上是对分布式数据库进行读写操作。分布式数据对象通过软总线实现数据的同步。
 ## 接口说明
 
 ### 引用分布式对象头文件
@@ -59,9 +63,9 @@ import distributedObject from '@ohos.data.distributedDataObject'
 | on(type: 'change', callback: Callback<{ sessionId: string, fields: Array<string> }>): void; | 监听对象数据的变更<br>type固定为'change'<br>callback是变更时触发的回调，回调参数sessionId标识变更对象的sessionId,fields标识对象变更的属性名 |
 | off(type: 'change', callback?: Callback<{ sessionId: string, fields: Array<string> } | 删除数据对象变更的监听<br>type固定为'change'<br>callback为可选参数，不设置表示删除该对象所有变更监听 |
 | on(type: 'status', callback: Callback<{ sessionId: string, networkId: string, status: 'online' \| 'offline' }>): void | 监听数据对象上下线的变更<br/>type固定为'status'<br/>callback是变更时触发的回调，回调参数sessionId标识变更对象的sessionId，networkId标识对象设备的networkId，status标识对象为'online'(上线)或'offline'(下线)的状态 |
-| off(type: 'status', callback?: Callback<{ sessionId: string, deviceId: string, status: 'online' \| 'offline' }>): void | 删除数据对象上下线变更的监听<br/>type固定为'change'<br/>callback为可选参数，不设置表示删除该数据对象所有上下线监听 |
+| off(type: 'status', callback?: Callback<{ sessionId: string, deviceId: string, status: 'online' \| 'offline' }>): void | 删除数据对象上下线变更的监听<br/>type固定为'status'<br/>callback为可选参数，不设置表示删除该数据对象所有上下线监听 |
 | save(deviceId: string, callback: AsyncCallback&lt;SaveSuccessResponse&gt;): void | 持久化保存数据对象<br/>deviceId为设备Id，用户自定义。例如"local"。<br/> |
-| revokeSave(callback: AsyncCallback<RevokeSaveSuccessResponse>): void | 撤回已保存的数据对象。<br/>type固定为'change'<br/>callback为撤回已保存的数据对象回调 |
+| revokeSave(callback: AsyncCallback<RevokeSaveSuccessResponse>): void | 撤回已保存的数据对象。callback为撤回已保存的数据对象回调。
 
 
 
