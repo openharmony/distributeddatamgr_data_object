@@ -66,7 +66,7 @@ ohos_shared_library("distributeddataobject_impl") {
     "c_utils:utils",
     "dsoftbus:softbus_client",
     "hitrace_native:hitrace_meter",
-    "hitrace_native:libhitrace",
+    "hitrace_native:libhitracechain",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "kv_store:distributeddata_inner",
