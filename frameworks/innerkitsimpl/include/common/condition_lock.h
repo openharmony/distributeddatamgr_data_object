@@ -37,7 +37,7 @@ public:
     T Wait()
     {
         std::unique_lock<std::mutex> lock(mutex_);
-        cv_.wait(lock, [this]() { return isSet_; });
+        cv_.wait_for(lock, std::chrono::seconds(INTERVAL), [this]() { return isSet_; });
         T data = data_;
         cv_.notify_one();
         return data;
@@ -55,6 +55,7 @@ private:
     T data_;
     std::mutex mutex_;
     std::condition_variable cv_;
+    static constexpr int64_t INTERVAL = 5;
 };
 } // namespace OHOS::ObjectStore
 
