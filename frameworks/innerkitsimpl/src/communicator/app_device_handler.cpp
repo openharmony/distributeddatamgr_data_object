@@ -22,6 +22,7 @@ namespace ObjectStore {
 AppDeviceHandler::AppDeviceHandler()
 {
     softbusAdapter_ = SoftBusAdapter::GetInstance();
+    devManager_ = DevManager::GetInstance();
 }
 
 AppDeviceHandler::~AppDeviceHandler()
@@ -31,6 +32,7 @@ AppDeviceHandler::~AppDeviceHandler()
 void AppDeviceHandler::Init()
 {
     softbusAdapter_->Init();
+    devManager_->RegisterDevCallback();
 }
 
 Status AppDeviceHandler::StartWatchDeviceChange(

@@ -40,25 +40,6 @@ constexpr int32_t DEVICE_ID_SIZE_MAX = 65;
 constexpr int32_t ID_BUF_LEN = 65;
 using namespace std;
 
-class AppDeviceListenerWrap {
-public:
-    explicit AppDeviceListenerWrap()
-    {
-    }
-    ~AppDeviceListenerWrap()
-    {
-    }
-    static void SetDeviceHandler(SoftBusAdapter *handler);
-    static void OnDeviceOnline(NodeBasicInfo *info);
-    static void OnDeviceOffline(NodeBasicInfo *info);
-    static void OnDeviceInfoChanged(NodeBasicInfoType type, NodeBasicInfo *info);
-
-private:
-    static SoftBusAdapter *softBusAdapter_;
-    static void NotifyAll(NodeBasicInfo *info, DeviceChangeType type);
-};
-SoftBusAdapter *AppDeviceListenerWrap::softBusAdapter_;
-
 class AppDataListenerWrap {
 public:
     static void SetDataHandler(SoftBusAdapter *handler);
@@ -76,51 +57,10 @@ public:
 SoftBusAdapter *AppDataListenerWrap::softBusAdapter_;
 std::shared_ptr<SoftBusAdapter> SoftBusAdapter::instance_;
 
-void AppDeviceListenerWrap::OnDeviceInfoChanged(NodeBasicInfoType type, NodeBasicInfo *info)
-{
-    std::string udid = softBusAdapter_->GetUdidByNodeId(std::string(info->networkId));
-    LOG_INFO("[InfoChange] type:%{public}d, id:%{public}s, name:%{public}s", type,
-        SoftBusAdapter::ToBeAnonymous(udid).c_str(), info->deviceName);
-}
-
-void AppDeviceListenerWrap::OnDeviceOffline(NodeBasicInfo *info)
-{
-    std::string udid = softBusAdapter_->GetUdidByNodeId(std::string(info->networkId));
-    LOG_INFO("[Offline] id:%{public}s, name:%{public}s, typeId:%{public}d",
-        SoftBusAdapter::ToBeAnonymous(udid).c_str(), info->deviceName, info->deviceTypeId);
-    NotifyAll(info, DeviceChangeType::DEVICE_OFFLINE);
-}
-
-void AppDeviceListenerWrap::OnDeviceOnline(NodeBasicInfo *info)
-{
-    std::string udid = softBusAdapter_->GetUdidByNodeId(std::string(info->networkId));
-    LOG_INFO("[Online] id:%{public}s, name:%{public}s, typeId:%{public}d", SoftBusAdapter::ToBeAnonymous(udid).c_str(),
-        info->deviceName, info->deviceTypeId);
-    NotifyAll(info, DeviceChangeType::DEVICE_ONLINE);
-}
-
-void AppDeviceListenerWrap::SetDeviceHandler(SoftBusAdapter *handler)
-{
-    LOG_INFO("SetDeviceHandler.");
-    softBusAdapter_ = handler;
-}
-
-void AppDeviceListenerWrap::NotifyAll(NodeBasicInfo *info, DeviceChangeType type)
-{
-    DeviceInfo di = { std::string(info->networkId), std::string(info->deviceName), std::to_string(info->deviceTypeId) };
-    softBusAdapter_->NotifyAll(di, type);
-}
-
 SoftBusAdapter::SoftBusAdapter()
 {
     LOG_INFO("begin");
-    AppDeviceListenerWrap::SetDeviceHandler(this);
     AppDataListenerWrap::SetDataHandler(this);
-
-    nodeStateCb_.events = EVENT_NODE_STATE_MASK;
-    nodeStateCb_.onNodeOnline = AppDeviceListenerWrap::OnDeviceOnline;
-    nodeStateCb_.onNodeOffline = AppDeviceListenerWrap::OnDeviceOffline;
-    nodeStateCb_.onNodeBasicInfoChanged = AppDeviceListenerWrap::OnDeviceInfoChanged;
 
     sessionListener_.OnSessionOpened = AppDataListenerWrap::OnSessionOpened;
     sessionListener_.OnSessionClosed = AppDataListenerWrap::OnSessionClosed;

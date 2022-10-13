@@ -16,6 +16,7 @@
 #ifndef DISTRIBUTEDDATAFWK_SRC_DEVICE_HANDLER_H
 #define DISTRIBUTEDDATAFWK_SRC_DEVICE_HANDLER_H
 #include "softbus_adapter.h"
+#include "dev_manager.h"
 
 namespace OHOS {
 namespace ObjectStore {
@@ -41,6 +42,7 @@ public:
 
 private:
     std::shared_ptr<SoftBusAdapter> softbusAdapter_{};
+    DevManager *devManager_ = nullptr;
 };
 } // namespace ObjectStore
 } // namespace OHOS
