@@ -52,7 +52,7 @@ bool JSObjectWrapper::AddWatch(napi_env env, const char *type, napi_value handle
 
 void JSObjectWrapper::DeleteWatch(napi_env env, const char *type, napi_value handler)
 {
-    std::unique_lock<std::shared_mutex> cacheLock(watchMutex_);
+    std::unique_lock <std::shared_mutex> cacheLock(watchMutex_);
     if (watcher_ != nullptr) {
         watcher_->Off(type, handler);
         LOG_INFO("JSObjectWrapper::DeleteWatch %{public}s", type);
@@ -93,11 +93,13 @@ void JSObjectWrapper::DestroyObject()
     object_ = nullptr;
 }
 
-void JSObjectWrapper::SetObjectId(const std::string &objectId){
+void JSObjectWrapper::SetObjectId(const std::string &objectId)
+{
     objectId_ = objectId;
 }
 
-std::string JSObjectWrapper::GetObjectId(){
+std::string JSObjectWrapper::GetObjectId()
+{
     return objectId_;
 }
 

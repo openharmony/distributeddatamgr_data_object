@@ -24,6 +24,22 @@
 #include "napi/native_node_api.h"
 
 namespace OHOS::ObjectStore {
+
+struct JsErrorCode {
+    int32_t jsCode;
+    std::string message;
+};
+
+void GenerateNapiError(napi_env env, int32_t status ,int32_t &errCode, std::string &errMessage);
+void ThrowNapiError(napi_env env, int32_t errCode, std::string errMessage);
+
+enum ErrorCode{
+    INNER_ERROR = 0,                   // systemerror
+    NO_PERMISSION = 201,               // error.message: Permission verification failed. An attempt was made to join session forbidden by permission: ohos.permission.DISTRIBUTED_DATASYNC.
+    INVALID_PARAMS = 401,              // error.message: Parameter error.
+    DB_EXIST = 15400001,               // error.message: create table failed.
+};
+
 class JSUtil final {
 public:
     /* napi_value <-> bool */

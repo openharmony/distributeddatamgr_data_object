@@ -27,6 +27,7 @@ using NapiCbInfoParser = std::function<void(size_t argc, napi_value *argv)>;
 using NapiAsyncExecute = std::function<void(void)>;
 using NapiAsyncComplete = std::function<void(napi_value &)>;
 static constexpr size_t ARGC_MAX = 6;
+constexpr double VERSION_9 = 9;
 struct ContextBase {
     virtual ~ContextBase();
     void GetCbInfo(
@@ -41,7 +42,9 @@ struct ContextBase {
     napi_env env = nullptr;
     napi_value output = nullptr;
     napi_status status = napi_invalid_arg;
-    std::string error;
+    std::string error="";
+    double version = VERSION_9;
+    int32_t code = 0;
 
     napi_value self = nullptr;
     void *native = nullptr;
@@ -60,24 +63,27 @@ private:
 };
 
 /* check condition related to argc/argv, return and logging. */
-#define CHECK_ARGS_RETURN_VOID(ctxt, condition, message)     \
-    do {                                                     \
-        if (!(condition)) {                                  \
-            (ctxt)->status = napi_invalid_arg;               \
-            (ctxt)->error = std::string(message);            \
+#define CHECK_ARGS_RETURN_VOID(ctxt, condition, message)         \
+    do {                                                         \
+        if (!(condition)) {                                      \
+            (ctxt)->status = napi_invalid_arg;                   \
+            (ctxt)->error = std::string(message);                \
+            (ctxt)->code = INVALID_PARAMS;                       \
             LOG_ERROR("test (" #condition ") failed: " message); \
-            return;                                          \
-        }                                                    \
+            return;                                              \
+        }                                                        \
     } while (0)
 
-#define CHECK_STATUS_RETURN_VOID(ctxt, message)                       \
-    do {                                                              \
-        if ((ctxt)->status != napi_ok) {                              \
-            (ctxt)->error = std::string(message);                     \
+#define CHECK_STATUS_RETURN_VOID(ctxt, message)                           \
+    do {                                                                  \
+        if ((ctxt)->status != napi_ok) {                                  \
+            (ctxt)->error = std::string(message);                         \
+            (ctxt)->code = INNER_ERROR;                                   \
             LOG_ERROR("test (ctxt->status == napi_ok) failed: " message); \
-            return;                                                   \
-        }                                                             \
+            return;                                                       \
+        }                                                                 \
     } while (0)
+
 class NapiQueue {
 public:
     static napi_value AsyncWork(napi_env env, std::shared_ptr<ContextBase> ctxt, const std::string &name,

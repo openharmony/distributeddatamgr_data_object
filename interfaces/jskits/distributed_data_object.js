@@ -48,21 +48,21 @@ class Distributed {
             }
         });
         this.__objectId = randomNum();
-        this[VERSION] = 0;
+        this[VERSION] = 8;
         console.info("constructor success ");
     }
 
     setSessionId(sessionId) {
         if (sessionId == null || sessionId == "") {
-            leaveSession(this.__proxy);
+            leaveSession(this.__version, this.__proxy);
             return false;
         }
         if (this.__proxy[SESSION_ID] == sessionId) {
             console.info("same session has joined " + sessionId);
             return true;
         }
-        leaveSession(this.__proxy);
-        let object = joinSession(this.__proxy, this.__objectId, sessionId);
+        leaveSession(this.__version, this.__proxy);
+        let object = joinSession(this.__version, this.__proxy, this.__objectId, sessionId);
         if (object != null) {
             this.__proxy = object;
             return true;
@@ -71,13 +71,17 @@ class Distributed {
     }
 
     on(type, callback) {
-        onWatch(type, this.__proxy, callback);
-        distributedObject.recordCallback(type, this.__objectId, callback);
+        onWatch(this.__version, type, this.__proxy, callback);
+        distributedObject.recordCallback(this.__version, type, this.__objectId, callback);
     }
 
     off(type, callback) {
-        offWatch(type, this.__proxy, callback);
-        distributedObject.deleteCallback(type, this.__objectId, callback);
+        offWatch(this.__version, type, this.__proxy, callback);
+        if (callback != undefined || callback != null) {
+            distributedObject.deleteCallback(this.__version, type, this.__objectId, callback);
+        } else {
+            distributedObject.deleteCallback(this.__version, type, this.__objectId);
+        }
     }
 
     save(deviceId, callback) {
@@ -102,7 +106,7 @@ class Distributed {
 }
 
 function randomNum() {
-    return distributedObject.randomNum();
+    return distributedObject.sequenceNum();
 }
 
 function newDistributed(obj) {
@@ -114,14 +118,20 @@ function newDistributed(obj) {
     return new Distributed(obj);
 }
 
-function joinSession(obj, objectId, sessionId) {
+function joinSession(version, obj, objectId, sessionId, context) {
     console.info("start joinSession " + sessionId);
     if (obj == null || sessionId == null || sessionId == "") {
         console.error("object is null");
         return null;
     }
 
-    let object = distributedObject.createObjectSync(sessionId, objectId);
+    let object = null;
+    if (context != undefined || context != null) {
+        object = distributedObject.createObjectSync(version, sessionId, objectId, context);
+    } else {
+        object = distributedObject.createObjectSync(version, sessionId, objectId);
+    }
+
     if (object == null) {
         console.error("create fail");
         return null;
@@ -181,7 +191,7 @@ function joinSession(obj, objectId, sessionId) {
     return object;
 }
 
-function leaveSession(obj) {
+function leaveSession(version, obj) {
     console.info("start leaveSession");
     if (obj == null || obj[SESSION_ID] == null || obj[SESSION_ID] == "") {
         console.warn("object is null");
@@ -196,30 +206,145 @@ function leaveSession(obj) {
         });
     });
     // disconnect,delete object
-    distributedObject.destroyObjectSync(obj);
+    distributedObject.destroyObjectSync(version, obj);
     delete obj[SESSION_ID];
 }
 
-function onWatch(type, obj, callback) {
+function onWatch(version, type, obj, callback) {
     console.info("start on " + obj[SESSION_ID]);
     if (obj[SESSION_ID] != null && obj[SESSION_ID] != undefined && obj[SESSION_ID].length > 0) {
-        distributedObject.on(type, obj, callback);
+        distributedObject.on(version, type, obj, callback);
     }
 }
 
-function offWatch(type, obj, callback = undefined) {
+function offWatch(version, type, obj, callback = undefined) {
     console.info("start off " + obj[SESSION_ID] + " " + callback);
     if (obj[SESSION_ID] != null && obj[SESSION_ID] != undefined && obj[SESSION_ID].length > 0) {
         if (callback != undefined || callback != null) {
-            distributedObject.off(type, obj, callback);
+            distributedObject.off(version, type, obj, callback);
         } else {
-            distributedObject.off(type, obj);
+            distributedObject.off(version, type, obj);
         }
 
     }
 }
 
+function newDistributedV9(obj, context) {
+    console.info("start newDistributed");
+    if (obj == null) {
+        console.error("object is null");
+        return null;
+    }
+    return new DistributedV9(obj, context);
+}
+
+class DistributedV9 {
+
+    constructor(obj, context) {
+        this.__context = context;
+        this.__proxy = obj;
+        Object.keys(obj).forEach(key => {
+            Object.defineProperty(this, key, {
+                enumerable: true,
+                configurable: true,
+                get: function () {
+                    return this.__proxy[key];
+                },
+                set: function (newValue) {
+                    this[VERSION]++;
+                    this.__proxy[key] = newValue;
+                }
+            });
+        });
+        Object.defineProperty(this, SESSION_ID, {
+            enumerable: true,
+            configurable: true,
+            get: function () {
+                return this.__proxy[SESSION_ID];
+            },
+            set: function (newValue) {
+                this.__proxy[SESSION_ID] = newValue;
+            }
+        });
+        this.__objectId = randomNum();
+        this[VERSION] = 9;
+        console.info("constructor success ");
+    }
+
+    setSessionId(sessionId, callback) {
+        if (sessionId == null || sessionId == "") {
+            leaveSession(this.__version, this.__proxy);
+            if (typeof callback == "function") {
+                callback()
+            } else {
+                return Promise.reject();
+            }
+        }
+        if (this.__proxy[SESSION_ID] == sessionId) {
+            console.info("same session has joined " + sessionId);
+            if (typeof callback == "function") {
+                callback()
+            } else {
+                return Promise.resolve();
+            }
+        }
+        leaveSession(this.__version, this.__proxy);
+        let object = joinSession(this.__version, this.__proxy, this.__objectId, sessionId);
+        if (object != null) {
+            this.__proxy = object;
+            if (typeof callback == "function") {
+                callback()
+            } else {
+                return Promise.resolve();
+            }
+        } else {
+            if (typeof callback == "function") {
+                callback()
+            } else {
+                return Promise.reject();
+            }
+        }
+
+    }
+
+    on(type, callback) {
+        onWatch(this.__version, type, this.__proxy, callback);
+        distributedObject.recordCallback(this.__version, type, this.__objectId, callback);
+    }
+
+    off(type, callback) {
+        offWatch(this.__version, type, this.__proxy, callback);
+        if (callback != undefined || callback != null) {
+            distributedObject.deleteCallback(this.__version, type, this.__objectId, callback);
+        } else {
+            distributedObject.deleteCallback(this.__version, type, this.__objectId);
+        }
+    }
+
+    save(deviceId, callback) {
+        if (this.__proxy[SESSION_ID] == null || this.__proxy[SESSION_ID] == "") {
+            console.info("not join a session, can not do save");
+            return JS_ERROR;
+        }
+        return this.__proxy.save(deviceId, this[VERSION], callback);
+    }
+
+    revokeSave(callback) {
+        if (this.__proxy[SESSION_ID] == null || this.__proxy[SESSION_ID] == "") {
+            console.info("not join a session, can not do revoke save");
+            return JS_ERROR;
+        }
+        return this.__proxy.revokeSave(this.__version, callback);
+    }
+
+    __context;
+    __proxy;
+    __objectId;
+    __version;
+}
+
 export default {
     createDistributedObject: newDistributed,
+    create: newDistributedV9,
     genSessionId: randomNum
 }

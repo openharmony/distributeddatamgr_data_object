@@ -112,6 +112,20 @@ napi_value NapiQueue::AsyncWork(napi_env env, std::shared_ptr<ContextBase> ctxt,
     return promise;
 }
 
+void GenerateBusinessError(napi_env env, ContextBase* ctxt,napi_value *businessError)
+{
+    napi_create_object(ctxt->env, businessError);
+    if (ctxt->code == INNER_ERROR) {
+        return;
+    }
+    napi_value errorCode = nullptr;
+    napi_value errorMessage = nullptr;
+    napi_create_int32(ctxt->env, ctxt->code, &errorCode);
+    napi_create_string_utf8(ctxt->env, ctxt->error.c_str(), ctxt->error.size(), &errorMessage);
+    napi_set_named_property(ctxt->env, *businessError, "code", errorCode);
+    napi_set_named_property(ctxt->env, *businessError, "message", errorMessage);
+}
+
 void NapiQueue::GenerateOutput(ContextBase* ctxt)
 {
     napi_value result[RESULT_ALL] = { nullptr };
@@ -122,9 +136,16 @@ void NapiQueue::GenerateOutput(ContextBase* ctxt)
         }
         result[RESULT_DATA] = ctxt->output;
     } else {
-        napi_value message = nullptr;
-        napi_create_string_utf8(ctxt->env, ctxt->error.c_str(), NAPI_AUTO_LENGTH, &message);
-        napi_create_error(ctxt->env, nullptr, message, &result[RESULT_ERROR]);
+        if (ctxt->version == 9) {
+            napi_value businessError = nullptr;
+            GenerateBusinessError(ctxt->env, ctxt, &businessError);
+            result[RESULT_ERROR] = businessError;
+        } else {
+            napi_value message = nullptr;
+            napi_create_string_utf8(ctxt->env, ctxt->error.c_str(), NAPI_AUTO_LENGTH, &message);
+            napi_create_error(ctxt->env, nullptr, message, &result[RESULT_ERROR]);
+        }
+        
         napi_get_undefined(ctxt->env, &result[RESULT_DATA]);
     }
     if (ctxt->deferred != nullptr) {

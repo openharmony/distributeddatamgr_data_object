@@ -155,4 +155,34 @@ napi_status JSUtil::SetValue(napi_env env, const std::vector<uint8_t> &in, napi_
     LOG_ERROR_RETURN((status == napi_ok), "napi_value <- std::vector<uint8_t> invalid value", status);
     return status;
 }
+
+static const std::map<int32_t, JsErrorCode> jsErrCodeMsgMap {
+    { ErrorCode::NO_PERMISSION,                  {201, "error.message:no permission"}},
+    { ErrorCode::INVALID_PARAMS,                 {401, "Parameter error. "}},
+    { ErrorCode::DB_EXIST,                       {15400000, "error.message: create table failed"}},
+};
+
+const std::optional<JsErrorCode> GetJsErrorCode(int32_t errorCode)
+{
+    auto iter = jsErrCodeMsgMap.find(errorCode);
+    if (iter != jsErrCodeMsgMap.end()) {
+        return iter->second;
+    }
+    return std::nullopt;
+}
+
+void ThrowNapiError(napi_env env, int32_t errCode, std::string errMessage)
+{
+    LOG_DEBUG("ThrowNapiError message: %{public}s", errMessage.c_str());
+    auto errormsg = GetJsErrorCode(errCode);
+    JsErrorCode napiError;
+    if (errormsg.has_value()) {
+        napiError = errormsg.value();
+    }
+    if (errCode == ErrorCode::INVALID_PARAMS) {
+        napiError.message += errMessage;
+        napiError.jsCode = 401;
+    }
+    napi_throw_error(env, std::to_string(napiError.jsCode).c_str(), napiError.message.c_str());
+}
 } // namespace OHOS::ObjectStore
