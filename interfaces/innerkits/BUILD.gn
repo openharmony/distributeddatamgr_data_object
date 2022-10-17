@@ -48,6 +48,7 @@ ohos_shared_library("distributeddataobject_impl") {
     "../../frameworks/innerkitsimpl/src/communicator/ark_communication_provider.cpp",
     "../../frameworks/innerkitsimpl/src/communicator/communication_provider.cpp",
     "../../frameworks/innerkitsimpl/src/communicator/communication_provider_impl.cpp",
+    "../../frameworks/innerkitsimpl/src/communicator/dev_manager.cpp",
     "../../frameworks/innerkitsimpl/src/communicator/process_communicator_impl.cpp",
     "../../frameworks/innerkitsimpl/src/communicator/softbus_adapter_standard.cpp",
   ]
@@ -59,6 +60,7 @@ ohos_shared_library("distributeddataobject_impl") {
   deps = [
     "//foundation/distributeddatamgr/datamgr_service/services/distributeddataservice/adapter/dfx:distributeddata_dfx_static",
     "//foundation/distributeddatamgr/kv_store/frameworks/libs/distributeddb:distributeddb",
+    "//foundation/distributedhardware/device_manager/interfaces/inner_kits/native_cpp:devicemanagersdk",
     "//third_party/bounds_checking_function:libsec_static",
     "//third_party/libuv:uv",
   ]
