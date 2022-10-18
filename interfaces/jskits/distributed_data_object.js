@@ -22,7 +22,8 @@ const NULL_TYPE = "[NULL]"
 const JS_ERROR = 1;
 
 class Distributed {
-    constructor(obj) {
+    constructor(version, obj) {
+        this.__sdkVersion = version;
         this.__proxy = obj;
         Object.keys(obj).forEach(key => {
             Object.defineProperty(this, key, {
@@ -48,21 +49,21 @@ class Distributed {
             }
         });
         this.__objectId = randomNum();
-        this[VERSION] = 8;
+        this[VERSION] = 0;
         console.info("constructor success ");
     }
 
     setSessionId(sessionId) {
         if (sessionId == null || sessionId == "") {
-            leaveSession(this.__version, this.__proxy);
+            leaveSession(this.__sdkVersion, this.__proxy);
             return false;
         }
         if (this.__proxy[SESSION_ID] == sessionId) {
             console.info("same session has joined " + sessionId);
             return true;
         }
-        leaveSession(this.__version, this.__proxy);
-        let object = joinSession(this.__version, this.__proxy, this.__objectId, sessionId);
+        leaveSession(this.__sdkVersion, this.__proxy);
+        let object = joinSession(this.__sdkVersion, this.__proxy, this.__objectId, sessionId);
         if (object != null) {
             this.__proxy = object;
             return true;
@@ -71,17 +72,17 @@ class Distributed {
     }
 
     on(type, callback) {
-        onWatch(this.__version, type, this.__proxy, callback);
-        distributedObject.recordCallback(this.__version, type, this.__objectId, callback);
+        onWatch(this.__sdkVersion, type, this.__proxy, callback);
+        distributedObject.recordCallback(this.__sdkVersion, type, this.__objectId, callback);
     }
 
     off(type, callback) {
-        offWatch(this.__version, type, this.__proxy, callback);
-        if (callback != undefined || callback != null) {
-            distributedObject.deleteCallback(this.__version, type, this.__objectId, callback);
-        } else {
-            distributedObject.deleteCallback(this.__version, type, this.__objectId);
-        }
+        offWatch(this.__sdkVersion, type, this.__proxy, callback);
+        // if (callback != undefined || callback != null) {
+        //     distributedObject.deleteCallback(this.__sdkVersion, type, this.__objectId, callback);
+        // } else {
+        //     distributedObject.deleteCallback(this.__sdkVersion, type, this.__objectId);
+        // }
     }
 
     save(deviceId, callback) {
@@ -103,6 +104,7 @@ class Distributed {
     __proxy;
     __objectId;
     __version;
+    __sdkVersion;
 }
 
 function randomNum() {
@@ -115,7 +117,7 @@ function newDistributed(obj) {
         console.error("object is null");
         return null;
     }
-    return new Distributed(obj);
+    return new Distributed(8, obj);
 }
 
 function joinSession(version, obj, objectId, sessionId, context) {
@@ -235,12 +237,13 @@ function newDistributedV9(obj, context) {
         console.error("object is null");
         return null;
     }
-    return new DistributedV9(obj, context);
+    return new DistributedV9(9, obj, context);
 }
 
 class DistributedV9 {
 
-    constructor(obj, context) {
+    constructor(version, obj, context) {
+        this.__sdkVersion = version;
         this.__context = context;
         this.__proxy = obj;
         Object.keys(obj).forEach(key => {
@@ -267,17 +270,17 @@ class DistributedV9 {
             }
         });
         this.__objectId = randomNum();
-        this[VERSION] = 9;
+        this[VERSION] = 0;
         console.info("constructor success ");
     }
 
     setSessionId(sessionId, callback) {
         if (sessionId == null || sessionId == "") {
-            leaveSession(this.__version, this.__proxy);
+            leaveSession(this.__sdkVersion, this.__proxy);
             if (typeof callback == "function") {
-                callback()
+                callback(null, null)
             } else {
-                return Promise.reject();
+                return Promise.reject(null, null);
             }
         }
         if (this.__proxy[SESSION_ID] == sessionId) {
@@ -285,39 +288,39 @@ class DistributedV9 {
             if (typeof callback == "function") {
                 callback()
             } else {
-                return Promise.resolve();
+                return Promise.resolve(null, null);
             }
         }
-        leaveSession(this.__version, this.__proxy);
-        let object = joinSession(this.__version, this.__proxy, this.__objectId, sessionId);
+        leaveSession(this.__sdkVersion, this.__proxy);
+        let object = joinSession(this.__sdkVersion, this.__proxy, this.__objectId, sessionId);
         if (object != null) {
             this.__proxy = object;
             if (typeof callback == "function") {
-                callback()
+                callback(null, null)
             } else {
-                return Promise.resolve();
+                return Promise.resolve(null, null);
             }
         } else {
             if (typeof callback == "function") {
-                callback()
+                callback(null, null)
             } else {
-                return Promise.reject();
+                return Promise.reject(null, null);
             }
         }
 
     }
 
     on(type, callback) {
-        onWatch(this.__version, type, this.__proxy, callback);
-        distributedObject.recordCallback(this.__version, type, this.__objectId, callback);
+        onWatch(this.__sdkVersion, type, this.__proxy, callback);
+        distributedObject.recordCallback(this.__sdkVersion, type, this.__objectId, callback);
     }
 
     off(type, callback) {
-        offWatch(this.__version, type, this.__proxy, callback);
+        offWatch(this.__sdkVersion, type, this.__proxy, callback);
         if (callback != undefined || callback != null) {
-            distributedObject.deleteCallback(this.__version, type, this.__objectId, callback);
+            distributedObject.deleteCallback(this.__sdkVersion, type, this.__objectId, callback);
         } else {
-            distributedObject.deleteCallback(this.__version, type, this.__objectId);
+            distributedObject.deleteCallback(this.__sdkVersion, type, this.__objectId);
         }
     }
 
@@ -334,13 +337,14 @@ class DistributedV9 {
             console.info("not join a session, can not do revoke save");
             return JS_ERROR;
         }
-        return this.__proxy.revokeSave(this.__version, callback);
+        return this.__proxy.revokeSave(callback);
     }
 
     __context;
     __proxy;
     __objectId;
     __version;
+    __sdkVersion;
 }
 
 export default {
