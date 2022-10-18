@@ -14,7 +14,6 @@
  */
 
 #include "js_distributedobjectstore.h"
-
 #include <cstring>
 #include "ability_context.h"
 #include "accesstoken_kit.h"
@@ -22,7 +21,7 @@
 #include "js_common.h"
 #include "js_distributedobject.h"
 #include "js_object_wrapper.h"
-#include "js_util.h"
+
 #include "logger.h"
 #include "objectstore_errors.h"
 
@@ -146,28 +145,29 @@ napi_value JSDistributedObjectStore::JSCreateObjectSync(napi_env env, napi_callb
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     status = JSUtil::GetValue(env, argv[0], version);
 
-    ASSERT_RAMETER_ELSE_RETURN(argc >= requireArgc, env, version, "at least 1 parameters!");
+    SETERR_RETURN(argc >= requireArgc, version,
+                  JSUtil::SetError(env, INVALID_PARAMS, "at least 1 parameters!"));
     ASSERT_STATUS_ELSE_RETURN(!IsSandBox(), env, version);
     LOG_INFO("start JSCreateObjectSync");
-    if (!JSDistributedObjectStore::CheckSyncPermission()) {
-        CHECK_PERMISSSION_WITH_RETURN(env, version, "no permission ohos.permission.DISTRIBUTED_DATASYNC");
-    }
+    SETERR_RETURN(JSDistributedObjectStore::CheckSyncPermission(), version,
+                  JSUtil::SetError(env, NO_PERMISSION, "no permission ohos.permission.DISTRIBUTED_DATASYNC"));
 
     status = napi_typeof(env, argv[1], &valueType);
     CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-    ASSERT_RAMETER_ELSE_RETURN(valueType == napi_string, env, version, "The type of 'sessionId' must be 'string'");
+
+    SETERR_RETURN(valueType == napi_string, version, JSUtil::SetError(env, INVALID_PARAMS, "sessionId", "string"));
     status = JSUtil::GetValue(env, argv[1], sessionId);
     CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
     status = napi_typeof(env, argv[2], &valueType);
     CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-    ASSERT_RAMETER_ELSE_RETURN(valueType == napi_string, env, version, "The type of 'objectId' must be 'string'");
+    CHECK_EQUAL_WITH_RETURN_NULL(valueType, napi_string);
     status = JSUtil::GetValue(env, argv[2], objectId);
     CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
     if (argc > requireArgc) {
         napi_valuetype objectType = napi_undefined;
         status = napi_typeof(env, argv[3], &objectType);
         CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-        ASSERT_RAMETER_ELSE_RETURN(objectType == napi_object, env, version, "The type of 'context' must be 'Context'");
+        SETERR_RETURN(valueType == objectType, version, JSUtil::SetError(env, INVALID_PARAMS, "context", "Context"));
     }
     DistributedObjectStore *objectInfo =
             DistributedObjectStore::GetInstance(JSDistributedObjectStore::GetBundleName(env));
@@ -227,32 +227,29 @@ napi_value JSDistributedObjectStore::JSOn(napi_env env, napi_callback_info info)
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     status = JSUtil::GetValue(env, argv[0], version);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-    ASSERT_RAMETER_ELSE_RETURN(argc >= requireArgc, env, version, "at least 2 parameters!");
+    SETERR_RETURN(argc >= requireArgc, version, JSUtil::SetError(env, INVALID_PARAMS, "at least 2 parameters!"));
     char type[TYPE_SIZE] = {0};
     size_t eventTypeLen = 0;
-    napi_valuetype eventValueType = napi_undefined;
-    status = napi_typeof(env, argv[1], &eventValueType);
+    napi_valuetype valueType = napi_undefined;
+    status = napi_typeof(env, argv[1], &valueType);
     CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-    ASSERT_RAMETER_ELSE_RETURN(eventValueType == napi_string, env, version, "The type of 'type' must be 'string'");
+    SETERR_RETURN(valueType == napi_string, version, JSUtil::SetError(env, INVALID_PARAMS, "type", "string")); 
     status = napi_get_value_string_utf8(env, argv[1], type, TYPE_SIZE, &eventTypeLen);
     CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
 
     napi_valuetype objectType = napi_undefined;
     status = napi_typeof(env, argv[2], &objectType);
     CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-    ASSERT_RAMETER_ELSE_RETURN(objectType == napi_object, env, version,
-                               "The type of 'DistributedObject' must be 'object'");
-
-    napi_valuetype callbackType = napi_undefined;
-    status = napi_typeof(env, argv[3], &callbackType);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-    ASSERT_RAMETER_ELSE_RETURN(callbackType == napi_function, env, version,
-                               "The type of 'callback' must be 'function'");
+    ASSERT_MATCH_ELSE_RETURN_NULL(objectType == napi_object);
 
     JSObjectWrapper *wrapper = nullptr;
     status = napi_unwrap(env, argv[2], (void **) &wrapper);
     CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
     ASSERT_STATUS_ELSE_RETURN(wrapper != nullptr, env, version);
+    napi_valuetype callbackType = napi_undefined;
+    status = napi_typeof(env, argv[3], &callbackType);
+    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
+    SETERR_RETURN(valueType == napi_function, version, JSUtil::SetError(env, INVALID_PARAMS, "callback", "function")); 
     wrapper->AddWatch(env, type, argv[3]);
     napi_value result = nullptr;
     napi_get_undefined(env, &result);
@@ -276,24 +273,16 @@ napi_value JSDistributedObjectStore::JSOff(napi_env env, napi_callback_info info
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     status = JSUtil::GetValue(env, argv[0], version);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-    ASSERT_RAMETER_ELSE_RETURN(argc >= requireArgc, env, version, "at least 1 parameters!");
+    SETERR_RETURN(argc >= requireArgc, version, JSUtil::SetError(env, INVALID_PARAMS, "at least 1 parameters!"));
+    napi_valuetype valueType = napi_undefined;
+    status = napi_typeof(env, argv[1], &valueType);
+    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
+    SETERR_RETURN(valueType == napi_string, version, JSUtil::SetError(env, INVALID_PARAMS, "type", "string"));
+    status = napi_get_value_string_utf8(env, argv[1], type, TYPE_SIZE, &typeLen);
+    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
 
-    for (size_t i = 1; i < argc; i++) {
-        napi_valuetype valueType = napi_undefined;
-        status = napi_typeof(env, argv[i], &valueType);
-        CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-
-        if (i == 1 && valueType == napi_string) {
-            status = napi_get_value_string_utf8(env, argv[i], type, TYPE_SIZE, &typeLen);
-            CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-        } else if (i == 2 && valueType == napi_object) {
-            continue;
-        } else if (i == 3 && (valueType == napi_function || valueType == napi_undefined)) {
-            continue;
-        } else {
-            ASSERT_RAMETER_RETURN_ERROR(false, env, version, "type mismatch");
-        }
-    }
+    status = napi_typeof(env, argv[2], &valueType);
+    ASSERT_MATCH_ELSE_RETURN_NULL(valueType == napi_object);
     JSObjectWrapper *wrapper = nullptr;
     status = napi_unwrap(env, argv[2], (void **) &wrapper);
     CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
@@ -304,6 +293,8 @@ napi_value JSDistributedObjectStore::JSOff(napi_env env, napi_callback_info info
         wrapper->DeleteWatch(env, type);
     } else {
         LOG_INFO("delete");
+        status = napi_typeof(env, argv[3], &valueType);
+        SETERR_RETURN(valueType == napi_function, version, JSUtil::SetError(env, INVALID_PARAMS, "callback", "function"));       
         wrapper->DeleteWatch(env, type, argv[3]);
     }
     napi_value result = nullptr;
@@ -376,28 +367,27 @@ napi_value JSDistributedObjectStore::JSRecordCallback(napi_env env, napi_callbac
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     status = JSUtil::GetValue(env, argv[0], version);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-    ASSERT_RAMETER_ELSE_RETURN(argc >= requireArgc, env, version, "at least 2 parameters!");
+    SETERR_RETURN(argc >= requireArgc, version, JSUtil::SetError(env, INVALID_PARAMS, "at least 2 parameters!"));
     char type[TYPE_SIZE] = {0};
     size_t eventTypeLen = 0;
     napi_valuetype valueType = napi_undefined;
     status = napi_typeof(env, argv[1], &valueType);
     CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-    ASSERT_RAMETER_ELSE_RETURN(valueType == napi_string, env, version, "The type of 'type' must be 'string'");
+    SETERR_RETURN(valueType == napi_string, version, JSUtil::SetError(env, INVALID_PARAMS, "type", "string"));
     status = napi_get_value_string_utf8(env, argv[1], type, TYPE_SIZE, &eventTypeLen);
     CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
 
     std::string objectId;
     status = napi_typeof(env, argv[2], &valueType);
     CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-    ASSERT_RAMETER_ELSE_RETURN(valueType == napi_string, env, version, "The type of 'objectId' must be 'string'");
+    CHECK_EQUAL_WITH_RETURN_NULL(valueType, napi_string);
     status = JSUtil::GetValue(env, argv[2], objectId);
     CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
 
     napi_valuetype callbackType = napi_undefined;
     status = napi_typeof(env, argv[3], &callbackType);
     CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-    ASSERT_RAMETER_ELSE_RETURN(callbackType == napi_function, env, version,
-                               "The type of 'callback' must be 'function'");
+    SETERR_RETURN(callbackType == napi_function, version, JSUtil::SetError(env, INVALID_PARAMS, "callback", "function"));
     bool addResult = true;
     if (!strcmp(CHANGE, type)) {
         addResult = AddCallback(env, g_changeCallBacks, objectId, argv[3]);
@@ -425,20 +415,20 @@ napi_value JSDistributedObjectStore::JSDeleteCallback(napi_env env, napi_callbac
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     status = JSUtil::GetValue(env, argv[0], version);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-    ASSERT_RAMETER_ELSE_RETURN(argc >= requireArgc, env, version, "at least 1 parameters!");
+    SETERR_RETURN(argc >= requireArgc, version, JSUtil::SetError(env, INVALID_PARAMS, "at least 1 parameters!"));
     char type[TYPE_SIZE] = {0};
     size_t eventTypeLen = 0;
     napi_valuetype valueType = napi_undefined;
     status = napi_typeof(env, argv[1], &valueType);
     CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-    ASSERT_RAMETER_ELSE_RETURN(valueType == napi_string, env, version, "The type of 'type' must be 'string'");
+    SETERR_RETURN(valueType == napi_string, version, JSUtil::SetError(env, INVALID_PARAMS, "type", "string"));
     status = napi_get_value_string_utf8(env, argv[1], type, TYPE_SIZE, &eventTypeLen);
     CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
 
     std::string objectId;
     status = napi_typeof(env, argv[2], &valueType);
     CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-    ASSERT_RAMETER_ELSE_RETURN(valueType == napi_string, env, version, "The type of 'objectId' must be 'string'");
+    CHECK_EQUAL_WITH_RETURN_NULL(valueType, napi_string);
     status = JSUtil::GetValue(env, argv[2], objectId);
     CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
     bool delResult = true;
@@ -452,15 +442,14 @@ napi_value JSDistributedObjectStore::JSDeleteCallback(napi_env env, napi_callbac
         napi_valuetype callbackType = napi_undefined;
         status = napi_typeof(env, argv[3], &callbackType);
         CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-        ASSERT_RAMETER_ELSE_RETURN(callbackType == napi_function, env, version,
-                                   "The type of 'callback' must be 'founction'");
+        SETERR_RETURN(valueType == napi_function, version, JSUtil::SetError(env, INVALID_PARAMS, "callback", "founction"));
         if (!strcmp(CHANGE, type)) {
             delResult = DelCallback(env, g_changeCallBacks, objectId, argv[3]);
         } else if (!strcmp(STATUS, type)) {
             delResult = DelCallback(env, g_statusCallBacks, objectId, argv[3]);
         }
     }
-    ASSERT_STATUS_ELSE_RETURN(delResult, env, version);
+    // ASSERT_STATUS_ELSE_RETURN(delResult, env, version);
     napi_value result = nullptr;
     napi_get_undefined(env, &result);
     return result;

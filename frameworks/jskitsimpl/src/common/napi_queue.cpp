@@ -112,10 +112,10 @@ napi_value NapiQueue::AsyncWork(napi_env env, std::shared_ptr<ContextBase> ctxt,
     return promise;
 }
 
-void GenerateBusinessError(napi_env env, ContextBase* ctxt,napi_value *businessError)
+void GenerateBusinessError(napi_env env, ContextBase* ctxt, napi_value *businessError)
 {
     napi_create_object(ctxt->env, businessError);
-    if (ctxt->code == INNER_ERROR) {
+    if (ctxt->status == napi_generic_failure) {
         return;
     }
     napi_value errorCode = nullptr;
@@ -136,7 +136,7 @@ void NapiQueue::GenerateOutput(ContextBase* ctxt)
         }
         result[RESULT_DATA] = ctxt->output;
     } else {
-        if (ctxt->version == 9) {
+        if (ctxt->sdkVersion == 9) {
             napi_value businessError = nullptr;
             GenerateBusinessError(ctxt->env, ctxt, &businessError);
             result[RESULT_ERROR] = businessError;

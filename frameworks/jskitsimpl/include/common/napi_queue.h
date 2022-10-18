@@ -43,7 +43,7 @@ struct ContextBase {
     napi_value output = nullptr;
     napi_status status = napi_invalid_arg;
     std::string error = "";
-    double version = VERSION_9;
+    double sdkVersion = VERSION_9;
     int32_t code = 0;
 
     napi_value self = nullptr;
@@ -68,7 +68,6 @@ private:
         if (!(condition)) {                                      \
             (ctxt)->status = napi_invalid_arg;                   \
             (ctxt)->error = std::string(message);                \
-            (ctxt)->code = INVALID_PARAMS;                       \
             LOG_ERROR("test (" #condition ") failed: " message); \
             return;                                              \
         }                                                        \
@@ -78,8 +77,16 @@ private:
     do {                                                                  \
         if ((ctxt)->status != napi_ok) {                                  \
             (ctxt)->error = std::string(message);                         \
-            (ctxt)->code = INNER_ERROR;                                   \
             LOG_ERROR("test (ctxt->status == napi_ok) failed: " message); \
+            return;                                                       \
+        }                                                                 \
+    } while (0)
+#define CHECK_CONDITION_RETURN_ERROR(ctxt, condition, message, status)    \
+    do {                                                                  \
+        if (!(condition)) {                                               \
+            (ctxt)->error  = std::string(message);                        \
+            (ctxt)->status = status;                                      \
+            LOG_ERROR("test (" #condition ") failed: " message);          \
             return;                                                       \
         }                                                                 \
     } while (0)

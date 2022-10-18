@@ -17,7 +17,7 @@
 #define JS_DISTRIBUTEDDATAOBJECTSTORE_H
 
 #include <list>
-
+#include "js_util.h"
 #include "distributed_objectstore.h"
 #include "js_native_api.h"
 #include "js_object_wrapper.h"
@@ -45,7 +45,6 @@ private:
     static void RestoreWatchers(napi_env env, JSObjectWrapper *wrapper, const std::string &objectId);
     static std::string GetBundleName(napi_env env);
     static bool IsSandBox();
-    static std::shared_ptr<AbilityRuntime::ApplicationContext> context_;
     static std::atomic<uint32_t> sequenceNum_;
 };
 } // namespace OHOS::ObjectStore

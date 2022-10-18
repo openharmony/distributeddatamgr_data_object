@@ -19,19 +19,20 @@
 #include <string>
 #include <variant>
 #include <vector>
-
+#include "application_context.h"
+#include "ability_context.h"
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
-
 namespace OHOS::ObjectStore {
+
+struct ContextParam {
+    std::string hapName = "";
+};
 
 struct JsErrorCode {
     int32_t jsCode;
     std::string message;
 };
-
-void GenerateNapiError(napi_env env, int32_t status ,int32_t &errCode, std::string &errMessage);
-void ThrowNapiError(napi_env env, int32_t errCode, std::string errMessage);
 
 enum ErrorCode{
     INNER_ERROR = 0,                   // systemerror
@@ -61,7 +62,23 @@ public:
     /* napi_value <-> std::vector<uint8_t> */
     static napi_status GetValue(napi_env env, napi_value in, std::vector<uint8_t> &out);
     static napi_status SetValue(napi_env env, const std::vector<uint8_t> &in, napi_value &out);
+
+    static void GenerateNapiError(napi_env env, int32_t status ,int32_t &errCode, std::string &errMessage);
+    static void ThrowNapiError(napi_env env, int32_t errCode, std::string errMessage = "");
+
+    static void SetError(napi_env env, int code, std::string msg, std::string node);
+    static void SetError(napi_env env, int code, std::string msg);
 };
+
+#define SETERR_RETURN(assertion, version, SetCall)               \
+    do {                                                         \
+        if (!(assertion)) {                                      \
+            if (version == 9){                                   \
+                (SetCall);                                       \
+            }                                                    \
+            return nullptr ;                                     \
+        }                                                        \
+    } while (0)
 
 #define LOG_ERROR_RETURN(condition, message, retVal)             \
     do {                                                         \
