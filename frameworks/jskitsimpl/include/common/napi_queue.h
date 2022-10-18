@@ -42,7 +42,7 @@ struct ContextBase {
     napi_env env = nullptr;
     napi_value output = nullptr;
     napi_status status = napi_invalid_arg;
-    std::string error="";
+    std::string error = "";
     double version = VERSION_9;
     int32_t code = 0;
 

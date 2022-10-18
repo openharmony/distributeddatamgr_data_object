@@ -455,9 +455,9 @@ napi_value JSDistributedObjectStore::JSDeleteCallback(napi_env env, napi_callbac
         ASSERT_RAMETER_ELSE_RETURN(callbackType == napi_function, env, version,
                                    "The type of 'callback' must be 'founction'");
         if (!strcmp(CHANGE, type)) {
-            delResult = DelCallback(env, g_changeCallBacks, objectId, argv[2]);
+            delResult = DelCallback(env, g_changeCallBacks, objectId, argv[3]);
         } else if (!strcmp(STATUS, type)) {
-            delResult = DelCallback(env, g_statusCallBacks, objectId, argv[2]);
+            delResult = DelCallback(env, g_statusCallBacks, objectId, argv[3]);
         }
     }
     ASSERT_STATUS_ELSE_RETURN(delResult, env, version);
