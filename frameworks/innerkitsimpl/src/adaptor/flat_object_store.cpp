@@ -47,7 +47,7 @@ FlatObjectStore::~FlatObjectStore()
 
 uint32_t FlatObjectStore::CreateObject(const std::string &sessionId)
 {
-    if (!storageEngine_->isOpened_) {
+    if (!storageEngine_->isOpened_ && storageEngine_->Open(bundleName_) != SUCCESS) {
         LOG_ERROR("FlatObjectStore::DB has not inited");
         return ERR_DB_NOT_INIT;
     }
@@ -97,7 +97,7 @@ uint32_t FlatObjectStore::CreateObject(const std::string &sessionId)
 
 uint32_t FlatObjectStore::Delete(const std::string &sessionId)
 {
-    if (!storageEngine_->isOpened_) {
+    if (!storageEngine_->isOpened_ && storageEngine_->Open(bundleName_) != SUCCESS) {
         LOG_ERROR("FlatObjectStore::DB has not inited");
         return ERR_DB_NOT_INIT;
     }
@@ -112,7 +112,7 @@ uint32_t FlatObjectStore::Delete(const std::string &sessionId)
 
 uint32_t FlatObjectStore::Watch(const std::string &sessionId, std::shared_ptr<FlatObjectWatcher> watcher)
 {
-    if (!storageEngine_->isOpened_) {
+    if (!storageEngine_->isOpened_ && storageEngine_->Open(bundleName_) != SUCCESS) {
         LOG_ERROR("FlatObjectStore::DB has not inited");
         return ERR_DB_NOT_INIT;
     }
@@ -125,7 +125,7 @@ uint32_t FlatObjectStore::Watch(const std::string &sessionId, std::shared_ptr<Fl
 
 uint32_t FlatObjectStore::UnWatch(const std::string &sessionId)
 {
-    if (!storageEngine_->isOpened_) {
+    if (!storageEngine_->isOpened_ && storageEngine_->Open(bundleName_) != SUCCESS) {
         LOG_ERROR("FlatObjectStore::DB has not inited");
         return ERR_DB_NOT_INIT;
     }
@@ -138,7 +138,7 @@ uint32_t FlatObjectStore::UnWatch(const std::string &sessionId)
 
 uint32_t FlatObjectStore::Put(const std::string &sessionId, const std::string &key, std::vector<uint8_t> value)
 {
-    if (!storageEngine_->isOpened_) {
+    if (!storageEngine_->isOpened_ && storageEngine_->Open(bundleName_) != SUCCESS) {
         LOG_ERROR("FlatObjectStore::DB has not inited");
         return ERR_DB_NOT_INIT;
     }
@@ -147,7 +147,7 @@ uint32_t FlatObjectStore::Put(const std::string &sessionId, const std::string &k
 
 uint32_t FlatObjectStore::Get(std::string &sessionId, const std::string &key, Bytes &value)
 {
-    if (!storageEngine_->isOpened_) {
+    if (!storageEngine_->isOpened_ && storageEngine_->Open(bundleName_) != SUCCESS) {
         LOG_ERROR("FlatObjectStore::DB has not inited");
         return ERR_DB_NOT_INIT;
     }
@@ -156,7 +156,7 @@ uint32_t FlatObjectStore::Get(std::string &sessionId, const std::string &key, By
 
 uint32_t FlatObjectStore::SetStatusNotifier(std::shared_ptr<StatusWatcher> notifier)
 {
-    if (!storageEngine_->isOpened_) {
+    if (!storageEngine_->isOpened_ && storageEngine_->Open(bundleName_) != SUCCESS) {
         LOG_ERROR("FlatObjectStore::DB has not inited");
         return ERR_DB_NOT_INIT;
     }
@@ -166,7 +166,7 @@ uint32_t FlatObjectStore::SetStatusNotifier(std::shared_ptr<StatusWatcher> notif
 uint32_t FlatObjectStore::SyncAllData(const std::string &sessionId,
     const std::function<void(const std::map<std::string, DistributedDB::DBStatus> &)> &onComplete)
 {
-    if (!storageEngine_->isOpened_) {
+    if (!storageEngine_->isOpened_ && storageEngine_->Open(bundleName_) != SUCCESS) {
         LOG_ERROR("FlatObjectStore::DB has not inited");
         return ERR_DB_NOT_INIT;
     }

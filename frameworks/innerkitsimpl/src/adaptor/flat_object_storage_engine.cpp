@@ -41,14 +41,12 @@ uint32_t FlatObjectStorageEngine::Open(const std::string &bundleName)
     auto status = DistributedDB::KvStoreDelegateManager::SetProcessLabel("objectstoreDB", bundleName);
     if (status != DistributedDB::DBStatus::OK) {
         LOG_ERROR("delegate SetProcessLabel failed: %{public}d.", static_cast<int>(status));
-        return ERR_DB_SET_PROCESS;
     }
 
     auto communicator = std::make_shared<ProcessCommunicatorImpl>();
     auto commStatus = DistributedDB::KvStoreDelegateManager::SetProcessCommunicator(communicator);
     if (commStatus != DistributedDB::DBStatus::OK) {
         LOG_ERROR("set distributed db communicator failed.");
-        return ERR_DB_SET_PROCESS;
     }
     storeManager_ = std::make_shared<DistributedDB::KvStoreDelegateManager>(bundleName, "default");
     if (storeManager_ == nullptr) {
