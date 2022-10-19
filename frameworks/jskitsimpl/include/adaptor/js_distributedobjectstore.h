@@ -20,6 +20,7 @@
 #include "js_util.h"
 #include "distributed_objectstore.h"
 #include "js_native_api.h"
+#include "js_ability.h"
 #include "js_object_wrapper.h"
 #include "node_api.h"
 #include "concurrent_map.h"
@@ -46,6 +47,7 @@ private:
     static std::string GetBundleName(napi_env env);
     static bool IsSandBox();
     static std::atomic<uint32_t> sequenceNum_;
+    static std::shared_ptr<Context> context_;
 };
 } // namespace OHOS::ObjectStore
 #endif // JS_DISTRIBUTEDDATAOBJECTSTORE_H
