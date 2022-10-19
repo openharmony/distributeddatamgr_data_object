@@ -116,7 +116,7 @@ napi_value JSDistributedObjectStore::NewDistributedObject(
             g_statusCallBacks.Erase(objectWrapper->GetObjectId());
             LOG_INFO("start delete object");
             DistributedObjectStore::GetInstance(JSDistributedObjectStore::GetBundleName(env))
-                ->DeleteObject(objectWrapper->GetObject()->GetSessionId());
+                    ->DeleteObject(objectWrapper->GetObject()->GetSessionId());
             delete objectWrapper;
         },
         nullptr, nullptr);

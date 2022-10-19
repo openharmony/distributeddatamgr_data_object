@@ -63,7 +63,7 @@ std::string Context::GetUri()
 bool JSAbility::CheckContext(napi_env env, napi_callback_info info)
 {
     size_t argc = 1;
-    napi_value args[1] = { 0 };
+    napi_value args[1] = {0};
     bool mode = false;
     napi_get_cb_info(env, info, &argc, args, nullptr, nullptr);
     napi_status status = AbilityRuntime::IsStageContext(env, args[0], mode);

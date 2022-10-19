@@ -231,16 +231,16 @@ napi_value JSDistributedObject::JSSave(napi_env env, napi_callback_info info)
     auto ctxt = std::make_shared<SaveContext>();
     std::function<void(size_t argc, napi_value * argv)> getCbOpe = [env, ctxt](size_t argc, napi_value *argv) {
         // required 1 arguments :: <key>
-        CHECK_ARGS_RETURN_VOID(ctxt, argc >= 2,"at least 1 parameters!");
+        CHECK_ARGS_RETURN_VOID(ctxt, argc >= 2, "at least 1 parameters!");
         napi_valuetype valueType = napi_undefined;
         ctxt->status = napi_typeof(env, argv[0], &valueType);
         CHECK_ARGS_RETURN_VOID(ctxt, valueType == napi_string, "The type of 'deviceId' must be 'string'");
         ctxt->status = JSUtil::GetValue(env, argv[0], ctxt->deviceId);
-        CHECK_STATUS_RETURN_VOID(ctxt,"invalid arg[0], i.e. invalid deviceId!");
+        CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[0], i.e. invalid deviceId!");
         ctxt->status = JSUtil::GetValue(env, argv[1], ctxt->version);
         CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[1], i.e. invalid version!");
         JSObjectWrapper *wrapper = nullptr;
-        napi_status status = napi_unwrap(env, ctxt->self, (void **)&wrapper);
+        napi_status status = napi_unwrap(env, ctxt->self, (void **) &wrapper);
         CHECK_EQUAL_WITH_RETURN_VOID(status, napi_ok);
         ASSERT_MATCH_ELSE_RETURN_VOID(wrapper != nullptr);
         ASSERT_MATCH_ELSE_RETURN_VOID(wrapper->GetObject() != nullptr);
@@ -299,7 +299,7 @@ napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info in
     std::function<void(size_t argc, napi_value * argv)> getCbOpe = [env, ctxt](size_t argc, napi_value *argv) {
         // required 1 arguments :: <key>
         JSObjectWrapper *wrapper = nullptr;
-        napi_status status = napi_unwrap(env, ctxt->self, (void **)&wrapper);
+        napi_status status = napi_unwrap(env, ctxt->self, (void **) &wrapper);
         CHECK_EQUAL_WITH_RETURN_VOID(status, napi_ok);
         ASSERT_MATCH_ELSE_RETURN_VOID(wrapper != nullptr);
         ASSERT_MATCH_ELSE_RETURN_VOID(wrapper->GetObject() != nullptr);
@@ -311,7 +311,7 @@ napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info in
         JSUtil::ThrowNapiError(ctxt->env, INNER_ERROR, ctxt->error);
         return nullptr;
     }
-    
+
     auto output = [env, ctxt](napi_value &result) {
         if (ctxt->status == napi_ok) {
             ctxt->status = napi_new_instance(env,

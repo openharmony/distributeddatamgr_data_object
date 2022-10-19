@@ -158,7 +158,9 @@ napi_status JSUtil::SetValue(napi_env env, const std::vector<uint8_t> &in, napi_
 }
 
 static const std::map<int32_t, JsErrorCode> jsErrCodeMsgMap {
-    { ErrorCode::NO_PERMISSION,                  {201, "Permission verification failed. An attempt was made to join session forbidden by permission: ohos.permission.DISTRIBUTED_DATASYNC."}},
+    { ErrorCode::NO_PERMISSION,                  {201, "Permission verification failed. "
+                                                       "An attempt was made to join session forbidden "
+                                                       "by permission: ohos.permission.DISTRIBUTED_DATASYNC."}},
     { ErrorCode::INVALID_PARAMS,                 {401, "Parameter error. "}},
     { ErrorCode::DB_EXIST,                       {15400000, "create table failed"}},
 };
