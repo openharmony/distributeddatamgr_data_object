@@ -32,6 +32,7 @@ const std::string DISTRIBUTED_DATASYNC = "ohos.permission.DISTRIBUTED_DATASYNC";
 static ConcurrentMap<std::string, std::list<napi_ref>> g_statusCallBacks;
 static ConcurrentMap<std::string, std::list<napi_ref>> g_changeCallBacks;
 std::atomic<uint32_t> JSDistributedObjectStore::sequenceNum_ { MIN_NUMERIC };
+std::shared_ptr<Context> JSDistributedObjectStore::context_;
 bool JSDistributedObjectStore::AddCallback(napi_env env, ConcurrentMap<std::string, std::list<napi_ref>> &callbacks,
     const std::string &objectId, napi_value callback)
 {
@@ -163,14 +164,19 @@ napi_value JSDistributedObjectStore::JSCreateObjectSync(napi_env env, napi_callb
     CHECK_EQUAL_WITH_RETURN_NULL(valueType, napi_string);
     status = JSUtil::GetValue(env, argv[2], objectId);
     CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
+    std::string bundleName = "";
     if (argc > requireArgc) {
         napi_valuetype objectType = napi_undefined;
         status = napi_typeof(env, argv[3], &objectType);
         CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-        SETERR_RETURN(valueType == objectType, version, JSUtil::SetError(env, INVALID_PARAMS, "context", "Context"));
+        SETERR_RETURN(objectType == napi_object, version, JSUtil::SetError(env, INVALID_PARAMS, "context", "Context"));
+        context_ = JSAbility::GetContext(env, argv[3]);
+        bundleName = context_->GetBundleName();
+    } else {
+        bundleName = JSDistributedObjectStore::GetBundleName(env);
     }
-    DistributedObjectStore *objectInfo =
-            DistributedObjectStore::GetInstance(JSDistributedObjectStore::GetBundleName(env));
+
+    DistributedObjectStore *objectInfo = DistributedObjectStore::GetInstance(bundleName);
     ASSERT_STATUS_ELSE_RETURN(objectInfo != nullptr, env, version);
 
     uint32_t result = 0;
@@ -249,7 +255,7 @@ napi_value JSDistributedObjectStore::JSOn(napi_env env, napi_callback_info info)
     napi_valuetype callbackType = napi_undefined;
     status = napi_typeof(env, argv[3], &callbackType);
     CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-    SETERR_RETURN(valueType == napi_function, version, JSUtil::SetError(env, INVALID_PARAMS, "callback", "function")); 
+    SETERR_RETURN(callbackType == napi_function, version, JSUtil::SetError(env, INVALID_PARAMS, "callback", "function")); 
     wrapper->AddWatch(env, type, argv[3]);
     napi_value result = nullptr;
     napi_get_undefined(env, &result);
@@ -442,7 +448,7 @@ napi_value JSDistributedObjectStore::JSDeleteCallback(napi_env env, napi_callbac
         napi_valuetype callbackType = napi_undefined;
         status = napi_typeof(env, argv[3], &callbackType);
         CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-        SETERR_RETURN(valueType == napi_function, version, JSUtil::SetError(env, INVALID_PARAMS, "callback", "founction"));
+        SETERR_RETURN(callbackType == napi_function, version, JSUtil::SetError(env, INVALID_PARAMS, "callback", "founction"));
         if (!strcmp(CHANGE, type)) {
             delResult = DelCallback(env, g_changeCallBacks, objectId, argv[3]);
         } else if (!strcmp(STATUS, type)) {

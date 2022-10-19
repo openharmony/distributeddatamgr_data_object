@@ -187,7 +187,7 @@ void JSUtil::ThrowNapiError(napi_env env, int32_t errCode, std::string errMessag
     napi_throw_error(env, std::to_string(napiError.jsCode).c_str(), napiError.message.c_str());
 }
 
-void JSUtil::SetError(napi_env env, int code, std::string msg, std::string node)
+void JSUtil::SetError(napi_env env, int code, std::string node, std::string msg)
 {
     std::string errorMessage = "The type of '" + node + "' must be " + msg;
     ThrowNapiError(env, code, errorMessage);

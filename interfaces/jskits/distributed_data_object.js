@@ -78,11 +78,11 @@ class Distributed {
 
     off(type, callback) {
         offWatch(this.__sdkVersion, type, this.__proxy, callback);
-        // if (callback != undefined || callback != null) {
-        //     distributedObject.deleteCallback(this.__sdkVersion, type, this.__objectId, callback);
-        // } else {
-        //     distributedObject.deleteCallback(this.__sdkVersion, type, this.__objectId);
-        // }
+        if (callback != undefined || callback != null) {
+            distributedObject.deleteCallback(this.__sdkVersion, type, this.__objectId, callback);
+        } else {
+            distributedObject.deleteCallback(this.__sdkVersion, type, this.__objectId);
+        }
     }
 
     save(deviceId, callback) {
@@ -292,7 +292,7 @@ class DistributedV9 {
             }
         }
         leaveSession(this.__sdkVersion, this.__proxy);
-        let object = joinSession(this.__sdkVersion, this.__proxy, this.__objectId, sessionId);
+        let object = joinSession(this.__sdkVersion, this.__proxy, this.__objectId, sessionId, this.__context);
         if (object != null) {
             this.__proxy = object;
             if (typeof callback == "function") {

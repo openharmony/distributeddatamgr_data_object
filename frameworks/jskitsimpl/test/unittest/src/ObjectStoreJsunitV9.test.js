@@ -87,7 +87,7 @@ describe('objectStoreTest',function () {
             });
         } catch (error) {
             expect(error.code == 401).assertEqual(true);
-            expect(error.message == "Parameter error. The type of 'sessionId' must be 'string'").assertEqual(true);
+            expect(error.message == "Parameter error. The type of 'sessionId' must be string").assertEqual(true);
         }
         console.log(TAG + "************* V9testsetSessionId001 end *************");
         g_object.setSessionId("");
@@ -176,7 +176,7 @@ describe('objectStoreTest',function () {
 
         } catch (error) {
             expect(error.code == 401).assertEqual(true);
-            expect(error.message == "Parameter error. The type of 'type' must be 'string'").assertEqual(true);
+            expect(error.message == "Parameter error. The type of 'type' must be string").assertEqual(true);
         }
         console.log(TAG + "************* V9testOn002 end *************");
         g_object.setSessionId("");
@@ -266,10 +266,8 @@ describe('objectStoreTest',function () {
         try {
             g_object.off(123);
         } catch (error) {
-            console.info(error.code);
-            console.info(error.message);
             expect(error.code == 401).assertEqual(true);
-            expect(error.message == "Parameter error. type mismatch").assertEqual(true);
+            expect(error.message == "Parameter error. The type of 'type' must be string").assertEqual(true);
         }
         console.info(TAG + " end call watch change");
         console.log(TAG + "************* V9testOff002 end *************");
@@ -290,10 +288,11 @@ describe('objectStoreTest',function () {
             g_object.on("status", null);
         } catch (error) {
             expect(error.code == 401).assertEqual(true);
-            expect(error.message == "Parameter error. The type of 'callback' must be 'function'").assertEqual(true);
+            expect(error.message == "Parameter error. The type of 'callback' must be function").assertEqual(true);
         }
         console.log(TAG + "watch success");
         console.log(TAG + "************* V9testOnStatus001 end *************");
+        g_object.setSessionId("");
     })
 
     /**
@@ -373,7 +372,6 @@ describe('objectStoreTest',function () {
         } catch (error) {
             expect(error.message == "Parameter error. The type of 'deviceId' must be 'string'").assertEqual(true);
         }
-
         g_object.save("errorDeviceId").then((result) => {
             expect(result.sessionId == "tmpsession1").assertEqual(true);
             expect(result.version == g_object.__version).assertEqual(true);
@@ -383,39 +381,6 @@ describe('objectStoreTest',function () {
         });
         console.log(TAG + "************* V9testSave002 end *************");
         g_object.setSessionId("");
-    })
-
-    /**
-     * @tc.name: V9testRevokeSave001
-     * @tc.desc: test save local
-     * @tc.type: FUNC
-     */
-    it('V9testRevokeSave001', 0, async function () {
-        console.log(TAG + "************* V9testRevokeSave001 start *************");
-        var g_object = distributedObject.create({ name: "Amy", age: 18, isVis: false });
-        expect(g_object == undefined).assertEqual(false);
-
-        g_object.setSessionId("123456");
-        expect("123456" == g_object.__sessionId).assertEqual(true);
-
-        let result = await g_object.save("local");
-        expect(result.sessionId == "123456").assertEqual(true);
-        expect(result.version == g_object.__version).assertEqual(true);
-        expect(result.deviceId == "local").assertEqual(true);
-
-        result = await g_object.revokeSave();
-
-        g_object.setSessionId("");
-        g_object.name = undefined;
-        g_object.age = undefined;
-        g_object.isVis = undefined;
-        g_object.setSessionId("123456");
-        
-        console.info("result:" + g_object.name);
-        console.info("result:" + g_object.age);
-        console.info("result:" + g_object.isVis);
-        console.info("result:" + result.sessionId);
-        console.log(TAG + "************* V9testRevokeSave001 end *************");
     })
     
     console.log(TAG + "*************Unit Test End*************");
