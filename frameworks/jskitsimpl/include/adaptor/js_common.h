@@ -55,54 +55,6 @@ namespace OHOS::ObjectStore {
             goto ERROR;                                               \
         }                                                             \
     }
-#define CHECK_STATUS_WITH_RETURN(status, value, env, version)         \
-    {                                                                 \
-        if (status != value) {                                        \
-            LOG_ERROR("error! %{public}d %{public}d", status, value); \
-            if (version == VERSION_9) {                               \
-                napi_throw_error(env, nullptr, nullptr);              \
-            }                                                         \
-            return nullptr;                                           \
-        }                                                             \
-    }
-#define CHECK_PERMISSSION_WITH_RETURN(env, version, message)          \
-    {                                                                 \
-        LOG_WARN(message);                                            \
-        if (version) {                                                \
-            JSUtil::ThrowNapiError(env, NO_PERMISSION, message);      \
-        }                                                             \
-        return nullptr;                                               \
-    }
-#define ASSERT_STATUS_ELSE_RETURN(condition, env, version)            \
-    {                                                                 \
-        if (!(condition)) {                                           \
-            LOG_ERROR("error! %{public}s", #condition);               \
-            if (version == VERSION_9) {                               \
-                napi_throw_error(env, nullptr, nullptr);              \
-            }                                                         \
-            return nullptr;                                           \
-        }                                                             \
-    }
-#define ASSERT_DB_ERROR_RETURN(condition, env, version)               \
-    {                                                                 \
-        if (!(condition)) {                                           \
-            LOG_ERROR("error! %{public}s", #condition);               \
-            if (version == VERSION_9) {                               \
-                JSUtil::ThrowNapiError(env, DB_EXIST);                \
-            }                                                         \
-            return nullptr;                                           \
-        }                                                             \
-    }
-#define ASSERT_RARAMETER_ELSE_RETURN(condition, env, version, message)\
-    {                                                                 \
-        if (!(condition)) {                                           \
-            LOG_ERROR("error! %{public}s", #condition);               \
-            if (version == VERSION_9) {                               \
-                JSUtil::ThrowNapiError(env, INVALID_PARAMS, message); \
-            }                                                         \
-            return nullptr;                                           \
-        }                                                             \
-    }
 } // namespace OHOS::ObjectStore
 static const char *CHANGE = "change";
 static const char *STATUS = "status";

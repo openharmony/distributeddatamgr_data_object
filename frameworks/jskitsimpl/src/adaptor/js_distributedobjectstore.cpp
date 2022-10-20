@@ -14,14 +14,15 @@
  */
 
 #include "js_distributedobjectstore.h"
+
 #include <cstring>
+
 #include "ability_context.h"
 #include "accesstoken_kit.h"
 #include "distributed_objectstore.h"
 #include "js_common.h"
 #include "js_distributedobject.h"
 #include "js_object_wrapper.h"
-
 #include "logger.h"
 #include "objectstore_errors.h"
 
@@ -31,7 +32,7 @@ const int MIN_NUMERIC = 999999;
 const std::string DISTRIBUTED_DATASYNC = "ohos.permission.DISTRIBUTED_DATASYNC";
 static ConcurrentMap<std::string, std::list<napi_ref>> g_statusCallBacks;
 static ConcurrentMap<std::string, std::list<napi_ref>> g_changeCallBacks;
-std::atomic<uint32_t> JSDistributedObjectStore::sequenceNum_ { MIN_NUMERIC };
+std::atomic<uint32_t> JSDistributedObjectStore::sequenceNum_{ MIN_NUMERIC };
 std::shared_ptr<Context> JSDistributedObjectStore::context_;
 bool JSDistributedObjectStore::AddCallback(napi_env env, ConcurrentMap<std::string, std::list<napi_ref>> &callbacks,
     const std::string &objectId, napi_value callback)
@@ -42,7 +43,7 @@ bool JSDistributedObjectStore::AddCallback(napi_env env, ConcurrentMap<std::stri
     if (status != napi_ok) {
         return false;
     }
-    return callbacks.Compute(objectId, [&](const std::string &key, std::list <napi_ref> &lists) {
+    return callbacks.Compute(objectId, [&](const std::string &key, std::list<napi_ref> &lists) {
         lists.push_back(ref);
         return true;
     });
@@ -54,39 +55,38 @@ bool JSDistributedObjectStore::DelCallback(napi_env env, ConcurrentMap<std::stri
     LOG_INFO("del callback %{public}s", sessionId.c_str());
     napi_status status;
     bool result = true;
-    if (callback == nullptr) {
-        result = callbacks.ComputeIfPresent(sessionId, [&](const std::string &key, std::list <napi_ref> &lists) {
-            for (auto ref : lists) {
-                status = napi_delete_reference(env, ref);
+    napi_value callbackTmp;
+    result = callbacks.ComputeIfPresent(sessionId, [&](const std::string &key, std::list<napi_ref> &lists) {
+        if (callback == nullptr) {
+            for (auto iter = lists.begin(); iter != lists.end();) {
+                status = napi_delete_reference(env, *iter);
                 if (status != napi_ok) {
                     LOG_ERROR("error! %{public}d %{public}d", status, napi_ok);
                     return false;
                 }
             }
             return true;
-        });
-    }
-    napi_value callbackTmp;
-    result = callbacks.ComputeIfPresent(sessionId, [&](const std::string &key, std::list <napi_ref> &lists) {
-        for (auto iter = lists.begin(); iter != lists.end();) {
-            status = napi_get_reference_value(env, *iter, &callbackTmp);
-            if (status != napi_ok) {
-                LOG_ERROR("error! %{public}d %{public}d", status, napi_ok);
-                return false;
+        } else {
+            for (auto iter = lists.begin(); iter != lists.end();) {
+                status = napi_get_reference_value(env, *iter, &callbackTmp);
+                if (status != napi_ok) {
+                    LOG_ERROR("error! %{public}d %{public}d", status, napi_ok);
+                    return false;
+                }
+                bool isEquals = false;
+                napi_strict_equals(env, callbackTmp, callback, &isEquals);
+                if (isEquals) {
+                    napi_delete_reference(env, *iter);
+                    iter = lists.erase(iter);
+                } else {
+                    iter++;
+                }
             }
-            bool isEquals = false;
-            napi_strict_equals(env, callbackTmp, callback, &isEquals);
-            if (isEquals) {
-                napi_delete_reference(env, *iter);
-                iter = lists.erase(iter);
-            } else {
-                iter++;
+            if (lists.empty()) {
+                callbacks.Erase(sessionId);
             }
+            return true;
         }
-        if (lists.empty()) {
-            callbacks.Erase(sessionId);
-        }
-        return true;
     });
     return result;
 }
@@ -146,30 +146,27 @@ napi_value JSDistributedObjectStore::JSCreateObjectSync(napi_env env, napi_callb
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     status = JSUtil::GetValue(env, argv[0], version);
 
-    SETERR_RETURN(argc >= requireArgc, version,
-                  JSUtil::SetError(env, INVALID_PARAMS, "at least 1 parameters!"));
-    ASSERT_STATUS_ELSE_RETURN(!IsSandBox(), env, version);
+    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("1"));
+    auto innerError = std::make_shared<InnerError>();
+    NAPI_ASSERT_ERRCODE(env, !IsSandBox(), version, innerError);
     LOG_INFO("start JSCreateObjectSync");
-    SETERR_RETURN(JSDistributedObjectStore::CheckSyncPermission(), version,
-                  JSUtil::SetError(env, NO_PERMISSION, "no permission ohos.permission.DISTRIBUTED_DATASYNC"));
-
+    NAPI_ASSERT_ERRCODE(env, JSDistributedObjectStore::CheckSyncPermission(), version, std::make_shared<PermissionError>());
     status = napi_typeof(env, argv[1], &valueType);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-
-    SETERR_RETURN(valueType == napi_string, version, JSUtil::SetError(env, INVALID_PARAMS, "sessionId", "string"));
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
+    NAPI_ASSERT_ERRCODE(env, valueType == napi_string, env, version, std::make_shared<ParametersType>("sessionId", "string"));
     status = JSUtil::GetValue(env, argv[1], sessionId);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
     status = napi_typeof(env, argv[2], &valueType);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
     CHECK_EQUAL_WITH_RETURN_NULL(valueType, napi_string);
     status = JSUtil::GetValue(env, argv[2], objectId);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
     std::string bundleName = "";
     if (argc > requireArgc) {
         napi_valuetype objectType = napi_undefined;
         status = napi_typeof(env, argv[3], &objectType);
-        CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-        SETERR_RETURN(objectType == napi_object, version, JSUtil::SetError(env, INVALID_PARAMS, "context", "Context"));
+        NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
+        NAPI_ASSERT_ERRCODE(env, objectType == napi_object, version, std::make_shared<ParametersType>("context", "Context"));
         context_ = JSAbility::GetContext(env, argv[3]);
         bundleName = context_->GetBundleName();
     } else {
@@ -177,13 +174,12 @@ napi_value JSDistributedObjectStore::JSCreateObjectSync(napi_env env, napi_callb
     }
 
     DistributedObjectStore *objectInfo = DistributedObjectStore::GetInstance(bundleName);
-    ASSERT_STATUS_ELSE_RETURN(objectInfo != nullptr, env, version);
-
+    NAPI_ASSERT_ERRCODE(env, objectInfo != nullptr, version, innerError);
     uint32_t result = 0;
     DistributedObject *object = objectInfo->CreateObject(sessionId, result);
-    ASSERT_DB_ERROR_RETURN(result != ERR_EXIST, env, version);
-    ASSERT_STATUS_ELSE_RETURN(result == SUCCESS, env, version);
-    ASSERT_STATUS_ELSE_RETURN(object != nullptr, env, version);
+    NAPI_ASSERT_ERRCODE(env, result != ERR_EXIST, version, std::make_shared<DatabaseError>());
+    NAPI_ASSERT_ERRCODE(env, result == SUCCESS, version, innerError);
+    NAPI_ASSERT_ERRCODE(env, object != nullptr, version, innerError);
     return NewDistributedObject(env, objectInfo, object, objectId);
 }
 
@@ -194,7 +190,7 @@ napi_value JSDistributedObjectStore::JSDestroyObjectSync(napi_env env, napi_call
     LOG_INFO("start");
     size_t requireArgc = 2;
     size_t argc = 2;
-    napi_value argv[2] = {0};
+    napi_value argv[2] = { 0 };
     napi_value thisVar = nullptr;
     void *data = nullptr;
     std::string sessionId;
@@ -205,12 +201,13 @@ napi_value JSDistributedObjectStore::JSDestroyObjectSync(napi_env env, napi_call
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     ASSERT_MATCH_ELSE_RETURN_NULL(argc >= requireArgc);
     JSObjectWrapper *objectWrapper = nullptr;
-    status = napi_unwrap(env, argv[1], (void **) &objectWrapper);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-    ASSERT_STATUS_ELSE_RETURN(objectWrapper != nullptr, env, version);
+    status = napi_unwrap(env, argv[1], (void **)&objectWrapper);
+    auto innerError = std::make_shared<InnerError>();
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, InnerError);
+    NAPI_ASSERT_ERRCODE(env, objectWrapper != nullptr, version, InnerError);
     DistributedObjectStore *objectInfo =
-            DistributedObjectStore::GetInstance(JSDistributedObjectStore::GetBundleName(env));
-    ASSERT_STATUS_ELSE_RETURN(objectInfo != nullptr && objectWrapper->GetObject() != nullptr, env, version);
+        DistributedObjectStore::GetInstance(JSDistributedObjectStore::GetBundleName(env));
+    NAPI_ASSERT_ERRCODE(env, objectInfo != nullptr && objectWrapper->GetObject() != nullptr, version, InnerError);
     objectWrapper->DeleteWatch(env, CHANGE);
     objectWrapper->DeleteWatch(env, STATUS);
     objectInfo->DeleteObject(objectWrapper->GetObject()->GetSessionId());
@@ -226,36 +223,38 @@ napi_value JSDistributedObjectStore::JSOn(napi_env env, napi_callback_info info)
     LOG_INFO("start");
     size_t requireArgc = 4;
     size_t argc = 4;
-    napi_value argv[4] = {0};
+    napi_value argv[4] = { 0 };
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     status = JSUtil::GetValue(env, argv[0], version);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-    SETERR_RETURN(argc >= requireArgc, version, JSUtil::SetError(env, INVALID_PARAMS, "at least 2 parameters!"));
-    char type[TYPE_SIZE] = {0};
+    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("2"));
+    char type[TYPE_SIZE] = { 0 };
     size_t eventTypeLen = 0;
     napi_valuetype valueType = napi_undefined;
     status = napi_typeof(env, argv[1], &valueType);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-    SETERR_RETURN(valueType == napi_string, version, JSUtil::SetError(env, INVALID_PARAMS, "type", "string")); 
+    auto innerError = std::make_shared<InnerError>();
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
+    NAPI_ASSERT_ERRCODE(env, valueType == napi_string, version, std::make_shared<ParametersType>("type", "string"));
     status = napi_get_value_string_utf8(env, argv[1], type, TYPE_SIZE, &eventTypeLen);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
 
     napi_valuetype objectType = napi_undefined;
     status = napi_typeof(env, argv[2], &objectType);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
     ASSERT_MATCH_ELSE_RETURN_NULL(objectType == napi_object);
 
     JSObjectWrapper *wrapper = nullptr;
-    status = napi_unwrap(env, argv[2], (void **) &wrapper);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-    ASSERT_STATUS_ELSE_RETURN(wrapper != nullptr, env, version);
+    status = napi_unwrap(env, argv[2], (void **)&wrapper);
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
+    NAPI_ASSERT_ERRCODE(env, wrapper != nullptr, version, innerError);
     napi_valuetype callbackType = napi_undefined;
     status = napi_typeof(env, argv[3], &callbackType);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-    SETERR_RETURN(callbackType == napi_function, version, JSUtil::SetError(env, INVALID_PARAMS, "callback", "function")); 
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
+    NAPI_ASSERT_ERRCODE(env, callbackType == napi_function, version,
+        std::make_shared<ParametersType>("callback", "function"));
     wrapper->AddWatch(env, type, argv[3]);
     napi_value result = nullptr;
     napi_get_undefined(env, &result);
@@ -279,33 +278,33 @@ napi_value JSDistributedObjectStore::JSOff(napi_env env, napi_callback_info info
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     status = JSUtil::GetValue(env, argv[0], version);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-    SETERR_RETURN(argc >= requireArgc, version, JSUtil::SetError(env, INVALID_PARAMS, "at least 1 parameters!"));
+    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("1"));
     napi_valuetype valueType = napi_undefined;
     status = napi_typeof(env, argv[1], &valueType);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-    SETERR_RETURN(valueType == napi_string, version, JSUtil::SetError(env, INVALID_PARAMS, "type", "string"));
+    auto innerError = std::make_shared<InnerError>();
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
+    NAPI_ASSERT_ERRCODE(env, valueType == napi_string, version, std::make_shared<ParametersType>("type", "string"));
     status = napi_get_value_string_utf8(env, argv[1], type, TYPE_SIZE, &typeLen);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
 
     status = napi_typeof(env, argv[2], &valueType);
     ASSERT_MATCH_ELSE_RETURN_NULL(valueType == napi_object);
     JSObjectWrapper *wrapper = nullptr;
     status = napi_unwrap(env, argv[2], (void **) &wrapper);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-    ASSERT_STATUS_ELSE_RETURN(wrapper != nullptr, env, version);
-
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
+    NAPI_ASSERT_ERRCODE(env, wrapper != nullptr, version, innerError);
     if (argc == requireArgc) {
         LOG_INFO("delete all");
         wrapper->DeleteWatch(env, type);
     } else {
         LOG_INFO("delete");
         status = napi_typeof(env, argv[3], &valueType);
-        SETERR_RETURN(valueType == napi_function, version, JSUtil::SetError(env, INVALID_PARAMS, "callback", "function"));       
+        NAPI_ASSERT_ERRCODE(env, valueType == napi_function, version, std::make_shared<ParametersType>("callback", "function"));
         wrapper->DeleteWatch(env, type, argv[3]);
     }
     napi_value result = nullptr;
     status = napi_get_undefined(env, &result);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
     return result;
 }
 
@@ -324,35 +323,31 @@ void JSDistributedObjectStore::RestoreWatchers(napi_env env, JSObjectWrapper *wr
     napi_value callbackValue;
     bool watchResult = true;
     LOG_DEBUG("start restore %{public}s", objectId.c_str());
-    watchResult = g_changeCallBacks.ComputeIfPresent(objectId,
-                                                     [&](const std::string &key, std::list <napi_ref> &lists) {
-                                                         for (auto callback : lists) {
-                                                             status = napi_get_reference_value(env, callback,
-                                                                                               &callbackValue);
-                                                             if (status != napi_ok) {
-                                                                 LOG_ERROR("error! %{public}d", status);
-                                                                 continue;
-                                                             }
-                                                             wrapper->AddWatch(env, CHANGE, callbackValue);
-                                                         }
-                                                         return true;
-                                                     });
+    watchResult = g_changeCallBacks.ComputeIfPresent(objectId, [&](const std::string &key, std::list<napi_ref> &lists) {
+        for (auto callback : lists) {
+            status = napi_get_reference_value(env, callback, &callbackValue);
+            if (status != napi_ok) {
+                LOG_ERROR("error! %{public}d", status);
+                continue;
+            }
+            wrapper->AddWatch(env, CHANGE, callbackValue);
+        }
+        return true;
+    });
     if (!watchResult) {
         LOG_INFO("no callback %{public}s", objectId.c_str());
     }
-    watchResult = g_statusCallBacks.ComputeIfPresent(objectId,
-                                                     [&](const std::string &key, std::list <napi_ref> &lists) {
-                                                         for (auto callback : lists) {
-                                                             status = napi_get_reference_value(env, callback,
-                                                                                               &callbackValue);
-                                                             if (status != napi_ok) {
-                                                                 LOG_ERROR("error! %{public}d", status);
-                                                                 continue;
-                                                             }
-                                                             wrapper->AddWatch(env, STATUS, callbackValue);
-                                                         }
-                                                         return true;
-                                                     });
+    watchResult = g_statusCallBacks.ComputeIfPresent(objectId, [&](const std::string &key, std::list<napi_ref> &lists) {
+        for (auto callback : lists) {
+            status = napi_get_reference_value(env, callback, &callbackValue);
+            if (status != napi_ok) {
+                LOG_ERROR("error! %{public}d", status);
+                continue;
+            }
+            wrapper->AddWatch(env, STATUS, callbackValue);
+        }
+        return true;
+    });
     if (!watchResult) {
         LOG_INFO("no status %{public}s", objectId.c_str());
     }
@@ -373,34 +368,35 @@ napi_value JSDistributedObjectStore::JSRecordCallback(napi_env env, napi_callbac
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     status = JSUtil::GetValue(env, argv[0], version);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-    SETERR_RETURN(argc >= requireArgc, version, JSUtil::SetError(env, INVALID_PARAMS, "at least 2 parameters!"));
+    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("2"));
     char type[TYPE_SIZE] = {0};
     size_t eventTypeLen = 0;
     napi_valuetype valueType = napi_undefined;
     status = napi_typeof(env, argv[1], &valueType);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-    SETERR_RETURN(valueType == napi_string, version, JSUtil::SetError(env, INVALID_PARAMS, "type", "string"));
+    auto innerError = std::make_shared<InnerError>();
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
+    NAPI_ASSERT_ERRCODE(env, valueType == napi_string, version, std::make_shared<ParametersType>("type", "string"));
     status = napi_get_value_string_utf8(env, argv[1], type, TYPE_SIZE, &eventTypeLen);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
 
     std::string objectId;
     status = napi_typeof(env, argv[2], &valueType);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
     CHECK_EQUAL_WITH_RETURN_NULL(valueType, napi_string);
     status = JSUtil::GetValue(env, argv[2], objectId);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
 
     napi_valuetype callbackType = napi_undefined;
     status = napi_typeof(env, argv[3], &callbackType);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-    SETERR_RETURN(callbackType == napi_function, version, JSUtil::SetError(env, INVALID_PARAMS, "callback", "function"));
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
+    NAPI_ASSERT_ERRCODE(env, callbackType == napi_function, version, std::make_shared<ParametersType>("callback", "function"));
     bool addResult = true;
     if (!strcmp(CHANGE, type)) {
         addResult = AddCallback(env, g_changeCallBacks, objectId, argv[3]);
     } else if (!strcmp(STATUS, type)) {
         addResult = AddCallback(env, g_statusCallBacks, objectId, argv[3]);
     }
-    ASSERT_STATUS_ELSE_RETURN(addResult, env, version);
+    NAPI_ASSERT_ERRCODE(addResult, env, version, innerError);
     napi_value result = nullptr;
     napi_get_undefined(env, &result);
     return result;
@@ -414,29 +410,30 @@ napi_value JSDistributedObjectStore::JSDeleteCallback(napi_env env, napi_callbac
     LOG_INFO("start");
     size_t requireArgc = 3;
     size_t argc = 4;
-    napi_value argv[4] = {0};
+    napi_value argv[4] = { 0 };
     napi_value thisVar = nullptr;
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     status = JSUtil::GetValue(env, argv[0], version);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-    SETERR_RETURN(argc >= requireArgc, version, JSUtil::SetError(env, INVALID_PARAMS, "at least 1 parameters!"));
-    char type[TYPE_SIZE] = {0};
+    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("1 or 2"));
+    char type[TYPE_SIZE] = { 0 };
     size_t eventTypeLen = 0;
     napi_valuetype valueType = napi_undefined;
     status = napi_typeof(env, argv[1], &valueType);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-    SETERR_RETURN(valueType == napi_string, version, JSUtil::SetError(env, INVALID_PARAMS, "type", "string"));
+    auto innerError = std::make_shared<InnerError>();
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
+    NAPI_ASSERT_ERRCODE(env, valueType == napi_string, version, std::make_shared<ParametersType>("type", "string"));
     status = napi_get_value_string_utf8(env, argv[1], type, TYPE_SIZE, &eventTypeLen);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
 
     std::string objectId;
     status = napi_typeof(env, argv[2], &valueType);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
     CHECK_EQUAL_WITH_RETURN_NULL(valueType, napi_string);
     status = JSUtil::GetValue(env, argv[2], objectId);
-    CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
+    NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
     bool delResult = true;
     if (argc == 3) {
         if (!strcmp(CHANGE, type)) {
@@ -447,15 +444,16 @@ napi_value JSDistributedObjectStore::JSDeleteCallback(napi_env env, napi_callbac
     } else {
         napi_valuetype callbackType = napi_undefined;
         status = napi_typeof(env, argv[3], &callbackType);
-        CHECK_STATUS_WITH_RETURN(status, napi_ok, env, version);
-        SETERR_RETURN(callbackType == napi_function, version, JSUtil::SetError(env, INVALID_PARAMS, "callback", "founction"));
+        NAPI_ASSERT_ERRCODE(status == napi_ok, env, version, innerError);
+        NAPI_ASSERT_ERRCODE(env, callbackType == napi_function, version,
+            std::make_shared<ParametersType>("callback", "founction"));
         if (!strcmp(CHANGE, type)) {
             delResult = DelCallback(env, g_changeCallBacks, objectId, argv[3]);
         } else if (!strcmp(STATUS, type)) {
             delResult = DelCallback(env, g_statusCallBacks, objectId, argv[3]);
         }
     }
-    // ASSERT_STATUS_ELSE_RETURN(delResult, env, version);
+    NAPI_ASSERT_ERRCODE(delResult, env, version, innerError);
     napi_value result = nullptr;
     napi_get_undefined(env, &result);
     return result;

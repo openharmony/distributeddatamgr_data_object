@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 #include "js_util.h"
-#include "ability.h"
 #include <endian.h>
 #include <securec.h>
 
@@ -22,7 +21,6 @@
 namespace OHOS::ObjectStore {
 constexpr int32_t STR_MAX_LENGTH = 4096;
 constexpr size_t STR_TAIL_LENGTH = 1;
-//std::string PERMISSIONDENY = "Permission verification failed. An attempt was made to join session forbidden by permission: ohos.permission.DISTRIBUTED_DATASYNC.";
 
 /* napi_value <-> bool */
 napi_status JSUtil::GetValue(napi_env env, napi_value in, bool &out)
@@ -155,49 +153,6 @@ napi_status JSUtil::SetValue(napi_env env, const std::vector<uint8_t> &in, napi_
     status = napi_create_typedarray(env, napi_uint8_array, in.size(), buffer, 0, &out);
     LOG_ERROR_RETURN((status == napi_ok), "napi_value <- std::vector<uint8_t> invalid value", status);
     return status;
-}
-
-static const std::map<int32_t, JsErrorCode> jsErrCodeMsgMap {
-    { ErrorCode::NO_PERMISSION,                  {201, "Permission verification failed. "
-                                                       "An attempt was made to join session forbidden "
-                                                       "by permission: ohos.permission.DISTRIBUTED_DATASYNC."}},
-    { ErrorCode::INVALID_PARAMS,                 {401, "Parameter error. "}},
-    { ErrorCode::DB_EXIST,                       {15400000, "create table failed"}},
-};
-
-const std::optional<JsErrorCode> GetJsErrorCode(int32_t errorCode)
-{
-    auto iter = jsErrCodeMsgMap.find(errorCode);
-    if (iter != jsErrCodeMsgMap.end()) {
-        return iter->second;
-    }
-    return std::nullopt;
-}
-
-void JSUtil::ThrowNapiError(napi_env env, int32_t errCode, std::string errMessage)
-{
-    LOG_DEBUG("ThrowNapiError message: %{public}s", errMessage.c_str());
-    auto errormsg = GetJsErrorCode(errCode);
-    JsErrorCode napiError;
-    if (errormsg.has_value()) {
-        napiError = errormsg.value();
-    }
-    if (errCode == ErrorCode::INVALID_PARAMS) {
-        napiError.message += errMessage;
-        napiError.jsCode = 401;
-    }
-    napi_throw_error(env, std::to_string(napiError.jsCode).c_str(), napiError.message.c_str());
-}
-
-void JSUtil::SetError(napi_env env, int code, std::string node, std::string msg)
-{
-    std::string errorMessage = "The type of '" + node + "' must be " + msg;
-    ThrowNapiError(env, code, errorMessage);
-}
-
-void JSUtil::SetError(napi_env env, int code, std::string msg)
-{
-    ThrowNapiError(env, code, msg);
 }
 
 } // namespace OHOS::ObjectStore

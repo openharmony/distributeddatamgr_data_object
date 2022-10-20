@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "napi_queue.h"
 #include "logger.h"
 #include "js_common.h"
@@ -112,18 +113,17 @@ napi_value NapiQueue::AsyncWork(napi_env env, std::shared_ptr<ContextBase> ctxt,
     return promise;
 }
 
-void GenerateBusinessError(napi_env env, ContextBase* ctxt, napi_value *businessError)
+void NapiQueue::SetBusinessError(napi_env env, napi_value *businessError, std::shared_ptr<Error> error)
 {
-    napi_create_object(ctxt->env, businessError);
-    if (ctxt->status == napi_generic_failure) {
-        return;
+    napi_create_object(env, businessError);
+    if (error->GetCode() != EXCEPTION_INNER) {
+        napi_value code = nullptr;
+        napi_value msg = nullptr;
+        napi_create_int32(env, error->GetCode(), &code);
+        napi_create_string_utf8(env, error->GetMessage().c_str(), NAPI_AUTO_LENGTH, &msg);
+        napi_set_named_property(env, *businessError, "code", code);
+        napi_set_named_property(env, *businessError, "message", msg);
     }
-    napi_value errorCode = nullptr;
-    napi_value errorMessage = nullptr;
-    napi_create_int32(ctxt->env, ctxt->code, &errorCode);
-    napi_create_string_utf8(ctxt->env, ctxt->error.c_str(), ctxt->error.size(), &errorMessage);
-    napi_set_named_property(ctxt->env, *businessError, "code", errorCode);
-    napi_set_named_property(ctxt->env, *businessError, "message", errorMessage);
 }
 
 void NapiQueue::GenerateOutput(ContextBase* ctxt)
@@ -136,16 +136,9 @@ void NapiQueue::GenerateOutput(ContextBase* ctxt)
         }
         result[RESULT_DATA] = ctxt->output;
     } else {
-        if (ctxt->sdkVersion == 9) {
-            napi_value businessError = nullptr;
-            GenerateBusinessError(ctxt->env, ctxt, &businessError);
-            result[RESULT_ERROR] = businessError;
-        } else {
-            napi_value message = nullptr;
-            napi_create_string_utf8(ctxt->env, ctxt->error.c_str(), NAPI_AUTO_LENGTH, &message);
-            napi_create_error(ctxt->env, nullptr, message, &result[RESULT_ERROR]);
-        }
-        
+        napi_value businessError = nullptr;
+        SetBusinessError(env, &businessError, ctx->error);
+        result[RESULT_ERROR] = businessError;
         napi_get_undefined(ctxt->env, &result[RESULT_DATA]);
     }
     if (ctxt->deferred != nullptr) {

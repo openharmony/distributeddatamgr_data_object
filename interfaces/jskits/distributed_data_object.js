@@ -227,11 +227,10 @@ function offWatch(version, type, obj, callback = undefined) {
         } else {
             distributedObject.off(version, type, obj);
         }
-
     }
 }
 
-function newDistributedV9(obj, context) {
+function newDistributedV9(context, obj) {
     console.info("start newDistributed");
     if (obj == null) {
         console.error("object is null");

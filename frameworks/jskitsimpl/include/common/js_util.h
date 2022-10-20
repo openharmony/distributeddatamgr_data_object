@@ -25,10 +25,6 @@
 #include "napi/native_node_api.h"
 namespace OHOS::ObjectStore {
 
-struct ContextParam {
-    std::string hapName = "";
-};
-
 struct JsErrorCode {
     int32_t jsCode;
     std::string message;
@@ -36,7 +32,7 @@ struct JsErrorCode {
 
 enum ErrorCode{
     INNER_ERROR = 0,                   // systemerror
-    NO_PERMISSION = 201,               // error.message: Permission verification failed. An attempt was made to join session forbidden by permission: ohos.permission.DISTRIBUTED_DATASYNC.
+    NO_PERMISSION = 201,               // error.message: no Permission verification failed.
     INVALID_PARAMS = 401,              // error.message: Parameter error.
     DB_EXIST = 15400001,               // error.message: create table failed.
 };
@@ -65,20 +61,20 @@ public:
 
     static void GenerateNapiError(napi_env env, int32_t status ,int32_t &errCode, std::string &errMessage);
     static void ThrowNapiError(napi_env env, int32_t errCode, std::string errMessage = "");
-
-    static void SetError(napi_env env, int code, std::string msg, std::string node);
-    static void SetError(napi_env env, int code, std::string msg);
 };
 
-#define SETERR_RETURN(assertion, version, SetCall)               \
-    do {                                                         \
-        if (!(assertion)) {                                      \
-            if (version == 9){                                   \
-                (SetCall);                                       \
-            }                                                    \
-            return nullptr ;                                     \
-        }                                                        \
-    } while (0)
+#define NAPI_ASSERT_ERRCODE(env, assertion, version, error)                                                 \
+do {                                                                                                        \
+    if (!(assertion)) {                                                                                     \
+        if (version >= 9)                                                                                   \
+        {                                                                                                   \
+            napi_throw_error((env), std::to_string(error->GetCode()).c_str(), error->GetMessage().c_str()); \
+        } else {                                                                                            \
+            napi_throw_error((env), nullptr, nullptr)                                                       \
+        }                                                                                                   \
+        return;                                                                                             \
+    }                                                                                                       \
+} while (0)
 
 #define LOG_ERROR_RETURN(condition, message, retVal)             \
     do {                                                         \

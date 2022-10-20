@@ -42,10 +42,10 @@ struct ContextBase {
     napi_env env = nullptr;
     napi_value output = nullptr;
     napi_status status = napi_invalid_arg;
-    std::string error = "";
+    // std::string error = "";
     double sdkVersion = VERSION_9;
     int32_t code = 0;
-
+    std::shared_ptr<Error> error;
     napi_value self = nullptr;
     void *native = nullptr;
 
@@ -73,6 +73,16 @@ private:
         }                                                        \
     } while (0)
 
+#define CHECK_CONDTION_RETURN_VOID(env, condition, error)        \
+    do {                                                         \
+        if (!(condition)) {                                      \
+            (ctxt)->status = napi_invalid_arg;                   \
+            (ctxt)->error = error;                               \
+            LOG_ERROR("failed test (" #condition ") ");          \
+            return;                                              \
+        }                                                        \
+    } while (0)
+
 #define CHECK_STATUS_RETURN_VOID(ctxt, message)                           \
     do {                                                                  \
         if ((ctxt)->status != napi_ok) {                                  \
@@ -81,12 +91,12 @@ private:
             return;                                                       \
         }                                                                 \
     } while (0)
-#define CHECK_CONDITION_RETURN_ERROR(ctxt, condition, message, status)    \
+
+#define CHECK_STATUS_RETURN_VOID(ctxt, message)                           \
     do {                                                                  \
-        if (!(condition)) {                                               \
-            (ctxt)->error  = std::string(message);                        \
-            (ctxt)->status = status;                                      \
-            LOG_ERROR("test (" #condition ") failed: " message);          \
+        if ((ctxt)->status != napi_ok) {                                  \
+            (ctxt)->error = std::string(message);                         \
+            LOG_ERROR("test (ctxt->status == napi_ok) failed: " message); \
             return;                                                       \
         }                                                                 \
     } while (0)
@@ -95,7 +105,7 @@ class NapiQueue {
 public:
     static napi_value AsyncWork(napi_env env, std::shared_ptr<ContextBase> ctxt, const std::string &name,
         NapiAsyncExecute execute = NapiAsyncExecute(), NapiAsyncComplete complete = NapiAsyncComplete());
-
+    static void SetBusinessError(napi_env env, napi_value *businessError, std::shared_ptr<Error> error);
 private:
     enum {
         /* AsyncCallback / Promise output result index  */
