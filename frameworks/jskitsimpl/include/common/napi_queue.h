@@ -27,7 +27,6 @@ using NapiCbInfoParser = std::function<void(size_t argc, napi_value *argv)>;
 using NapiAsyncExecute = std::function<void(void)>;
 using NapiAsyncComplete = std::function<void(napi_value &)>;
 static constexpr size_t ARGC_MAX = 6;
-constexpr double VERSION_9 = 9;
 struct ContextBase {
     virtual ~ContextBase();
     void GetCbInfo(napi_env env, napi_callback_info info, NapiCbInfoParser parse = NapiCbInfoParser(),
@@ -42,7 +41,6 @@ struct ContextBase {
     napi_env env = nullptr;
     napi_value output = nullptr;
     napi_status status = napi_invalid_arg;
-    int32_t code = 0;
     std::shared_ptr<Error> error;
     napi_value self = nullptr;
     void *native = nullptr;

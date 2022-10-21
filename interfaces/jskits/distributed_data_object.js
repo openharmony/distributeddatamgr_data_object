@@ -227,6 +227,7 @@ function offWatch(version, type, obj, callback = undefined) {
         } else {
             distributedObject.off(version, type, obj);
         }
+
     }
 }
 
@@ -274,18 +275,20 @@ class DistributedV9 {
     }
 
     setSessionId(sessionId, callback) {
-        if (sessionId == null || sessionId == "") {
+        if (typeof sessionId == "function" || sessionId == null || sessionId == "") {
             leaveSession(this.__sdkVersion, this.__proxy);
-            if (typeof callback == "function") {
-                callback(null, null)
+            if (typeof sessionId == "function") {
+                return sessionId(null, null);
+            } else if (typeof callback == "function") {
+                return callback(null, null);
             } else {
-                return Promise.reject(null, null);
+                return Promise.resolve(null, null);
             }
         }
         if (this.__proxy[SESSION_ID] == sessionId) {
             console.info("same session has joined " + sessionId);
             if (typeof callback == "function") {
-                callback()
+                return callback(null, null);
             } else {
                 return Promise.resolve(null, null);
             }
@@ -295,13 +298,13 @@ class DistributedV9 {
         if (object != null) {
             this.__proxy = object;
             if (typeof callback == "function") {
-                callback(null, null)
+                return callback(null, null)
             } else {
                 return Promise.resolve(null, null);
             }
         } else {
             if (typeof callback == "function") {
-                callback(null, null)
+                return callback(null, null)
             } else {
                 return Promise.reject(null, null);
             }
