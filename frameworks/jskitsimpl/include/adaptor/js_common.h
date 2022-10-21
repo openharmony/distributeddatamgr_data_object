@@ -18,42 +18,48 @@
 #include "hilog/log.h"
 #include "js_util.h"
 #include "napi_queue.h"
-namespace OHOS::ObjectStore {
+namespace OHOS::ObjectStore
+{
 
 #define CHECK_EQUAL_WITH_RETURN_NULL(status, value)                   \
     {                                                                 \
-        if (status != value) {                                        \
+        if (status != value)                                          \
+        {                                                             \
             LOG_ERROR("error! %{public}d %{public}d", status, value); \
             return nullptr;                                           \
         }                                                             \
     }
 #define CHECK_EQUAL_WITH_RETURN_VOID(status, value)                   \
     {                                                                 \
-        if (status != value) {                                        \
+        if (status != value)                                          \
+        {                                                             \
             LOG_ERROR("error! %{public}d %{public}d", status, value); \
             return;                                                   \
         }                                                             \
     }
-#define ASSERT_MATCH_ELSE_RETURN_VOID(condition)                      \
-    {                                                                 \
-        if (!(condition)) {                                           \
-            LOG_ERROR("error! %{public}s", #condition);               \
-            return;                                                   \
-        }                                                             \
+#define ASSERT_MATCH_ELSE_RETURN_VOID(condition)        \
+    {                                                   \
+        if (!(condition))                               \
+        {                                               \
+            LOG_ERROR("error! %{public}s", #condition); \
+            return;                                     \
+        }                                               \
     }
-#define ASSERT_MATCH_ELSE_RETURN_NULL(condition)                      \
-    {                                                                 \
-        if (!(condition)) {                                           \
-            LOG_ERROR("error! %{public}s", #condition);               \
-            return nullptr;                                           \
-        }                                                             \
+#define ASSERT_MATCH_ELSE_RETURN_NULL(condition)        \
+    {                                                   \
+        if (!(condition))                               \
+        {                                               \
+            LOG_ERROR("error! %{public}s", #condition); \
+            return nullptr;                             \
+        }                                               \
     }
-#define ASSERT_MATCH_ELSE_GOTO_ERROR(condition)                       \
-    {                                                                 \
-        if (!(condition)) {                                           \
-            LOG_ERROR("error! %{public}s", #condition);               \
-            goto ERROR;                                               \
-        }                                                             \
+#define ASSERT_MATCH_ELSE_GOTO_ERROR(condition)         \
+    {                                                   \
+        if (!(condition))                               \
+        {                                               \
+            LOG_ERROR("error! %{public}s", #condition); \
+            goto ERROR;                                 \
+        }                                               \
     }
 } // namespace OHOS::ObjectStore
 static const char *CHANGE = "change";

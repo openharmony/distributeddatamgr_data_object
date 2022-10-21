@@ -39,8 +39,8 @@ int ParametersNum::GetCode()
 
 std::string PermissionError::GetMessage()
 {
-    return "Permission verification failed. An attempt was made to join session forbidden
-        by permission: ohos.permission.DISTRIBUTED_DATASYNC.";
+    return "Permission verification failed. An attempt was made to join session forbidden"
+           "by permission: ohos.permission.DISTRIBUTED_DATASYNC.";
 }
 
 int DatabaseError::GetCode()
@@ -67,5 +67,5 @@ int InnerError::GetCode()
 {
     return EXCEPTION_INNER;
 }
-} // namespace DataShare
+} // namespace ObjectStore
 } // namespace OHOS

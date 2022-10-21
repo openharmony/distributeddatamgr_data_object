@@ -18,9 +18,9 @@
 #include <memory>
 #include <string>
 
-#include "napi/native_api.h"
 #include "napi/native_common.h"
 #include "napi/native_node_api.h"
+#include "object_error.h"
 
 namespace OHOS::ObjectStore {
 using NapiCbInfoParser = std::function<void(size_t argc, napi_value *argv)>;
@@ -30,8 +30,8 @@ static constexpr size_t ARGC_MAX = 6;
 constexpr double VERSION_9 = 9;
 struct ContextBase {
     virtual ~ContextBase();
-    void GetCbInfo(
-        napi_env env, napi_callback_info info, NapiCbInfoParser parse = NapiCbInfoParser(), bool sync = false);
+    void GetCbInfo(napi_env env, napi_callback_info info, NapiCbInfoParser parse = NapiCbInfoParser(),
+        bool sync = false);
 
     inline void GetCbInfoSync(napi_env env, napi_callback_info info, NapiCbInfoParser parse = NapiCbInfoParser())
     {
@@ -42,8 +42,6 @@ struct ContextBase {
     napi_env env = nullptr;
     napi_value output = nullptr;
     napi_status status = napi_invalid_arg;
-    // std::string error = "";
-    double sdkVersion = VERSION_9;
     int32_t code = 0;
     std::shared_ptr<Error> error;
     napi_value self = nullptr;
@@ -63,39 +61,30 @@ private:
 };
 
 /* check condition related to argc/argv, return and logging. */
-#define CHECK_ARGS_RETURN_VOID(ctxt, condition, message)         \
+#define CHECK_ARGS_RETURN_VOID(ctxt, condition, message, err)    \
     do {                                                         \
         if (!(condition)) {                                      \
             (ctxt)->status = napi_invalid_arg;                   \
-            (ctxt)->error = std::string(message);                \
+            (ctxt)->error = err;                                 \
             LOG_ERROR("test (" #condition ") failed: " message); \
             return;                                              \
         }                                                        \
     } while (0)
 
-#define CHECK_CONDTION_RETURN_VOID(env, condition, error)        \
-    do {                                                         \
-        if (!(condition)) {                                      \
-            (ctxt)->status = napi_invalid_arg;                   \
-            (ctxt)->error = error;                               \
-            LOG_ERROR("failed test (" #condition ") ");          \
-            return;                                              \
-        }                                                        \
+#define CHECK_CONDTION_RETURN_VOID(ctxt, condition, err) \
+    do {                                                 \
+        if (!(condition)) {                              \
+            (ctxt)->status = napi_invalid_arg;           \
+            (ctxt)->error = err;                         \
+            LOG_ERROR("failed test (" #condition ") ");  \
+            return;                                      \
+        }                                                \
     } while (0)
 
-#define CHECK_STATUS_RETURN_VOID(ctxt, message)                           \
+#define CHECK_STATUS_RETURN_VOID(ctxt, message, err)                      \
     do {                                                                  \
         if ((ctxt)->status != napi_ok) {                                  \
-            (ctxt)->error = std::string(message);                         \
-            LOG_ERROR("test (ctxt->status == napi_ok) failed: " message); \
-            return;                                                       \
-        }                                                                 \
-    } while (0)
-
-#define CHECK_STATUS_RETURN_VOID(ctxt, message)                           \
-    do {                                                                  \
-        if ((ctxt)->status != napi_ok) {                                  \
-            (ctxt)->error = std::string(message);                         \
+            (ctxt)->error = err;                                          \
             LOG_ERROR("test (ctxt->status == napi_ok) failed: " message); \
             return;                                                       \
         }                                                                 \
@@ -106,6 +95,7 @@ public:
     static napi_value AsyncWork(napi_env env, std::shared_ptr<ContextBase> ctxt, const std::string &name,
         NapiAsyncExecute execute = NapiAsyncExecute(), NapiAsyncComplete complete = NapiAsyncComplete());
     static void SetBusinessError(napi_env env, napi_value *businessError, std::shared_ptr<Error> error);
+
 private:
     enum {
         /* AsyncCallback / Promise output result index  */

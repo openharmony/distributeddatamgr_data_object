@@ -15,27 +15,15 @@
 #ifndef OHOS_JS_UTIL_H
 #define OHOS_JS_UTIL_H
 #include <cstdint>
+#include <js_native_api.h>
 #include <map>
 #include <string>
 #include <variant>
 #include <vector>
-#include "application_context.h"
-#include "ability_context.h"
+
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 namespace OHOS::ObjectStore {
-
-struct JsErrorCode {
-    int32_t jsCode;
-    std::string message;
-};
-
-enum ErrorCode{
-    INNER_ERROR = 0,                   // systemerror
-    NO_PERMISSION = 201,               // error.message: no Permission verification failed.
-    INVALID_PARAMS = 401,              // error.message: Parameter error.
-    DB_EXIST = 15400001,               // error.message: create table failed.
-};
 
 class JSUtil final {
 public:
@@ -59,22 +47,20 @@ public:
     static napi_status GetValue(napi_env env, napi_value in, std::vector<uint8_t> &out);
     static napi_status SetValue(napi_env env, const std::vector<uint8_t> &in, napi_value &out);
 
-    static void GenerateNapiError(napi_env env, int32_t status ,int32_t &errCode, std::string &errMessage);
-    static void ThrowNapiError(napi_env env, int32_t errCode, std::string errMessage = "");
+    static void GenerateNapiError(napi_env env, int32_t status, int32_t &errCode, std::string &errMessage);
 };
 
-#define NAPI_ASSERT_ERRCODE(env, assertion, version, error)                                                 \
-do {                                                                                                        \
-    if (!(assertion)) {                                                                                     \
-        if (version >= 9)                                                                                   \
-        {                                                                                                   \
-            napi_throw_error((env), std::to_string(error->GetCode()).c_str(), error->GetMessage().c_str()); \
-        } else {                                                                                            \
-            napi_throw_error((env), nullptr, nullptr)                                                       \
+#define NAPI_ASSERT_ERRCODE(env, assertion, version, err)                                                   \
+    do {                                                                                                    \
+        if (!(assertion)) {                                                                                 \
+            if (version >= 9) {                                                                             \
+                napi_throw_error((env), std::to_string(err->GetCode()).c_str(), err->GetMessage().c_str()); \
+            } else {                                                                                        \
+                napi_throw_error((env), nullptr, nullptr);                                                  \
+            }                                                                                               \
+            return nullptr;                                                                                 \
         }                                                                                                   \
-        return;                                                                                             \
-    }                                                                                                       \
-} while (0)
+    } while (0)
 
 #define LOG_ERROR_RETURN(condition, message, retVal)             \
     do {                                                         \

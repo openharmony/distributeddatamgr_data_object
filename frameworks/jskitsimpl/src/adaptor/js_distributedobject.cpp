@@ -22,6 +22,7 @@
 #include "js_util.h"
 #include "logger.h"
 #include "napi_queue.h"
+#include "object_error.h"
 #include "objectstore_errors.h"
 
 namespace OHOS::ObjectStore {
@@ -258,7 +259,7 @@ napi_value JSDistributedObject::JSSave(napi_env env, napi_callback_info info)
             ctxt->status = napi_new_instance(env,
                 JSDistributedObject::GetSaveResultCons(env, ctxt->object->GetSessionId(), ctxt->version, ctxt->deviceId),
                 0, nullptr, &result);
-            CHECK_STATUS_RETURN_VOID(ctxt, "output failed!");
+            CHECK_STATUS_RETURN_VOID(ctxt, "output failed!", std::make_shared<InnerError>());
         }
     };
     return NapiQueue::AsyncWork(
@@ -307,7 +308,7 @@ napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info in
         if (ctxt->status == napi_ok) {
             ctxt->status = napi_new_instance(env,
                 JSDistributedObject::GetRevokeSaveResultCons(env, ctxt->object->GetSessionId()), 0, nullptr, &result);
-            CHECK_STATUS_RETURN_VOID(ctxt, "output failed!");
+            CHECK_STATUS_RETURN_VOID(ctxt, "output failed!", std::make_shared<InnerError>());
         }
     };
 
