@@ -23,33 +23,7 @@ const JS_ERROR = 1;
 
 class Distributed {
     constructor(obj) {
-        this.__proxy = obj;
-        Object.keys(obj).forEach(key => {
-            Object.defineProperty(this, key, {
-                enumerable: true,
-                configurable: true,
-                get: function () {
-                    return this.__proxy[key];
-                },
-                set: function (newValue) {
-                    this[VERSION]++;
-                    this.__proxy[key] = newValue;
-                }
-            });
-        });
-        Object.defineProperty(this, SESSION_ID, {
-            enumerable: true,
-            configurable: true,
-            get: function () {
-                return this.__proxy[SESSION_ID];
-            },
-            set: function (newValue) {
-                this.__proxy[SESSION_ID] = newValue;
-            }
-        });
-        this.__objectId = randomNum();
-        this[VERSION] = 0;
-        console.info("constructor success ");
+        constructorMethod(this, obj);
     }
 
     setSessionId(sessionId) {
@@ -104,6 +78,36 @@ class Distributed {
     __objectId;
     __version;
     __sdkVersion = 8 ;
+}
+
+function constructorMethod(result, obj) {
+    result.__proxy = obj;
+    Object.keys(obj).forEach(key => {
+        Object.defineProperty(result, key, {
+            enumerable: true,
+            configurable: true,
+            get: function () {
+                return result.__proxy[key];
+            },
+            set: function (newValue) {
+                result[VERSION]++;
+                result.__proxy[key] = newValue;
+            }
+        });
+    });
+    Object.defineProperty(result, SESSION_ID, {
+        enumerable: true,
+        configurable: true,
+        get: function () {
+            return result.__proxy[SESSION_ID];
+        },
+        set: function (newValue) {
+            result.__proxy[SESSION_ID] = newValue;
+        }
+    });
+    result.__objectId = randomNum();
+    result[VERSION] = 0;
+    console.info("constructor success ");
 }
 
 function randomNum() {
@@ -251,33 +255,7 @@ class DistributedV9 {
 
     constructor(obj, context) {
         this.__context = context;
-        this.__proxy = obj;
-        Object.keys(obj).forEach(key => {
-            Object.defineProperty(this, key, {
-                enumerable: true,
-                configurable: true,
-                get: function () {
-                    return this.__proxy[key];
-                },
-                set: function (newValue) {
-                    this[VERSION]++;
-                    this.__proxy[key] = newValue;
-                }
-            });
-        });
-        Object.defineProperty(this, SESSION_ID, {
-            enumerable: true,
-            configurable: true,
-            get: function () {
-                return this.__proxy[SESSION_ID];
-            },
-            set: function (newValue) {
-                this.__proxy[SESSION_ID] = newValue;
-            }
-        });
-        this.__objectId = randomNum();
-        this[VERSION] = 0;
-        console.info("constructor success ");
+        constructorMethod(this, obj);
     }
 
     setSessionId(sessionId, callback) {
