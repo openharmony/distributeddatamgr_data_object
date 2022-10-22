@@ -232,10 +232,10 @@ napi_value JSDistributedObject::JSSave(napi_env env, napi_callback_info info)
     auto ctxt = std::make_shared<SaveContext>();
     std::function<void(size_t argc, napi_value * argv)> getCbOpe = [env, ctxt](size_t argc, napi_value *argv) {
         // required 1 arguments :: <key>
-        CHECK_ARGS_RETURN_VOID(ctxt, argc >= 2, "", std::make_shared<ParametersNum>("1 or 2"));
+        CHECK_ARGS_RETURN_VOID(ctxt, argc >= 2, "arguments error", std::make_shared<ParametersNum>("1 or 2"));
         napi_valuetype valueType = napi_undefined;
         ctxt->status = napi_typeof(env, argv[0], &valueType);
-        CHECK_ARGS_RETURN_VOID(ctxt, valueType == napi_string, "",
+        CHECK_ARGS_RETURN_VOID(ctxt, valueType == napi_string, "arguments error",
             std::make_shared<ParametersType>("deviceId", "string"));
         ctxt->status = JSUtil::GetValue(env, argv[0], ctxt->deviceId);
         CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[0], i.e. invalid deviceId!");
@@ -268,14 +268,14 @@ napi_value JSDistributedObject::JSSave(napi_env env, napi_callback_info info)
             if (ctxt->object == nullptr) {
                 LOG_ERROR("object is null");
                 ctxt->status = napi_generic_failure;
-                ctxt->error = std::string("object is null");
+                ctxt->message = std::string("object is null");
                 return;
             }
             uint32_t status = ctxt->object->Save(ctxt->deviceId);
             if (status != SUCCESS) {
                 LOG_ERROR("Save failed, status = %{public}d", status);
                 ctxt->status = napi_generic_failure;
-                ctxt->error = std::string("operation failed");
+                ctxt->message = std::string("operation failed");
                 return;
             }
             ctxt->status = napi_ok;
