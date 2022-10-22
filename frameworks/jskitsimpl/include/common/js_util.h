@@ -15,7 +15,6 @@
 #ifndef OHOS_JS_UTIL_H
 #define OHOS_JS_UTIL_H
 #include <cstdint>
-#include <js_native_api.h>
 #include <map>
 #include <string>
 #include <variant>
@@ -55,8 +54,6 @@ public:
         if (!(assertion)) {                                                                                 \
             if (version >= 9) {                                                                             \
                 napi_throw_error((env), std::to_string(err->GetCode()).c_str(), err->GetMessage().c_str()); \
-            } else {                                                                                        \
-                napi_throw_error((env), nullptr, nullptr);                                                  \
             }                                                                                               \
             return nullptr;                                                                                 \
         }                                                                                                   \

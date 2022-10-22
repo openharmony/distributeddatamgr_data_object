@@ -30,8 +30,8 @@ using NapiAsyncComplete = std::function<void(napi_value &)>;
 static constexpr size_t ARGC_MAX = 6;
 struct ContextBase {
     virtual ~ContextBase();
-    void GetCbInfo(napi_env env, napi_callback_info info, NapiCbInfoParser parse = NapiCbInfoParser(),
-        bool sync = false);
+    void GetCbInfo(
+        napi_env env, napi_callback_info info, NapiCbInfoParser parse = NapiCbInfoParser(), bool sync = false);
 
     inline void GetCbInfoSync(napi_env env, napi_callback_info info, NapiCbInfoParser parse = NapiCbInfoParser())
     {
@@ -42,6 +42,7 @@ struct ContextBase {
     napi_env env = nullptr;
     napi_value output = nullptr;
     napi_status status = napi_invalid_arg;
+    std::string message;
     std::shared_ptr<Error> error;
     napi_value self = nullptr;
     void *native = nullptr;
@@ -70,23 +71,13 @@ private:
         }                                                        \
     } while (0)
 
-#define CHECK_CONDTION_RETURN_VOID(ctxt, condition, err) \
-    do {                                                 \
-        if (!(condition)) {                              \
-            (ctxt)->status = napi_invalid_arg;           \
-            (ctxt)->error = err;                         \
-            LOG_ERROR("failed test (" #condition ") ");  \
-            return;                                      \
-        }                                                \
-    } while (0)
-
-#define CHECK_STATUS_RETURN_VOID(ctxt, message, err)                      \
-    do {                                                                  \
-        if ((ctxt)->status != napi_ok) {                                  \
-            (ctxt)->error = err;                                          \
-            LOG_ERROR("test (ctxt->status == napi_ok) failed: " message); \
-            return;                                                       \
-        }                                                                 \
+#define CHECK_STATUS_RETURN_VOID(ctxt, error)                           \
+    do {                                                                \
+        if ((ctxt)->status != napi_ok) {                                \
+            (ctxt)->message = error;                                    \
+            LOG_ERROR("test (ctxt->status == napi_ok) failed: " error); \
+            return;                                                     \
+        }                                                               \
     } while (0)
 
 class NapiQueue {

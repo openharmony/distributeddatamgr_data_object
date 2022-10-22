@@ -23,52 +23,18 @@ namespace ObjectStore {
 Context::Context(std::shared_ptr<AbilityRuntime::Context> stageContext)
 {
     bundleName_ = stageContext->GetBundleName();
-    auto hapInfo = stageContext->GetHapModuleInfo();
-    if (hapInfo != nullptr) {
-        moduleName_ = hapInfo->moduleName;
-    }
-    auto extensionContext = AbilityRuntime::Context::ConvertTo<AbilityRuntime::ExtensionContext>(stageContext);
-    if (extensionContext != nullptr) {
-        auto abilityInfo = extensionContext->GetAbilityInfo();
-        uri_ = abilityInfo->uri;
-    }
-    LOG_DEBUG("Stage: bundle:%{public}s hap:%{public}s", bundleName_.c_str(), moduleName_.c_str());
+    LOG_DEBUG("Stage: bundle:%{public}s", bundleName_.c_str());
 }
 
 Context::Context(std::shared_ptr<AbilityRuntime::AbilityContext> abilityContext)
 {
     bundleName_ = abilityContext->GetBundleName();
-    auto abilityInfo = abilityContext->GetAbilityInfo();
-    if (abilityInfo != nullptr) {
-        moduleName_ = abilityInfo->moduleName;
-    }
-    LOG_DEBUG("FA:  bundle:%{public}s hap:%{public}s", bundleName_.c_str(), moduleName_.c_str());
+    LOG_DEBUG("FA:  bundle:%{public}s", bundleName_.c_str());
 }
 
 std::string Context::GetBundleName()
 {
     return bundleName_;
-}
-
-std::string Context::GetModuleName()
-{
-    return moduleName_;
-}
-
-std::string Context::GetUri()
-{
-    return uri_;
-}
-
-bool JSAbility::CheckContext(napi_env env, napi_callback_info info)
-{
-    size_t argc = 1;
-    napi_value args[1] = { 0 };
-    bool mode = false;
-    napi_get_cb_info(env, info, &argc, args, nullptr, nullptr);
-    napi_status status = AbilityRuntime::IsStageContext(env, args[0], mode);
-    LOG_DEBUG("Check context as stage mode, mode is %{public}d, status is %{public}d", mode, status == napi_ok);
-    return status == napi_ok;
 }
 
 std::shared_ptr<Context> JSAbility::GetContext(napi_env env, napi_value value)
@@ -98,5 +64,5 @@ std::shared_ptr<Context> JSAbility::GetContext(napi_env env, napi_value value)
     }
     return std::make_shared<Context>(abilityContext);
 }
-} // namespace AppDataMgrJsKit
+} // namespace ObjectStore
 } // namespace OHOS

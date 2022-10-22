@@ -15,8 +15,9 @@
 import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from 'deccjsunit/index';
 import distributedObject from '@ohos.data.distributedDataObject';
 import abilityAccessCtrl from '@ohos.abilityAccessCtrl';
+import featureAbility from '@ohos.ability.featureAbility';
 import bundle from '@ohos.bundle';
-
+var context;
 const TAG = "OBJECTSTORE_TEST";
 function changeCallback(sessionId, changeData) {
     console.info("changeCallback start");
@@ -59,7 +60,8 @@ describe('objectStoreTest',function () {
     })
 
     beforeEach(function () {
-        console.info(TAG + 'beforeEach')
+        console.info(TAG + 'beforeEach');
+        context = featureAbility.getContext();
     })
 
     afterEach(function () {
@@ -72,6 +74,8 @@ describe('objectStoreTest',function () {
 
     console.log(TAG + "*************Unit Test Begin*************");
 
+
+
     /**
      * @tc.name: V9testsetSessionId001
      * @tc.desc: object join session and on,object can receive callback when data has been changed
@@ -79,15 +83,16 @@ describe('objectStoreTest',function () {
      */
     it('V9testsetSessionId001', 0, function () {
         console.log(TAG + "************* V9testsetSessionId001 start *************");
-        var g_object = distributedObject.create({name: "Amy", age: 18, isVis: false});
+        var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
         expect(g_object == undefined).assertEqual(false);
         try {
-            g_object.setSessionId(123).then(() => {
+            g_object.setSessionId(123).then((object) => {
                 console.info(TAG + "setSessionId test");
+                console.info(TAG + object);
             });
         } catch (error) {
             expect(error.code == 401).assertEqual(true);
-            expect(error.message == "Parameter error. The type of 'sessionId' must be string").assertEqual(true);
+            expect(error.message == "Parameter error. The type of 'sessionId' must be 'string'.").assertEqual(true);
         }
         console.log(TAG + "************* V9testsetSessionId001 end *************");
         g_object.setSessionId("");
@@ -100,7 +105,7 @@ describe('objectStoreTest',function () {
      */
     it('V9testsetSessionId002', 0, function () {
         console.log(TAG + "************* V9testsetSessionId002 start *************");
-        var g_object = distributedObject.create({name: "Amy", age: 18, isVis: false});
+        var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
         expect(g_object == undefined).assertEqual(false);
         g_object.setSessionId("session1");
         expect("session1" == g_object.__sessionId).assertEqual(true);
@@ -108,11 +113,29 @@ describe('objectStoreTest',function () {
             console.info(TAG + "setSessionId test");
         }).catch((error) => {
             expect(error.code == 15400001).assertEqual(true);
-            expect(error.message == "error.message: create table failed").assertEqual(true);
+            expect(error.message == "create table failed").assertEqual(true);
         });
         console.log(TAG + "************* V9testsetSessionId002 end *************");
         g_object.setSessionId("");
     })
+
+    /**
+     * @tc.name: V9testsetSessionId003
+     * @tc.desc: object join session and on,object can receive callback when data has been changed
+     * @tc.type: FUNC
+     */
+     it('V9testsetSessionId003', 0, function () {
+        console.log(TAG + "************* V9testsetSessionId003 start *************");
+        var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
+        expect(g_object == undefined).assertEqual(false);
+        g_object.setSessionId("123456").then((object) => {
+            console.info(TAG + "setSessionId test");
+            console.info(TAG + object);
+        });
+        console.log(TAG + "************* V9testsetSessionId003 end *************");
+        g_object.setSessionId("");
+    })
+
 
     /**
      * @tc.name: V9testOn001
@@ -121,7 +144,7 @@ describe('objectStoreTest',function () {
      */
     it('V9testOn001', 0, function () {
         console.log(TAG + "************* V9testOn001 start *************");
-        var g_object = distributedObject.create({ name: "Amy", age: 18, isVis: false });
+        var g_object = distributedObject.create(context, { name: "Amy", age: 18, isVis: false });
         expect(g_object == undefined).assertEqual(false);
         g_object.setSessionId("session1");
         expect("session1" == g_object.__sessionId).assertEqual(true);
@@ -158,7 +181,7 @@ describe('objectStoreTest',function () {
      */
     it('V9testOn002', 0, function () {
         console.log(TAG + "************* V9testOn002 start *************");
-        var g_object = distributedObject.create({name: "Amy", age: 18, isVis: false});
+        var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
         expect(g_object == undefined).assertEqual(false);
         g_object.setSessionId("session1");
         expect("session1" == g_object.__sessionId).assertEqual(true);
@@ -176,7 +199,7 @@ describe('objectStoreTest',function () {
 
         } catch (error) {
             expect(error.code == 401).assertEqual(true);
-            expect(error.message == "Parameter error. The type of 'type' must be string").assertEqual(true);
+            expect(error.message == "Parameter error. The type of 'type' must be 'string'.").assertEqual(true);
         }
         console.log(TAG + "************* V9testOn002 end *************");
         g_object.setSessionId("");
@@ -189,7 +212,7 @@ describe('objectStoreTest',function () {
      */
     it('V9testOn003', 0, function () {
         console.log(TAG + "************* V9testOn003 start *************");
-        var g_object = distributedObject.create({name: "Amy", age: 18, isVis: false});
+        var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
         expect(g_object == undefined).assertEqual(false);
         g_object.setSessionId("session1");
         expect("session1" == g_object.__sessionId).assertEqual(true);
@@ -219,7 +242,7 @@ describe('objectStoreTest',function () {
      */
     it('V9testOff001', 0, function () {
         console.log(TAG + "************* V9testOff001 start *************");
-        var g_object = distributedObject.create({name: "Amy", age: 18, isVis: false});
+        var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
         expect(g_object == undefined).assertEqual(false);
         g_object.setSessionId("session5");
         expect("session5" == g_object.__sessionId).assertEqual(true);
@@ -259,7 +282,7 @@ describe('objectStoreTest',function () {
      */
     it('V9testOff002', 0, function () {
         console.log(TAG + "************* V9testOff002 start *************");
-        var g_object = distributedObject.create({name: "Amy", age: 18, isVis: false});
+        var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
         expect(g_object == undefined).assertEqual(false);
         g_object.setSessionId("session6");
         expect("session6" == g_object.__sessionId).assertEqual(true);
@@ -267,7 +290,7 @@ describe('objectStoreTest',function () {
             g_object.off(123);
         } catch (error) {
             expect(error.code == 401).assertEqual(true);
-            expect(error.message == "Parameter error. The type of 'type' must be string").assertEqual(true);
+            expect(error.message == "Parameter error. The type of 'type' must be 'string'.").assertEqual(true);
         }
         console.info(TAG + " end call watch change");
         console.log(TAG + "************* V9testOff002 end *************");
@@ -282,13 +305,13 @@ describe('objectStoreTest',function () {
     it('V9testOnStatus001', 0, function () {
         console.log(TAG + "************* V9testOnStatus001 start *************");
         console.log(TAG + "start watch status");
-        var g_object = distributedObject.create({name: "Amy", age: 18, isVis: false});
+        var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
         expect(g_object == undefined).assertEqual(false);
         try {
             g_object.on("status", null);
         } catch (error) {
             expect(error.code == 401).assertEqual(true);
-            expect(error.message == "Parameter error. The type of 'callback' must be function").assertEqual(true);
+            expect(error.message == "Parameter error. The type of 'callback' must be 'function'.").assertEqual(true);
         }
         console.log(TAG + "watch success");
         console.log(TAG + "************* V9testOnStatus001 end *************");
@@ -303,7 +326,7 @@ describe('objectStoreTest',function () {
     it('V9testOnStatus002', 0, function () {
         console.log(TAG + "************* V9testOnStatus002 start *************");
         console.log(TAG + "start watch status");
-        var g_object = distributedObject.create({name: "Amy", age: 18, isVis: false});
+        var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
         expect(g_object == undefined).assertEqual(false);
         expect(g_object.name == "Amy").assertEqual(true);
         g_object.on("status", statusCallback1);
@@ -327,7 +350,7 @@ describe('objectStoreTest',function () {
      */
     it('V9testSave001', 0, async function () {
         console.log(TAG + "************* V9testSave001 start *************");
-        var g_object = distributedObject.create({name: "Amy", age: 18, isVis: false});
+        var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
         expect(g_object == undefined).assertEqual(false);
 
         g_object.setSessionId("tmpsession1");
@@ -358,7 +381,7 @@ describe('objectStoreTest',function () {
      */
     it('V9testSave002', 0, async function () {
         console.log(TAG + "************* V9testSave002 start *************");
-        var g_object = distributedObject.create({name: "Amy", age: 18, isVis: false});
+        var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
         expect(g_object == undefined).assertEqual(false);
 
         g_object.setSessionId("tmpsession1");
@@ -370,7 +393,7 @@ describe('objectStoreTest',function () {
                 expect(result.deviceId == "local").assertEqual(true);
             })
         } catch (error) {
-            expect(error.message == "Parameter error. The type of 'deviceId' must be 'string'").assertEqual(true);
+            expect(error.message == "Parameter error. The type of 'deviceId' must be 'string'.").assertEqual(true);
         }
         g_object.save("errorDeviceId").then((result) => {
             expect(result.sessionId == "tmpsession1").assertEqual(true);

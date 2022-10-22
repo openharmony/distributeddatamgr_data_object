@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef DISTRIBUTEDDATAMGR_APPDATAMGR_JSABILITY_H
-#define DISTRIBUTEDDATAMGR_APPDATAMGR_JSABILITY_H
+#ifndef DISTRIBUTEDDATAMGR_OBJECT_JSABILITY_H
+#define DISTRIBUTEDDATAMGR_OBJECT_JSABILITY_H
 #include <iostream>
 #include <string>
 
@@ -30,23 +30,17 @@ class Context {
 public:
     explicit Context(std::shared_ptr<AbilityRuntime::Context> stageContext);
     explicit Context(std::shared_ptr<AbilityRuntime::AbilityContext> abilityContext);
-
     std::string GetBundleName();
-    std::string GetModuleName();
-    std::string GetUri();
 
 private:
     std::string bundleName_;
-    std::string moduleName_;
-    std::string uri_;
 };
 
 class JSAbility final {
 public:
-    static bool CheckContext(napi_env env, napi_callback_info info);
     static std::shared_ptr<Context> GetContext(napi_env env, napi_value object);
 };
 } // namespace ObjectStore
 } // namespace OHOS
 
-#endif // DISTRIBUTEDDATAMGR_APPDATAMGR_JSABILITY_H
+#endif // DISTRIBUTEDDATAMGR_OBJECT_JSABILITY_H

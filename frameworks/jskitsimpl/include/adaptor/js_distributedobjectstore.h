@@ -20,7 +20,7 @@
 
 #include "concurrent_map.h"
 #include "distributed_objectstore.h"
-#include "js_ability.h"
+
 #include "js_native_api.h"
 #include "js_object_wrapper.h"
 #include "node_api.h"
@@ -36,8 +36,8 @@ public:
     static napi_value JSEquenceNum(napi_env env, napi_callback_info info);
 
 private:
-    static napi_value NewDistributedObject(napi_env env, DistributedObjectStore *objectStore,
-        DistributedObject *object, const std::string &objectId);
+    static napi_value NewDistributedObject(
+        napi_env env, DistributedObjectStore *objectStore, DistributedObject *object, const std::string &objectId);
     static bool AddCallback(napi_env env, ConcurrentMap<std::string, std::list<napi_ref>> &callbacks,
         const std::string &objectId, napi_value callback);
     static bool DelCallback(napi_env env, ConcurrentMap<std::string, std::list<napi_ref>> &callbacks,
@@ -47,7 +47,6 @@ private:
     static std::string GetBundleName(napi_env env);
     static bool IsSandBox();
     static std::atomic<uint32_t> sequenceNum_;
-    static std::shared_ptr<Context> context_;
 };
 } // namespace OHOS::ObjectStore
 #endif // JS_DISTRIBUTEDDATAOBJECTSTORE_H

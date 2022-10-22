@@ -21,6 +21,7 @@
 #include "accesstoken_kit.h"
 #include "application_context.h"
 #include "distributed_objectstore.h"
+#include "js_ability.h"
 #include "js_common.h"
 #include "js_distributedobject.h"
 #include "js_object_wrapper.h"
@@ -36,7 +37,6 @@ const std::string DISTRIBUTED_DATASYNC = "ohos.permission.DISTRIBUTED_DATASYNC";
 static ConcurrentMap<std::string, std::list<napi_ref>> g_statusCallBacks;
 static ConcurrentMap<std::string, std::list<napi_ref>> g_changeCallBacks;
 std::atomic<uint32_t> JSDistributedObjectStore::sequenceNum_{ MIN_NUMERIC };
-std::shared_ptr<Context> JSDistributedObjectStore::context_;
 bool JSDistributedObjectStore::AddCallback(napi_env env, ConcurrentMap<std::string, std::list<napi_ref>> &callbacks,
     const std::string &objectId, napi_value callback)
 {
@@ -46,7 +46,7 @@ bool JSDistributedObjectStore::AddCallback(napi_env env, ConcurrentMap<std::stri
     if (status != napi_ok) {
         return false;
     }
-    return callbacks.Compute(objectId, [&](const std::string &key, std::list<napi_ref> &lists) {
+    return callbacks.Compute(objectId, [&ref](const std::string &key, std::list<napi_ref> &lists) {
         lists.push_back(ref);
         return true;
     });
@@ -56,20 +56,25 @@ bool JSDistributedObjectStore::DelCallback(napi_env env, ConcurrentMap<std::stri
     const std::string &sessionId, napi_value callback)
 {
     LOG_INFO("del callback %{public}s", sessionId.c_str());
-    napi_status status;
     bool result = true;
-    napi_value callbackTmp;
-    result = callbacks.ComputeIfPresent(sessionId, [&](const std::string &key, std::list<napi_ref> &lists) {
+    result = callbacks.ComputeIfPresent(sessionId, [&env, callback](const std::string &key, std::list<napi_ref> &lists) {
+        napi_status status;
         if (callback == nullptr) {
             for (auto iter = lists.begin(); iter != lists.end();) {
-                status = napi_delete_reference(env, *iter);
-                if (status != napi_ok) {
-                    LOG_ERROR("error! %{public}d %{public}d", status, napi_ok);
-                    return false;
+                if (*iter != nullptr) {
+                    status = napi_delete_reference(env, *iter);
+                    if (status != napi_ok) {
+                        LOG_ERROR("error! %{public}d %{public}d", status, napi_ok);
+                        return false;
+                    }
+                    iter = lists.erase(iter);
+                } else {
+                    iter++;
                 }
             }
             return true;
         } else {
+            napi_value callbackTmp;
             for (auto iter = lists.begin(); iter != lists.end();) {
                 status = napi_get_reference_value(env, *iter, &callbackTmp);
                 if (status != napi_ok) {
@@ -85,10 +90,7 @@ bool JSDistributedObjectStore::DelCallback(napi_env env, ConcurrentMap<std::stri
                     iter++;
                 }
             }
-            if (lists.empty()) {
-                callbacks.Erase(sessionId);
-            }
-            return true;
+            return !lists.empty();
         }
     });
     return result;
@@ -173,7 +175,7 @@ napi_value JSDistributedObjectStore::JSCreateObjectSync(napi_env env, napi_callb
         NAPI_ASSERT_ERRCODE(env, status == napi_ok, version, innerError);
         NAPI_ASSERT_ERRCODE(env, objectType == napi_object, version,
             std::make_shared<ParametersType>("context", "Context"));
-        context_ = JSAbility::GetContext(env, argv[3]);
+        static std::shared_ptr<Context> context_ = JSAbility::GetContext(env, argv[3]);
         bundleName = context_->GetBundleName();
     } else {
         bundleName = JSDistributedObjectStore::GetBundleName(env);

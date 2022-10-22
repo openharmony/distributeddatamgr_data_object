@@ -130,8 +130,8 @@ napi_value JSDistributedObject::GetCons(napi_env env)
     return distributedObjectClass;
 }
 
-void JSDistributedObject::DoPut(napi_env env, JSObjectWrapper *wrapper, char *key, napi_valuetype type,
-    napi_value value)
+void JSDistributedObject::DoPut(
+    napi_env env, JSObjectWrapper *wrapper, char *key, napi_valuetype type, napi_value value)
 {
     std::string keyString = key;
     switch (type) {
@@ -224,33 +224,32 @@ napi_value JSDistributedObject::JSSave(napi_env env, napi_callback_info info)
 {
     LOG_DEBUG("JSSave()");
     struct SaveContext : public ContextBase {
+        double version;
         std::string deviceId;
         DistributedObject *object;
-        double version;
     };
 
     auto ctxt = std::make_shared<SaveContext>();
     std::function<void(size_t argc, napi_value * argv)> getCbOpe = [env, ctxt](size_t argc, napi_value *argv) {
         // required 1 arguments :: <key>
-        CHECK_CONDTION_RETURN_VOID(ctxt, argc >= 2, std::make_shared<ParametersNum>("1 or 2"));
+        CHECK_ARGS_RETURN_VOID(ctxt, argc >= 2, "", std::make_shared<ParametersNum>("1 or 2"));
         napi_valuetype valueType = napi_undefined;
         ctxt->status = napi_typeof(env, argv[0], &valueType);
-        CHECK_CONDTION_RETURN_VOID(ctxt, valueType == napi_string,
+        CHECK_ARGS_RETURN_VOID(ctxt, valueType == napi_string, "",
             std::make_shared<ParametersType>("deviceId", "string"));
         ctxt->status = JSUtil::GetValue(env, argv[0], ctxt->deviceId);
-        auto innerError = std::make_shared<InnerError>();
-        CHECK_CONDTION_RETURN_VOID(ctxt, ctxt->status == napi_ok, innerError);
+        CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[0], i.e. invalid deviceId!");
         ctxt->status = JSUtil::GetValue(env, argv[1], ctxt->version);
-        CHECK_CONDTION_RETURN_VOID(ctxt, ctxt->status == napi_ok, innerError);
+        CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[1], i.e. invalid version!");
         JSObjectWrapper *wrapper = nullptr;
         napi_status status = napi_unwrap(env, ctxt->self, (void **)&wrapper);
-        CHECK_CONDTION_RETURN_VOID(ctxt, status == napi_ok, innerError);
-        CHECK_CONDTION_RETURN_VOID(ctxt, wrapper != nullptr, innerError);
-        CHECK_CONDTION_RETURN_VOID(ctxt, wrapper->GetObject() != nullptr, innerError);
+        CHECK_EQUAL_WITH_RETURN_VOID(status, napi_ok);
+        ASSERT_MATCH_ELSE_RETURN_VOID(wrapper != nullptr);
+        ASSERT_MATCH_ELSE_RETURN_VOID(wrapper->GetObject() != nullptr);
         ctxt->object = wrapper->GetObject();
     };
     ctxt->GetCbInfo(env, info, getCbOpe);
-    if (ctxt->status != napi_ok) {
+    if (ctxt->status == napi_invalid_arg) {
         napi_throw_error((env), std::to_string(ctxt->error->GetCode()).c_str(), ctxt->error->GetMessage().c_str());
         return nullptr;
     }
@@ -259,13 +258,19 @@ napi_value JSDistributedObject::JSSave(napi_env env, napi_callback_info info)
             ctxt->status = napi_new_instance(env,
                 JSDistributedObject::GetSaveResultCons(env, ctxt->object->GetSessionId(), ctxt->version, ctxt->deviceId),
                 0, nullptr, &result);
-            CHECK_STATUS_RETURN_VOID(ctxt, "output failed!", std::make_shared<InnerError>());
+            CHECK_STATUS_RETURN_VOID(ctxt, "output failed!");
         }
     };
     return NapiQueue::AsyncWork(
         env, ctxt, std::string(__FUNCTION__),
         [ctxt]() {
             LOG_INFO("start");
+            if (ctxt->object == nullptr) {
+                LOG_ERROR("object is null");
+                ctxt->status = napi_invalid_arg;
+                ctxt->error = std::make_shared<InnerError>();
+                return;
+            }
             uint32_t status = ctxt->object->Save(ctxt->deviceId);
             if (status != SUCCESS) {
                 LOG_ERROR("Save failed, status = %{public}d", status);
@@ -292,10 +297,9 @@ napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info in
         // required 1 arguments :: <key>
         JSObjectWrapper *wrapper = nullptr;
         napi_status status = napi_unwrap(env, ctxt->self, (void **)&wrapper);
-        auto innerError = std::make_shared<InnerError>();
-        CHECK_CONDTION_RETURN_VOID(ctxt, status == napi_ok, innerError);
-        CHECK_CONDTION_RETURN_VOID(ctxt, wrapper != nullptr, innerError);
-        CHECK_CONDTION_RETURN_VOID(ctxt, wrapper->GetObject() != nullptr, innerError);
+        CHECK_EQUAL_WITH_RETURN_VOID(status, napi_ok);
+        ASSERT_MATCH_ELSE_RETURN_VOID(wrapper != nullptr);
+        ASSERT_MATCH_ELSE_RETURN_VOID(wrapper->GetObject() != nullptr);
         ctxt->object = wrapper->GetObject();
     };
     ctxt->GetCbInfo(env, info, getCbOpe);
@@ -308,7 +312,7 @@ napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info in
         if (ctxt->status == napi_ok) {
             ctxt->status = napi_new_instance(env,
                 JSDistributedObject::GetRevokeSaveResultCons(env, ctxt->object->GetSessionId()), 0, nullptr, &result);
-            CHECK_STATUS_RETURN_VOID(ctxt, "output failed!", std::make_shared<InnerError>());
+            CHECK_STATUS_RETURN_VOID(ctxt, "output failed!");
         }
     };
 
@@ -319,14 +323,14 @@ napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info in
             if (ctxt->object == nullptr) {
                 LOG_ERROR("object is null");
                 ctxt->status = napi_invalid_arg;
-                ctxt->error = std::make_shared<InnerError>();
+                ctxt->message = std::string("object is null");
                 return;
             }
             uint32_t status = ctxt->object->RevokeSave();
             if (status != SUCCESS) {
                 LOG_ERROR("Save failed, status = %{public}d", status);
                 ctxt->status = napi_invalid_arg;
-                ctxt->error = std::make_shared<InnerError>();
+                ctxt->message = std::string("operation failed");
                 return;
             }
             ctxt->status = napi_ok;
@@ -335,8 +339,8 @@ napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info in
         output);
 }
 
-napi_value JSDistributedObject::GetSaveResultCons(napi_env env, std::string &sessionId, double version,
-    std::string deviceId)
+napi_value JSDistributedObject::GetSaveResultCons(
+    napi_env env, std::string &sessionId, double version, std::string deviceId)
 {
     const char *objectName = "SaveResult";
     napi_value napiSessionId, napiVersion, napiDeviceId;
@@ -348,8 +352,11 @@ napi_value JSDistributedObject::GetSaveResultCons(napi_env env, std::string &ses
     ASSERT_MATCH_ELSE_RETURN_NULL(status == napi_ok);
     status = JSUtil::SetValue(env, deviceId, napiDeviceId);
     ASSERT_MATCH_ELSE_RETURN_NULL(status == napi_ok);
-    napi_property_descriptor desc[] = { DECLARE_NAPI_PROPERTY("sessionId", napiSessionId),
-        DECLARE_NAPI_PROPERTY("version", napiVersion), DECLARE_NAPI_PROPERTY("deviceId", napiDeviceId) };
+    napi_property_descriptor desc[] = {
+        DECLARE_NAPI_PROPERTY("sessionId", napiSessionId),
+        DECLARE_NAPI_PROPERTY("version", napiVersion),
+        DECLARE_NAPI_PROPERTY("deviceId", napiDeviceId)
+    };
 
     status = napi_define_class(env, objectName, strlen(objectName), JSDistributedObject::JSConstructor, nullptr,
         sizeof(desc) / sizeof(desc[0]), desc, &result);
@@ -365,7 +372,9 @@ napi_value JSDistributedObject::GetRevokeSaveResultCons(napi_env env, std::strin
 
     napi_status status = JSUtil::SetValue(env, sessionId, napiSessionId);
     ASSERT_MATCH_ELSE_RETURN_NULL(status == napi_ok);
-    napi_property_descriptor desc[] = { DECLARE_NAPI_PROPERTY("sessionId", napiSessionId) };
+    napi_property_descriptor desc[] = {
+        DECLARE_NAPI_PROPERTY("sessionId", napiSessionId)
+    };
 
     status = napi_define_class(env, objectName, strlen(objectName), JSDistributedObject::JSConstructor, nullptr,
         sizeof(desc) / sizeof(desc[0]), desc, &result);

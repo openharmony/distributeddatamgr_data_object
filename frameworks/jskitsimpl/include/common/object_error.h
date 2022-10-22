@@ -27,16 +27,17 @@ static const int EXCEPTION_INNER = 0;
 
 class Error {
 public:
-    virtual ~Error() {};
+    virtual ~Error(){};
     virtual std::string GetMessage() = 0;
     virtual int GetCode() = 0;
 };
 
 class ParametersType : public Error {
 public:
-    ParametersType(const std::string &name, const std::string &wantType) : name(name), wantType(wantType) {};
+    ParametersType(const std::string &name, const std::string &wantType) : name(name), wantType(wantType){};
     std::string GetMessage() override;
     int GetCode() override;
+
 private:
     std::string name;
     std::string wantType;
@@ -44,16 +45,18 @@ private:
 
 class ParametersNum : public Error {
 public:
-    ParametersNum(const std::string &wantNum) : wantNum(wantNum) {};
+    ParametersNum(const std::string &wantNum) : wantNum(wantNum){};
     std::string GetMessage() override;
     int GetCode() override;
+
 private:
     std::string wantNum;
 };
 
 class PermissionError : public Error {
 public:
-    PermissionError() = default;;
+    PermissionError() = default;
+    ;
     std::string GetMessage() override;
     int GetCode() override;
 };
@@ -71,7 +74,7 @@ public:
     std::string GetMessage() override;
     int GetCode() override;
 };
-} // namespace DataShare
+} // namespace ObjectStore
 } // namespace OHOS
 
-#endif // DATASHARE_ERROR_H
+#endif // OBJECT_ERROR_H
