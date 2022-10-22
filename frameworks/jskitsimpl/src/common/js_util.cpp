@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 #include "js_util.h"
+
 #include <endian.h>
 #include <securec.h>
 
@@ -154,5 +155,4 @@ napi_status JSUtil::SetValue(napi_env env, const std::vector<uint8_t> &in, napi_
     LOG_ERROR_RETURN((status == napi_ok), "napi_value <- std::vector<uint8_t> invalid value", status);
     return status;
 }
-
 } // namespace OHOS::ObjectStore

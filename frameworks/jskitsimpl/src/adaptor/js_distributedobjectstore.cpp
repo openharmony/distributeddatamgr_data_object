@@ -141,17 +141,17 @@ napi_value JSDistributedObjectStore::JSCreateObjectSync(napi_env env, napi_callb
     napi_value argv[4] = { 0 };
     napi_value thisVar = nullptr;
     void *data = nullptr;
-    double version = 0;
+    double version = 8;
     std::string sessionId;
     std::string objectId;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
+    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("1 or 2"));
     napi_valuetype valueType = napi_undefined;
     status = napi_typeof(env, argv[0], &valueType);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     status = JSUtil::GetValue(env, argv[0], version);
 
-    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("1 or 2"));
     auto innerError = std::make_shared<InnerError>();
     NAPI_ASSERT_ERRCODE(env, !IsSandBox(), version, innerError);
     LOG_INFO("start JSCreateObjectSync");
@@ -227,7 +227,7 @@ napi_value JSDistributedObjectStore::JSDestroyObjectSync(napi_env env, napi_call
 // function on(version: number, type: 'status', object: DistributedObject, callback: Callback<ObjectStatusObserver>): void;
 napi_value JSDistributedObjectStore::JSOn(napi_env env, napi_callback_info info)
 {
-    double version = 0;
+    double version = 8;
     LOG_INFO("start");
     size_t requireArgc = 4;
     size_t argc = 4;
@@ -236,9 +236,9 @@ napi_value JSDistributedObjectStore::JSOn(napi_env env, napi_callback_info info)
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
+    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("2"));
     status = JSUtil::GetValue(env, argv[0], version);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("2"));
     char type[TYPE_SIZE] = { 0 };
     size_t eventTypeLen = 0;
     napi_valuetype valueType = napi_undefined;
@@ -273,7 +273,7 @@ napi_value JSDistributedObjectStore::JSOn(napi_env env, napi_callback_info info)
 // function off(version: number, type: 'status', object: DistributedObject, callback?: Callback<ObjectStatusObserver>): void;
 napi_value JSDistributedObjectStore::JSOff(napi_env env, napi_callback_info info)
 {
-    double version = 0;
+    double version = 8;
     LOG_INFO("start");
     size_t requireArgc = 3;
     size_t argc = 4;
@@ -284,9 +284,9 @@ napi_value JSDistributedObjectStore::JSOff(napi_env env, napi_callback_info info
     size_t typeLen = 0;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
+    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("1"));
     status = JSUtil::GetValue(env, argv[0], version);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("1"));
     napi_valuetype valueType = napi_undefined;
     status = napi_typeof(env, argv[1], &valueType);
     auto innerError = std::make_shared<InnerError>();
@@ -366,7 +366,7 @@ void JSDistributedObjectStore::RestoreWatchers(napi_env env, JSObjectWrapper *wr
 // function recordCallback(version: number, type: 'status', objectId: string, callback: Callback<ObjectStatusObserver>): void;
 napi_value JSDistributedObjectStore::JSRecordCallback(napi_env env, napi_callback_info info)
 {
-    double version = 0;
+    double version = 8;
     LOG_INFO("start");
     size_t requireArgc = 4;
     size_t argc = 4;
@@ -375,9 +375,9 @@ napi_value JSDistributedObjectStore::JSRecordCallback(napi_env env, napi_callbac
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
+    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("2"));
     status = JSUtil::GetValue(env, argv[0], version);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("2"));
     char type[TYPE_SIZE] = { 0 };
     size_t eventTypeLen = 0;
     napi_valuetype valueType = napi_undefined;
@@ -414,7 +414,7 @@ napi_value JSDistributedObjectStore::JSRecordCallback(napi_env env, napi_callbac
 // function deleteCallback(version: number, type: 'status', objectId: string, callback?: Callback<ObjectStatusObserver>): void;
 napi_value JSDistributedObjectStore::JSDeleteCallback(napi_env env, napi_callback_info info)
 {
-    double version = 0;
+    double version = 8;
     LOG_INFO("start");
     size_t requireArgc = 3;
     size_t argc = 4;
@@ -423,9 +423,9 @@ napi_value JSDistributedObjectStore::JSDeleteCallback(napi_env env, napi_callbac
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
+    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("1 or 2"));
     status = JSUtil::GetValue(env, argv[0], version);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("1 or 2"));
     char type[TYPE_SIZE] = { 0 };
     size_t eventTypeLen = 0;
     napi_valuetype valueType = napi_undefined;

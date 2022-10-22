@@ -267,15 +267,15 @@ napi_value JSDistributedObject::JSSave(napi_env env, napi_callback_info info)
             LOG_INFO("start");
             if (ctxt->object == nullptr) {
                 LOG_ERROR("object is null");
-                ctxt->status = napi_invalid_arg;
-                ctxt->error = std::make_shared<InnerError>();
+                ctxt->status = napi_generic_failure;
+                ctxt->error = std::string("object is null");
                 return;
             }
             uint32_t status = ctxt->object->Save(ctxt->deviceId);
             if (status != SUCCESS) {
                 LOG_ERROR("Save failed, status = %{public}d", status);
                 ctxt->status = napi_generic_failure;
-                ctxt->error = std::make_shared<InnerError>();
+                ctxt->error = std::string("operation failed");
                 return;
             }
             ctxt->status = napi_ok;
@@ -321,14 +321,14 @@ napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info in
             LOG_INFO("start");
             if (ctxt->object == nullptr) {
                 LOG_ERROR("object is null");
-                ctxt->status = napi_invalid_arg;
+                ctxt->status = napi_generic_failure;
                 ctxt->message = std::string("object is null");
                 return;
             }
             uint32_t status = ctxt->object->RevokeSave();
             if (status != SUCCESS) {
                 LOG_ERROR("Save failed, status = %{public}d", status);
-                ctxt->status = napi_invalid_arg;
+                ctxt->status = napi_generic_failure;
                 ctxt->message = std::string("operation failed");
                 return;
             }
