@@ -36,7 +36,7 @@ static napi_value DistributedDataObjectExport(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("off", JSDistributedObjectStore::JSOff),
         DECLARE_NAPI_FUNCTION("recordCallback", JSDistributedObjectStore::JSRecordCallback),
         DECLARE_NAPI_FUNCTION("deleteCallback", JSDistributedObjectStore::JSDeleteCallback),
-        DECLARE_NAPI_FUNCTION("randomNum", JSDistributedObjectStore::randomNum),
+        DECLARE_NAPI_FUNCTION("sequenceNum", JSDistributedObjectStore::JSEquenceNum),
     };
 
     status = napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
