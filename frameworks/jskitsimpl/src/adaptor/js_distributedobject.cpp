@@ -315,7 +315,6 @@ napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info in
             CHECK_STATUS_RETURN_VOID(ctxt, "output failed!");
         }
     };
-
     return NapiQueue::AsyncWork(
         env, ctxt, std::string(__FUNCTION__),
         [ctxt]() {

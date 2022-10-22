@@ -96,8 +96,8 @@ bool JSDistributedObjectStore::DelCallback(napi_env env, ConcurrentMap<std::stri
     return result;
 }
 
-napi_value JSDistributedObjectStore::NewDistributedObject(napi_env env, DistributedObjectStore *objectStore,
-    DistributedObject *object, const std::string &objectId)
+napi_value JSDistributedObjectStore::NewDistributedObject(
+    napi_env env, DistributedObjectStore *objectStore, DistributedObject *object, const std::string &objectId)
 {
     napi_value result;
     napi_status status = napi_new_instance(env, JSDistributedObject::GetCons(env), 0, nullptr, &result);
@@ -478,11 +478,8 @@ napi_value JSDistributedObjectStore::JSEquenceNum(napi_env env, napi_callback_in
 
 bool JSDistributedObjectStore::CheckSyncPermission()
 {
-    int32_t ret =
-        Security::AccessToken::AccessTokenKit::VerifyAccessToken(AbilityRuntime::Context::GetApplicationContext()
-                                                                     ->GetApplicationInfo()
-                                                                     ->accessTokenId,
-            DISTRIBUTED_DATASYNC);
+    int32_t ret = Security::AccessToken::AccessTokenKit::VerifyAccessToken(
+        AbilityRuntime::Context::GetApplicationContext()->GetApplicationInfo()->accessTokenId, DISTRIBUTED_DATASYNC);
     if (ret == Security::AccessToken::PermissionState::PERMISSION_DENIED) {
         LOG_ERROR("VerifyPermission %{public}d: PERMISSION_DENIED",
             AbilityRuntime::Context::GetApplicationContext()->GetApplicationInfo()->accessTokenId);

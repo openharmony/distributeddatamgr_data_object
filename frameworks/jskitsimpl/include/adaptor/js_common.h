@@ -17,7 +17,6 @@
 #define JS_COMMON_H
 #include "hilog/log.h"
 namespace OHOS::ObjectStore {
-
 #define CHECK_EQUAL_WITH_RETURN_NULL(status, value)                   \
     {                                                                 \
         if (status != value) {                                        \

@@ -22,8 +22,8 @@
 
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
-namespace OHOS::ObjectStore {
 
+namespace OHOS::ObjectStore {
 class JSUtil final {
 public:
     /* napi_value <-> bool */
