@@ -22,35 +22,8 @@ const NULL_TYPE = "[NULL]"
 const JS_ERROR = 1;
 
 class Distributed {
-    constructor(version, obj) {
-        this.__sdkVersion = version;
-        this.__proxy = obj;
-        Object.keys(obj).forEach(key => {
-            Object.defineProperty(this, key, {
-                enumerable: true,
-                configurable: true,
-                get: function () {
-                    return this.__proxy[key];
-                },
-                set: function (newValue) {
-                    this[VERSION]++;
-                    this.__proxy[key] = newValue;
-                }
-            });
-        });
-        Object.defineProperty(this, SESSION_ID, {
-            enumerable: true,
-            configurable: true,
-            get: function () {
-                return this.__proxy[SESSION_ID];
-            },
-            set: function (newValue) {
-                this.__proxy[SESSION_ID] = newValue;
-            }
-        });
-        this.__objectId = randomNum();
-        this[VERSION] = 0;
-        console.info("constructor success ");
+    constructor(obj) {
+        constructorMethod(this, obj);
     }
 
     setSessionId(sessionId) {
@@ -104,7 +77,37 @@ class Distributed {
     __proxy;
     __objectId;
     __version;
-    __sdkVersion;
+    __sdkVersion = 8 ;
+}
+
+function constructorMethod(result, obj) {
+    result.__proxy = obj;
+    Object.keys(obj).forEach(key => {
+        Object.defineProperty(result, key, {
+            enumerable: true,
+            configurable: true,
+            get: function () {
+                return result.__proxy[key];
+            },
+            set: function (newValue) {
+                result[VERSION]++;
+                result.__proxy[key] = newValue;
+            }
+        });
+    });
+    Object.defineProperty(result, SESSION_ID, {
+        enumerable: true,
+        configurable: true,
+        get: function () {
+            return result.__proxy[SESSION_ID];
+        },
+        set: function (newValue) {
+            result.__proxy[SESSION_ID] = newValue;
+        }
+    });
+    result.__objectId = randomNum();
+    result[VERSION] = 0;
+    console.info("constructor success ");
 }
 
 function randomNum() {
@@ -117,7 +120,7 @@ function newDistributed(obj) {
         console.error("object is null");
         return null;
     }
-    return new Distributed(8, obj);
+    return new Distributed(obj);
 }
 
 function joinSession(version, obj, objectId, sessionId, context) {
@@ -227,70 +230,51 @@ function offWatch(version, type, obj, callback = undefined) {
         } else {
             distributedObject.off(version, type, obj);
         }
-
     }
 }
 
 function newDistributedV9(context, obj) {
     console.info("start newDistributed");
+    let checkparameter = function(err) {
+        throw {code : 401, message :"Parameter error. The type of '" + err + "' must be 'object'."};
+    }
+    if(typeof context != "object") {
+        checkparameter(context);
+    } 
+    if(typeof obj != "object") {
+        checkparameter(obj);
+    }
     if (obj == null) {
         console.error("object is null");
         return null;
     }
-    return new DistributedV9(9, obj, context);
+    return new DistributedV9(obj, context);
 }
 
 class DistributedV9 {
 
-    constructor(version, obj, context) {
-        this.__sdkVersion = version;
+    constructor(obj, context) {
         this.__context = context;
-        this.__proxy = obj;
-        Object.keys(obj).forEach(key => {
-            Object.defineProperty(this, key, {
-                enumerable: true,
-                configurable: true,
-                get: function () {
-                    return this.__proxy[key];
-                },
-                set: function (newValue) {
-                    this[VERSION]++;
-                    this.__proxy[key] = newValue;
-                }
-            });
-        });
-        Object.defineProperty(this, SESSION_ID, {
-            enumerable: true,
-            configurable: true,
-            get: function () {
-                return this.__proxy[SESSION_ID];
-            },
-            set: function (newValue) {
-                this.__proxy[SESSION_ID] = newValue;
-            }
-        });
-        this.__objectId = randomNum();
-        this[VERSION] = 0;
-        console.info("constructor success ");
+        constructorMethod(this, obj);
     }
 
     setSessionId(sessionId, callback) {
         if (typeof sessionId == "function" || sessionId == null || sessionId == "") {
             leaveSession(this.__sdkVersion, this.__proxy);
             if (typeof sessionId == "function") {
-                return sessionId(null, null);
+                return sessionId(this.__proxy);
             } else if (typeof callback == "function") {
-                return callback(null, null);
+                return callback(null, this.__proxy);
             } else {
-                return Promise.resolve(null, null);
+                return Promise.resolve(null, this.__proxy);
             }
         }
         if (this.__proxy[SESSION_ID] == sessionId) {
             console.info("same session has joined " + sessionId);
             if (typeof callback == "function") {
-                return callback(null, null);
+                return callback(null, this.__proxy);
             } else {
-                return Promise.resolve(null, null);
+                return Promise.resolve(null, this.__proxy);
             }
         }
         leaveSession(this.__sdkVersion, this.__proxy);
@@ -298,18 +282,17 @@ class DistributedV9 {
         if (object != null) {
             this.__proxy = object;
             if (typeof callback == "function") {
-                return callback(null, null)
+                return callback(null, this.__proxy)
             } else {
-                return Promise.resolve(null, null);
+                return Promise.resolve(null, object);
             }
         } else {
             if (typeof callback == "function") {
-                return callback(null, null)
+                return callback(null, null);
             } else {
                 return Promise.reject(null, null);
             }
         }
-
     }
 
     on(type, callback) {
@@ -346,7 +329,7 @@ class DistributedV9 {
     __proxy;
     __objectId;
     __version;
-    __sdkVersion;
+    __sdkVersion = 9;
 }
 
 export default {
