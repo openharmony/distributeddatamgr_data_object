@@ -421,8 +421,10 @@ describe('objectStoreTest',function () {
         } catch (error) {
             expect(error.message == "Parameter error. The type of 'deviceId' must be 'string'.").assertEqual(true);
         }
-        g_object.save("errorDeviceId").then((result)=>{
-            console.info("save sessionId " + result );
+        g_object.save("errorDeviceId").then((result) => {
+            expect(result.sessionId == "tmpsession1").assertEqual(true);
+            expect(result.version == g_object.__version).assertEqual(true);
+            expect(result.deviceId == "local").assertEqual(true);
         }).catch((error) => {
             expect(error != undefined).assertEqual(true);
         });
