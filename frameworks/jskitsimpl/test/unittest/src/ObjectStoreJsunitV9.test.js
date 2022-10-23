@@ -75,6 +75,39 @@ describe('objectStoreTest',function () {
     console.log(TAG + "*************Unit Test Begin*************");
 
 
+    /**
+     * @tc.name: V9testsetSessionId001
+     * @tc.desc: object join session and on,object can receive callback when data has been changed
+     * @tc.type: FUNC
+     */
+     it('V9testcreate001', 0, function () {
+        console.log(TAG + "************* V9testcreate001 start *************");
+        var g_object;
+        try{
+            g_object = distributedObject.create(123, {name: "Amy", age: 18, isVis: false});
+        }
+        catch (error) {
+            console.info(error.code + error.message);
+            expect(error.code == 401).assertEqual(true);
+            expect(error.message == "Parameter error. The type of 'context' must be 'Context'.").assertEqual(true);
+        }
+        try {
+            g_object = distributedObject.create(context, 123);
+        }
+        catch (error) {
+            console.info(error.code + error.message);
+            expect(error.code == 401).assertEqual(true);
+            expect(error.message == "Parameter error. The type of 'source' must be 'object'.").assertEqual(true);
+        }
+        g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
+        expect(g_object == undefined).assertEqual(false);
+        g_object.setSessionId("123456").then((err, data) => {
+            console.info(TAG + "V9testcreate001");
+               console.info(TAG + data);
+        });
+        console.log(TAG + "************* V9testcreate001 end *************");
+        g_object.setSessionId("");
+    })
 
     /**
      * @tc.name: V9testsetSessionId001
@@ -86,9 +119,9 @@ describe('objectStoreTest',function () {
         var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
         expect(g_object == undefined).assertEqual(false);
         try {
-            g_object.setSessionId(123).then((object) => {
+            g_object.setSessionId(123).then((err, data) => {
                 console.info(TAG + "setSessionId test");
-                console.info(TAG + object);
+                console.info(TAG + data);
             });
         } catch (error) {
             expect(error.code == 401).assertEqual(true);
@@ -135,7 +168,6 @@ describe('objectStoreTest',function () {
         console.log(TAG + "************* V9testsetSessionId003 end *************");
         g_object.setSessionId("");
     })
-
 
     /**
      * @tc.name: V9testOn001
@@ -187,7 +219,7 @@ describe('objectStoreTest',function () {
         expect("session1" == g_object.__sessionId).assertEqual(true);
         console.info(TAG + " start call watch change");
         try {
-            g_object.on(123, function (sessionId, changeData) {
+            g_object.on(123, (sessionId, changeData) => {
                 console.info("V9testOn002 callback start.");
                 if (changeData != null && changeData != undefined) {
                     changeData.forEach(element => {
@@ -218,7 +250,7 @@ describe('objectStoreTest',function () {
         expect("session1" == g_object.__sessionId).assertEqual(true);
         console.info(TAG + " start call watch change");
         try {
-            g_object.on("error", function (sessionId, changeData) {
+            g_object.on("error", (sessionId, changeData) =>{
                 console.info("V9testOn003 callback start.");
                 if (changeData != null && changeData != undefined) {
                     changeData.forEach(element => {
@@ -228,8 +260,7 @@ describe('objectStoreTest',function () {
                 console.info("V9testOn003 callback end.");
             });
         } catch (error) {
-            console.info(error);
-            expect(error == undefined).assertEqual(true);
+            expect(error != undefined).assertEqual(true);
         }
         console.log(TAG + "************* V9testOn003 end *************");
         g_object.setSessionId("");
@@ -332,12 +363,7 @@ describe('objectStoreTest',function () {
         g_object.on("status", statusCallback1);
         console.log(TAG + "watch success");
         console.log(TAG + "start call unwatch status");
-        try {
-            g_object.off("status", statusCallback2);
-        } catch (error) {
-            console.info(error);
-            expect(error == undefined).assertEqual(true);
-        }
+        g_object.off("status");
         console.log(TAG + "unwatch success");
         console.log(TAG + "************* V9testOnStatus002 end *************");
         g_object.setSessionId("");
@@ -395,14 +421,49 @@ describe('objectStoreTest',function () {
         } catch (error) {
             expect(error.message == "Parameter error. The type of 'deviceId' must be 'string'.").assertEqual(true);
         }
-        g_object.save("errorDeviceId").then((result) => {
-            expect(result.sessionId == "tmpsession1").assertEqual(true);
-            expect(result.version == g_object.__version).assertEqual(true);
-            expect(result.deviceId == "local").assertEqual(true);
+        g_object.save("errorDeviceId").then((result)=>{
+            console.info("save sessionId " + result );
         }).catch((error) => {
-            expect(error == undefined).assertEqual(true);
+            // expect(error == object).assertEqual(true);
+            expect(error != undefined).assertEqual(true);
         });
         console.log(TAG + "************* V9testSave002 end *************");
+        g_object.setSessionId("");
+    })
+
+    /**
+     * @tc.name: V9testRevokeSave001
+     * @tc.desc: test RevokeSave
+     * @tc.type: FUNC
+     */
+    it('V9testRevokeSave001', 0, async function () {
+        console.log(TAG + "************* V9testRevokeSave001 start *************");
+        var g_object = distributedObject.create(context, { name: "Amy", age: 18, isVis: false });
+        expect(g_object == undefined).assertEqual(false);
+
+        g_object.setSessionId("123456");
+        expect("123456" == g_object.__sessionId).assertEqual(true);
+
+        let result = await g_object.save("local");
+        expect(result.sessionId == "123456").assertEqual(true);
+        expect(result.version == g_object.__version).assertEqual(true);
+        expect(result.deviceId == "local").assertEqual(true);
+
+        result = await g_object.revokeSave();
+
+        g_object.setSessionId("");
+        g_object.name = undefined;
+        g_object.age = undefined;
+        g_object.isVis = undefined;
+        g_object.setSessionId("123456");
+
+        expect(g_object.name == undefined).assertEqual(true);
+        expect(g_object.age == undefined).assertEqual(true);
+        expect(g_object.isVis == undefined).assertEqual(true);
+
+        expect(result.sessionId == "123456").assertEqual(true);
+
+        console.log(TAG + "************* V9testRevokeSave001 end *************");
         g_object.setSessionId("");
     })
     

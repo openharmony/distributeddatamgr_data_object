@@ -146,13 +146,13 @@ napi_value JSDistributedObjectStore::JSCreateObjectSync(napi_env env, napi_callb
     std::string objectId;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("1 or 2"));
+    auto innerError = std::make_shared<InnerError>();
+    NAPI_ASSERT_ERRCODE(env, argc >= 1, version, innerError);
     napi_valuetype valueType = napi_undefined;
     status = napi_typeof(env, argv[0], &valueType);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     status = JSUtil::GetValue(env, argv[0], version);
-
-    auto innerError = std::make_shared<InnerError>();
+    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("1 or 2"));
     NAPI_ASSERT_ERRCODE(env, !IsSandBox(), version, innerError);
     LOG_INFO("start JSCreateObjectSync");
     NAPI_ASSERT_ERRCODE(env, JSDistributedObjectStore::CheckSyncPermission(), version,
@@ -180,7 +180,6 @@ napi_value JSDistributedObjectStore::JSCreateObjectSync(napi_env env, napi_callb
     } else {
         bundleName = JSDistributedObjectStore::GetBundleName(env);
     }
-
     DistributedObjectStore *objectInfo = DistributedObjectStore::GetInstance(bundleName);
     NAPI_ASSERT_ERRCODE(env, objectInfo != nullptr, version, innerError);
     uint32_t result = 0;
@@ -194,7 +193,7 @@ napi_value JSDistributedObjectStore::JSCreateObjectSync(napi_env env, napi_callb
 // function destroyObjectSync(version: number, object: DistributedObject): number;
 napi_value JSDistributedObjectStore::JSDestroyObjectSync(napi_env env, napi_callback_info info)
 {
-    double version = 0;
+    double version = 8;
     LOG_INFO("start");
     size_t requireArgc = 2;
     size_t argc = 2;
@@ -236,14 +235,15 @@ napi_value JSDistributedObjectStore::JSOn(napi_env env, napi_callback_info info)
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("2"));
+    auto innerError = std::make_shared<InnerError>();
+    NAPI_ASSERT_ERRCODE(env, argc >= 1, version, innerError);
     status = JSUtil::GetValue(env, argv[0], version);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
+    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("2"));
     char type[TYPE_SIZE] = { 0 };
     size_t eventTypeLen = 0;
     napi_valuetype valueType = napi_undefined;
     status = napi_typeof(env, argv[1], &valueType);
-    auto innerError = std::make_shared<InnerError>();
     NAPI_ASSERT_ERRCODE(env, status == napi_ok, version, innerError);
     NAPI_ASSERT_ERRCODE(env, valueType == napi_string, version, std::make_shared<ParametersType>("type", "string"));
     status = napi_get_value_string_utf8(env, argv[1], type, TYPE_SIZE, &eventTypeLen);
@@ -263,7 +263,8 @@ napi_value JSDistributedObjectStore::JSOn(napi_env env, napi_callback_info info)
     NAPI_ASSERT_ERRCODE(env, status == napi_ok, version, innerError);
     NAPI_ASSERT_ERRCODE(env, callbackType == napi_function, version,
         std::make_shared<ParametersType>("callback", "function"));
-    wrapper->AddWatch(env, type, argv[3]);
+    bool addResult = wrapper->AddWatch(env, type, argv[3]);
+    NAPI_ASSERT_ERRCODE(env, addResult, version, innerError);
     napi_value result = nullptr;
     napi_get_undefined(env, &result);
     return result;
@@ -284,12 +285,13 @@ napi_value JSDistributedObjectStore::JSOff(napi_env env, napi_callback_info info
     size_t typeLen = 0;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("1"));
+    auto innerError = std::make_shared<InnerError>();
+    NAPI_ASSERT_ERRCODE(env, argc >= 1, version, innerError);
     status = JSUtil::GetValue(env, argv[0], version);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
+    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("1"));
     napi_valuetype valueType = napi_undefined;
     status = napi_typeof(env, argv[1], &valueType);
-    auto innerError = std::make_shared<InnerError>();
     NAPI_ASSERT_ERRCODE(env, status == napi_ok, version, innerError);
     NAPI_ASSERT_ERRCODE(env, valueType == napi_string, version, std::make_shared<ParametersType>("type", "string"));
     status = napi_get_value_string_utf8(env, argv[1], type, TYPE_SIZE, &typeLen);
@@ -375,14 +377,15 @@ napi_value JSDistributedObjectStore::JSRecordCallback(napi_env env, napi_callbac
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("2"));
+    auto innerError = std::make_shared<InnerError>();
+    NAPI_ASSERT_ERRCODE(env, argc >= 1, version, innerError);
     status = JSUtil::GetValue(env, argv[0], version);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
+    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("2"));
     char type[TYPE_SIZE] = { 0 };
     size_t eventTypeLen = 0;
     napi_valuetype valueType = napi_undefined;
     status = napi_typeof(env, argv[1], &valueType);
-    auto innerError = std::make_shared<InnerError>();
     NAPI_ASSERT_ERRCODE(env, status == napi_ok, version, innerError);
     NAPI_ASSERT_ERRCODE(env, valueType == napi_string, version, std::make_shared<ParametersType>("type", "string"));
     status = napi_get_value_string_utf8(env, argv[1], type, TYPE_SIZE, &eventTypeLen);
@@ -423,14 +426,15 @@ napi_value JSDistributedObjectStore::JSDeleteCallback(napi_env env, napi_callbac
     void *data = nullptr;
     napi_status status = napi_get_cb_info(env, info, &argc, argv, &thisVar, &data);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("1 or 2"));
+    auto innerError = std::make_shared<InnerError>();
+    NAPI_ASSERT_ERRCODE(env, argc >= 1, version, innerError);
     status = JSUtil::GetValue(env, argv[0], version);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
+    NAPI_ASSERT_ERRCODE(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("1 or 2"));
     char type[TYPE_SIZE] = { 0 };
     size_t eventTypeLen = 0;
     napi_valuetype valueType = napi_undefined;
     status = napi_typeof(env, argv[1], &valueType);
-    auto innerError = std::make_shared<InnerError>();
     NAPI_ASSERT_ERRCODE(env, status == napi_ok, version, innerError);
     NAPI_ASSERT_ERRCODE(env, valueType == napi_string, version, std::make_shared<ParametersType>("type", "string"));
     status = napi_get_value_string_utf8(env, argv[1], type, TYPE_SIZE, &eventTypeLen);
