@@ -219,7 +219,7 @@ describe('objectStoreTest',function () {
         expect("session1" == g_object.__sessionId).assertEqual(true);
         console.info(TAG + " start call watch change");
         try {
-            g_object.on(123, (sessionId, changeData) => {
+            g_object.on(123, function (sessionId, changeData) {
                 console.info("V9testOn002 callback start.");
                 if (changeData != null && changeData != undefined) {
                     changeData.forEach(element => {
@@ -250,7 +250,7 @@ describe('objectStoreTest',function () {
         expect("session1" == g_object.__sessionId).assertEqual(true);
         console.info(TAG + " start call watch change");
         try {
-            g_object.on("error", (sessionId, changeData) =>{
+            g_object.on("error", function (sessionId, changeData) {
                 console.info("V9testOn003 callback start.");
                 if (changeData != null && changeData != undefined) {
                     changeData.forEach(element => {
@@ -424,7 +424,6 @@ describe('objectStoreTest',function () {
         g_object.save("errorDeviceId").then((result)=>{
             console.info("save sessionId " + result );
         }).catch((error) => {
-            // expect(error == object).assertEqual(true);
             expect(error != undefined).assertEqual(true);
         });
         console.log(TAG + "************* V9testSave002 end *************");

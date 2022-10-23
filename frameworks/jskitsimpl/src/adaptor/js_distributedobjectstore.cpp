@@ -180,6 +180,7 @@ napi_value JSDistributedObjectStore::JSCreateObjectSync(napi_env env, napi_callb
     } else {
         bundleName = JSDistributedObjectStore::GetBundleName(env);
     }
+    
     DistributedObjectStore *objectInfo = DistributedObjectStore::GetInstance(bundleName);
     NAPI_ASSERT_ERRCODE(env, objectInfo != nullptr, version, innerError);
     uint32_t result = 0;
