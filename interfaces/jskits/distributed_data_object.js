@@ -235,14 +235,15 @@ function offWatch(version, type, obj, callback = undefined) {
 
 function newDistributedV9(context, obj) {
     console.info("start newDistributed");
-    let checkparameter = function(err) {
-        throw {code : 401, message :"Parameter error. The type of '" + err + "' must be 'object'."};
+    let checkparameter = function(parameter, type) {
+        throw { code : 401,
+                message :"Parameter error. The type of '" + parameter + "' must be '" + type + "'."};
     }
     if(typeof context != "object") {
-        checkparameter(context);
+        checkparameter("context", "Context");
     } 
     if(typeof obj != "object") {
-        checkparameter(obj);
+        checkparameter("source", "object");
     }
     if (obj == null) {
         console.error("object is null");
