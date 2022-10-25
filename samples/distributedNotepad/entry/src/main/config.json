@@ -14,6 +14,7 @@
     "mainAbility": ".MainAbility",
     "srcPath": "",
     "deviceType": [
+      "tablet",
       "default",
       "phone"
     ],
