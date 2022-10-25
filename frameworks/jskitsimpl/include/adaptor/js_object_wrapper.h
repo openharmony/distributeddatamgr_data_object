@@ -44,7 +44,6 @@ private:
     std::shared_mutex watchMutex_{};
     std::vector<std::string> undefinedProperties;
     std::string objectId_;
-
 };
 } // namespace OHOS::ObjectStore
 
