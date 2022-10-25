@@ -15,7 +15,7 @@
 
 #include "distributed_object_impl.h"
 
-#include "dds_trace.h"
+#include "hitrace.h"
 #include "objectstore_errors.h"
 #include "string_utils.h"
 
@@ -55,8 +55,7 @@ uint32_t GetNum(Bytes &data, uint32_t offset, void *val, uint32_t valLen)
 
 uint32_t DistributedObjectImpl::PutDouble(const std::string &key, double value)
 {
-    DistributedDataDfx::DdsTrace trace(std::string("DistributedObjectImpl::") + std::string(__FUNCTION__),
-        DistributedDataDfx::TraceSwitch::BYTRACE_ON | DistributedDataDfx::TraceSwitch::TRACE_CHAIN_ON);
+    HiTrace trace(std::string(__FUNCTION__));
     Bytes data;
     Type type = Type::TYPE_DOUBLE;
     PutNum(&type, 0, sizeof(type), data);
@@ -70,8 +69,7 @@ uint32_t DistributedObjectImpl::PutDouble(const std::string &key, double value)
 
 uint32_t DistributedObjectImpl::PutBoolean(const std::string &key, bool value)
 {
-    DistributedDataDfx::DdsTrace trace(std::string("DistributedObjectImpl::") + std::string(__FUNCTION__),
-        DistributedDataDfx::TraceSwitch::BYTRACE_ON | DistributedDataDfx::TraceSwitch::TRACE_CHAIN_ON);
+    HiTrace trace(std::string(__FUNCTION__));
     Bytes data;
     Type type = Type::TYPE_BOOLEAN;
     PutNum(&type, 0, sizeof(type), data);
@@ -85,8 +83,7 @@ uint32_t DistributedObjectImpl::PutBoolean(const std::string &key, bool value)
 
 uint32_t DistributedObjectImpl::PutString(const std::string &key, const std::string &value)
 {
-    DistributedDataDfx::DdsTrace trace(std::string("DistributedObjectImpl::") + std::string(__FUNCTION__),
-        DistributedDataDfx::TraceSwitch::BYTRACE_ON | DistributedDataDfx::TraceSwitch::TRACE_CHAIN_ON);
+    HiTrace trace(std::string(__FUNCTION__));
     Bytes data;
     Type type = Type::TYPE_STRING;
     PutNum(&type, 0, sizeof(type), data);
@@ -175,8 +172,7 @@ DistributedObjectImpl::DistributedObjectImpl(const std::string &sessionId, FlatO
 
 uint32_t DistributedObjectImpl::PutComplex(const std::string &key, const std::vector<uint8_t> &value)
 {
-    DistributedDataDfx::DdsTrace trace(std::string("DistributedObjectImpl::") + std::string(__FUNCTION__),
-        DistributedDataDfx::TraceSwitch::BYTRACE_ON | DistributedDataDfx::TraceSwitch::TRACE_CHAIN_ON);
+    HiTrace trace(std::string(__FUNCTION__));
     Bytes data;
     Type type = Type::TYPE_COMPLEX;
     PutNum(&type, 0, sizeof(type), data);
