@@ -111,7 +111,7 @@ napi_value JSDistributedObjectStore::NewDistributedObject(
                 LOG_WARN("objectWrapper is nullptr.");
                 return;
             }
-            auto objectWrapper = (JSObjectWrapper *)data;
+            auto objectWrapper = static_cast<JSObjectWrapper *>(data);
             if (objectWrapper->GetObject() == nullptr) {
                 delete objectWrapper;
                 return;
