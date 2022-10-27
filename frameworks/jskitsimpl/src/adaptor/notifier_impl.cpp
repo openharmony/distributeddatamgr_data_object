@@ -27,10 +27,6 @@ std::shared_ptr<NotifierImpl> NotifierImpl::GetInstance()
         std::lock_guard<std::mutex> lockGuard(instanceLock);
         if (instance == nullptr) {
             instance = std::make_shared<NotifierImpl>();
-            if (instance == nullptr) {
-                LOG_ERROR("Failed to alloc NotifierImpl!");
-                return nullptr;
-            }
             uint32_t ret = DistributedObjectStore::GetInstance()->SetStatusNotifier(instance);
             if (ret != SUCCESS) {
                 LOG_ERROR("SetStatusNotifier %{public}d error", ret);

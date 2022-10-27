@@ -39,7 +39,7 @@ void PutNum(void *val, uint32_t offset, uint32_t valLen, Bytes &data)
 
 uint32_t GetNum(Bytes &data, uint32_t offset, void *val, uint32_t valLen)
 {
-    uint8_t *value = (uint8_t *)val;
+    uint8_t *value = static_cast<uint8_t *>(val);
     uint32_t len = offset + valLen;
     uint32_t dataLen = data.size();
     if (dataLen < len) {
