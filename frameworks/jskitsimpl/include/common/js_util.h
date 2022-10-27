@@ -45,7 +45,19 @@ public:
     /* napi_value <-> std::vector<uint8_t> */
     static napi_status GetValue(napi_env env, napi_value in, std::vector<uint8_t> &out);
     static napi_status SetValue(napi_env env, const std::vector<uint8_t> &in, napi_value &out);
+
+    static void GenerateNapiError(napi_env env, int32_t status, int32_t &errCode, std::string &errMessage);
 };
+
+#define NAPI_ASSERT_ERRCODE(env, assertion, version, err)                                                   \
+    do {                                                                                                    \
+        if (!(assertion)) {                                                                                 \
+            if (version >= 9) {                                                                             \
+                napi_throw_error((env), std::to_string(err->GetCode()).c_str(), err->GetMessage().c_str()); \
+            }                                                                                               \
+            return nullptr;                                                                                 \
+        }                                                                                                   \
+    } while (0)
 
 #define LOG_ERROR_RETURN(condition, message, retVal)             \
     do {                                                         \

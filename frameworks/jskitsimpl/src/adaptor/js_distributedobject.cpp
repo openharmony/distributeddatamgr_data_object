@@ -22,6 +22,7 @@
 #include "js_util.h"
 #include "logger.h"
 #include "napi_queue.h"
+#include "object_error.h"
 #include "objectstore_errors.h"
 
 namespace OHOS::ObjectStore {
@@ -227,10 +228,15 @@ napi_value JSDistributedObject::JSSave(napi_env env, napi_callback_info info)
         std::string deviceId;
         DistributedObject *object;
     };
+
     auto ctxt = std::make_shared<SaveContext>();
     std::function<void(size_t argc, napi_value * argv)> getCbOpe = [env, ctxt](size_t argc, napi_value *argv) {
         // required 1 arguments :: <key>
-        CHECK_ARGS_RETURN_VOID(ctxt, argc >= 2, "invalid arguments!");
+        CHECK_ARGS_RETURN_VOID(ctxt, argc >= 2, "arguments error", std::make_shared<ParametersNum>("1 or 2"));
+        napi_valuetype valueType = napi_undefined;
+        ctxt->status = napi_typeof(env, argv[0], &valueType);
+        CHECK_ARGS_RETURN_VOID(ctxt, valueType == napi_string, "arguments error",
+            std::make_shared<ParametersType>("deviceId", "string"));
         ctxt->status = JSUtil::GetValue(env, argv[0], ctxt->deviceId);
         CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[0], i.e. invalid deviceId!");
         ctxt->status = JSUtil::GetValue(env, argv[1], ctxt->version);
@@ -243,11 +249,15 @@ napi_value JSDistributedObject::JSSave(napi_env env, napi_callback_info info)
         ctxt->object = wrapper->GetObject();
     };
     ctxt->GetCbInfo(env, info, getCbOpe);
+    if (ctxt->status == napi_invalid_arg) {
+        napi_throw_error((env), std::to_string(ctxt->error->GetCode()).c_str(), ctxt->error->GetMessage().c_str());
+        return nullptr;
+    }
     auto output = [env, ctxt](napi_value &result) {
         if (ctxt->status == napi_ok) {
             ctxt->status = napi_new_instance(env,
-                JSDistributedObject::GetSaveResultCons(env, ctxt->object->GetSessionId(),
-                    ctxt->version, ctxt->deviceId), 0, nullptr, &result);
+                JSDistributedObject::GetSaveResultCons(env, ctxt->object->GetSessionId(), ctxt->version, ctxt->deviceId),
+                0, nullptr, &result);
             CHECK_STATUS_RETURN_VOID(ctxt, "output failed!");
         }
     };
@@ -257,15 +267,15 @@ napi_value JSDistributedObject::JSSave(napi_env env, napi_callback_info info)
             LOG_INFO("start");
             if (ctxt->object == nullptr) {
                 LOG_ERROR("object is null");
-                ctxt->status = napi_invalid_arg;
-                ctxt->error = std::string("object is null");
+                ctxt->status = napi_generic_failure;
+                ctxt->message = std::string("object is null");
                 return;
             }
             uint32_t status = ctxt->object->Save(ctxt->deviceId);
             if (status != SUCCESS) {
                 LOG_ERROR("Save failed, status = %{public}d", status);
-                ctxt->status = napi_invalid_arg;
-                ctxt->error = std::string("operation failed");
+                ctxt->status = napi_generic_failure;
+                ctxt->message = std::string("operation failed");
                 return;
             }
             ctxt->status = napi_ok;
@@ -292,6 +302,11 @@ napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info in
         ctxt->object = wrapper->GetObject();
     };
     ctxt->GetCbInfo(env, info, getCbOpe);
+    if (ctxt->status != napi_ok) {
+        napi_throw_error((env), std::to_string(ctxt->error->GetCode()).c_str(), ctxt->error->GetMessage().c_str());
+        return nullptr;
+    }
+
     auto output = [env, ctxt](napi_value &result) {
         if (ctxt->status == napi_ok) {
             ctxt->status = napi_new_instance(env,
@@ -305,15 +320,15 @@ napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info in
             LOG_INFO("start");
             if (ctxt->object == nullptr) {
                 LOG_ERROR("object is null");
-                ctxt->status = napi_invalid_arg;
-                ctxt->error = std::string("object is null");
+                ctxt->status = napi_generic_failure;
+                ctxt->message = std::string("object is null");
                 return;
             }
             uint32_t status = ctxt->object->RevokeSave();
             if (status != SUCCESS) {
                 LOG_ERROR("Save failed, status = %{public}d", status);
-                ctxt->status = napi_invalid_arg;
-                ctxt->error = std::string("operation failed");
+                ctxt->status = napi_generic_failure;
+                ctxt->message = std::string("operation failed");
                 return;
             }
             ctxt->status = napi_ok;

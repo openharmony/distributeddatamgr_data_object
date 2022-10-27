@@ -76,6 +76,22 @@ DistributedObject *DistributedObjectStoreImpl::CreateObject(const std::string &s
     return CacheObject(sessionId, flatObjectStore_);
 }
 
+DistributedObject *DistributedObjectStoreImpl::CreateObject(const std::string &sessionId, uint32_t &status)
+{
+    HiTrace trace(std::string(__FUNCTION__));
+    if (flatObjectStore_ == nullptr) {
+        LOG_ERROR("DistributedObjectStoreImpl::CreateObject store not opened!");
+        status = ERR_NULL_OBJECTSTORE;
+        return nullptr;
+    }
+    status = flatObjectStore_->CreateObject(sessionId);
+    if (status != SUCCESS) {
+        LOG_ERROR("DistributedObjectStoreImpl::CreateObject CreateTable err %{public}d", status);
+        return nullptr;
+    }
+    return CacheObject(sessionId, flatObjectStore_);
+}
+
 uint32_t DistributedObjectStoreImpl::DeleteObject(const std::string &sessionId)
 {
     DistributedDataDfx::DdsTrace trace(std::string("DistributedObjectImpl::") + std::string(__FUNCTION__),

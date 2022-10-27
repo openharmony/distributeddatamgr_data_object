@@ -39,8 +39,8 @@ void ContextBase::GetCbInfo(napi_env envi, napi_callback_info info, NapiCbInfoPa
     napi_value argv[ARGC_MAX] = { nullptr };
     status = napi_get_cb_info(env, info, &argc, argv, &self, nullptr);
     CHECK_STATUS_RETURN_VOID(this, "napi_get_cb_info failed!");
-    CHECK_ARGS_RETURN_VOID(this, argc <= ARGC_MAX, "too many arguments!");
-    CHECK_ARGS_RETURN_VOID(this, self != nullptr, "no JavaScript this argument!");
+    CHECK_ARGS_RETURN_VOID(this, argc <= ARGC_MAX, "too many arguments!", std::make_shared<InnerError>());
+    CHECK_ARGS_RETURN_VOID(this, self != nullptr, "no JavaScript this argument!", std::make_shared<InnerError>());
     napi_create_reference(env, self, 1, &selfRef);
     status = napi_unwrap(env, self, &native);
     CHECK_STATUS_RETURN_VOID(this, "self unwrap failed!");
@@ -63,7 +63,7 @@ void ContextBase::GetCbInfo(napi_env envi, napi_callback_info info, NapiCbInfoPa
     if (parse) {
         parse(argc, argv);
     } else {
-        CHECK_ARGS_RETURN_VOID(this, argc == 0, "required no arguments!");
+        CHECK_ARGS_RETURN_VOID(this, argc == 0, "required no arguments!", std::make_shared<InnerError>());
     }
 }
 
@@ -112,7 +112,20 @@ napi_value NapiQueue::AsyncWork(napi_env env, std::shared_ptr<ContextBase> ctxt,
     return promise;
 }
 
-void NapiQueue::GenerateOutput(ContextBase* ctxt)
+void NapiQueue::SetBusinessError(napi_env env, napi_value *businessError, std::shared_ptr<Error> error)
+{
+    napi_create_object(env, businessError);
+    if (error->GetCode() != EXCEPTION_INNER) {
+        napi_value code = nullptr;
+        napi_value msg = nullptr;
+        napi_create_int32(env, error->GetCode(), &code);
+        napi_create_string_utf8(env, error->GetMessage().c_str(), NAPI_AUTO_LENGTH, &msg);
+        napi_set_named_property(env, *businessError, "code", code);
+        napi_set_named_property(env, *businessError, "message", msg);
+    }
+}
+
+void NapiQueue::GenerateOutput(ContextBase *ctxt)
 {
     napi_value result[RESULT_ALL] = { nullptr };
     if (ctxt->status == napi_ok) {
@@ -122,9 +135,9 @@ void NapiQueue::GenerateOutput(ContextBase* ctxt)
         }
         result[RESULT_DATA] = ctxt->output;
     } else {
-        napi_value message = nullptr;
-        napi_create_string_utf8(ctxt->env, ctxt->error.c_str(), NAPI_AUTO_LENGTH, &message);
-        napi_create_error(ctxt->env, nullptr, message, &result[RESULT_ERROR]);
+        napi_value businessError = nullptr;
+        napi_create_object(ctxt->env, &businessError);
+        result[RESULT_ERROR] = businessError;
         napi_get_undefined(ctxt->env, &result[RESULT_DATA]);
     }
     if (ctxt->deferred != nullptr) {
