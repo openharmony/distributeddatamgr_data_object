@@ -72,7 +72,7 @@ bool JSDistributedObjectStore::DelCallback(napi_env env, ConcurrentMap<std::stri
                     iter++;
                 }
             }
-            return true;
+            return false;
         } else {
             napi_value callbackTmp;
             for (auto iter = lists.begin(); iter != lists.end();) {
