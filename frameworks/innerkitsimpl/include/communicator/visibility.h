@@ -12,15 +12,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#ifndef API_EXPORT
+#if _WIN32
+#define API_EXPORT __declspec(dllexport)
+#else
+#define API_EXPORT __attribute__((visibility ("default")))
+#endif
+#endif
 #ifndef KVSTORE_API
-#ifdef _WIN32
-#ifdef DB_DLL_EXPORT
-#define KVSTORE_API __declspec(dllexport)
-#else
-#define KVSTORE_API
-#endif
-#else
-#define KVSTORE_API __attribute__((visibility("default")))
-#endif
+#define KVSTORE_API API_EXPORT
 #endif

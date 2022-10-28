@@ -56,8 +56,7 @@ bool JSDistributedObjectStore::DelCallback(napi_env env, ConcurrentMap<std::stri
     const std::string &sessionId, napi_value callback)
 {
     LOG_INFO("del callback %{public}s", sessionId.c_str());
-    bool result = true;
-    result = callbacks.ComputeIfPresent(sessionId, [&env, callback](const std::string &key, std::list<napi_ref> &lists) {
+    bool result = callbacks.ComputeIfPresent(sessionId, [&env, callback](const std::string &key, std::list<napi_ref> &lists) {
         napi_status status;
         if (callback == nullptr) {
             for (auto iter = lists.begin(); iter != lists.end();) {
@@ -72,7 +71,7 @@ bool JSDistributedObjectStore::DelCallback(napi_env env, ConcurrentMap<std::stri
                     iter++;
                 }
             }
-            return true;
+            return false;
         } else {
             napi_value callbackTmp;
             for (auto iter = lists.begin(); iter != lists.end();) {
