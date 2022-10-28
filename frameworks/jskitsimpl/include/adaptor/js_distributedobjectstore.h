@@ -18,11 +18,11 @@
 
 #include <list>
 
+#include "concurrent_map.h"
 #include "distributed_objectstore.h"
 #include "js_native_api.h"
 #include "js_object_wrapper.h"
 #include "node_api.h"
-#include "concurrent_map.h"
 namespace OHOS::ObjectStore {
 class JSDistributedObjectStore {
 public:
@@ -32,18 +32,20 @@ public:
     static napi_value JSOff(napi_env env, napi_callback_info info);
     static napi_value JSRecordCallback(napi_env env, napi_callback_info info);
     static napi_value JSDeleteCallback(napi_env env, napi_callback_info info);
-    static napi_value randomNum(napi_env env, napi_callback_info info);
+    static napi_value JSEquenceNum(napi_env env, napi_callback_info info);
+
 private:
     static napi_value NewDistributedObject(
         napi_env env, DistributedObjectStore *objectStore, DistributedObject *object, const std::string &objectId);
-    static void AddCallback(napi_env env, ConcurrentMap<std::string, std::list<napi_ref>> &callbacks,
+    static bool AddCallback(napi_env env, ConcurrentMap<std::string, std::list<napi_ref>> &callbacks,
         const std::string &objectId, napi_value callback);
-    static void DelCallback(napi_env env, ConcurrentMap<std::string, std::list<napi_ref>> &callbacks,
+    static bool DelCallback(napi_env env, ConcurrentMap<std::string, std::list<napi_ref>> &callbacks,
         const std::string &sessionId, napi_value callback = nullptr);
     static bool CheckSyncPermission();
     static void RestoreWatchers(napi_env env, JSObjectWrapper *wrapper, const std::string &objectId);
     static std::string GetBundleName(napi_env env);
     static bool IsSandBox();
+    static std::atomic<uint32_t> sequenceNum_;
 };
 } // namespace OHOS::ObjectStore
 #endif // JS_DISTRIBUTEDDATAOBJECTSTORE_H
