@@ -250,11 +250,7 @@ int DistributedTestAgent::RevokeSave(const std::string &strMsg, std::string &str
         if (object != nullptr) {
             object->PutString("name", putValue);
             std::vector<ObjectStore::DeviceInfo> devices = SoftBusAdapter::GetInstance()->GetDeviceList();
-            std::vector<std::string> deviceIds;
-            for (auto item : devices) {
-                deviceIds.push_back(item.deviceId);
-            }
-            std::string networkId = SoftBusAdapter::GetInstance()->ToNodeID(deviceIds[0]);
+            std::string networkId = SoftBusAdapter::GetInstance()->ToNodeID(devices[0].deviceId);
             object->Save(networkId);
             uint32_t status = object->RevokeSave();
             if (status != SUCCESS) {
@@ -282,11 +278,7 @@ int DistributedTestAgent::SaveRemote(const std::string &strMsg, std::string &str
 {
     if (DistributedTestAgent::objectSession_ != nullptr) {
         std::vector<ObjectStore::DeviceInfo> devices = SoftBusAdapter::GetInstance()->GetDeviceList();
-        std::vector<std::string> deviceIds;
-        for (auto item : devices) {
-            deviceIds.push_back(item.deviceId);
-        }
-        std::string networkId = SoftBusAdapter::GetInstance()->ToNodeID(deviceIds[0]);
+        std::string networkId = SoftBusAdapter::GetInstance()->ToNodeID(devices[0].deviceId);
         DistributedTestAgent::objectSession_->Save(networkId);
         strReturnValue = "SaveRemote succsess";
     } else {

@@ -149,7 +149,7 @@ uint32_t FlatObjectStorageEngine::GetTable(const std::string &key, std::map<std:
     Key emptyKey;
     LOG_INFO("start GetEntries");
     DistributedDB::DBStatus status = delegates_.at(key)->GetEntries(emptyKey, resultSet);
-    if (status != DistributedDB::DBStatus::OK) {
+    if (status != DistributedDB::DBStatus::OK || resultSet == nullptr) {
         LOG_INFO("FlatObjectStorageEngine::GetTable %{public}s GetEntries fail", key.c_str());
         return ERR_DB_GET_FAIL;
     }
