@@ -170,6 +170,34 @@ describe('objectStoreTest',function () {
     })
 
     /**
+     * @tc.name: V9testsetSessionId004
+     * @tc.desc: object join session and on,object can receive callback when data has been changed
+     * @tc.type: FUNC
+     */
+     it('V9testsetSessionId004', 0, function () {
+        console.log(TAG + "************* V9testsetSessionId004 start *************");
+        var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
+        expect(g_object == undefined).assertEqual(false);
+        g_object.setSessionId("123456", (error, data) => {
+            console.info(TAG + "setSessionId test");
+            console.info(TAG + data);
+        });
+         g_object.setSessionId();
+         try {
+            g_object.setSessionId(1234, (error, data) =>{
+                console.info(TAG + "setSessionId test");
+            });
+         } catch (error) {
+            console.log(error.code + error.message );
+            expect(error.code == 401).assertEqual(true);
+            expect(error.message == "Parameter error. The type of 'sessionId' must be 'string'.").assertEqual(true);
+         }
+        console.log(TAG + "************* V9testsetSessionId004 end *************");
+        g_object.setSessionId();
+    })
+
+
+    /**
      * @tc.name: V9testOn001
      * @tc.desc: object join session and on,object can receive callback when data has been changed
      * @tc.type: FUNC
@@ -303,7 +331,9 @@ describe('objectStoreTest',function () {
             console.info(TAG + " object is null,set name fail");
         }
         console.log(TAG + "************* V9testOff001 end *************");
-        g_object.setSessionId("");
+        g_object.setSessionId((error, data) => {
+            console.info(TAG + "setSessionId test");
+        });
     })
 
     /**
@@ -428,6 +458,13 @@ describe('objectStoreTest',function () {
         }).catch((error) => {
             expect(error != undefined).assertEqual(true);
         });
+        
+        try {
+            g_object.save("local", 123);
+        } catch (error) {
+            expect(error.code == 401).assertEqual(true);
+            expect(error.message =="Parameter error. The type of 'callback' must be 'function'.").assertEqual(true);
+        }
         console.log(TAG + "************* V9testSave002 end *************");
         g_object.setSessionId("");
     })
@@ -461,10 +498,46 @@ describe('objectStoreTest',function () {
         expect(g_object.name == undefined).assertEqual(true);
         expect(g_object.age == undefined).assertEqual(true);
         expect(g_object.isVis == undefined).assertEqual(true);
-
         expect(result.sessionId == "123456").assertEqual(true);
-
         console.log(TAG + "************* V9testRevokeSave001 end *************");
+        g_object.setSessionId("");
+    })
+
+    /**
+     * @tc.name: V9testRevokeSave002
+     * @tc.desc: test RevokeSave
+     * @tc.type: FUNC
+     */
+    it('V9testRevokeSave002', 0, async function () {
+        console.log(TAG + "************* V9testRevokeSave002 start *************");
+        var g_object = distributedObject.create(context, { name: "Amy", age: 18, isVis: false });
+        expect(g_object == undefined).assertEqual(false);
+        g_object.setSessionId("123456");
+        expect("123456" == g_object.__sessionId).assertEqual(true);
+        let result = await g_object.save("local");
+        expect(result.sessionId == "123456").assertEqual(true);
+        expect(result.version == g_object.__version).assertEqual(true);
+        expect(result.deviceId == "local").assertEqual(true);
+
+        try {
+            g_object.revokeSave(123);
+        }
+        catch (error) {
+            console.info(error.code + error.message);
+            expect(error.code == 401).assertEqual(true);
+            expect(error.message == "Parameter error. The type of 'callback' must be 'function'.").assertEqual(true);
+        }
+        try {
+            g_object.revokeSave(123).then((result) => {
+                expect(result.sessionId == "tmpsession1").assertEqual(true)
+            });
+        }
+        catch (error) {
+            console.info(error.code + error.message);
+            expect(error.code == 401).assertEqual(true);
+            expect(error.message == "Parameter error. The type of 'callback' must be 'function'.").assertEqual(true);
+        }
+        console.log(TAG + "************* V9testRevokeSave002 end *************");
         g_object.setSessionId("");
     })
     
