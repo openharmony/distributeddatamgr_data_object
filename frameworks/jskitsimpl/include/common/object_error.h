@@ -16,7 +16,7 @@
 #ifndef OBJECT_ERROR_H
 #define OBJECT_ERROR_H
 
-#include "js_utils.h"
+#include <string>
 
 namespace OHOS {
 namespace ObjectStore {
@@ -56,7 +56,6 @@ private:
 class PermissionError : public Error {
 public:
     PermissionError() = default;
-    ;
     std::string GetMessage() override;
     int GetCode() override;
 };
