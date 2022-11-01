@@ -70,32 +70,6 @@ SoftBusAdapter::SoftBusAdapter()
 
 SoftBusAdapter::~SoftBusAdapter()
 {
-    LOG_INFO("begin");
-    int32_t errNo = UnregNodeDeviceStateCb(&nodeStateCb_);
-    if (errNo != SOFTBUS_OK) {
-        LOG_ERROR("UnregNodeDeviceStateCb fail %{public}d", errNo);
-    }
-}
-
-void SoftBusAdapter::Init()
-{
-    LOG_INFO("begin");
-    std::thread th = std::thread([&]() {
-        int i = 0;
-        constexpr int RETRY_TIMES = 300;
-        while (i++ < RETRY_TIMES) {
-            int32_t errNo = RegNodeDeviceStateCb("ohos.objectstore", &nodeStateCb_);
-            if (errNo != SOFTBUS_OK) {
-                LOG_ERROR("RegNodeDeviceStateCb fail %{public}d, time:%{public}d", errNo, i);
-                std::this_thread::sleep_for(std::chrono::seconds(1));
-                continue;
-            }
-            LOG_INFO("RegNodeDeviceStateCb success");
-            return;
-        }
-        LOG_ERROR("Init failed %{public}d times and exit now.", RETRY_TIMES);
-    });
-    th.detach();
 }
 
 Status SoftBusAdapter::StartWatchDeviceChange(

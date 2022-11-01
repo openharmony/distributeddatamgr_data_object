@@ -34,8 +34,7 @@ public:
     SoftBusAdapter();
     ~SoftBusAdapter();
     static std::shared_ptr<SoftBusAdapter> GetInstance();
-
-    void Init();
+    
     // add DeviceChangeListener to watch device change;
     Status StartWatchDeviceChange(const AppDeviceStatusChangeListener *observer, const PipeInfo &pipeInfo);
     // stop DeviceChangeListener to watch device change;
@@ -97,7 +96,6 @@ private:
     std::mutex busSessionMutex_{};
     std::map<std::string, bool> busSessionMap_{};
     bool flag_ = true; // only for br flag
-    INodeStateCb nodeStateCb_{};
     ISessionListener sessionListener_{};
     std::mutex statusMutex_ {};
     std::map<int32_t, std::shared_ptr<ConditionLock<int32_t>>> sessionsStatus_;
