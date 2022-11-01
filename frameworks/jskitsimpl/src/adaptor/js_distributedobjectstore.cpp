@@ -52,45 +52,54 @@ bool JSDistributedObjectStore::AddCallback(napi_env env, ConcurrentMap<std::stri
     });
 }
 
+bool DeleteAllCallback(napi_env env, std::list<napi_ref> &lists)
+{
+    for (auto iter = lists.begin(); iter != lists.end();) {
+        if (*iter == nullptr) {
+            iter++;
+            continue;
+        }
+        napi_status status = napi_delete_reference(env, *iter);
+        CHECK_EQUAL_WITH_RETURN_FALSE(status, napi_ok);
+        iter = lists.erase(iter);
+    }
+    return false;
+}
+
+bool DeleteSingleCallback(napi_env env, std::list<napi_ref> &lists, napi_value callback)
+{
+    napi_value callbackTmp;
+    for (auto iter = lists.begin(); iter != lists.end();) {
+        if (*iter == nullptr) {
+            iter++;
+            continue;
+        }
+        napi_status status = napi_get_reference_value(env, *iter, &callbackTmp);
+        CHECK_EQUAL_WITH_RETURN_FALSE(status, napi_ok);
+        bool isEquals = false;
+        napi_strict_equals(env, callbackTmp, callback, &isEquals);
+        if (isEquals) {
+            napi_delete_reference(env, *iter);
+            iter = lists.erase(iter);
+        } else {
+            iter++;
+        }
+    }
+    return !lists.empty();
+}
+
 bool JSDistributedObjectStore::DelCallback(napi_env env, ConcurrentMap<std::string, std::list<napi_ref>> &callbacks,
     const std::string &sessionId, napi_value callback)
 {
     LOG_INFO("del callback %{public}s", sessionId.c_str());
     auto execute = [&env, callback](const std::string &key, std::list<napi_ref> &lists) {
-        napi_status status;
         if (callback == nullptr) {
-            for (auto iter = lists.begin(); iter != lists.end();) {
-                status = napi_delete_reference(env, *iter);
-                if (status != napi_ok) {
-                    LOG_ERROR("error! %{public}d %{public}d", status, napi_ok);
-                    return false;
-                }
-                iter = lists.erase(iter);
-                iter++;
-            }
-            return false;
+            return DeleteAllCallback(env, lists);
         } else {
-            napi_value callbackTmp;
-            for (auto iter = lists.begin(); iter != lists.end();) {
-                status = napi_get_reference_value(env, *iter, &callbackTmp);
-                if (status != napi_ok) {
-                    LOG_ERROR("error! %{public}d %{public}d", status, napi_ok);
-                    return false;
-                }
-                bool isEquals = false;
-                napi_strict_equals(env, callbackTmp, callback, &isEquals);
-                if (isEquals) {
-                    napi_delete_reference(env, *iter);
-                    iter = lists.erase(iter);
-                } else {
-                    iter++;
-                }
-            }
-            return !lists.empty();
+            return DeleteSingleCallback(env, lists, callback);
         }
     };
-    bool result = callbacks.ComputeIfPresent(sessionId, execute);
-    return result;
+    return callbacks.ComputeIfPresent(sessionId, execute);
 }
 
 napi_value JSDistributedObjectStore::NewDistributedObject(
