@@ -31,7 +31,6 @@ AppDeviceHandler::~AppDeviceHandler()
 }
 void AppDeviceHandler::Init()
 {
-    softbusAdapter_->Init();
     devManager_->RegisterDevCallback();
 }
 
