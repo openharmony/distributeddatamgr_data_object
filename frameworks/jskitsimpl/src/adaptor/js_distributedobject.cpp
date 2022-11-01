@@ -250,9 +250,9 @@ napi_value JSDistributedObject::JSSave(napi_env env, napi_callback_info info)
     CHECH_STATUS_ERRCODE(env, ctxt->status != napi_invalid_arg, ctxt->error);
     auto output = [env, ctxt](napi_value &result) {
         if (ctxt->status == napi_ok) {
-            ctxt->status = napi_new_instance(env,
-                JSDistributedObject::GetSaveResultCons(env, ctxt->object->GetSessionId(), ctxt->version, ctxt->deviceId),
-                0, nullptr, &result);
+            std::string sessionId = ctxt->object->GetSessionId();
+            ctxt->status = napi_new_instance(
+                env, GetSaveResultCons(env, sessionId, ctxt->version, ctxt->deviceId), 0, nullptr, &result);
             CHECK_STATUS_RETURN_VOID(ctxt, "output failed!");
         }
     };
@@ -306,12 +306,7 @@ napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info in
         env, ctxt, std::string(__FUNCTION__),
         [ctxt]() {
             LOG_INFO("start");
-            if (ctxt->object == nullptr) {
-                LOG_ERROR("object is null");
-                ctxt->status = napi_generic_failure;
-                ctxt->message = std::string("object is null");
-                return;
-            }
+            CHECH_STATUS_RETURN_VOID(env, ctxt->object != nullptr, ctxt, "object is null");
             uint32_t status = ctxt->object->RevokeSave();
             if (status != SUCCESS) {
                 LOG_ERROR("Save failed, status = %{public}d", status);
