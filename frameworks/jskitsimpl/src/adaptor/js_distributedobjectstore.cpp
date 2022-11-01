@@ -56,40 +56,40 @@ bool JSDistributedObjectStore::DelCallback(napi_env env, ConcurrentMap<std::stri
     const std::string &sessionId, napi_value callback)
 {
     LOG_INFO("del callback %{public}s", sessionId.c_str());
-    bool result =
-        callbacks.ComputeIfPresent(sessionId, [&env, callback](const std::string &key, std::list<napi_ref> &lists) {
-            napi_status status;
-            if (callback == nullptr) {
-                for (auto iter = lists.begin(); iter != lists.end();) {
-                    status = napi_delete_reference(env, *iter);
-                    if (status != napi_ok) {
-                        LOG_ERROR("error! %{public}d %{public}d", status, napi_ok);
-                        return false;
-                    }
+    auto execute = [&env, callback](const std::string &key, std::list<napi_ref> &lists) {
+        napi_status status;
+        if (callback == nullptr) {
+            for (auto iter = lists.begin(); iter != lists.end();) {
+                status = napi_delete_reference(env, *iter);
+                if (status != napi_ok) {
+                    LOG_ERROR("error! %{public}d %{public}d", status, napi_ok);
+                    return false;
+                }
+                iter = lists.erase(iter);
+                iter++;
+            }
+            return false;
+        } else {
+            napi_value callbackTmp;
+            for (auto iter = lists.begin(); iter != lists.end();) {
+                status = napi_get_reference_value(env, *iter, &callbackTmp);
+                if (status != napi_ok) {
+                    LOG_ERROR("error! %{public}d %{public}d", status, napi_ok);
+                    return false;
+                }
+                bool isEquals = false;
+                napi_strict_equals(env, callbackTmp, callback, &isEquals);
+                if (isEquals) {
+                    napi_delete_reference(env, *iter);
                     iter = lists.erase(iter);
+                } else {
                     iter++;
                 }
-                return false;
-            } else {
-                napi_value callbackTmp;
-                for (auto iter = lists.begin(); iter != lists.end();) {
-                    status = napi_get_reference_value(env, *iter, &callbackTmp);
-                    if (status != napi_ok) {
-                        LOG_ERROR("error! %{public}d %{public}d", status, napi_ok);
-                        return false;
-                    }
-                    bool isEquals = false;
-                    napi_strict_equals(env, callbackTmp, callback, &isEquals);
-                    if (isEquals) {
-                        napi_delete_reference(env, *iter);
-                        iter = lists.erase(iter);
-                    } else {
-                        iter++;
-                    }
-                }
-                return !lists.empty();
             }
-        });
+            return !lists.empty();
+        }
+    };
+    bool result = callbacks.ComputeIfPresent(sessionId, execute);
     return result;
 }
 
@@ -169,7 +169,7 @@ napi_value JSDistributedObjectStore::JSCreateObjectSync(napi_env env, napi_callb
     if (argc > requireArgc) {
         bool executeResult = JSDistributedObjectStore::GetBundleNameWithContext(env, argv[3], bundleName);
         NAPI_ASSERT_ERRCODE(env, executeResult, version, innerError);
-    } else{
+    } else {
         bundleName = JSDistributedObjectStore::GetBundleName(env);
     }
     DistributedObjectStore *objectInfo = DistributedObjectStore::GetInstance(bundleName);
@@ -214,8 +214,10 @@ napi_value JSDistributedObjectStore::JSDestroyObjectSync(napi_env env, napi_call
     return nullptr;
 }
 
-// function on(version: number, type: 'change', object: DistributedObject, callback: Callback<ChangedDataObserver>): void;
-// function on(version: number, type: 'status', object: DistributedObject, callback: Callback<ObjectStatusObserver>): void;
+// function on(version: number, type: 'change', object: DistributedObject,
+//             callback: Callback<ChangedDataObserver>): void;
+// function on(version: number, type: 'status', object: DistributedObject,
+//             callback: Callback<ObjectStatusObserver>): void;
 napi_value JSDistributedObjectStore::JSOn(napi_env env, napi_callback_info info)
 {
     double version = 8;
