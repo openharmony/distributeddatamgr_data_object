@@ -59,6 +59,24 @@ public:
         }                                                                                                       \
     } while (0)
 
+#define CHECH_STATUS_ERRCODE(env, condition, err)                                                           \
+    do {                                                                                                    \
+        if (!(condition)) {                                                                                 \
+            napi_throw_error((env), std::to_string((err)->GetCode()).c_str(), (err)->GetMessage().c_str()); \
+            return nullptr;                                                                                 \
+        }                                                                                                   \
+    } while (0)
+
+#define CHECH_STATUS_RETURN_VOID(env, condition, ctxt, info) \
+    do {                                                     \
+        if (!(condition)) {                                  \
+            LOG_ERROR(info);                                 \
+            (ctxt)->status = napi_generic_failure;           \
+            (ctxt)->message = std::string(info);             \
+            return;                                          \
+        }                                                    \
+    } while (0)
+
 #define LOG_ERROR_RETURN(condition, message, retVal)             \
     do {                                                         \
         if (!(condition)) {                                      \
