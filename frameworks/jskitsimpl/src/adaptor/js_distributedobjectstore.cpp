@@ -333,14 +333,10 @@ bool JSDistributedObjectStore::GetBundleNameWithContext(napi_env env, napi_value
         if (context != nullptr) {
             bundleName = context->GetBundleName();
             return true;
-        } else {
-            LOG_ERROR("GetContext failed.");
-            return false;
         }
-    } else {
-        LOG_ERROR("arguments error, context.");
-        return false;
     }
+    LOG_ERROR("arguments error, context.");
+    return false;
 }
 
 std::string JSDistributedObjectStore::GetBundleName(napi_env env)
