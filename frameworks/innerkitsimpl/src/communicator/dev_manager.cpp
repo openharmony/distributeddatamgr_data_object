@@ -69,6 +69,21 @@ void DMStateCallback::OnDeviceReady(const DmDeviceInfo &deviceInfo)
 {
 }
 
+class DmDeathCallback : public DmInitCallback {
+public:
+    explicit DmDeathCallback(DevManager &devManager) : devManager_(devManager){};
+    void OnRemoteDied() override;
+
+private:
+    DevManager &devManager_;
+};
+
+void DmDeathCallback::OnRemoteDied()
+{
+    LOG_INFO("dm device manager died, init it again");
+    devManager_.RegisterDevCallback();
+}
+
 void DMStateCallback::NotifyAll(const DmDeviceInfo &deviceInfo, DeviceChangeType type)
 {
     DeviceInfo di = { std::string(deviceInfo.networkId), std::string(deviceInfo.deviceName),
@@ -87,7 +102,7 @@ DevManager::~DevManager()
 int32_t DevManager::Init()
 {
     auto &deviceManager = DeviceManager::GetInstance();
-    std::shared_ptr<DmInitCallback> deviceInitCallback = nullptr;
+    auto deviceInitCallback = std::make_shared<DmDeathCallback>(*this);
     auto deviceStateCallback = std::make_shared<DMStateCallback>(SoftBusAdapter::GetInstance());
     int32_t status = deviceManager.InitDeviceManager(PKG_NAME, deviceInitCallback);
     if (status != DM_OK) {
