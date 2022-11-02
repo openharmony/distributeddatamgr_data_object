@@ -193,6 +193,37 @@ bool GetComplexFuzz(const uint8_t *data, size_t size)
     objectStore_->DeleteObject(SESSIONID);
     return result;
 }
+
+bool GetTypeFuzz(const uint8_t *data, size_t size)
+{
+    bool result = false;
+    if (SUCCESS != SetUpTestCase()) {
+        return false;
+    }
+    std::string skey(data, data + size);
+    Type val;
+    uint32_t ret = object_->GetType(skey, val);
+    if (!ret) {
+        result = true;
+    }
+    objectStore_->DeleteObject(SESSIONID);
+    return result;
+}
+
+bool SaveFuzz(const uint8_t *data, size_t size)
+{
+    bool result = false;
+    if (SUCCESS != SetUpTestCase()) {
+        return false;
+    }
+    std::string skey(data, data + size);
+    uint32_t ret = object_->Save(skey);
+    if (!ret) {
+        result = true;
+    }
+    objectStore_->DeleteObject(SESSIONID);
+    return result;
+}
 }
 
 /* Fuzzer entry point */
@@ -206,6 +237,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
     OHOS::GetBooleanFuzz(data, size);
     OHOS::GetStringFuzz(data, size);
     OHOS::GetComplexFuzz(data, size);
+    OHOS::GetTypeFuzz(data, size);
+    OHOS::SaveFuzz(data, size);
     /* Run your code on data */
     return 0;
 }
