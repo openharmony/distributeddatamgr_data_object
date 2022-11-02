@@ -329,11 +329,16 @@ bool JSDistributedObjectStore::GetBundleNameWithContext(napi_env env, napi_value
     napi_valuetype objectType = napi_undefined;
     napi_status status = napi_typeof(env, argv, &objectType);
     if (status == napi_ok && objectType == napi_object) {
-        std::shared_ptr<Context> context_ = JSAbility::GetContext(env, argv);
-        bundleName = context_->GetBundleName();
-        return true;
+        std::shared_ptr<Context> context = JSAbility::GetContext(env, argv);
+        if (context != nullptr) {
+            bundleName = context->GetBundleName();
+            return true;
+        } else {
+            LOG_ERROR("GetContext failed.");
+            return false;
+        }
     } else {
-        LOG_ERROR("GetContext failed.");
+        LOG_ERROR("arguments error, context.");
         return false;
     }
 }
