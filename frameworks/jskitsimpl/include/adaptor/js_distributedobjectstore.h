@@ -43,6 +43,7 @@ private:
         const std::string &sessionId, napi_value callback = nullptr);
     static bool CheckSyncPermission();
     static void RestoreWatchers(napi_env env, JSObjectWrapper *wrapper, const std::string &objectId);
+    static bool GetBundleNameWithContext(napi_env env, napi_value argv, std::string &bundleName);
     static std::string GetBundleName(napi_env env);
     static bool IsSandBox();
     static std::atomic<uint32_t> sequenceNum_;
