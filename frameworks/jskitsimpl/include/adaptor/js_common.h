@@ -31,6 +31,13 @@ namespace OHOS::ObjectStore {
             return;                                                   \
         }                                                             \
     }
+#define CHECK_EQUAL_WITH_RETURN_FALSE(status, value)                  \
+    {                                                                 \
+        if (status != value) {                                        \
+            LOG_ERROR("error! %{public}d %{public}d", status, value); \
+            return false;                                             \
+        }                                                             \
+    }
 #define ASSERT_MATCH_ELSE_RETURN_VOID(condition)        \
     {                                                   \
         if (!(condition)) {                             \
