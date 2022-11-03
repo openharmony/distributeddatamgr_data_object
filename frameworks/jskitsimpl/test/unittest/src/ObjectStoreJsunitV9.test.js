@@ -191,8 +191,7 @@ describe('objectStoreTest', function () {
         var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
         expect(g_object == undefined).assertEqual(false);
         g_object.setSessionId("123456", (error, data) => {
-            console.info(TAG + error);
-            console.info(TAG + data);
+            console.info(TAG + error + "," + data);
             console.info(TAG + "setSessionId test");
         });
         g_object.setSessionId("", (error, data) => {
@@ -200,8 +199,7 @@ describe('objectStoreTest', function () {
         });
         try {
             g_object.setSessionId(1234, (error, data) => {
-                console.info(TAG + error);
-                console.info(TAG + data);
+                console.info(TAG + error + "," + data);
                 console.info(TAG + "setSessionId test");
             });
         } catch (error) {
@@ -454,7 +452,7 @@ describe('objectStoreTest', function () {
             console.info(TAG + error.code + error.message);
         });
     })
-
+        
     /**
      * @tc.name: V9testSave001
      * @tc.desc: test save local
