@@ -58,7 +58,7 @@ void ContextBase::GetCbInfo(napi_env envi, napi_callback_info info, NapiCbInfoPa
         } else {
             CHECK_ARGS_RETURN_VOID(this, type == napi_undefined, "arguments error!",
                 std::make_shared<ParametersType>("callback", "function"));
-            LOG_DEBUG("no callback, async pormose");
+            LOG_DEBUG("no callback, async promise");
         }
     }
 
