@@ -452,7 +452,7 @@ describe('objectStoreTest', function () {
             console.info(TAG + error.code + error.message);
         });
     })
-        
+
     /**
      * @tc.name: V9testSave001
      * @tc.desc: test save local
@@ -530,7 +530,7 @@ describe('objectStoreTest', function () {
         }).catch((error) => {
             expect(error != undefined).assertEqual(true);
         });
-
+        
         try {
             g_object.save("local", 123);
         } catch (error) {
