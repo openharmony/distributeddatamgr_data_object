@@ -23,7 +23,6 @@ config("objectstore_config") {
     "../../frameworks/innerkitsimpl/include/communicator",
     "../../interfaces/innerkits",
     "//third_party/bounds_checking_function/include",
-    "//foundation/distributeddatamgr/datamgr_service/services/distributeddataservice/adapter/include/dfx",
   ]
 }
 
@@ -57,7 +56,6 @@ ohos_shared_library("distributeddataobject_impl") {
   ldflags = [ "-Wl,--exclude-libs,ALL" ]
 
   deps = [
-    "//foundation/distributeddatamgr/datamgr_service/services/distributeddataservice/adapter/dfx:distributeddata_dfx_static",
     "//foundation/distributeddatamgr/kv_store/frameworks/libs/distributeddb:distributeddb",
     "//third_party/bounds_checking_function:libsec_static",
     "//third_party/libuv:uv",
