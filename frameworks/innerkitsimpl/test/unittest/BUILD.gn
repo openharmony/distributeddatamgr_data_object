@@ -15,10 +15,23 @@ import("//build/test.gni")
 
 module_output_path = "data_object/impl"
 
+data_object_base_path = "//foundation/distributeddatamgr/data_object"
+
+data_object_innerkits_path = "${data_object_base_path}/frameworks/innerkitsimpl"
+
+kv_store_include_path =
+    "//foundation/distributeddatamgr/kv_store/frameworks/libs/distributeddb"
+
 config("module_private_config") {
   visibility = [ ":*" ]
 
-  include_dirs = []
+  include_dirs = [
+    "${data_object_innerkits_path}/include/adaptor",
+    "${data_object_innerkits_path}/include/common",
+    "${kv_store_include_path}/include",
+    "${kv_store_include_path}/interfaces/include/",
+    "${kv_store_include_path}/interfaces/include/relational",
+  ]
 }
 
 ohos_unittest("NativeObjectStoreTest") {

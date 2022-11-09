@@ -17,9 +17,15 @@
 
 #include <string>
 #include <thread>
+
 #include "distributed_object.h"
 #include "distributed_objectstore.h"
 #include "objectstore_errors.h"
+#include "store_observer.h"
+#include "auto_launch_export.h"
+#include "kv_store_delegate_manager.h"
+#include "flat_object_store.h"
+#include "distributed_objectstore_impl.h"
 
 using namespace testing::ext;
 using namespace OHOS::ObjectStore;
@@ -32,7 +38,7 @@ static void TestSetSessionId(std::string bundleName, std::string sessionId)
     EXPECT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
     EXPECT_NE(nullptr, object);
-    
+
     uint32_t ret = objectStore->DeleteObject(sessionId);
     EXPECT_EQ(SUCCESS, ret);
 }
@@ -43,19 +49,19 @@ static void TestSaveAndRevokeSave(std::string bundleName, std::string sessionId)
     EXPECT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
     EXPECT_NE(nullptr, object);
-    
+
     uint32_t ret = object->PutString("name", "zhangsan");
     EXPECT_EQ(SUCCESS, ret);
     ret = object->PutDouble("salary", SALARY);
     EXPECT_EQ(SUCCESS, ret);
     ret = object->PutBoolean("isTrue", true);
     EXPECT_EQ(SUCCESS, ret);
-    
+
     ret = object->Save("local");
     EXPECT_EQ(SUCCESS, ret);
     ret = object->RevokeSave();
     EXPECT_EQ(SUCCESS, ret);
-    
+
     ret = objectStore->DeleteObject(sessionId);
     EXPECT_EQ(SUCCESS, ret);
 }
@@ -99,9 +105,45 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Create_Destroy_001, TestS
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
     EXPECT_NE(nullptr, objectStore);
-    
+
     DistributedObject *object = objectStore->CreateObject(sessionId);
     EXPECT_NE(nullptr, object);
+
+    uint32_t ret = objectStore->DeleteObject(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+}
+
+/**
+ * @tc.name: DistributedObjectStore_Create_Destroy_002
+ * @tc.desc: test Create DistributedObject and Destroy DistrbutedObject
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Create_Destroy_002, TestSize.Level1)
+{
+    std::string sessionId = "123456";
+
+    auto objectStore = new DistributedObjectStoreImpl(nullptr);
+    DistributedObject *object = objectStore->CreateObject(sessionId);
+    EXPECT_EQ(nullptr, object);
+}
+
+/**
+ * @tc.name: DistributedObjectStore_Create_Destroy_003
+ * @tc.desc: test Create DistributedObject and Destroy DistrbutedObject
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Create_Destroy_003, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    EXPECT_NE(nullptr, objectStore);
+
+    DistributedObject *object = objectStore->CreateObject(sessionId);
+    EXPECT_NE(nullptr, object);
+
+    DistributedObject *object2 = objectStore->CreateObject(sessionId);
+    EXPECT_EQ(nullptr, object2);
 
     uint32_t ret = objectStore->DeleteObject(sessionId);
     EXPECT_EQ(SUCCESS, ret);
@@ -118,7 +160,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Get_001, TestSize.Level1)
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
     EXPECT_NE(nullptr, objectStore);
-    
+
     DistributedObject *object = objectStore->CreateObject(sessionId);
     EXPECT_NE(nullptr, object);
 
@@ -221,7 +263,6 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_Boolean_001, TestSize.Level1)
 
     uint32_t ret = object->PutBoolean("isTrue", true);
     EXPECT_EQ(SUCCESS, ret);
-
 
     bool value = false;
     ret = object->GetBoolean("isTrue", value);
