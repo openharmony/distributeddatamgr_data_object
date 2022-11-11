@@ -245,7 +245,6 @@ bool SaveAndRevokeSaveFuzz(const uint8_t *data, size_t size)
         }
         objectStore_->DeleteObject(SESSIONID);
     }
-
     return true;
 }
 
