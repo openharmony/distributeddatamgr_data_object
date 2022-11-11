@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+#include "objectstore_fuzzer.h"
+
 #include <string>
 #include <vector>
 #include "distributed_object.h"
@@ -24,7 +26,7 @@ namespace OHOS {
 static DistributedObject *object_ = nullptr;
 static DistributedObjectStore *objectStore_ = nullptr;
 constexpr const char *SESSIONID = "123456";
-
+constexpr const char *SESSIONIDv9 = "789456";
 uint32_t SetUpTestCase()
 {
     std::string bundleName = "com.example.myapplication";
@@ -142,7 +144,7 @@ bool GetBooleanFuzz(const uint8_t *data, size_t size)
         return false;
     }
     std::string skey(data, data + size);
-    if (SUCCESS ==  object_->PutBoolean(skey, true)) {
+    if (SUCCESS == object_->PutBoolean(skey, true)) {
         uint32_t ret = object_->GetBoolean(skey, val);
         if (!ret) {
             result = true;
@@ -161,7 +163,7 @@ bool GetStringFuzz(const uint8_t *data, size_t size)
     std::string skey(data, data + size);
     std::string sval(data, data + size);
     std::string val;
-    if (SUCCESS ==  object_->PutString(skey, sval)) {
+    if (SUCCESS == object_->PutString(skey, sval)) {
         uint32_t ret = object_->GetString(skey, val);
         if (!ret) {
             result = true;
@@ -226,11 +228,83 @@ bool SaveFuzz(const uint8_t *data, size_t size)
     return result;
 }
 
+bool SaveAndRevokeSaveFuzz(const uint8_t *data, size_t size)
+{
+    if (SUCCESS != SetUpTestCase()) {
+        return false;
+    }
+    std::string skey(data, data + size);
+    if (SUCCESS == object_->PutDouble(skey, static_cast<double>(size))) {
+        uint32_t ret = object_->Save("local");
+        if (!ret) {
+            return false;
+        }
+
+        if (object_->RevokeSave()) {
+            return false;
+        }
+        objectStore_->DeleteObject(SESSIONID);
+    }
+
+    return true;
+}
+
+bool CreateObjectV9Fuzz(const uint8_t *data, size_t size)
+{
+    std::string bundleName = "com.example.myapplication";
+    DistributedObjectStore *objectStore = nullptr;
+    DistributedObject *object = nullptr;
+    objectStore = DistributedObjectStore::GetInstance(bundleName);
+    uint32_t status = 0;
+    std::string skey(data, data + size);
+    if (objectStore != nullptr) {
+        object = objectStore->CreateObject(skey, status);
+        if (object == nullptr || status != SUCCESS) {
+            return false;
+        }
+        double val = static_cast<double>(size);
+        double result;
+        if (SUCCESS == object_->PutDouble(skey, val)) {
+            if (object_->GetDouble(skey, result)) {
+                return false;
+            }
+        }
+        objectStore_->DeleteObject(skey);
+        return true;
+    }
+    return false;
+}
+
+bool GetFuzz(const uint8_t *data, size_t size)
+{
+    std::string bundleName = "default1";
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    if (objectStore == nullptr) {
+        return false;
+    }
+
+    DistributedObject *object = objectStore->CreateObject(SESSIONIDv9);
+    if (object == nullptr) {
+        return false;
+    }
+
+    DistributedObject *object2 = nullptr;
+    std::string skey(data, data + size);
+    if (!objectStore->Get(skey, &object2)) {
+        return false;
+    }
+
+    if (object != object2) {
+        return false;
+    }
+    objectStore->DeleteObject(SESSIONIDv9);
+    return true;
+}
 
 }
 
 /* Fuzzer entry point */
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     OHOS::PutDoubleFuzz(data, size);
     OHOS::PutBooleanFuzz(data, size);
@@ -242,6 +316,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
     OHOS::GetComplexFuzz(data, size);
     OHOS::GetTypeFuzz(data, size);
     OHOS::SaveFuzz(data, size);
+    OHOS::SaveAndRevokeSaveFuzz(data, size);
+    OHOS::CreateObjectV9Fuzz(data, size);
+    OHOS::GetFuzz(data, size);
     /* Run your code on data */
     return 0;
 }
