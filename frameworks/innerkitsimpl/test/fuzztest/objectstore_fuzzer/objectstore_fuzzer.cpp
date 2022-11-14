@@ -320,7 +320,7 @@ bool GetTableFuzz(const uint8_t *data, size_t size)
     return result;
 }
 
-bool NotifyStatusAndNotifyChange(const uint8_t *data, size_t size)
+bool NotifyStatusAndNotifyChangeFuzz(const uint8_t *data, size_t size)
 {
     std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
     storageEngine->Open("com.example.myapplication");
@@ -331,8 +331,25 @@ bool NotifyStatusAndNotifyChange(const uint8_t *data, size_t size)
     std::map<std::string, std::vector<uint8_t>> filteredData;
     std::string skey(data, data + size);
     storageEngine->NotifyChange(skey, filteredData);
-    storageEngine->NotifyStatus(skey, "local", "restored");
+    storageEngine->NotifyStatus(skey, skey, skey);
     storageEngine->DeleteTable(SESSIONID);
+    return true;
+}
+
+bool RegisterObserverAndUnRegisterObserverFuzz(const uint8_t *data, size_t size)
+{
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    storageEngine->Open("com.example.myapplication");
+    std::string skey(data, data + size);
+    auto tableWatcherPtr = std::shared_ptr<TableWatcher>();
+    uint32_t ret = storageEngine->RegisterObserver(skey, tableWatcherPtr);
+    if (ret != SUCCESS) {
+        return false;
+    }
+    ret = storageEngine->UnRegisterObserver(skey);
+    if (ret != SUCCESS) {
+        return false;
+    }
     return true;
 }
 
@@ -355,7 +372,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     OHOS::CreateObjectV9Fuzz(data, size);
     OHOS::GetFuzz(data, size);
     OHOS::GetTableFuzz(data, size);
-    OHOS::NotifyStatusAndNotifyChange(data, size);
+    OHOS::NotifyStatusAndNotifyChangeFuzz(data, size);
+    OHOS::RegisterObserverAndUnRegisterObserverFuzz(data, size);
     /* Run your code on data */
     return 0;
 }

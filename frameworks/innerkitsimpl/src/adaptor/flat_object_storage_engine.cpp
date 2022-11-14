@@ -132,7 +132,7 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
     }
 
     auto onComplete = [key, this](const std::map<std::string, DistributedDB::DBStatus> &devices) {
-        FlatObjectStorageEngine::OnComplete(key, devices, statusWatcher_);
+        OnComplete(key, devices, statusWatcher_);
     };
     std::vector<DeviceInfo> devices = SoftBusAdapter::GetInstance()->GetDeviceList();
     std::vector<std::string> deviceIds;
