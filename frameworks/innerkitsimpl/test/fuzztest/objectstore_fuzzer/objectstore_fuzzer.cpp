@@ -27,7 +27,7 @@ namespace OHOS {
 static DistributedObject *object_ = nullptr;
 static DistributedObjectStore *objectStore_ = nullptr;
 constexpr const char *SESSIONID = "123456";
-
+constexpr const char *TABLESESSIONID = "654321";
 class TableWatcherImpl : public TableWatcher {
 public:
     TableWatcherImpl(const std::string &sessionId) : TableWatcher(sessionId) {}
@@ -278,8 +278,8 @@ bool CreateObjectV9Fuzz(const uint8_t *data, size_t size)
     }
     double val = static_cast<double>(size);
     double getResult;
-    if (SUCCESS == object_->PutDouble(skey, val)) {
-        if (object_->GetDouble(skey, getResult)) {
+    if (SUCCESS == object->PutDouble(skey, val)) {
+        if (object->GetDouble(skey, getResult)) {
             result = true;
         }
     }
@@ -320,14 +320,14 @@ bool GetTableFuzz(const uint8_t *data, size_t size)
     bool result = false;
     std::string skey(data, data + size);
     std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
-    storageEngine->Open("com.example.myapplication");
-    storageEngine->CreateTable(SESSIONID);
+    storageEngine->Open("com.myapplication");
+    storageEngine->CreateTable(TABLESESSIONID);
     std::map<std::string, Value> tableResult;
     uint32_t ret = storageEngine->GetTable(skey, tableResult);
     if (ret != SUCCESS) {
         result = false;
     }
-    storageEngine->DeleteTable(SESSIONID);
+    storageEngine->DeleteTable(TABLESESSIONID);
     return result;
 }
 
@@ -335,12 +335,15 @@ bool NotifyStatusAndNotifyChangeFuzz(const uint8_t *data, size_t size)
 {
     std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
     storageEngine->Open("com.example.myapplication");
-    storageEngine->CreateTable(SESSIONID);
+    uint32_t ret = storageEngine->CreateTable(TABLESESSIONID);
+    if (ret != SUCCESS) {
+        result = false;
+    }
     std::map<std::string, std::vector<uint8_t>> filteredData;
     std::string skey(data, data + size);
     storageEngine->NotifyChange(skey, filteredData);
     storageEngine->NotifyStatus(skey, skey, skey);
-    storageEngine->DeleteTable(SESSIONID);
+    storageEngine->DeleteTable(TABLESESSIONID);
     return true;
 }
 
