@@ -27,6 +27,17 @@ namespace OHOS {
 static DistributedObject *object_ = nullptr;
 static DistributedObjectStore *objectStore_ = nullptr;
 constexpr const char *SESSIONID = "123456";
+
+class TableWatcherImpl : public TableWatcher {
+public:
+    TableWatcherImpl(const std::string &sessionId) : TableWatcher(sessionId) {}
+    void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override;
+    virtual ~TableWatcherImpl();
+};
+
+TableWatcherImpl::~TableWatcherImpl() {}
+void TableWatcherImpl::OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) {}
+
 uint32_t SetUpTestCase()
 {
     std::string bundleName = "com.example.myapplication";
@@ -341,7 +352,7 @@ bool RegisterObserverAndUnRegisterObserverFuzz(const uint8_t *data, size_t size)
     std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
     storageEngine->Open("com.example.myapplication");
     std::string skey(data, data + size);
-    auto tableWatcherPtr = std::shared_ptr<TableWatcher>();
+    auto tableWatcherPtr = std::make_shared<TableWatcherImpl>(SESSIONID);
     uint32_t ret = storageEngine->RegisterObserver(skey, tableWatcherPtr);
     if (ret != SUCCESS) {
         return false;
