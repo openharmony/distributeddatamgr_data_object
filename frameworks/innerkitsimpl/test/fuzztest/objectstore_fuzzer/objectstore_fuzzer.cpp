@@ -19,6 +19,7 @@
 #include <vector>
 #include "distributed_object.h"
 #include "distributed_objectstore.h"
+#include "flat_object_storage_engine.h"
 #include "objectstore_errors.h"
 
 using namespace OHOS::ObjectStore;
@@ -229,6 +230,7 @@ bool SaveFuzz(const uint8_t *data, size_t size)
 
 bool SaveAndRevokeSaveFuzz(const uint8_t *data, size_t size)
 {
+    bool result = false;
     if (SUCCESS != SetUpTestCase()) {
         return false;
     }
@@ -242,60 +244,95 @@ bool SaveAndRevokeSaveFuzz(const uint8_t *data, size_t size)
         if (object_->RevokeSave()) {
             return false;
         }
-        objectStore_->DeleteObject(SESSIONID);
+        result = true;
     }
-    return true;
+    objectStore_->DeleteObject(SESSIONID);
+    return result;
 }
 
 bool CreateObjectV9Fuzz(const uint8_t *data, size_t size)
 {
+    bool result = false;
     std::string bundleName = "com.example.myapplication";
-    DistributedObjectStore *objectStore = nullptr;
     DistributedObject *object = nullptr;
-    objectStore = DistributedObjectStore::GetInstance(bundleName);
+    objectStore_ = DistributedObjectStore::GetInstance(bundleName);
     uint32_t status = 0;
     std::string skey(data, data + size);
-    if (objectStore != nullptr) {
-        object = objectStore->CreateObject(skey, status);
-        if (object == nullptr || status != SUCCESS) {
-            return false;
-        }
-        double val = static_cast<double>(size);
-        double result;
-        if (SUCCESS == object_->PutDouble(skey, val)) {
-            if (object_->GetDouble(skey, result)) {
-                return false;
-            }
-        }
-        objectStore_->DeleteObject(skey);
-        return true;
+    if (objectStore_ == nullptr) {
+        return false;
     }
-    return false;
+    object = objectStore_->CreateObject(skey, status);
+    if (object == nullptr || status != SUCCESS) {
+        return false;
+    }
+    double val = static_cast<double>(size);
+    double getResult;
+    if (SUCCESS == object_->PutDouble(skey, val)) {
+        if (object_->GetDouble(skey, getResult)) {
+            result = true;
+        }
+    }
+    objectStore_->DeleteObject(skey);
+    return result;
 }
+
+
 
 bool GetFuzz(const uint8_t *data, size_t size)
 {
     std::string bundleName = "default1";
-    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    if (objectStore == nullptr) {
+    objectStore_ = DistributedObjectStore::GetInstance(bundleName);
+    if (objectStore_ == nullptr) {
         return false;
     }
     uint32_t status = 0;
-    DistributedObject *object = objectStore->CreateObject(SESSIONID, status);
+    DistributedObject *object = objectStore_->CreateObject(SESSIONID, status);
     if (object == nullptr) {
         return false;
     }
 
     DistributedObject *object2 = nullptr;
     std::string skey(data, data + size);
-    if (!objectStore->Get(skey, &object2)) {
+    if (!objectStore_->Get(skey, &object2)) {
         return false;
     }
 
     if (object != object2) {
         return false;
     }
-    objectStore->DeleteObject(SESSIONID);
+    objectStore_->DeleteObject(SESSIONID);
+    return true;
+}
+
+bool GetTableFuzz(const uint8_t *data, size_t size)
+{
+    bool result = false;
+    std::string skey(data, data + size);
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    storageEngine->Open("com.example.myapplication");
+    storageEngine->CreateTable(SESSIONID);
+    std::map<std::string, Value> tableResult;
+    uint32_t ret = storageEngine->GetTable(skey, tableResult);
+    if (ret != SUCCESS) {
+        result = false;
+    }
+    storageEngine->DeleteTable(SESSIONID);
+    return result;
+}
+
+bool NotifyStatusAndNotifyChange(const uint8_t *data, size_t size)
+{
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    storageEngine->Open("com.example.myapplication");
+    uint32_t ret = storageEngine->CreateTable(SESSIONID);
+    if (ret != SUCCESS) {
+        return false;
+    }
+    std::map<std::string, std::vector<uint8_t>> filteredData;
+    std::string skey(data, data + size);
+    storageEngine->NotifyChange(skey, filteredData);
+    storageEngine->NotifyStatus(skey, "local", "restored");
+    storageEngine->DeleteTable(SESSIONID);
     return true;
 }
 
@@ -317,6 +354,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     OHOS::SaveAndRevokeSaveFuzz(data, size);
     OHOS::CreateObjectV9Fuzz(data, size);
     OHOS::GetFuzz(data, size);
+    OHOS::GetTableFuzz(data, size);
+    OHOS::NotifyStatusAndNotifyChange(data, size);
     /* Run your code on data */
     return 0;
 }
