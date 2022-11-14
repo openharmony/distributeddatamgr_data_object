@@ -335,7 +335,7 @@ bool NotifyStatusAndNotifyChangeFuzz(const uint8_t *data, size_t size)
 {
     std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
     storageEngine->Open("com.example.myapplication");
-    uint32_t ret = storageEngine->CreateTable(SESSIONID);
+    storageEngine->CreateTable(SESSIONID);
     std::map<std::string, std::vector<uint8_t>> filteredData;
     std::string skey(data, data + size);
     storageEngine->NotifyChange(skey, filteredData);
