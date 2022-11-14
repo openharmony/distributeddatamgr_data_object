@@ -336,9 +336,6 @@ bool NotifyStatusAndNotifyChangeFuzz(const uint8_t *data, size_t size)
     std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
     storageEngine->Open("com.example.myapplication");
     uint32_t ret = storageEngine->CreateTable(SESSIONID);
-    if (ret != SUCCESS) {
-        return false;
-    }
     std::map<std::string, std::vector<uint8_t>> filteredData;
     std::string skey(data, data + size);
     storageEngine->NotifyChange(skey, filteredData);
@@ -349,19 +346,20 @@ bool NotifyStatusAndNotifyChangeFuzz(const uint8_t *data, size_t size)
 
 bool RegisterObserverAndUnRegisterObserverFuzz(const uint8_t *data, size_t size)
 {
+    bool result = false;
     std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
     storageEngine->Open("com.example.myapplication");
     std::string skey(data, data + size);
     auto tableWatcherPtr = std::make_shared<TableWatcherImpl>(SESSIONID);
     uint32_t ret = storageEngine->RegisterObserver(skey, tableWatcherPtr);
     if (ret != SUCCESS) {
-        return false;
+        result =  false;
     }
     ret = storageEngine->UnRegisterObserver(skey);
     if (ret != SUCCESS) {
-        return false;
+        result =  false;
     }
-    return true;
+    return result;
 }
 
 }
