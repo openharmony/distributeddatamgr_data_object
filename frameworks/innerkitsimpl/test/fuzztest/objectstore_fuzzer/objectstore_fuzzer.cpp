@@ -26,7 +26,6 @@ namespace OHOS {
 static DistributedObject *object_ = nullptr;
 static DistributedObjectStore *objectStore_ = nullptr;
 constexpr const char *SESSIONID = "123456";
-constexpr const char *SESSIONIDv9 = "789456";
 uint32_t SetUpTestCase()
 {
     std::string bundleName = "com.example.myapplication";
@@ -281,8 +280,8 @@ bool GetFuzz(const uint8_t *data, size_t size)
     if (objectStore == nullptr) {
         return false;
     }
-
-    DistributedObject *object = objectStore->CreateObject(SESSIONIDv9);
+    uint32_t status = 0;
+    DistributedObject *object = objectStore->CreateObject(SESSIONID, status);
     if (object == nullptr) {
         return false;
     }
@@ -296,7 +295,7 @@ bool GetFuzz(const uint8_t *data, size_t size)
     if (object != object2) {
         return false;
     }
-    objectStore->DeleteObject(SESSIONIDv9);
+    objectStore->DeleteObject(SESSIONID);
     return true;
 }
 
