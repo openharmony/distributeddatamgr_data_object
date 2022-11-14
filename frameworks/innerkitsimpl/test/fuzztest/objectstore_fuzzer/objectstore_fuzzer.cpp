@@ -236,9 +236,9 @@ bool SaveAndRevokeSaveFuzz(const uint8_t *data, size_t size)
     }
     std::string skey(data, data + size);
     if (SUCCESS == object_->PutDouble(skey, static_cast<double>(size))) {
-        uint32_t ret = object_->Save("local");
+        uint32_t ret = object_->Save(skey);
         if (!ret) {
-            return false;
+            result = false;
         }
 
         if (object_->RevokeSave()) {
