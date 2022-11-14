@@ -337,7 +337,7 @@ bool NotifyStatusAndNotifyChangeFuzz(const uint8_t *data, size_t size)
     storageEngine->Open("com.example.myapplication");
     uint32_t ret = storageEngine->CreateTable(TABLESESSIONID);
     if (ret != SUCCESS) {
-        result = false;
+        return false;
     }
     std::map<std::string, std::vector<uint8_t>> filteredData;
     std::string skey(data, data + size);
