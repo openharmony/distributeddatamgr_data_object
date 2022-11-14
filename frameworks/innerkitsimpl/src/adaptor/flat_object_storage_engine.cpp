@@ -76,6 +76,22 @@ uint32_t FlatObjectStorageEngine::Close()
     return SUCCESS;
 }
 
+void FlatObjectStorageEngine::OnComplete(const std::string &key,
+    const std::map<std::string, DistributedDB::DBStatus> &devices, std::shared_ptr<StatusWatcher> statusWatcher)
+{
+    LOG_INFO("complete");
+    for (auto item : devices) {
+        LOG_INFO("%{public}s pull data result %{public}d in device %{public}s", key.c_str(), item.second,
+            SoftBusAdapter::GetInstance()->ToNodeID(item.first).c_str());
+    }
+    if (statusWatcher != nullptr) {
+        for (auto item : devices) {
+            statusWatcher->OnChanged(key, SoftBusAdapter::GetInstance()->ToNodeID(item.first),
+                item.second == DistributedDB::OK ? "online" : "offline");
+        }
+    }
+}
+
 uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
 {
     if (!isOpened_) {
@@ -99,12 +115,16 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
             kvStore = kvStoreNbDelegate;
             LOG_INFO("create table result %{public}d", status);
         });
+    if (status != DistributedDB::DBStatus::OK || kvStore == nullptr) {
+        LOG_ERROR("FlatObjectStorageEngine::CreateTable %{public}s getkvstore fail[%{public}d]", key.c_str(), status);
+        return ERR_DB_GETKV_FAIL;
+    }
     bool autoSync = true;
     DistributedDB::PragmaData data = static_cast<DistributedDB::PragmaData>(&autoSync);
     LOG_INFO("start Pragma");
     status = kvStore->Pragma(DistributedDB::AUTO_SYNC, data);
     if (status != DistributedDB::DBStatus::OK) {
-        LOG_ERROR("FlatObjectStorageEngine::CreateTable %{public}s getkvstore fail[%{public}d]", key.c_str(), status);
+        LOG_ERROR("FlatObjectStorageEngine::CreateTable %{public}s Pragma fail[%{public}d]", key.c_str(), status);
         return ERR_DB_GETKV_FAIL;
     }
     LOG_INFO("create table %{public}s success", key.c_str());
@@ -114,17 +134,7 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
     }
 
     auto onComplete = [key, this](const std::map<std::string, DistributedDB::DBStatus> &devices) {
-        LOG_INFO("complete");
-        for (auto item : devices) {
-            LOG_INFO("%{public}s pull data result %{public}d in device %{public}s", key.c_str(), item.second,
-                     SoftBusAdapter::GetInstance()->ToNodeID(item.first).c_str());
-        }
-        if (statusWatcher_ != nullptr) {
-            for (auto item : devices) {
-                statusWatcher_->OnChanged(key, SoftBusAdapter::GetInstance()->ToNodeID(item.first),
-                                          item.second == DistributedDB::OK ? "online" : "offline");
-            }
-        }
+        OnComplete(key, devices, statusWatcher_);
     };
     std::vector<DeviceInfo> devices = SoftBusAdapter::GetInstance()->GetDeviceList();
     std::vector<std::string> deviceIds;
