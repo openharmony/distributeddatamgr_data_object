@@ -346,7 +346,7 @@ bool NotifyStatusAndNotifyChangeFuzz(const uint8_t *data, size_t size)
 
 bool RegisterObserverAndUnRegisterObserverFuzz(const uint8_t *data, size_t size)
 {
-    bool result = false;
+    bool result = true;
     std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
     storageEngine->Open("com.example.myapplication");
     std::string skey(data, data + size);
