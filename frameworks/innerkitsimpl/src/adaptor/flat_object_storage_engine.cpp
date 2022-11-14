@@ -118,7 +118,7 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
         return ERR_DB_GETKV_FAIL;
     }
     bool autoSync = true;
-    DistributedDB::PragmaData data = static_cast<DistributedDB::PragmaData>(&autoSync); 
+    DistributedDB::PragmaData data = static_cast<DistributedDB::PragmaData>(&autoSync);
     LOG_INFO("start Pragma");
     status = kvStore->Pragma(DistributedDB::AUTO_SYNC, data);
     if (status != DistributedDB::DBStatus::OK) {
