@@ -30,7 +30,7 @@ constexpr const char *SESSIONID = "123456";
 constexpr const char *TABLESESSIONID = "654321";
 class TableWatcherImpl : public TableWatcher {
 public:
-    TableWatcherImpl(const std::string &sessionId) : TableWatcher(sessionId) {}
+    explicit TableWatcherImpl(const std::string &sessionId) : TableWatcher(sessionId) {}
     void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override;
     virtual ~TableWatcherImpl();
 };
