@@ -34,7 +34,6 @@ public:
     void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override;
     virtual ~TableWatcherImpl();
 };
-
 TableWatcherImpl::~TableWatcherImpl() {}
 void TableWatcherImpl::OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) {}
 
@@ -207,7 +206,6 @@ bool GetComplexFuzz(const uint8_t *data, size_t size)
     return result;
 }
 
-
 bool GetTypeFuzz(const uint8_t *data, size_t size)
 {
     bool result = false;
@@ -287,8 +285,6 @@ bool CreateObjectV9Fuzz(const uint8_t *data, size_t size)
     return result;
 }
 
-
-
 bool GetFuzz(const uint8_t *data, size_t size)
 {
     std::string bundleName = "default1";
@@ -364,7 +360,6 @@ bool RegisterObserverAndUnRegisterObserverFuzz(const uint8_t *data, size_t size)
     }
     return result;
 }
-
 }
 
 /* Fuzzer entry point */
