@@ -80,10 +80,6 @@ void FlatObjectStorageEngine::OnComplete(const std::string &key,
     const std::map<std::string, DistributedDB::DBStatus> &devices, std::shared_ptr<StatusWatcher> statusWatcher)
 {
     LOG_INFO("complete");
-    for (auto item : devices) {
-        LOG_INFO("%{public}s pull data result %{public}d in device %{public}s", key.c_str(), item.second,
-            SoftBusAdapter::GetInstance()->ToNodeID(item.first).c_str());
-    }
     if (statusWatcher != nullptr) {
         for (auto item : devices) {
             statusWatcher->OnChanged(key, SoftBusAdapter::GetInstance()->ToNodeID(item.first),
