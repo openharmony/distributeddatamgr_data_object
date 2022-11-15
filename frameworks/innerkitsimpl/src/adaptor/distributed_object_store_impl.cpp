@@ -92,7 +92,7 @@ DistributedObject *DistributedObjectStoreImpl::CreateObject(const std::string &s
     
     if (sessionId.empty()) {
         LOG_ERROR("DistributedObjectStoreImpl::CreateObject Invalid sessionId");
-        status = ERR_DB_NOT_INIT;
+        status = ERR_INVALID_ARGS;
         return nullptr;
     }
 
