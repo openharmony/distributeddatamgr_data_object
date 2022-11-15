@@ -15,8 +15,5 @@
 
 #ifndef OBJECTSTORE_FUZZER_H
 #define OBJECTSTORE_FUZZER_H
-
-#define OBJECTSTORE_FUZZER_H "objectstore_fuzzer"
-
 #endif // OBJECTSTORE_FUZZER_H
 

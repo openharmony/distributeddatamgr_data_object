@@ -43,6 +43,8 @@ public:
     uint32_t SetStatusNotifier(std::shared_ptr<StatusWatcher> watcher) override;
     uint32_t SyncAllData(const std::string &sessionId, const std::vector<std::string> &deviceIds,
         const std::function<void(const std::map<std::string, DistributedDB::DBStatus> &)> &onComplete);
+    void OnComplete(const std::string &key, const std::map<std::string, DistributedDB::DBStatus> &devices,
+        std::shared_ptr<StatusWatcher> statusWatcher);
     bool isOpened_ = false;
     void NotifyStatus(const std::string &sessionId, const std::string &deviceId, const std::string &status);
     void NotifyChange(const std::string &sessionId, const std::map<std::string, std::vector<uint8_t>> &changedData);

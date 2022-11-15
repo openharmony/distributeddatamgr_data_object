@@ -17,7 +17,10 @@ import("//build/test.gni")
 config("module_private_config") {
   visibility = [ ":*" ]
 
-  include_dirs = []
+  include_dirs = [
+    "../../../../../frameworks/innerkitsimpl/include/adaptor",
+    "../../../../../frameworks/innerkitsimpl/include/common",
+  ]
 }
 
 ##############################fuzztest##########################################
@@ -29,6 +32,9 @@ ohos_fuzztest("ObjectStoreFuzzTest") {
   sources = [ "objectstore_fuzzer.cpp" ]
 
   configs = [ ":module_private_config" ]
+  deps = [
+    "../../../../../../kv_store/frameworks/libs/distributeddb:distributeddb",
+  ]
 
   external_deps = [
     "data_object:distributeddataobject_impl",
