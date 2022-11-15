@@ -41,7 +41,8 @@ constexpr uint32_t ERR_UNRIGSTER = BASE_ERR_OFFSET + 16;
 constexpr uint32_t ERR_SINGLE_DEVICE = BASE_ERR_OFFSET + 17;
 constexpr uint32_t ERR_NULL_PTR = BASE_ERR_OFFSET + 18;
 constexpr uint32_t ERR_PROCESSING = BASE_ERR_OFFSET + 19;
-constexpr uint32_t ERR_INVALID_ARGS = BASE_ERR_OFFSET + 20;
+constexpr uint32_t ERR_RESULTSET = BASE_ERR_OFFSET + 20;
+constexpr uint32_t ERR_INVALID_ARGS = BASE_ERR_OFFSET + 21;
 } // namespace OHOS::ObjectStore
 
 #endif
