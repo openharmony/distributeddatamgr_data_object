@@ -150,7 +150,8 @@ uint32_t FlatObjectStorageEngine::GetTable(const std::string &key, std::map<std:
     DistributedDB::KvStoreResultSet *resultSet = nullptr;
     Key emptyKey;
     LOG_INFO("start GetEntries");
-    DistributedDB::DBStatus status = delegates_.at(key)->GetEntries(emptyKey, resultSet);
+    auto delegate = delegates_.at(key);
+    DistributedDB::DBStatus status = delegate->GetEntries(emptyKey, resultSet);
     if (status != DistributedDB::DBStatus::OK || resultSet == nullptr) {
         LOG_INFO("FlatObjectStorageEngine::GetTable %{public}s GetEntries fail", key.c_str());
         return ERR_DB_GET_FAIL;
@@ -160,11 +161,21 @@ uint32_t FlatObjectStorageEngine::GetTable(const std::string &key, std::map<std:
         DistributedDB::Entry entry;
         status = resultSet->GetEntry(entry);
         if (status != DistributedDB::DBStatus::OK) {
-            LOG_INFO("FlatObjectStorageEngine::GetTable  GetEntry fail");
+            LOG_INFO("FlatObjectStorageEngine::GetTable GetEntry fail, errcode = %{public}d", status);
+            status = delegate->CloseResultSet(resultSet);
+            if (status != DistributedDB::DBStatus::OK) {
+                LOG_INFO("KvStoreNbDelegate::CloseResultSet fail, errcode = %{public}d", status);
+                return ERR_RESULTSET;
+            }
             return ERR_DB_ENTRY_FAIL;
         }
         result.insert_or_assign(StringUtils::BytesToStr(entry.key), entry.value);
         resultSet->MoveToNext();
+    }
+    status = delegate->CloseResultSet(resultSet);
+    if (status != DistributedDB::DBStatus::OK) {
+        LOG_INFO("KvStoreNbDelegate::CloseResultSet fail, errcode = %{public}d", status);
+        return ERR_RESULTSET;
     }
     return SUCCESS;
 }

@@ -42,11 +42,16 @@ ohos_unittest("NativeObjectStoreTest") {
   configs = [ ":module_private_config" ]
 
   external_deps = [
+    "access_token:libaccesstoken_sdk",
+    "access_token:libnativetoken",
     "data_object:distributeddataobject_impl",
     "hilog_native:libhilog",
   ]
 
-  deps = [ "//third_party/googletest:gtest_main" ]
+  deps = [
+    "//base/security/access_token/interfaces/innerkits/token_setproc:libtoken_setproc",
+    "//third_party/googletest:gtest_main",
+  ]
 }
 
 group("unittest") {
