@@ -26,8 +26,10 @@ config("module_private_config") {
   visibility = [ ":*" ]
 
   include_dirs = [
+    "./mock/include",
     "${data_object_innerkits_path}/include/adaptor",
     "${data_object_innerkits_path}/include/common",
+    "${data_object_innerkits_path}/include/communicator",
     "${kv_store_include_path}/include",
     "${kv_store_include_path}/interfaces/include/",
     "${kv_store_include_path}/interfaces/include/relational",
@@ -37,7 +39,11 @@ config("module_private_config") {
 ohos_unittest("NativeObjectStoreTest") {
   module_out_path = module_output_path
 
-  sources = [ "object_store_test.cpp" ]
+  sources = [
+    "mock/src/mock_soft_bus.cpp",
+    "src/communicator_test.cpp",
+    "src/object_store_test.cpp",
+  ]
 
   configs = [ ":module_private_config" ]
 
@@ -50,6 +56,7 @@ ohos_unittest("NativeObjectStoreTest") {
 
   deps = [
     "//base/security/access_token/interfaces/innerkits/token_setproc:libtoken_setproc",
+    "//third_party/googletest:gmock",
     "//third_party/googletest:gtest_main",
   ]
 }
