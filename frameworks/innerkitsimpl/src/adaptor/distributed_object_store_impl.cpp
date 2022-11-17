@@ -67,6 +67,12 @@ DistributedObject *DistributedObjectStoreImpl::CreateObject(const std::string &s
         LOG_ERROR("DistributedObjectStoreImpl::CreateObject store not opened!");
         return nullptr;
     }
+
+    if (sessionId.empty()) {
+        LOG_ERROR("DistributedObjectStoreImpl::CreateObject Invalid sessionId");
+        return nullptr;
+    }
+
     uint32_t status = flatObjectStore_->CreateObject(sessionId);
     if (status != SUCCESS) {
         LOG_ERROR("DistributedObjectStoreImpl::CreateObject CreateTable err %{public}d", status);
@@ -83,6 +89,13 @@ DistributedObject *DistributedObjectStoreImpl::CreateObject(const std::string &s
         status = ERR_NULL_OBJECTSTORE;
         return nullptr;
     }
+    
+    if (sessionId.empty()) {
+        LOG_ERROR("DistributedObjectStoreImpl::CreateObject Invalid sessionId");
+        status = ERR_INVALID_ARGS;
+        return nullptr;
+    }
+
     status = flatObjectStore_->CreateObject(sessionId);
     if (status != SUCCESS) {
         LOG_ERROR("DistributedObjectStoreImpl::CreateObject CreateTable err %{public}d", status);
