@@ -23,11 +23,6 @@
 static std::map<std::string, std::map<std::string, const ISessionListener *>> sessionListeners;
 static std::map<std::string, INodeStateCb *> callbacks_;
 
-int32_t GetAllNodeDeviceInfo(const char *pkgName, NodeBasicInfo **info, int32_t *infoNum)
-{
-    return 0;
-}
-
 int OpenSession(const char *mySessionName, const char *peerSessionName, const char *peerDeviceId, const char *groupId,
     const SessionAttribute *attr)
 {
@@ -45,7 +40,7 @@ int RemoveSessionServer(const char *pkgName, const char *sessionName)
 }
 int GetMySessionName(int sessionId, char *sessionName, unsigned int len)
 {
-    return 0;
+    return -1;
 }
 int GetPeerSessionName(int sessionId, char *sessionName, unsigned int len)
 {
@@ -60,3 +55,19 @@ int GetSessionSide(int sessionId)
 {
     return 1;
 };
+
+int32_t GetLocalNodeDeviceInfo(const char *pkgName, NodeBasicInfo *info)
+{
+    return -1;
+}
+
+int32_t GetAllNodeDeviceInfo(const char *pkgName, NodeBasicInfo **info, int32_t *infoNum)
+{
+    return -1;
+}
+
+int32_t GetNodeKeyInfo(const char *pkgName, const char *networkId, NodeDeviceInfoKey key, uint8_t *info,
+                       int32_t infoLen)
+{
+    return -1;
+}
