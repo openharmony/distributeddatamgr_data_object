@@ -26,4 +26,4 @@ class MockAppDataChangeListener : public AppDataChangeListener {
 } // namespace ObjectStore
 } // namespace OHOS
 
-#endif //DATA_OBJECT_MOCK_APP_DATA_CHANGE_LISTENER_H
+#endif // DATA_OBJECT_MOCK_APP_DATA_CHANGE_LISTENER_H
