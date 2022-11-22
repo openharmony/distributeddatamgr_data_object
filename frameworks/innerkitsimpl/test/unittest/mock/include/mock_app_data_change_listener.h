@@ -21,8 +21,8 @@
 namespace OHOS {
 namespace ObjectStore {
 class MockAppDataChangeListener : public AppDataChangeListener {
-    MOCK_CONST_METHOD4(
-        OnMessage, void(const DeviceInfo &info, const uint8_t *ptr, const int size, const PipeInfo &pipeInfo));
+    MOCK_CONST_METHOD4(OnMessage,
+        void(const DeviceInfo &info, const uint8_t *ptr, const int size, const PipeInfo &pipeInfo));
 };
 } // namespace ObjectStore
 } // namespace OHOS
