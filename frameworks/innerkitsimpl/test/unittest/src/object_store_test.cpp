@@ -37,9 +37,35 @@
 using namespace testing::ext;
 using namespace OHOS::ObjectStore;
 using namespace OHOS::Security::AccessToken;
+using namespace OHOS::HiviewDFX;
 namespace {
 constexpr static double SALARY = 100.5;
 constexpr HiLogLabel LABEL = {LOG_CORE, 0, "DistributedTest"};
+class TableWatcherImpl : public TableWatcher {
+public:
+    explicit TableWatcherImpl(const std::string &sessionId) : TableWatcher(sessionId) {}
+    void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override;
+    virtual ~TableWatcherImpl();
+};
+
+TableWatcherImpl::~TableWatcherImpl() {}
+void TableWatcherImpl::OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) {}
+
+class StatusNotifierImpl : public StatusWatcher {
+public:
+    void OnChanged(
+        const std::string &sessionId, const std::string &networkId, const std::string &onlineStatus) override;
+    virtual ~StatusNotifierImpl();
+};
+StatusNotifierImpl::~StatusNotifierImpl()
+{
+}
+
+void StatusNotifierImpl::OnChanged(const std::string &sessionId,
+                                   const std::string &networkId,
+                                   const std::string &onlineStatus)
+{
+}
 static void TestSetSessionId(std::string bundleName, std::string sessionId)
 {
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
@@ -680,16 +706,40 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItems_002, TestSize.Leve
  * @tc.desc: test FlatObjectStorageEngine Close.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_OpenAndClose_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_SetStatusNotifier_001, TestSize.Level1)
 {
     std::string bundleName = "default07";
-    ObjectStorageEngine *objectStorageEngine = new FlatObjectStorageEngine();
+    FlatObjectStorageEngine *objectStorageEngine = new FlatObjectStorageEngine();
     uint32_t ret = objectStorageEngine->Open(bundleName);
     EXPECT_EQ(SUCCESS, ret);
     ret = objectStorageEngine->Close();
     EXPECT_EQ(SUCCESS, ret);
+
     ret = objectStorageEngine->Open(NULL);
     EXPECT_NE(SUCCESS, ret);
+    objectStorageEngine->isOpened_ = false;
+    objectStorageEngine->Close();
+    delete objectStorageEngine;
+}
+
+
+/**
+ * @tc.name: DistributedObject_Close_001
+ * @tc.desc: test FlatObjectStorageEngine Close.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_OpenAndClose_001, TestSize.Level1)
+{
+    std::string bundleName = "default07";
+    FlatObjectStorageEngine *objectStorageEngine = new FlatObjectStorageEngine();
+    uint32_t ret = objectStorageEngine->Open(bundleName);
+    EXPECT_EQ(SUCCESS, ret);
+    ret = objectStorageEngine->Close();
+    EXPECT_EQ(SUCCESS, ret);
+
+    ret = objectStorageEngine->Open(NULL);
+    EXPECT_NE(SUCCESS, ret);
+    objectStorageEngine->isOpened_ = false;
     objectStorageEngine->Close();
     delete objectStorageEngine;
 }
@@ -800,14 +850,210 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_UnWatch_001, TestSize.Level1)
  */
 HWTEST_F(NativeObjectStoreTest, DistributedObject_OnComplete_001, TestSize.Level1)
 {
-std::string bundleName = "default";
-std::string sessionId = "123456";
-std::shared_ptr<FlatObjectStorageEngine> flatObjectStore = std::make_shared<FlatObjectStorageEngine>(bundleName);
-auto onComplete = [key, flatObjectStore](const std::map<std::string, DistributedDB::DBStatus> &devices) {
-    flatObjectStore.OnComplete(key, devices, flatObjectStore.statusWatcher_);
-};
-uint32_t ret = flatObjectStore->DeleteObject(sessionId);
-EXPECT_EQ(SUCCESS, ret);
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    std::shared_ptr<FlatObjectStorageEngine> flatObjectStore = std::make_shared<FlatObjectStorageEngine>();
+    auto onComplete = [sessionId, flatObjectStore](const std::map<std::string, DistributedDB::DBStatus> &devices) {
+        std::shared_ptr<StatusNotifierImpl> statusWatcher_ =  std::make_shared<StatusNotifierImpl>();
+        flatObjectStore->OnComplete(sessionId, devices, statusWatcher_);
+    };
+    uint32_t ret = flatObjectStore->DeleteTable(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+}
+
+/**
+ * @tc.name: FlatObjectStore_SyncAllData_001
+ * @tc.desc: test FlatObjectStore SyncAllData.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_CreateTable_004, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    storageEngine->Open(bundleName);
+    storageEngine->CreateTable(NULL);
+    std::map<std::string, Value> tableResult;
+    uint32_t ret = storageEngine->GetTable(sessionId, tableResult);
+    EXPECT_EQ(SUCCESS, ret);
+    storageEngine->DeleteTable(sessionId);
+}
+
+/**
+ * @tc.name: FlatObjectStore_SyncAllData_001
+ * @tc.desc: test FlatObjectStore SyncAllData.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetTable_005, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    storageEngine->Open(bundleName);
+    storageEngine->CreateTable(sessionId);
+    std::map<std::string, Value> tableResult;
+    uint32_t ret = storageEngine->GetTable(NULL, tableResult);
+    EXPECT_EQ(SUCCESS, ret);
+    storageEngine->DeleteTable(sessionId);
+}
+
+/**
+ * @tc.name: FlatObjectStore_SyncAllData_001
+ * @tc.desc: test FlatObjectStore SyncAllData.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItems_003, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    storageEngine->Open(bundleName);
+    storageEngine->CreateTable(sessionId);
+    storageEngine->isOpened_ = false;
+    std::vector<uint8_t> value = { 1, 8 };
+    std::map<std::string, std::vector<uint8_t>> data = {{"age", value}};
+    uint32_t ret = storageEngine->UpdateItems(sessionId, data);
+    EXPECT_EQ(SUCCESS, ret);
+    storageEngine->DeleteTable(sessionId);
+}
+
+/**
+ * @tc.name: FlatObjectStore_SyncAllData_001
+ * @tc.desc: test FlatObjectStore SyncAllData.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItems_004, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    storageEngine->Open(bundleName);
+    storageEngine->CreateTable(sessionId);
+    storageEngine->isOpened_ = false;
+    std::vector<uint8_t> value = { 1, 8 };
+    std::map<std::string, std::vector<uint8_t>> data = {{"age", value}};
+    uint32_t ret = storageEngine->UpdateItems(sessionId, data);
+    EXPECT_EQ(SUCCESS, ret);
+
+    storageEngine->isOpened_ = true;
+    ret = storageEngine->UpdateItems("123", data);
+    EXPECT_EQ(SUCCESS, ret);
+    storageEngine->DeleteTable(sessionId);
+}
+
+/**
+ * @tc.name: FlatObjectStore_SyncAllData_001
+ * @tc.desc: test FlatObjectStore SyncAllData.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_DeleteTable_001, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    storageEngine->Open(bundleName);
+    storageEngine->CreateTable(sessionId);
+    storageEngine->isOpened_ = false;
+    uint32_t ret = storageEngine->DeleteTable(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+    storageEngine->isOpened_ = true;
+    ret = storageEngine->DeleteTable("123");
+    storageEngine->DeleteTable(sessionId);
+}
+
+/**
+ * @tc.name: FlatObjectStore_SyncAllData_001
+ * @tc.desc: test FlatObjectStore SyncAllData.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetItem_002, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    storageEngine->Open(bundleName);
+    storageEngine->CreateTable(sessionId);
+    storageEngine->isOpened_ = false;
+    std::vector<uint8_t> value = { 1, 8 };
+    storageEngine->GetItem(sessionId, "", value);
+    storageEngine->isOpened_ = true;
+    storageEngine->GetItem(sessionId, "", value);
+    uint32_t ret = storageEngine->DeleteTable(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+    ret = storageEngine->DeleteTable(sessionId);
+    storageEngine->DeleteTable(sessionId);
+}
+
+/**
+ * @tc.name: FlatObjectStore_SyncAllData_001
+ * @tc.desc: test FlatObjectStore SyncAllData.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_RegisterObserver_001, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    storageEngine->Open(bundleName);
+    storageEngine->CreateTable(sessionId);
+    storageEngine->isOpened_ = false;
+    auto tableWatcherPtr = std::make_shared<TableWatcherImpl>(sessionId);
+    uint32_t ret = storageEngine->RegisterObserver(sessionId, tableWatcherPtr);
+    storageEngine->isOpened_ = true;
+    storageEngine->RegisterObserver("", tableWatcherPtr);
+    EXPECT_EQ(SUCCESS, ret);
+    storageEngine->RegisterObserver(sessionId, tableWatcherPtr);
+    EXPECT_EQ(SUCCESS, ret);
+    storageEngine->RegisterObserver(sessionId, tableWatcherPtr);
+    ret = storageEngine->DeleteTable(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+    ret = storageEngine->DeleteTable(sessionId);
+    storageEngine->DeleteTable(sessionId);
+}
+
+/**
+ * @tc.name: FlatObjectStore_SyncAllData_001
+ * @tc.desc: test FlatObjectStore SyncAllData.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_UnRegisterObserver_001, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    storageEngine->Open(bundleName);
+    storageEngine->CreateTable(sessionId);
+    storageEngine->isOpened_ = false;
+    auto tableWatcherPtr = std::make_shared<TableWatcherImpl>(sessionId);
+    uint32_t ret = storageEngine->UnRegisterObserver(sessionId);
+    storageEngine->isOpened_ = true;
+    storageEngine->UnRegisterObserver("");
+    EXPECT_EQ(SUCCESS, ret);
+    storageEngine->RegisterObserver(sessionId, tableWatcherPtr);
+    EXPECT_EQ(SUCCESS, ret);
+    storageEngine->RegisterObserver("", tableWatcherPtr);
+    ret = storageEngine->DeleteTable(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+    ret = storageEngine->DeleteTable(sessionId);
+    storageEngine->DeleteTable(sessionId);
+}
+
+/**
+ * @tc.name: FlatObjectStore_SyncAllData_001
+ * @tc.desc: test FlatObjectStore SyncAllData.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_SetStatusNotifier_002, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    storageEngine->Open(bundleName);
+    storageEngine->CreateTable(sessionId);
+    auto statusNotifier = std::make_shared<StatusNotifierImpl>();
+    uint32_t ret = storageEngine->SetStatusNotifier(statusNotifier);
+    ret = storageEngine->DeleteTable(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
 }
 
 }
