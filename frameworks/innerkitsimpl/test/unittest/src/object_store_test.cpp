@@ -702,8 +702,8 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItems_002, TestSize.Leve
 }
 
 /**
- * @tc.name: DistributedObject_Close_001
- * @tc.desc: test FlatObjectStorageEngine Close.
+ * @tc.name: DistributedObject_OpenAndClose_001
+ * @tc.desc: test FlatObjectStorageEngine OpenAndClose and Close error scenario.
  * @tc.type: FUNC
  */
 HWTEST_F(NativeObjectStoreTest, DistributedObject_OpenAndClose_001, TestSize.Level1)
@@ -740,7 +740,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_NotifyChange_001, TestSize.Lev
 }
 
 /**
- * @tc.name: FlatObjectStore_CheckRetrieveCache_001
+ * @tc.name: DistributedObject_CheckRetrieveCache_001
  * @tc.desc: test FlatObjectStore CheckRetrieveCache.
  * @tc.type: FUNC
  */
@@ -757,7 +757,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_CheckRetrieveCache_001, TestSi
 }
 
 /**
- * @tc.name: FlatObjectStore_SyncAllData_001
+ * @tc.name: DistributedObject_SyncAllData_001
  * @tc.desc: test FlatObjectStore SyncAllData.
  * @tc.type: FUNC
  */
@@ -781,8 +781,8 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_SyncAllData_001, TestSize.Leve
 }
 
 /**
- * @tc.name: FlatObjectStore_NotifyCachedStatus_001
- * @tc.desc: test FlatObjectStore NotifyCachedStatus.
+ * @tc.name: DistributedObject_NotifyCachedStatus_001
+ * @tc.desc: test DistributedObjectStore NotifyCachedStatus.
  * @tc.type: FUNC
  */
 HWTEST_F(NativeObjectStoreTest, DistributedObject_NotifyCachedStatus_001, TestSize.Level1)
@@ -801,8 +801,8 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_NotifyCachedStatus_001, TestSi
 }
 
 /**
- * @tc.name: FlatObjectStore_SyncAllData_001
- * @tc.desc: test FlatObjectStore SyncAllData.
+ * @tc.name: DistributedObject_UnWatch_001
+ * @tc.desc: test DistributedObjectStore UnWatch and UnWatch error scenario.
  * @tc.type: FUNC
  */
 HWTEST_F(NativeObjectStoreTest, DistributedObject_UnWatch_001, TestSize.Level1)
@@ -820,8 +820,8 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_UnWatch_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: FlatObjectStore_SyncAllData_001
- * @tc.desc: test FlatObjectStore SyncAllData.
+ * @tc.name: DistributedObject_OnComplete_001
+ * @tc.desc: test FlatObjectStore OnComplete.
  * @tc.type: FUNC
  */
 HWTEST_F(NativeObjectStoreTest, DistributedObject_OnComplete_001, TestSize.Level1)
@@ -887,7 +887,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetTable_005, TestSize.Level1)
  * @tc.desc: test FlatObjectStorageEngine UpdateItem error scenario.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItem_003, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItem_001, TestSize.Level1)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -909,7 +909,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItem_003, TestSize.Level
  * @tc.desc: test FlatObjectStorageEngine UpdateItems error scenario.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItems_004, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItems_003, TestSize.Level1)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -1093,5 +1093,4 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_SetStatusNotifier_002, TestSiz
     ret = storageEngine->DeleteTable(sessionId);
     EXPECT_EQ(SUCCESS, ret);
 }
-
 }
