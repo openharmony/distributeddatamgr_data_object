@@ -26,4 +26,4 @@ class MockAppDeviceStatusChangeListener : public AppDeviceStatusChangeListener {
 } // namespace ObjectStore
 } // namespace OHOS
 
-#endif //DATA_OBJECT_MOCK_APP_DEVICE_CHANGE_LISTENER_H
+#endif // DATA_OBJECT_MOCK_APP_DEVICE_CHANGE_LISTENER_H
