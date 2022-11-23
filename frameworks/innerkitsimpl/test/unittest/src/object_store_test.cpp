@@ -214,7 +214,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Create_Destroy_004, TestS
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
     EXPECT_NE(nullptr, objectStore);
-
+    
     uint32_t status = -1;
     DistributedObject *object = objectStore->CreateObject(sessionId, status);
     EXPECT_NE(nullptr, object);
