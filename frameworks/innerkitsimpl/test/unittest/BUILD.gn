@@ -41,6 +41,7 @@ ohos_unittest("NativeObjectStoreTest") {
 
   sources = [
     "mock/src/mock_soft_bus.cpp",
+    "src/app_pipe_mgr_test.cpp",
     "src/communicator_test.cpp",
     "src/object_store_test.cpp",
     "src/process_communicator_impl_test.cpp",
