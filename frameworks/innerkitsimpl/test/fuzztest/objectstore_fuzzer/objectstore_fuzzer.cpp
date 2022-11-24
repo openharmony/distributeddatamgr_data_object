@@ -275,8 +275,8 @@ bool CreateObjectV9Fuzz(const uint8_t *data, size_t size)
         return false;
     }
     double val = static_cast<double>(size);
-    double getResult;
     if (SUCCESS == object->PutDouble(skey, val)) {
+        double getResult;
         if (object->GetDouble(skey, getResult)) {
             result = true;
         }
