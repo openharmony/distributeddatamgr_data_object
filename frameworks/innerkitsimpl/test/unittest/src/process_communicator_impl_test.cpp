@@ -65,7 +65,7 @@ void NativeProcessCommunicatorImplTest::TearDown(void)
  */
 HWTEST_F(NativeProcessCommunicatorImplTest, ProcessCommunicatorImpl_Start_Stop_001, TestSize.Level1)
 {
-    std::string processLabel = "processLabel01";
+    std::string processLabel = "INVALID_SESSION_NAME";
     ProcessCommunicatorImpl *processCommunicator = new ProcessCommunicatorImpl();
     auto ret = processCommunicator->Start(processLabel);
     EXPECT_EQ(DistributedDB::DBStatus::DB_ERROR, ret);
