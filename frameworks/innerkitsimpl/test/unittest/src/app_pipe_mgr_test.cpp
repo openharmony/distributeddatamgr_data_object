@@ -167,6 +167,23 @@ HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_Start_003, TestSize.Level1)
 }
 
 /**
+ * @tc.name: NativeAppPipeMgrTest_Start_004
+ * @tc.desc: test NativeAppPipeMgrTest Start. repeat start
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_Start_004, TestSize.Level1)
+{
+    PipeInfo pipeInfo = { "pipInfo01" };
+    AppPipeMgr *appPipeMgr = new AppPipeMgr();
+    auto ret = appPipeMgr->Start(pipeInfo);
+    EXPECT_EQ(Status::SUCCESS, ret);
+    ret = appPipeMgr->Start(pipeInfo);
+    EXPECT_EQ(Status::REPEATED_REGISTER, ret);
+    ret = appPipeMgr->Stop(pipeInfo);
+    EXPECT_EQ(Status::SUCCESS, ret);
+}
+
+/**
  * @tc.name: NativeAppPipeMgrTest_Stop_001
  * @tc.desc: test NativeAppPipeMgrTest Stop. pipInfo not found.
  * @tc.type: FUNC
@@ -181,17 +198,17 @@ HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_Stop_001, TestSize.Level1)
 
 /**
  * @tc.name: NativeAppPipeMgrTest_Stop_002
- * @tc.desc: test NativeAppPipeMgrTest Stop. invalid pipInfo
+ * @tc.desc: test NativeAppPipeMgrTest Stop. RemoveSessionServer failed
  * @tc.type: FUNC
  */
 HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_Stop_002, TestSize.Level1)
 {
-    PipeInfo pipeInfo = { "pipInfo01" };
+    PipeInfo pipeInfo = { "REMOVE_FAILED_SESSION_NAME" };
     AppPipeMgr *appPipeMgr = new AppPipeMgr();
     auto ret = appPipeMgr->Start(pipeInfo);
     EXPECT_EQ(Status::SUCCESS, ret);
     ret = appPipeMgr->Stop(pipeInfo);
-    EXPECT_EQ(Status::SUCCESS, ret);
+    EXPECT_EQ(Status::ERROR, ret);
 }
 
 /**

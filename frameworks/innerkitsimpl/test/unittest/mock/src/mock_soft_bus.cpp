@@ -36,6 +36,14 @@ int SendBytes(int sessionId, const void *data, unsigned int len)
 
 int RemoveSessionServer(const char *pkgName, const char *sessionName)
 {
+    const char *invalidSessionName = "INVALID_SESSION_NAME";
+    const char *closeFailedSessionName = "REMOVE_FAILED_SESSION_NAME";
+    if (!strcmp(sessionName, invalidSessionName)) {
+        return -1;
+    }
+    if (!strcmp(sessionName, closeFailedSessionName)) {
+        return -1;
+    }
     return 0;
 }
 int GetMySessionName(int sessionId, char *sessionName, unsigned int len)
@@ -70,4 +78,13 @@ int32_t GetNodeKeyInfo(const char *pkgName, const char *networkId, NodeDeviceInf
                        int32_t infoLen)
 {
     return -1;
+}
+
+int CreateSessionServer(const char *pkgName, const char *sessionName, const ISessionListener *listener)
+{
+    const char *invalidSessionName = "INVALID_SESSION_NAME";
+    if (!strcmp(sessionName, invalidSessionName)) {
+        return -1;
+    }
+    return 0;
 }
