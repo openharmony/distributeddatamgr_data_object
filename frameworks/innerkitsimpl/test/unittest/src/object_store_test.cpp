@@ -774,6 +774,8 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_SyncAllData_001, TestSize.Leve
     };
     ret = flatObjectStore->SyncAllData(sessionId, onComplete);
     EXPECT_EQ(ERR_SINGLE_DEVICE, ret);
+    ret = flatObjectStore->SyncAllData("", onComplete);
+    EXPECT_EQ(ERR_DB_NOT_EXIST, ret);
     ret = flatObjectStore->Delete(sessionId);
     EXPECT_EQ(SUCCESS, ret);
 }
@@ -1064,19 +1066,92 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_UnRegisterObserver_002, TestSi
 
 /**
  * @tc.name: DistributedObject_SetStatusNotifier_002
- * @tc.desc: test FlatObjectStorageEngine SetStatusNotifier.
+ * @tc.desc: test FlatObjectStorageEngine SetStatusNotifier, storageEngine is not open.
  * @tc.type: FUNC
  */
 HWTEST_F(NativeObjectStoreTest, DistributedObject_SetStatusNotifier_002, TestSize.Level1)
+{
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    auto statusNotifier = std::make_shared<StatusNotifierImpl>();
+    storageEngine->isOpened_ = false;
+    uint32_t ret = storageEngine->SetStatusNotifier(statusNotifier);
+    EXPECT_EQ(ERR_DB_NOT_INIT, ret);
+}
+
+/**
+ * @tc.name: DistributedObject_GetItems_001
+ * @tc.desc: test FlatObjectStorageEngine GetItems, storageEngine is not open or error key.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetItems_001, TestSize.Level1)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
     std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
     storageEngine->Open(bundleName);
     storageEngine->CreateTable(sessionId);
-    auto statusNotifier = std::make_shared<StatusNotifierImpl>();
-    uint32_t ret = storageEngine->SetStatusNotifier(statusNotifier);
+    storageEngine->isOpened_ = false;
+    std::vector<uint8_t> value = { 1, 8 };
+    std::map<std::string, std::vector<uint8_t>> data = { { "age", value } };
+    uint32_t ret = storageEngine->GetItems(sessionId, data);
+    EXPECT_EQ(ERR_DB_NOT_INIT, ret);
+    storageEngine->Open(bundleName);
+    ret = storageEngine->GetItems("", data);
+    EXPECT_EQ(ERR_DB_NOT_EXIST, ret);
+    ret = storageEngine->DeleteTable(sessionId);
     EXPECT_EQ(SUCCESS, ret);
+}
+
+/**
+ * @tc.name: DistributedObject_NotifyStatus_001
+ * @tc.desc: test FlatObjectStorageEngine NotifyStatus.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_NotifyStatus_001, TestSize.Level1)
+{
+    std::string bundleName = "default07";
+    std::string sessionId = "123456";
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    uint32_t ret = storageEngine->Open(bundleName);
+    storageEngine->NotifyStatus(sessionId, "local", "restored");
+    ret = storageEngine->Close();
+    EXPECT_EQ(SUCCESS, ret);
+}
+
+/**
+ * @tc.name: DistributedObject_SyncAllData_002
+ * @tc.desc: test FlatObjectStorageEngine SyncAllData.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_SyncAllData_002, TestSize.Level1)
+{
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    auto onComplete = [](const std::map<std::string, DistributedDB::DBStatus> &) {};
+    std::vector<std::string> deviceIds = {"deviceIds"};
+    uint32_t ret = storageEngine->SyncAllData("", deviceIds, onComplete);
+    EXPECT_EQ(ERR_DB_NOT_EXIST, ret);
+}
+
+/**
+ * @tc.name: DistributedObject_UpdateItem_002
+ * @tc.desc: test FlatObjectStorageEngine UpdateItem, error status.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItem_002, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    storageEngine->Open(bundleName);
+    storageEngine->CreateTable(sessionId);
+    std::vector<uint8_t> value = {1, 2};
+    string key = "k";
+    for (int i = 0; i < 1024; i++)
+    {
+        key += "v";
+    }
+    uint32_t ret = storageEngine->UpdateItem(sessionId, key, value);
+    EXPECT_EQ(ERR_CLOSE_STORAGE, ret);
     ret = storageEngine->DeleteTable(sessionId);
     EXPECT_EQ(SUCCESS, ret);
 }
