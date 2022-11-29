@@ -1146,7 +1146,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_SyncAllData_002, TestSize.Leve
 {
     std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
     auto onComplete = [](const std::map<std::string, DistributedDB::DBStatus> &) {};
-    std::vector<std::string> deviceIds = {"deviceIds"};
+    std::vector<std::string> deviceIds = { "deviceIds" };
     uint32_t ret = storageEngine->SyncAllData("", deviceIds, onComplete);
     EXPECT_EQ(ERR_DB_NOT_EXIST, ret);
 }
@@ -1163,10 +1163,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItem_002, TestSize.Level
     std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
     storageEngine->Open(bundleName);
     storageEngine->CreateTable(sessionId);
-    std::vector<uint8_t> value = {1, 2};
+    std::vector<uint8_t> value = { 1, 2 };
     string key = "k";
-    for (int i = 0; i < 1024; i++)
-    {
+    for (int i = 0; i < 1024; i++) {
         key += "v";
     }
     uint32_t ret = storageEngine->UpdateItem(sessionId, key, value);
