@@ -1066,10 +1066,29 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_UnRegisterObserver_002, TestSi
 
 /**
  * @tc.name: DistributedObject_SetStatusNotifier_002
- * @tc.desc: test FlatObjectStorageEngine SetStatusNotifier, storageEngine is not open.
+ * @tc.desc: test FlatObjectStorageEngine SetStatusNotifier.
  * @tc.type: FUNC
  */
 HWTEST_F(NativeObjectStoreTest, DistributedObject_SetStatusNotifier_002, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    storageEngine->Open(bundleName);
+    storageEngine->CreateTable(sessionId);
+    auto statusNotifier = std::make_shared<StatusNotifierImpl>();
+    uint32_t ret = storageEngine->SetStatusNotifier(statusNotifier);
+    EXPECT_EQ(SUCCESS, ret);
+    ret = storageEngine->DeleteTable(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+}
+
+/**
+ * @tc.name: DistributedObject_SetStatusNotifier_003
+ * @tc.desc: test FlatObjectStorageEngine SetStatusNotifier, storageEngine is not open.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_SetStatusNotifier_003, TestSize.Level1)
 {
     std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
     auto statusNotifier = std::make_shared<StatusNotifierImpl>();
