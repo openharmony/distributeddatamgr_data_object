@@ -768,7 +768,7 @@ describe('objectStoreTest',function () {
         g_object.on("status", statusCallback4);
 
         g_object.setSessionId("123456");
-
+        g_object.setSessionId("");
         console.log(TAG + "************* OnstatusRestored001 end *************");
 
     })
