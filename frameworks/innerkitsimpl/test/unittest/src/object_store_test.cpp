@@ -1164,11 +1164,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItem_002, TestSize.Level
     storageEngine->Open(bundleName);
     storageEngine->CreateTable(sessionId);
     std::vector<uint8_t> value = { 1, 2 };
-    string key = "k";
-    for (int i = 0; i < 1024; i++) {
-        key += "v";
-    }
-    uint32_t ret = storageEngine->UpdateItem(sessionId, key, value);
+    uint32_t ret = storageEngine->UpdateItem(sessionId, std::string(1025, 't'), value);
     EXPECT_EQ(ERR_CLOSE_STORAGE, ret);
     ret = storageEngine->DeleteTable(sessionId);
     EXPECT_EQ(SUCCESS, ret);
