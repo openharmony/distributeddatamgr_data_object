@@ -23,6 +23,7 @@ config("objectstore_config") {
     "../../frameworks/innerkitsimpl/include/communicator",
     "../../interfaces/innerkits",
     "//third_party/bounds_checking_function/include",
+    "//foundation/distributeddatamgr/kv_store/frameworks/common",
   ]
 }
 

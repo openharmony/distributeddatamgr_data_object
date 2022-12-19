@@ -33,6 +33,7 @@ config("module_private_config") {
     "${kv_store_include_path}/include",
     "${kv_store_include_path}/interfaces/include/",
     "${kv_store_include_path}/interfaces/include/relational",
+    "//foundation/distributeddatamgr/kv_store/frameworks/common",
   ]
 }
 
