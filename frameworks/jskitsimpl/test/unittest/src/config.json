@@ -1,6 +1,6 @@
 {
   "app": {
-    "bundleName": "com.example.myapplication",
+    "bundleName": "com.OpenHarmony.app.test",
     "vendor": "example",
     "version": {
       "code": 1,
@@ -13,7 +13,7 @@
   },
   "deviceConfig": {},
   "module": {
-    "package": "com.example.myapplication",
+    "package": "com.OpenHarmony.app.test",
     "name": ".MyApplication",
     "deviceType": [
       "tablet",
@@ -55,7 +55,7 @@
             ]
           }
         ],
-        "name": "com.example.myapplication.MainAbility",
+        "name": "com.OpenHarmony.app.test.MainAbility",
         "icon": "$media:icon",
         "description": "$string:mainability_description",
         "label": "MyApplication",

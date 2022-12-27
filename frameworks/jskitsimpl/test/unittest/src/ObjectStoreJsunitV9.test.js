@@ -45,7 +45,7 @@ const PERMISSION_USER_NAME = "ohos.permission.DISTRIBUTED_DATASYNC";
 var tokenID = undefined;
 async function grantPerm() {
     console.info("====grant Permission start====");
-    var appInfo = await bundle.getApplicationInfo('com.example.myapplication', 0, 100);
+    var appInfo = await bundle.getApplicationInfo('com.OpenHarmony.app.test', 0, 100);
     tokenID = appInfo.accessTokenId;
     console.info("accessTokenId" + appInfo.accessTokenId + " bundleName:" + appInfo.bundleName);
     var atManager = abilityAccessCtrl.createAtManager();
