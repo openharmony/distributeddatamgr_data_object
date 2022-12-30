@@ -207,25 +207,6 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_IsSameStartedOnPeer_002, TestSiz
 }
 
 /**
- * @tc.name: SoftBusAdapter_SendData_001
- * @tc.desc: test SoftBusAdapter SendData. OpenSession error
- * @tc.type: FUNC
- */
-HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_SendData_001, TestSize.Level1)
-{
-    PipeInfo pipeInfo = { "pipInfo001" };
-    DeviceId deviceId = { "deviceId01" };
-    uint8_t ptr = 1;
-    int size = 1;
-    MessageInfo info = { MessageType::DEFAULT };
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    auto ret = softBusAdapter->SendData(pipeInfo, deviceId, &ptr, size, info);
-    EXPECT_EQ(Status::CREATE_SESSION_ERROR, ret);
-    delete softBusAdapter;
-}
-
-
-/**
  * @tc.name: SoftBusAdapter_StartWatchDataChange_001
  * @tc.desc: test SoftBusAdapter StartWatchDataChange.
  * @tc.type: FUNC
@@ -473,26 +454,10 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_GetLocalDevice_001, TestSize.Lev
     delete softBusAdapter;
 }
 
-/**
- * @tc.name: SoftBusAdapter_GetSessionStatus_001
- * @tc.desc: test SoftBusAdapter GetSessionStatus.
- * @tc.type: FUNC
- */
-HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_GetSessionStatus_001, TestSize.Level1)
-{
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    int32_t sessionId = 123;
-    int32_t status = -1;
-    softBusAdapter->OnSessionOpen(sessionId, status);
-    auto ret = softBusAdapter->GetSessionStatus(sessionId);
-    EXPECT_EQ(status, ret);
-    softBusAdapter->OnSessionClose(sessionId);
-    delete softBusAdapter;
-}
 
 /**
  * @tc.name: SoftBusAdapter_GetUdidByNodeId_001
- * @tc.desc: test SoftBusAdapter GetSessionStatus.
+ * @tc.desc: test SoftBusAdapter GetUdidByNodeId.
  * @tc.type: FUNC
  */
 HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_GetUdidByNodeId_001, TestSize.Level1)

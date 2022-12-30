@@ -32,12 +32,15 @@ constexpr int32_t END_SIZE = 3;
 constexpr int32_t MIN_SIZE = HEAD_SIZE + END_SIZE + 3;
 constexpr const char *REPLACE_CHAIN = "***";
 constexpr const char *DEFAULT_ANONYMOUS = "******";
+constexpr int32_t INVALID_SESSIONID = -1;
 constexpr int32_t SOFTBUS_OK = 0;
 constexpr int32_t SOFTBUS_ERR = 1;
 constexpr int32_t INVALID_SESSION_ID = -1;
 constexpr int32_t SESSION_NAME_SIZE_MAX = 65;
 constexpr int32_t DEVICE_ID_SIZE_MAX = 65;
 constexpr int32_t ID_BUF_LEN = 65;
+constexpr size_t TASK_CAPACITY_MAX = 15;
+
 using namespace std;
 
 class AppDataListenerWrap {
@@ -60,6 +63,7 @@ std::shared_ptr<SoftBusAdapter> SoftBusAdapter::instance_;
 SoftBusAdapter::SoftBusAdapter()
 {
     LOG_INFO("begin");
+    taskQueue_ = std::make_shared<TaskScheduler>(TASK_CAPACITY_MAX, "data_object");
     AppDataListenerWrap::SetDataHandler(this);
 
     sessionListener_.OnSessionOpened = AppDataListenerWrap::OnSessionOpened;
@@ -70,6 +74,10 @@ SoftBusAdapter::SoftBusAdapter()
 
 SoftBusAdapter::~SoftBusAdapter()
 {
+    if (taskQueue_ != nullptr) {
+        taskQueue_->Clean();
+        taskQueue_ = nullptr;
+    }
 }
 
 Status SoftBusAdapter::StartWatchDeviceChange(
@@ -368,44 +376,91 @@ Status SoftBusAdapter::StopWatchDataChange(
 Status SoftBusAdapter::SendData(
     const PipeInfo &pipeInfo, const DeviceId &deviceId, const uint8_t *ptr, int size, const MessageInfo &info)
 {
+    lock_guard<mutex> lock(sendDataMutex_);
+    uint8_t *tempCopied = new uint8_t[size];
+    if (tempCopied == nullptr) {
+        LOG_ERROR("[SendData] create buffer fail.");
+        return Status::INVALID_ARGUMENT;
+    }
+    if (memcpy_s(tempCopied, size, ptr, size) != EOK) {
+        LOG_ERROR("[SendData] memcpy_s fail.");
+        delete[] tempCopied;
+        return Status::INVALID_ARGUMENT;
+    }
+    BytesMsg bytesMsg = { tempCopied, size, false };
+    sessionsData_.Compute(INVALID_SESSIONID, [&bytesMsg](const int key, std::vector<BytesMsg> &bytesList) {
+        LOG_DEBUG("[SendData] Insert invalid sessionId.");
+        bytesList.push_back(bytesMsg);
+        return true;
+    });
     SessionAttribute attr;
     attr.dataType = TYPE_BYTES;
-    LOG_INFO("[SendData] to %{public}s ,session:%{public}s, size:%{public}d",
-        ToBeAnonymous(deviceId.deviceId).c_str(), pipeInfo.pipeId.c_str(), size);
-    int sessionId = OpenSession(
-        pipeInfo.pipeId.c_str(), pipeInfo.pipeId.c_str(), ToNodeID(deviceId.deviceId).c_str(), "GROUP_ID", &attr);
-    if (sessionId < 0) {
-        LOG_WARN("OpenSession %{public}s, type:%{public}d failed, sessionId:%{public}d", pipeInfo.pipeId.c_str(),
-            info.msgType, sessionId);
-        return Status::CREATE_SESSION_ERROR;
-    }
-    int state = GetSessionStatus(sessionId);
-    LOG_DEBUG("Waited for notification, state:%{public}d", state);
-    if (state != SOFTBUS_OK) {
-        LOG_ERROR("OpenSession callback result error");
-        return Status::CREATE_SESSION_ERROR;
-    }
-    LOG_DEBUG("[SendBytes] start,session id is %{public}d, size is %{public}d, "
-              "session type is %{public}d.",
-        sessionId, size, attr.dataType);
-    int32_t ret = SendBytes(sessionId, (void *)ptr, size);
-    if (ret != SOFTBUS_OK) {
-        LOG_ERROR("[SendBytes] to %{public}d failed, ret:%{public}d.", sessionId, ret);
-        return Status::ERROR;
-    }
+    LOG_INFO("[SendData] to %{public}s ,session:%{public}s, size:%{public}d", ToBeAnonymous(deviceId.deviceId).c_str(),
+        pipeInfo.pipeId.c_str(), size);
+    int sessionId = OpenSession(pipeInfo.pipeId.c_str(), pipeInfo.pipeId.c_str(), ToNodeID(deviceId.deviceId).c_str(),
+        "GROUP_ID", &attr);
+    sessionsData_.Compute(sessionId, [&bytesMsg](const int key, std::vector<BytesMsg> &bytesList) {
+        if (bytesList.empty()) {
+            bytesList.push_back(bytesMsg);
+            return true;
+        }
+        bool isPushMsg = true;
+        for (auto it = bytesList.begin(); it != bytesList.end();) {
+            if (bytesMsg.ptr == it->ptr) {
+                isPushMsg = false;
+            }
+            if (it->isSend) {
+                it = bytesList.erase(it);
+            } else {
+                ++it;
+            }
+        }
+        if (isPushMsg) {
+            bytesList.push_back(bytesMsg);
+        }
+        return true;
+    });
+    sessionsData_.Erase(INVALID_SESSIONID);
     return Status::SUCCESS;
-}
-
-int32_t SoftBusAdapter::GetSessionStatus(int32_t sessionId)
-{
-    auto semaphore = GetSemaphore(sessionId);
-    return semaphore->Wait();
 }
 
 void SoftBusAdapter::OnSessionOpen(int32_t sessionId, int32_t status)
 {
-    auto semaphore = GetSemaphore(sessionId);
-    semaphore->Notify(status);
+    if (status != SOFTBUS_OK) {
+        LOG_DEBUG("[OnSessionOpen] OpenSession failed");
+        return;
+    }
+    auto item = sessionsData_.Find(INVALID_SESSIONID);
+    if (item.first && !item.second.empty()) {
+        sessionsData_.Compute(sessionId, [item](const int key, std::vector<BytesMsg> &bytesList) {
+            LOG_DEBUG("[OnSessionOpen] replace invalid sessionId with valid sessionId");
+            bytesList = item.second;
+            return true;
+        });
+        sessionsData_.Erase(INVALID_SESSIONID);
+    }
+    auto task([this, sessionId]() {
+        sessionsData_.Compute(sessionId, [](const int key, std::vector<BytesMsg> &bytesList) {
+            for (auto &bytesMsg : bytesList) {
+                if (bytesMsg.isSend) {
+                    continue;
+                }
+                LOG_INFO("[SendBytes] start,session id is %{public}d", key);
+                uint8_t *msgPtr = bytesMsg.ptr;
+                int size = bytesMsg.size;
+                int32_t ret = SendBytes(key, (void *)msgPtr, size);
+                if (ret != SOFTBUS_OK) {
+                    LOG_ERROR("[SendBytes] to %{public}d failed, ret:%{public}d.", key, ret);
+                }
+                LOG_DEBUG("[SendBytes] delete msgPtr.");
+                delete[] msgPtr;
+                bytesMsg.isSend = true;
+            }
+            return true;
+        });
+    });
+
+    taskQueue_->Execute(std::move(task));
 }
 
 void SoftBusAdapter::OnSessionClose(int32_t sessionId)

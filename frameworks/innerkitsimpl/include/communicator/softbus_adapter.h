@@ -19,6 +19,7 @@
 #include <memory>
 #include <set>
 #include <tuple>
+#include <vector>
 
 #include "app_data_change_listener.h"
 #include "app_device_status_change_listener.h"
@@ -26,6 +27,8 @@
 #include "session.h"
 #include "softbus_bus_center.h"
 #include "condition_lock.h"
+#include "task_scheduler.h"
+#include "concurrent_map.h"
 
 namespace OHOS {
 namespace ObjectStore {
@@ -77,13 +80,16 @@ public:
 
     std::string ToNodeID(const std::string &nodeId) const;
 
-    int32_t GetSessionStatus(int32_t sessionId);
-
     void OnSessionOpen(int32_t sessionId, int32_t status);
 
     void OnSessionClose(int32_t sessionId);
 
 private:
+    struct BytesMsg {
+        uint8_t *ptr;
+        int size;
+        bool isSend;
+    };
     std::shared_ptr<ConditionLock<int32_t>> GetSemaphore (int32_t sessinId);
     mutable std::mutex networkMutex_{};
     mutable std::map<std::string, std::string> networkId2Udid_{};
@@ -98,7 +104,10 @@ private:
     bool flag_ = true; // only for br flag
     ISessionListener sessionListener_{};
     std::mutex statusMutex_ {};
+    std::mutex sendDataMutex_ {};
     std::map<int32_t, std::shared_ptr<ConditionLock<int32_t>>> sessionsStatus_;
+    ConcurrentMap<int, std::vector<BytesMsg>> sessionsData_;
+    std::shared_ptr<TaskScheduler> taskQueue_;
 };
 } // namespace ObjectStore
 } // namespace OHOS

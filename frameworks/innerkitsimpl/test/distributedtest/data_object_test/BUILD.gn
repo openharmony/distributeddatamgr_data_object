@@ -22,6 +22,7 @@ config("module_private_config") {
     "../../../../../frameworks/innerkitsimpl/include/adaptor",
     "../../../../../frameworks/innerkitsimpl/include/common",
     "../../../../../frameworks/innerkitsimpl/include/communicator",
+    "//foundation/distributeddatamgr/kv_store/frameworks/common",
   ]
 }
 
