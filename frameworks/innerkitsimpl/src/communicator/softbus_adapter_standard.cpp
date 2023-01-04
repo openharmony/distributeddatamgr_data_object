@@ -448,7 +448,7 @@ void SoftBusAdapter::OnSessionOpen(int32_t sessionId, int32_t status)
                 LOG_INFO("[SendBytes] start,session id is %{public}d", key);
                 uint8_t *msgPtr = bytesMsg.ptr;
                 int size = bytesMsg.size;
-                int32_t ret = SendBytes(key, (void *)msgPtr, size);
+                int32_t ret = SendBytes(key, static_cast<void*>(msgPtr), size);
                 if (ret != SOFTBUS_OK) {
                     LOG_ERROR("[SendBytes] to %{public}d failed, ret:%{public}d.", key, ret);
                 }
