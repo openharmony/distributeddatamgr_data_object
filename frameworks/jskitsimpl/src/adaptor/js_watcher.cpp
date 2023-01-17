@@ -177,6 +177,14 @@ void JSWatcher::Emit(
     return;
 }
 
+bool JSWatcher::IsEmpty()
+{
+    if (changeEventListener_->IsEmpty() && statusEventListener_->IsEmpty()) {
+        return true;
+    }
+    return false;
+}
+
 EventHandler *EventListener::Find(napi_env env, napi_value handler)
 {
     EventHandler *result = nullptr;

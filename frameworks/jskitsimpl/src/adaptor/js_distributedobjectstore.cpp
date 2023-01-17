@@ -118,21 +118,28 @@ napi_value JSDistributedObjectStore::NewDistributedObject(
                 return;
             }
             auto objectWrapper = static_cast<JSObjectWrapper *>(data);
+            
+            JSDistributedObjectStore::DelCallback(env, g_changeCallBacks, objectWrapper->GetObjectId());
+            JSDistributedObjectStore::DelCallback(env, g_statusCallBacks, objectWrapper->GetObjectId());
+            
             if (objectWrapper->GetObject() == nullptr) {
                 delete objectWrapper;
                 return;
             }
-
-            g_changeCallBacks.Erase(objectWrapper->GetObjectId());
-            g_statusCallBacks.Erase(objectWrapper->GetObjectId());
             LOG_INFO("start delete object");
             DistributedObjectStore::GetInstance(JSDistributedObjectStore::GetBundleName(env))
                 ->DeleteObject(objectWrapper->GetObject()->GetSessionId());
             delete objectWrapper;
         },
         nullptr, nullptr);
+    
+    if (status != napi_ok) {
+        LOG_WARN("error! napi_wrap failed.");
+        delete objectWrapper;
+        return nullptr;
+    }
+    
     RestoreWatchers(env, objectWrapper, objectId);
-
     objectStore->NotifyCachedStatus(object->GetSessionId());
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
     return result;

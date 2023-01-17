@@ -38,6 +38,11 @@ public:
     virtual ~EventListener()
     {
     }
+    
+    bool IsEmpty()
+    {
+        return handlers_ == nullptr;
+    }
 
     virtual bool Add(napi_env env, napi_value handler);
 
@@ -58,7 +63,6 @@ public:
     bool Del(napi_env env, napi_value handler) override;
 
     void Clear(napi_env env) override;
-
 private:
     bool isWatched_ = false;
     DistributedObjectStore *objectStore_;
@@ -74,7 +78,6 @@ public:
     bool Del(napi_env env, napi_value handler) override;
 
     void Clear(napi_env env) override;
-
 private:
     JSWatcher *watcher_;
     std::string sessionId_;
@@ -93,7 +96,8 @@ public:
     void Emit(const char *type, const std::string &sessionId, const std::vector<std::string> &changeData);
 
     void Emit(const char *type, const std::string &sessionId, const std::string &networkId, const std::string &status);
-
+    
+    bool IsEmpty();
 private:
     struct ChangeArgs {
         ChangeArgs(const napi_ref callback, const std::string &sessionId, const std::vector<std::string> &changeData);

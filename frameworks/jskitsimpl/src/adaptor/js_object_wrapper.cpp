@@ -56,6 +56,10 @@ void JSObjectWrapper::DeleteWatch(napi_env env, const char *type, napi_value han
     if (watcher_ != nullptr) {
         watcher_->Off(type, handler);
         LOG_INFO("JSObjectWrapper::DeleteWatch %{public}s", type);
+        if (watcher_->IsEmpty()) {
+            LOG_DEBUG("delete JSWatcher");
+            watcher_ = nullptr;
+        }
     } else {
         LOG_ERROR("JSObjectWrapper::DeleteWatch watcher_ is null");
     }
