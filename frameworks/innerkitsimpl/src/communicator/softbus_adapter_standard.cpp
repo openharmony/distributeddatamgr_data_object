@@ -118,6 +118,7 @@ Status SoftBusAdapter::StopWatchDeviceChange(
 void SoftBusAdapter::NotifyAll(const DeviceInfo &deviceInfo, const DeviceChangeType &type)
 {
     std::thread th = std::thread([this, deviceInfo, type]() {
+        pthread_setname_np(pthread_self(), "Data_Object_NotifyAll");
         std::vector<const AppDeviceStatusChangeListener *> listeners;
         {
             std::lock_guard<std::mutex> lock(deviceChangeMutex_);

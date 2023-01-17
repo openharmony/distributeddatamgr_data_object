@@ -54,11 +54,12 @@
                 "samgr",
                 "ipc",
                 "hiviewdfx_hilog_native",
-                "libuv",
                 "utils_base",
                 "access_token"
             ],
-            "third_party": []
+            "third_party": [
+                "libuv"
+            ]
         },
         "build": {
             "sub_component": [

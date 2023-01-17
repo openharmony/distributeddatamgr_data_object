@@ -66,10 +66,7 @@ config("objectstore_config") {
 config("objectstore_public_config") {
   visibility = [ ":*" ]
 
-  include_dirs = [
-    ".",
-    "//foundation/distributeddatamgr/kv_store/frameworks/libs/distributeddb/interfaces/include",
-  ]
+  include_dirs = [ "." ]
 }
 
 base_output_path =
@@ -113,7 +110,6 @@ ohos_shared_library("distributeddataobject") {
   deps = [
     ":distributed_data_object_abc",
     ":distributed_data_object_js",
-    "//foundation/ability/ability_runtime/frameworks/native/ability/native:abilitykit_native",
     "//foundation/distributeddatamgr/data_object/interfaces/innerkits:distributeddataobject_impl",
     "//third_party/libuv:uv",
   ]

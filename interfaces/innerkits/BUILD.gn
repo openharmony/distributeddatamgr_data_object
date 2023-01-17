@@ -59,12 +59,12 @@ ohos_shared_library("distributeddataobject_impl") {
 
   deps = [
     "//foundation/distributeddatamgr/kv_store/frameworks/libs/distributeddb:distributeddb",
-    "//foundation/distributedhardware/device_manager/interfaces/inner_kits/native_cpp:devicemanagersdk",
     "//third_party/bounds_checking_function:libsec_shared",
     "//third_party/libuv:uv",
   ]
   external_deps = [
     "c_utils:utils",
+    "device_manager:devicemanagersdk",
     "dsoftbus:softbus_client",
     "hitrace_native:hitrace_meter",
     "hitrace_native:libhitracechain",
@@ -74,6 +74,6 @@ ohos_shared_library("distributeddataobject_impl") {
     "samgr:samgr_proxy",
   ]
   public_configs = [ ":objectstore_public_config" ]
-  relative_install_dir = "module/data"
+  innerapi_tags = [ "platformsdk" ]
   subsystem_name = "distributeddatamgr"
 }
