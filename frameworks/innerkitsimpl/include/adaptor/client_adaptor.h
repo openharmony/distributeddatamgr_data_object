@@ -17,18 +17,28 @@
 #define OBJECT_CLIENT_ADAPTOR_H
 
 #include "object_service_proxy.h"
-#include "ikvstore_data_service.h"
+#include "iobject_service.h"
+
 namespace OHOS::ObjectStore {
+class ObjectStoreDataServiceProxy;
 class ClientAdaptor {
 public:
     static sptr<OHOS::DistributedObject::IObjectService> GetObjectService();
-    static uint32_t RegisterClientDeathListener(DistributedKv::AppId &appId, sptr<IRemoteObject> remoteObject);
+    static uint32_t RegisterClientDeathListener(const std::string &appId, sptr<IRemoteObject> remoteObject);
 private:
     static constexpr int32_t DISTRIBUTED_KV_DATA_SERVICE_ABILITY_ID = 1301;
     static constexpr int32_t GET_SA_RETRY_TIMES = 3;
     static constexpr int32_t RETRY_INTERVAL = 1;
-    static sptr<OHOS::DistributedKv::IKvStoreDataService> distributedDataMgr_;
-    static sptr<OHOS::DistributedKv::IKvStoreDataService> GetDistributedDataManager();
+    static std::shared_ptr<ObjectStoreDataServiceProxy> distributedDataMgr_;
+    static std::shared_ptr<ObjectStoreDataServiceProxy> GetDistributedDataManager();
+};
+
+class ObjectStoreDataServiceProxy  : public IRemoteProxy<DistributedObject::IKvStoreDataService> {
+public:
+    explicit ObjectStoreDataServiceProxy(const sptr<IRemoteObject> &impl);
+    ~ObjectStoreDataServiceProxy() = default;
+    sptr<IRemoteObject> GetFeatureInterface(const std::string &name) override;
+    uint32_t RegisterClientDeathObserver(const std::string &appId, sptr<IRemoteObject> observer) override;
 };
 } // namespace OHOS::ObjectStore
 

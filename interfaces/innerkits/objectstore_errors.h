@@ -130,6 +130,11 @@ constexpr uint32_t ERR_RESULTSET = BASE_ERR_OFFSET + 20;
  * @brief Input parameters error.
  */
 constexpr uint32_t ERR_INVALID_ARGS = BASE_ERR_OFFSET + 21;
+
+/**
+ * @brief Ipc error.
+ */
+constexpr uint32_t ERR_IPC = BASE_ERR_OFFSET + 22;
 } // namespace OHOS::ObjectStore
 
 #endif

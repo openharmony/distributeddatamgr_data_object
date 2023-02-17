@@ -17,6 +17,7 @@
 #define OBJECT_CALLBACK_H
 
 #include "iobject_callback.h"
+#include "object_callback_stub.h"
 
 namespace OHOS {
 namespace ObjectStore {
