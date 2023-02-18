@@ -37,7 +37,7 @@ int32_t ObjectServiceProxy::ObjectStoreSave(const std::string &bundleName, const
         ZLOGE("write descriptor failed");
         return ERR_IPC;
     }
-    if (!ITypesUtil::Marshal(data, bundleName, sessionId, deviceId, objectData)) {
+    if (!ITypesUtil::Marshal(data, bundleName, sessionId, deviceId, objectData, callback)) {
         ZLOGE("Marshalling failed, bundleName = %{public}s", bundleName.c_str());
         return ERR_IPC;
     }
@@ -60,7 +60,7 @@ int32_t ObjectServiceProxy::ObjectStoreRevokeSave(
         return ERR_IPC;
     }
 
-    if (!ITypesUtil::Marshal(data, bundleName, sessionId)) {
+    if (!ITypesUtil::Marshal(data, bundleName, sessionId, callback)) {
         ZLOGE("Marshalling failed, bundleName = %{public}s", bundleName.c_str());
         return ERR_IPC;
     }
@@ -84,7 +84,7 @@ int32_t ObjectServiceProxy::ObjectStoreRetrieve(
         return ERR_IPC;
     }
 
-    if (!ITypesUtil::Marshal(data, bundleName, sessionId)) {
+    if (!ITypesUtil::Marshal(data, bundleName, sessionId, callback)) {
         ZLOGE("Marshalling failed, bundleName = %{public}s", bundleName.c_str());
         return ERR_IPC;
     }
