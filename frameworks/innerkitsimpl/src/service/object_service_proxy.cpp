@@ -22,7 +22,6 @@
 #include "objectstore_errors.h"
 
 namespace OHOS::DistributedObject {
-using namespace DistributedKv;
 using namespace ObjectStore;
 ObjectServiceProxy::ObjectServiceProxy(const sptr<IRemoteObject> &impl) : IRemoteProxy<IObjectService>(impl)
 {

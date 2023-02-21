@@ -22,7 +22,6 @@
 
 namespace OHOS {
 namespace DistributedObject {
-using namespace DistributedKv;
 constexpr static int32_t COMPLETED = 0;
 int ObjectSaveCallbackStub::OnRemoteRequest(
     uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option)
