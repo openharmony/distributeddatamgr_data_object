@@ -278,7 +278,7 @@ int32_t CacheManager::SaveObject(const std::string &bundleName, const std::strin
         LOG_ERROR("proxy is nullptr.");
         return ERR_NULL_PTR;
     }
-    sptr<IObjectSaveCallback> objectSaveCallback = new ObjectSaveCallback(callback);
+    sptr<ObjectSaveCallbackBroker> objectSaveCallback = new ObjectSaveCallback(callback);
     int32_t status = proxy->ObjectStoreSave(
         bundleName, sessionId, deviceId, objectData, objectSaveCallback->AsObject().GetRefPtr());
     if (status != SUCCESS) {
@@ -296,7 +296,7 @@ int32_t CacheManager::RevokeSaveObject(
         LOG_ERROR("proxy is nullptr.");
         return ERR_NULL_PTR;
     }
-    sptr<IObjectRevokeSaveCallback> objectRevokeSaveCallback = new ObjectRevokeSaveCallback(callback);
+    sptr<ObjectRevokeSaveCallbackBroker> objectRevokeSaveCallback = new ObjectRevokeSaveCallback(callback);
     int32_t status = proxy->ObjectStoreRevokeSave(
         bundleName, sessionId, objectRevokeSaveCallback->AsObject().GetRefPtr());
     if (status != SUCCESS) {
@@ -314,7 +314,7 @@ int32_t CacheManager::ResumeObject(const std::string &bundleName, const std::str
         LOG_ERROR("proxy is nullptr.");
         return ERR_NULL_PTR;
     }
-    sptr<IObjectRetrieveCallback> objectRetrieveCallback = new ObjectRetrieveCallback(callback);
+    sptr<ObjectRetrieveCallbackBroker> objectRetrieveCallback = new ObjectRetrieveCallback(callback);
     int32_t status = proxy->ObjectStoreRetrieve(
         bundleName, sessionId, objectRetrieveCallback->AsObject().GetRefPtr());
     if (status != SUCCESS) {
@@ -332,7 +332,7 @@ int32_t CacheManager::SubscribeDataChange(const std::string &bundleName, const s
         LOG_ERROR("proxy is nullptr.");
         return ERR_NULL_PTR;
     }
-    sptr<IObjectChangeCallback> objectRemoteResumeCallback = new ObjectChangeCallback(callback);
+    sptr<ObjectChangeCallbackBroker> objectRemoteResumeCallback = new ObjectChangeCallback(callback);
     ClientAdaptor::RegisterClientDeathListener(bundleName, objectRemoteResumeCallback->AsObject());
     int32_t status = proxy->RegisterDataObserver(
         bundleName, sessionId, objectRemoteResumeCallback->AsObject().GetRefPtr());
