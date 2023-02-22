@@ -18,7 +18,7 @@
 #include "client_adaptor.h"
 #include "distributed_objectstore_impl.h"
 #include "logger.h"
-#include "object_callback.h"
+#include "object_callback_impl.h"
 #include "object_service_proxy.h"
 #include "objectstore_errors.h"
 #include "softbus_adapter.h"

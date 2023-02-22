@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "object_callback.h"
+#include "object_callback_impl.h"
 
 namespace OHOS::ObjectStore {
 void ObjectSaveCallback::Completed(const std::map<std::string, int32_t> &results)

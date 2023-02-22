@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-#include "iobject_callback.h"
+#include "object_callback.h"
 namespace OHOS::ObjectStore {
 class ObjectService {
 public:
