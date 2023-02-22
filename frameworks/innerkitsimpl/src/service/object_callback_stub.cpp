@@ -28,7 +28,7 @@ int ObjectSaveCallbackStub::OnRemoteRequest(
     ZLOGI("code:%{public}u, callingPid:%{public}d", code, IPCSkeleton::GetCallingPid());
     auto localDescriptor = GetDescriptor();
     auto remoteDescriptor = data.ReadInterfaceToken();
-    if (remoteDescriptor != localDescriptor) {
+    if (remoteDescriptor != localDescriptor || code != COMPLETED) {
         ZLOGE("interface token is not equal");
         return -1;
     }
@@ -55,7 +55,7 @@ int ObjectRevokeSaveCallbackStub::OnRemoteRequest(
     ZLOGI("code:%{public}u, callingPid:%{public}d", code, IPCSkeleton::GetCallingPid());
     auto localDescriptor = GetDescriptor();
     auto remoteDescriptor = data.ReadInterfaceToken();
-    if (remoteDescriptor != localDescriptor) {
+    if (remoteDescriptor != localDescriptor || code != COMPLETED) {
         ZLOGE("interface token is not equal");
         return -1;
     }
@@ -82,7 +82,7 @@ int ObjectRetrieveCallbackStub::OnRemoteRequest(
     ZLOGI("code:%{public}u, callingPid:%{public}d", code, IPCSkeleton::GetCallingPid());
     auto localDescriptor = GetDescriptor();
     auto remoteDescriptor = data.ReadInterfaceToken();
-    if (remoteDescriptor != localDescriptor) {
+    if (remoteDescriptor != localDescriptor || code != COMPLETED) {
         ZLOGE("interface token is not equal");
         return -1;
     }
@@ -109,7 +109,7 @@ int ObjectChangeCallbackStub::OnRemoteRequest(
     ZLOGI("code:%{public}u, callingPid:%{public}d", code, IPCSkeleton::GetCallingPid());
     auto localDescriptor = GetDescriptor();
     auto remoteDescriptor = data.ReadInterfaceToken();
-    if (remoteDescriptor != localDescriptor) {
+    if (remoteDescriptor != localDescriptor || code != COMPLETED) {
         ZLOGE("interface token is not equal");
         return -1;
     }
