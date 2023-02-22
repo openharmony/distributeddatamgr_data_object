@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,27 +15,48 @@
 
 #ifndef OBJECT_CALLBACK_STUB_H
 #define OBJECT_CALLBACK_STUB_H
-
-#include "iobject_callback.h"
+#include <iremote_broker.h>
+#include <iremote_stub.h>
+#include "object_callback.h"
 
 namespace OHOS {
 namespace DistributedObject {
-class ObjectSaveCallbackStub : public IRemoteStub<IObjectSaveCallback> {
+class ObjectSaveCallbackBroker : public IObjectSaveCallback, public IRemoteBroker {
+public:
+    DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.DistributedObject.IObjectSaveCallback");
+};
+
+class ObjectSaveCallbackStub : public IRemoteStub<ObjectSaveCallbackBroker> {
 public:
     int OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
 };
 
-class ObjectRevokeSaveCallbackStub : public IRemoteStub<IObjectRevokeSaveCallback> {
+class ObjectRevokeSaveCallbackBroker : public IObjectRevokeSaveCallback, public IRemoteBroker {
+public:
+    DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.DistributedObject.IObjectRevokeSaveCallback");
+};
+
+class ObjectRevokeSaveCallbackStub : public IRemoteStub<ObjectRevokeSaveCallbackBroker> {
 public:
     int OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
 };
 
-class ObjectRetrieveCallbackStub : public IRemoteStub<IObjectRetrieveCallback> {
+class ObjectRetrieveCallbackBroker : public IObjectRetrieveCallback, public IRemoteBroker {
+public:
+    DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.DistributedObject.IObjectRetrieveCallback");
+};
+
+class ObjectRetrieveCallbackStub : public IRemoteStub<ObjectRetrieveCallbackBroker> {
 public:
     int OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
 };
 
-class ObjectChangeCallbackStub : public IRemoteStub<IObjectChangeCallback> {
+class ObjectChangeCallbackBroker : public IObjectChangeCallback, public IRemoteBroker {
+public:
+    DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.DistributedObject.IObjectChangeCallback");
+};
+
+class ObjectChangeCallbackStub : public IRemoteStub<ObjectChangeCallbackBroker> {
 public:
     int OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
 };

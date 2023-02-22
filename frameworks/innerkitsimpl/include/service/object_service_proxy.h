@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,13 +28,13 @@ public:
     ~ObjectServiceProxy() = default;
     int32_t ObjectStoreSave(const std::string &bundleName, const std::string &sessionId,
         const std::string &deviceId, const std::map<std::string, std::vector<uint8_t>> &data,
-        const sptr<IRemoteObject> callback) override;
+        sptr<IRemoteObject> callback) override;
     int32_t ObjectStoreRetrieve(
-        const std::string &bundleName, const std::string &sessionId, const sptr<IRemoteObject> callback) override;
+        const std::string &bundleName, const std::string &sessionId, sptr<IRemoteObject> callback) override;
     int32_t ObjectStoreRevokeSave(const std::string &bundleName, const std::string &sessionId,
-        const sptr<IRemoteObject> callback) override;
+        sptr<IRemoteObject> callback) override;
     int32_t RegisterDataObserver(const std::string &bundleName, const std::string &sessionId,
-        const sptr<IRemoteObject> callback) override;
+        sptr<IRemoteObject> callback) override;
     int32_t UnregisterDataChangeObserver(const std::string &bundleName, const std::string &sessionId) override;
 
 private:
