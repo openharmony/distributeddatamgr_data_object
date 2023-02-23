@@ -59,7 +59,7 @@ std::shared_ptr<ObjectStoreDataServiceProxy> ClientAdaptor::GetDistributedDataMa
             continue;
         }
         LOG_INFO("get distributed data manager success");
-        sptr<ObjectStoreDataServiceProxy> proxy = new(std::nothrow)ObjectStoreDataServiceProxy(remoteObject);
+        sptr<ObjectStoreDataServiceProxy> proxy = new (std::nothrow)ObjectStoreDataServiceProxy(remoteObject);
         if (proxy == nullptr) {
             LOG_ERROR("new ObjectStoreDataServiceProxy fail.");
             return nullptr;
@@ -97,7 +97,6 @@ ObjectStoreDataServiceProxy::ObjectStoreDataServiceProxy(const sptr<IRemoteObjec
 
 sptr<IRemoteObject> ObjectStoreDataServiceProxy::GetFeatureInterface(const std::string &name)
 {
-    LOG_INFO("%s", name.c_str());
     MessageParcel data;
     if (!data.WriteInterfaceToken(ObjectStoreDataServiceProxy::GetDescriptor())) {
         LOG_ERROR("write descriptor failed");
@@ -105,7 +104,7 @@ sptr<IRemoteObject> ObjectStoreDataServiceProxy::GetFeatureInterface(const std::
     }
 
     if (!ITypesUtil::Marshal(data, name)) {
-        LOG_ERROR("write descriptor failed");
+        LOG_ERROR("write name failed");
         return nullptr;
     }
 
@@ -133,17 +132,12 @@ uint32_t ObjectStoreDataServiceProxy::RegisterClientDeathObserver(const std::str
         LOG_ERROR("write descriptor failed");
         return ERR_IPC;
     }
-    if (!data.WriteString(appId)) {
-        LOG_WARN("failed to write string.");
-        return ERR_IPC;
-    }
-    if (observer != nullptr) {
-        if (!data.WriteRemoteObject(observer)) {
-            LOG_WARN("failed to write parcel.");
-            return ERR_IPC;
-        }
-    } else {
+    if (observer == nullptr) {
         return ERR_INVALID_ARGS;
+    }
+    if (!ITypesUtil::Marshal(data, appId, observer)) {
+        LOG_ERROR("remote observer fail");
+        return ERR_IPC;
     }
 
     MessageOption mo { MessageOption::TF_SYNC };

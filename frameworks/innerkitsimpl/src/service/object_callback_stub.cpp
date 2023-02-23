@@ -28,25 +28,20 @@ int ObjectSaveCallbackStub::OnRemoteRequest(
     ZLOGI("code:%{public}u, callingPid:%{public}d", code, IPCSkeleton::GetCallingPid());
     auto localDescriptor = GetDescriptor();
     auto remoteDescriptor = data.ReadInterfaceToken();
-    if (remoteDescriptor != localDescriptor || code != COMPLETED) {
+    if (remoteDescriptor != localDescriptor) {
         ZLOGE("interface token is not equal");
         return -1;
     }
-    switch (code) {
-        case COMPLETED: {
-            std::map<std::string, int32_t> results;
-            if (!ITypesUtil::Unmarshal(data, results)) {
-                ZLOGE("Unmarshalling failed");
-                return -1;
-            }
-            ZLOGI("object start complete");
-            Completed(results);
-            ZLOGI("object end complete");
-            return 0;
+    if (code == COMPLETED) {
+        std::map<std::string, int32_t> results;
+        if (!ITypesUtil::Unmarshal(data, results)) {
+            ZLOGE("Unmarshalling failed");
+            return -1;
         }
-        default:
-            return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
+        Completed(results);
+        return 0;
     }
+    return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
 }
 
 int ObjectRevokeSaveCallbackStub::OnRemoteRequest(
@@ -55,25 +50,20 @@ int ObjectRevokeSaveCallbackStub::OnRemoteRequest(
     ZLOGI("code:%{public}u, callingPid:%{public}d", code, IPCSkeleton::GetCallingPid());
     auto localDescriptor = GetDescriptor();
     auto remoteDescriptor = data.ReadInterfaceToken();
-    if (remoteDescriptor != localDescriptor || code != COMPLETED) {
+    if (remoteDescriptor != localDescriptor) {
         ZLOGE("interface token is not equal");
         return -1;
     }
-    switch (code) {
-        case COMPLETED: {
-            int32_t status;
-            if (!ITypesUtil::Unmarshal(data, status)) {
-                ZLOGE("write descriptor failed");
-                return -1;
-            }
-            ZLOGI("object start complete");
-            Completed(status);
-            ZLOGE("object end complete");
-            return 0;
+    if (code == COMPLETED) {
+        int32_t status;
+        if (!ITypesUtil::Unmarshal(data, status)) {
+            ZLOGE("write descriptor failed");
+            return -1;
         }
-        default:
-            return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
+        Completed(status);
+        return 0;
     }
+    return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
 }
 
 int ObjectRetrieveCallbackStub::OnRemoteRequest(
@@ -82,25 +72,20 @@ int ObjectRetrieveCallbackStub::OnRemoteRequest(
     ZLOGI("code:%{public}u, callingPid:%{public}d", code, IPCSkeleton::GetCallingPid());
     auto localDescriptor = GetDescriptor();
     auto remoteDescriptor = data.ReadInterfaceToken();
-    if (remoteDescriptor != localDescriptor || code != COMPLETED) {
+    if (remoteDescriptor != localDescriptor) {
         ZLOGE("interface token is not equal");
         return -1;
     }
-    switch (code) {
-        case COMPLETED: {
-            std::map<std::string, std::vector<uint8_t>> results;
-            if (!ITypesUtil::Unmarshal(data, results)) {
-                ZLOGE("write descriptor failed");
-                return -1;
-            }
-            ZLOGI("object start complete");
-            Completed(results);
-            ZLOGI("object end complete");
-            return 0;
+    if (code == COMPLETED) {
+        std::map<std::string, std::vector<uint8_t>> results;
+        if (!ITypesUtil::Unmarshal(data, results)) {
+            ZLOGE("write descriptor failed");
+            return -1;
         }
-        default:
-            return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
+        Completed(results);
+        return 0;
     }
+    return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
 }
 
 int ObjectChangeCallbackStub::OnRemoteRequest(
@@ -109,23 +94,20 @@ int ObjectChangeCallbackStub::OnRemoteRequest(
     ZLOGI("code:%{public}u, callingPid:%{public}d", code, IPCSkeleton::GetCallingPid());
     auto localDescriptor = GetDescriptor();
     auto remoteDescriptor = data.ReadInterfaceToken();
-    if (remoteDescriptor != localDescriptor || code != COMPLETED) {
+    if (remoteDescriptor != localDescriptor) {
         ZLOGE("interface token is not equal");
         return -1;
     }
-    switch (code) {
-        case COMPLETED: {
-            std::map<std::string, std::vector<uint8_t>> results;
-            if (!ITypesUtil::Unmarshal(data, results)) {
-                ZLOGE("write descriptor failed");
-                return -1;
-            }
-            Completed(results);
-            return 0;
+    if (code == COMPLETED) {
+        std::map<std::string, std::vector<uint8_t>> results;
+        if (!ITypesUtil::Unmarshal(data, results)) {
+            ZLOGE("write descriptor failed");
+            return -1;
         }
-        default:
-            return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
+        Completed(results);
+        return 0;
     }
+    return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
 }
 } // namespace DistributedObject
 } // namespace OHOS
