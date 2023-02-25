@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,19 +20,27 @@
 #include <string>
 #include <vector>
 
-#include "object_callback.h"
-namespace OHOS::ObjectStore {
+namespace OHOS::DistributedObject {
 class ObjectService {
 public:
+    enum {
+        OBJECTSTORE_SAVE,
+        OBJECTSTORE_REVOKE_SAVE,
+        OBJECTSTORE_RETRIEVE,
+        OBJECTSTORE_REGISTER_OBSERVER,
+        OBJECTSTORE_UNREGISTER_OBSERVER,
+        OBJECTSTORE_SERVICE_CMD_MAX
+    };
     virtual int32_t ObjectStoreSave(const std::string &bundleName, const std::string &sessionId,
         const std::string &deviceId, const std::map<std::string, std::vector<uint8_t>> &data,
-        sptr<IObjectSaveCallback> callback) = 0;
+        sptr<IRemoteObject> callback) = 0;
     virtual int32_t ObjectStoreRetrieve(
-        const std::string &bundleName, const std::string &sessionId, sptr<IObjectRetrieveCallback> callback) = 0;
+        const std::string &bundleName, const std::string &sessionId, sptr<IRemoteObject> callback) = 0;
     virtual int32_t ObjectStoreRevokeSave(
-        const std::string &bundleName, const std::string &sessionId, sptr<IObjectRevokeSaveCallback> callback) = 0;
+        const std::string &bundleName, const std::string &sessionId, sptr<IRemoteObject> callback) = 0;
     virtual int32_t RegisterDataObserver(
-            const std::string &bundleName, const std::string &sessionId, sptr<IObjectChangeCallback> callback) = 0;
+        const std::string &bundleName, const std::string &sessionId, sptr<IRemoteObject> callback) = 0;
+    virtual int32_t UnregisterDataChangeObserver(const std::string &bundleName, const std::string &sessionId) = 0;
 };
-} // namespace OHOS::ObjectStore
+} // namespace OHOS::DistributedObject
 #endif

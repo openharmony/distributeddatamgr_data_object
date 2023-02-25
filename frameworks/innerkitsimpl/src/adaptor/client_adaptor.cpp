@@ -19,10 +19,11 @@
 
 #include "logger.h"
 #include "iservice_registry.h"
+#include "itypes_util.h"
 #include "objectstore_errors.h"
 
 namespace OHOS::ObjectStore {
-sptr<OHOS::DistributedKv::IKvStoreDataService> ClientAdaptor::distributedDataMgr_ = nullptr;
+std::shared_ptr<ObjectStoreDataServiceProxy> ClientAdaptor::distributedDataMgr_ = nullptr;
 
 sptr<OHOS::DistributedObject::IObjectService> ClientAdaptor::GetObjectService()
 {
@@ -42,7 +43,7 @@ sptr<OHOS::DistributedObject::IObjectService> ClientAdaptor::GetObjectService()
     return iface_cast<DistributedObject::IObjectService>(remote);
 }
 
-sptr<DistributedKv::IKvStoreDataService> ClientAdaptor::GetDistributedDataManager()
+std::shared_ptr<ObjectStoreDataServiceProxy> ClientAdaptor::GetDistributedDataManager()
 {
     int retry = 0;
     while (++retry <= GET_SA_RETRY_TIMES) {
@@ -58,14 +59,19 @@ sptr<DistributedKv::IKvStoreDataService> ClientAdaptor::GetDistributedDataManage
             continue;
         }
         LOG_INFO("get distributed data manager success");
-        return iface_cast<DistributedKv::IKvStoreDataService>(remoteObject);
+        sptr<ObjectStoreDataServiceProxy> proxy = new (std::nothrow)ObjectStoreDataServiceProxy(remoteObject);
+        if (proxy == nullptr) {
+            LOG_ERROR("new ObjectStoreDataServiceProxy fail.");
+            return nullptr;
+        }
+        return std::shared_ptr<ObjectStoreDataServiceProxy>(proxy.GetRefPtr(), [holder = proxy](const auto *) {});
     }
 
     LOG_ERROR("get distributed data manager failed");
     return nullptr;
 }
 
-uint32_t ClientAdaptor::RegisterClientDeathListener(DistributedKv::AppId &appId, sptr<IRemoteObject> remoteObject)
+uint32_t ClientAdaptor::RegisterClientDeathListener(const std::string &appId, sptr<IRemoteObject> remoteObject)
 {
     if (distributedDataMgr_ == nullptr) {
         distributedDataMgr_ = GetDistributedDataManager();
@@ -81,5 +87,65 @@ uint32_t ClientAdaptor::RegisterClientDeathListener(DistributedKv::AppId &appId,
         return ERR_EXIST;
     }
     return SUCCESS;
+}
+
+ObjectStoreDataServiceProxy::ObjectStoreDataServiceProxy(const sptr<IRemoteObject> &impl)
+    : IRemoteProxy<DistributedObject::IKvStoreDataService>(impl)
+{
+    LOG_INFO("init data service proxy.");
+}
+
+sptr<IRemoteObject> ObjectStoreDataServiceProxy::GetFeatureInterface(const std::string &name)
+{
+    MessageParcel data;
+    if (!data.WriteInterfaceToken(ObjectStoreDataServiceProxy::GetDescriptor())) {
+        LOG_ERROR("write descriptor failed");
+        return nullptr;
+    }
+
+    if (!ITypesUtil::Marshal(data, name)) {
+        LOG_ERROR("write name failed");
+        return nullptr;
+    }
+
+    MessageParcel reply;
+    MessageOption mo { MessageOption::TF_SYNC };
+    int32_t error = Remote()->SendRequest(GET_FEATURE_INTERFACE, data, reply, mo);
+    if (error != 0) {
+        LOG_ERROR("SendRequest returned %{public}d", error);
+        return nullptr;
+    }
+
+    sptr<IRemoteObject> remoteObject;
+    if (!ITypesUtil::Unmarshal(reply, remoteObject)) {
+        LOG_ERROR("remote object is nullptr");
+        return nullptr;
+    }
+    return remoteObject;
+}
+
+uint32_t ObjectStoreDataServiceProxy::RegisterClientDeathObserver(const std::string &appId, sptr<IRemoteObject> observer)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    if (!data.WriteInterfaceToken(ObjectStoreDataServiceProxy::GetDescriptor())) {
+        LOG_ERROR("write descriptor failed");
+        return ERR_IPC;
+    }
+    if (observer == nullptr) {
+        return ERR_INVALID_ARGS;
+    }
+    if (!ITypesUtil::Marshal(data, appId, observer)) {
+        LOG_ERROR("remote observer fail");
+        return ERR_IPC;
+    }
+
+    MessageOption mo { MessageOption::TF_SYNC };
+    int32_t error = Remote()->SendRequest(REGISTERCLIENTDEATHOBSERVER, data, reply, mo);
+    if (error != 0) {
+        LOG_WARN("failed during IPC. errCode %d", error);
+        return ERR_IPC;
+    }
+    return static_cast<uint32_t>(reply.ReadInt32());
 }
 }

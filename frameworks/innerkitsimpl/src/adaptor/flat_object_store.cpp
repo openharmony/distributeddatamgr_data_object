@@ -18,7 +18,7 @@
 #include "client_adaptor.h"
 #include "distributed_objectstore_impl.h"
 #include "logger.h"
-#include "object_callback.h"
+#include "object_callback_impl.h"
 #include "object_service_proxy.h"
 #include "objectstore_errors.h"
 #include "softbus_adapter.h"
@@ -278,8 +278,9 @@ int32_t CacheManager::SaveObject(const std::string &bundleName, const std::strin
         LOG_ERROR("proxy is nullptr.");
         return ERR_NULL_PTR;
     }
-    sptr<IObjectSaveCallback> objectSaveCallback = new ObjectSaveCallback(callback);
-    int32_t status = proxy->ObjectStoreSave(bundleName, sessionId, deviceId, objectData, objectSaveCallback);
+    sptr<ObjectSaveCallbackBroker> objectSaveCallback = new ObjectSaveCallback(callback);
+    int32_t status = proxy->ObjectStoreSave(
+        bundleName, sessionId, deviceId, objectData, objectSaveCallback->AsObject().GetRefPtr());
     if (status != SUCCESS) {
         LOG_ERROR("object save failed code=%d.", static_cast<int>(status));
     }
@@ -295,8 +296,9 @@ int32_t CacheManager::RevokeSaveObject(
         LOG_ERROR("proxy is nullptr.");
         return ERR_NULL_PTR;
     }
-    sptr<IObjectRevokeSaveCallback> objectRevokeSaveCallback = new ObjectRevokeSaveCallback(callback);
-    int32_t status = proxy->ObjectStoreRevokeSave(bundleName, sessionId, objectRevokeSaveCallback);
+    sptr<ObjectRevokeSaveCallbackBroker> objectRevokeSaveCallback = new ObjectRevokeSaveCallback(callback);
+    int32_t status = proxy->ObjectStoreRevokeSave(
+        bundleName, sessionId, objectRevokeSaveCallback->AsObject().GetRefPtr());
     if (status != SUCCESS) {
         LOG_ERROR("object revoke save failed code=%d.", static_cast<int>(status));
     }
@@ -312,8 +314,9 @@ int32_t CacheManager::ResumeObject(const std::string &bundleName, const std::str
         LOG_ERROR("proxy is nullptr.");
         return ERR_NULL_PTR;
     }
-    sptr<IObjectRetrieveCallback> objectRetrieveCallback = new ObjectRetrieveCallback(callback);
-    int32_t status = proxy->ObjectStoreRetrieve(bundleName, sessionId, objectRetrieveCallback);
+    sptr<ObjectRetrieveCallbackBroker> objectRetrieveCallback = new ObjectRetrieveCallback(callback);
+    int32_t status = proxy->ObjectStoreRetrieve(
+        bundleName, sessionId, objectRetrieveCallback->AsObject().GetRefPtr());
     if (status != SUCCESS) {
         LOG_ERROR("object resume failed code=%d.", static_cast<int>(status));
     }
@@ -329,11 +332,10 @@ int32_t CacheManager::SubscribeDataChange(const std::string &bundleName, const s
         LOG_ERROR("proxy is nullptr.");
         return ERR_NULL_PTR;
     }
-    sptr<IObjectChangeCallback> objectRemoteResumeCallback = new ObjectChangeCallback(callback);
-    DistributedKv::AppId appId;
-    appId.appId = bundleName;
-    ClientAdaptor::RegisterClientDeathListener(appId, objectRemoteResumeCallback->AsObject());
-    int32_t status = proxy->RegisterDataObserver(bundleName, sessionId, objectRemoteResumeCallback);
+    sptr<ObjectChangeCallbackBroker> objectRemoteResumeCallback = new ObjectChangeCallback(callback);
+    ClientAdaptor::RegisterClientDeathListener(bundleName, objectRemoteResumeCallback->AsObject());
+    int32_t status = proxy->RegisterDataObserver(
+        bundleName, sessionId, objectRemoteResumeCallback->AsObject().GetRefPtr());
     if (status != SUCCESS) {
         LOG_ERROR("object remote resume failed code=%d.", static_cast<int>(status));
     }
