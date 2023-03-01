@@ -226,7 +226,7 @@ napi_value JSDistributedObject::JSSave(napi_env env, napi_callback_info info)
     struct SaveContext : public ContextBase {
         double version;
         std::string deviceId;
-        DistributedObject *object;
+        JSObjectWrapper *wrapper;
     };
     auto ctxt = std::make_shared<SaveContext>();
     std::function<void(size_t argc, napi_value * argv)> getCbOpe = [env, ctxt](size_t argc, napi_value *argv) {
@@ -244,13 +244,15 @@ napi_value JSDistributedObject::JSSave(napi_env env, napi_callback_info info)
         CHECK_EQUAL_WITH_RETURN_VOID(status, napi_ok);
         ASSERT_MATCH_ELSE_RETURN_VOID(wrapper != nullptr);
         ASSERT_MATCH_ELSE_RETURN_VOID(wrapper->GetObject() != nullptr);
-        ctxt->object = wrapper->GetObject();
+        ctxt->wrapper = wrapper;
     };
     ctxt->GetCbInfo(env, info, getCbOpe);
     CHECH_STATUS_ERRCODE(env, ctxt->status != napi_invalid_arg, ctxt->error);
     auto output = [env, ctxt](napi_value &result) {
         if (ctxt->status == napi_ok) {
-            std::string &sessionId = ctxt->object->GetSessionId();
+            CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
+            CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper->GetObject() != nullptr, ctxt, "object is null");
+            std::string &sessionId = ctxt->wrapper->GetObject()->GetSessionId();
             ctxt->status = napi_new_instance(
                 env, GetSaveResultCons(env, sessionId, ctxt->version, ctxt->deviceId), 0, nullptr, &result);
             CHECK_STATUS_RETURN_VOID(ctxt, "output failed!");
@@ -258,8 +260,9 @@ napi_value JSDistributedObject::JSSave(napi_env env, napi_callback_info info)
     };
     auto execute = [ctxt]() {
         LOG_INFO("start");
-        CHECH_STATUS_RETURN_VOID(env, ctxt->object != nullptr, ctxt, "object is null");
-        uint32_t status = ctxt->object->Save(ctxt->deviceId);
+        CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
+        CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper->GetObject() != nullptr, ctxt, "object is null");
+        uint32_t status = ctxt->wrapper->GetObject()->Save(ctxt->deviceId);
         if (status != SUCCESS) {
             LOG_ERROR("Save failed, status = %{public}d", status);
             ctxt->status = napi_generic_failure;
@@ -278,7 +281,7 @@ napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info in
 {
     LOG_DEBUG("JSRevokeSave()");
     struct RevokeSaveContext : public ContextBase {
-        DistributedObject *object;
+        JSObjectWrapper *wrapper;
     };
     auto ctxt = std::make_shared<RevokeSaveContext>();
     std::function<void(size_t argc, napi_value * argv)> getCbOpe = [env, ctxt](size_t argc, napi_value *argv) {
@@ -287,7 +290,7 @@ napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info in
         CHECK_EQUAL_WITH_RETURN_VOID(status, napi_ok);
         ASSERT_MATCH_ELSE_RETURN_VOID(wrapper != nullptr);
         ASSERT_MATCH_ELSE_RETURN_VOID(wrapper->GetObject() != nullptr);
-        ctxt->object = wrapper->GetObject();
+        ctxt->wrapper = wrapper;
     };
     ctxt->GetCbInfo(env, info, getCbOpe);
     if (ctxt->status != napi_ok) {
@@ -297,8 +300,11 @@ napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info in
 
     auto output = [env, ctxt](napi_value &result) {
         if (ctxt->status == napi_ok) {
+            CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
+            CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper->GetObject() != nullptr, ctxt, "object is null");
             ctxt->status = napi_new_instance(env,
-                JSDistributedObject::GetRevokeSaveResultCons(env, ctxt->object->GetSessionId()), 0, nullptr, &result);
+                JSDistributedObject::GetRevokeSaveResultCons(env, ctxt->wrapper->GetObject()->GetSessionId()), 0,
+                nullptr, &result);
             CHECK_STATUS_RETURN_VOID(ctxt, "output failed!");
         }
     };
@@ -306,8 +312,9 @@ napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info in
         env, ctxt, std::string(__FUNCTION__),
         [ctxt]() {
             LOG_INFO("start");
-            CHECH_STATUS_RETURN_VOID(env, ctxt->object != nullptr, ctxt, "object is null");
-            uint32_t status = ctxt->object->RevokeSave();
+            CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
+            CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper->GetObject() != nullptr, ctxt, "object is null");
+            uint32_t status = ctxt->wrapper->GetObject()->RevokeSave();
             if (status != SUCCESS) {
                 LOG_ERROR("Save failed, status = %{public}d", status);
                 ctxt->status = napi_generic_failure;
