@@ -108,7 +108,11 @@ napi_value JSDistributedObjectStore::NewDistributedObject(
     napi_value result;
     napi_status status = napi_new_instance(env, JSDistributedObject::GetCons(env), 0, nullptr, &result);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
-    JSObjectWrapper *objectWrapper = new JSObjectWrapper(objectStore, object);
+    JSObjectWrapper *objectWrapper = new (std::nothrow) JSObjectWrapper(objectStore, object);
+    if (objectWrapper == nullptr) {
+        LOG_ERROR("JSDistributedObjectStore::NewDistributedObject no memory for objectWrapper malloc!");
+        return nullptr;
+    }
     objectWrapper->SetObjectId(objectId);
     status = napi_wrap(
         env, result, objectWrapper,
