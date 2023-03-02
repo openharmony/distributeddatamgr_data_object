@@ -132,7 +132,6 @@ napi_value JSDistributedObjectStore::NewDistributedObject(
             delete objectWrapper;
         },
         nullptr, nullptr);
-    
     if (status != napi_ok) {
         LOG_WARN("error! napi_wrap failed.");
         delete objectWrapper;

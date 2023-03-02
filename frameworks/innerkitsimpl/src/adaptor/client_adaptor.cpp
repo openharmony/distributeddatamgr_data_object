@@ -124,7 +124,8 @@ sptr<IRemoteObject> ObjectStoreDataServiceProxy::GetFeatureInterface(const std::
     return remoteObject;
 }
 
-uint32_t ObjectStoreDataServiceProxy::RegisterClientDeathObserver(const std::string &appId, sptr<IRemoteObject> observer)
+uint32_t ObjectStoreDataServiceProxy::RegisterClientDeathObserver(
+    const std::string &appId, sptr<IRemoteObject> observer)
 {
     MessageParcel data;
     MessageParcel reply;
