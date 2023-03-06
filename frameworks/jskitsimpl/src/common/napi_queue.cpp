@@ -138,7 +138,7 @@ void NapiQueue::GenerateOutput(ContextBase *ctxt)
         result[RESULT_DATA] = ctxt->output;
     } else {
         napi_value businessError = nullptr;
-        napi_create_object(ctxt->env, &businessError);
+        SetBusinessError(ctxt->env, &businessError, ctxt->error);
         result[RESULT_ERROR] = businessError;
         napi_get_undefined(ctxt->env, &result[RESULT_DATA]);
     }
