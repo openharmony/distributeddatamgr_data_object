@@ -119,7 +119,7 @@ napi_value NapiQueue::AsyncWork(napi_env env, std::shared_ptr<ContextBase> ctxt,
 void NapiQueue::SetBusinessError(napi_env env, napi_value *businessError, std::shared_ptr<Error> error)
 {
     napi_create_object(env, businessError);
-    if (error->GetCode() != EXCEPTION_INNER) {
+    if (error != nullptr && error->GetCode() != EXCEPTION_INNER) {
         napi_value code = nullptr;
         napi_value msg = nullptr;
         napi_create_int32(env, error->GetCode(), &code);

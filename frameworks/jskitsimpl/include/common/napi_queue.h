@@ -39,6 +39,11 @@ struct ContextBase {
         GetCbInfo(env, info, parse, true);
     }
 
+    void SetError(std::shared_ptr<Error> err)
+    {
+        error = err;
+    }
+
     napi_env env = nullptr;
     napi_value output = nullptr;
     napi_status status = napi_invalid_arg;
