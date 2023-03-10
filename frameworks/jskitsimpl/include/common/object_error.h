@@ -20,6 +20,7 @@
 
 namespace OHOS {
 namespace ObjectStore {
+static const int EXCEPTION_DEVICE_NOT_SUPPORT = 801;
 static const int EXCEPTION_PARAMETER_CHECK = 401;
 static const int EXCEPTION_NO_PERMISSION = 201;
 static const int EXCEPTION_DB_EXIST = 15400001;
@@ -72,6 +73,16 @@ public:
     InnerError() = default;
     std::string GetMessage() override;
     int GetCode() override;
+};
+
+class APIError : public Error {
+public:
+    APIError(const std::string &funcName) : functionName(funcName){};
+    std::string GetMessage() override;
+    int GetCode() override;
+
+private:
+    std::string functionName;
 };
 } // namespace ObjectStore
 } // namespace OHOS

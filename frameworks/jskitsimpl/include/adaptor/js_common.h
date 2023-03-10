@@ -24,6 +24,7 @@ namespace OHOS::ObjectStore {
             return nullptr;                                           \
         }                                                             \
     }
+
 #define CHECK_EQUAL_WITH_RETURN_VOID(status, value)                   \
     {                                                                 \
         if (status != value) {                                        \
@@ -31,6 +32,7 @@ namespace OHOS::ObjectStore {
             return;                                                   \
         }                                                             \
     }
+
 #define CHECK_EQUAL_WITH_RETURN_FALSE(status, value)                  \
     {                                                                 \
         if (status != value) {                                        \
@@ -38,6 +40,7 @@ namespace OHOS::ObjectStore {
             return false;                                             \
         }                                                             \
     }
+
 #define ASSERT_MATCH_ELSE_RETURN_VOID(condition)        \
     {                                                   \
         if (!(condition)) {                             \
@@ -45,6 +48,7 @@ namespace OHOS::ObjectStore {
             return;                                     \
         }                                               \
     }
+
 #define ASSERT_MATCH_ELSE_RETURN_NULL(condition)        \
     {                                                   \
         if (!(condition)) {                             \
@@ -52,6 +56,7 @@ namespace OHOS::ObjectStore {
             return nullptr;                             \
         }                                               \
     }
+
 #define ASSERT_MATCH_ELSE_GOTO_ERROR(condition)         \
     {                                                   \
         if (!(condition)) {                             \
@@ -59,6 +64,27 @@ namespace OHOS::ObjectStore {
             goto ERROR;                                 \
         }                                               \
     }
+
+#define DATAOBJECT_CHECK_API_VALID(assertion, errMsg)                                \
+    do {                                                                             \
+        if (!(assertion)) {                                                          \
+            std::shared_ptr<APIError> apiError = std::make_shared<APIError>(errMsg); \
+            ctxt->SetError(apiError);                                                \
+            ctxt->status = napi_generic_failure;                                     \
+            return;                                                                  \
+        }                                                                            \
+    } while (0)
+
+#define DATAOBJECT_CHECK_VALID(assertion)                                          \
+    do {                                                                           \
+        if (!(assertion)) {                                                        \
+            std::shared_ptr<APIError> innerError = std::make_shared<InnerError>(); \
+            ctxt->SetError(apiError);                                              \
+            ctxt->status = napi_generic_failure;                                   \
+            ctxt->message = std::string("operation failed");                       \
+            return;                                                                \
+        }                                                                          \
+    } while (0)
 } // namespace OHOS::ObjectStore
 static const char *CHANGE = "change";
 static const char *STATUS = "status";

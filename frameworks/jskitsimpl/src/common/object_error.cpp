@@ -67,5 +67,16 @@ int InnerError::GetCode()
 {
     return EXCEPTION_INNER;
 }
+
+std::string APIError::GetMessage()
+{
+    return "Capability no supported. function" + functionName
+           + "can not work correctly due to limited device capabilities.";
+}
+
+int APIError::GetCode()
+{
+    return EXCEPTION_DEVICE_NOT_SUPPORT;
+}
 } // namespace ObjectStore
 } // namespace OHOS
