@@ -75,14 +75,11 @@ public:
     int GetCode() override;
 };
 
-class APIError : public Error {
+class DeviceNotSupportedError : public Error {
 public:
-    APIError(const std::string &funcName) : functionName(funcName){};
+    DeviceNotSupportedError() = default;
     std::string GetMessage() override;
     int GetCode() override;
-
-private:
-    std::string functionName;
 };
 } // namespace ObjectStore
 } // namespace OHOS

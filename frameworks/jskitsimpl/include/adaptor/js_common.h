@@ -65,25 +65,25 @@ namespace OHOS::ObjectStore {
         }                                               \
     }
 
-#define DATAOBJECT_CHECK_API_VALID(assertion, errMsg)                                \
-    do {                                                                             \
-        if (!(assertion)) {                                                          \
-            std::shared_ptr<APIError> apiError = std::make_shared<APIError>(errMsg); \
-            ctxt->SetError(apiError);                                                \
-            ctxt->status = napi_generic_failure;                                     \
-            return;                                                                  \
-        }                                                                            \
+#define CHECK_API_VALID(assertion)                                                                           \
+    do {                                                                                                     \
+        if (!(assertion)) {                                                                                  \
+            std::shared_ptr<DeviceNotSupportedError> apiError = std::make_shared<DeviceNotSupportedError>(); \
+            ctxt->SetError(apiError);                                                                        \
+            ctxt->status = napi_generic_failure;                                                             \
+            return;                                                                                          \
+        }                                                                                                    \
     } while (0)
 
-#define DATAOBJECT_CHECK_VALID(assertion)                                          \
-    do {                                                                           \
-        if (!(assertion)) {                                                        \
-            std::shared_ptr<APIError> innerError = std::make_shared<InnerError>(); \
-            ctxt->SetError(apiError);                                              \
-            ctxt->status = napi_generic_failure;                                   \
-            ctxt->message = std::string("operation failed");                       \
-            return;                                                                \
-        }                                                                          \
+#define CHECK_VALID(assertion)                                                       \
+    do {                                                                             \
+        if (!(assertion)) {                                                          \
+            std::shared_ptr<InnerError> innerError = std::make_shared<InnerError>(); \
+            ctxt->SetError(innerError);                                              \
+            ctxt->status = napi_generic_failure;                                     \
+            ctxt->message = std::string("operation failed");                         \
+            return;                                                                  \
+        }                                                                            \
     } while (0)
 } // namespace OHOS::ObjectStore
 static const char *CHANGE = "change";

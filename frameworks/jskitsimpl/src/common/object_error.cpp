@@ -68,13 +68,12 @@ int InnerError::GetCode()
     return EXCEPTION_INNER;
 }
 
-std::string APIError::GetMessage()
+std::string DeviceNotSupportedError::GetMessage()
 {
-    return "Capability no supported. function" + functionName
-           + "can not work correctly due to limited device capabilities.";
+    return "Capability no supported.";
 }
 
-int APIError::GetCode()
+int DeviceNotSupportedError::GetCode()
 {
     return EXCEPTION_DEVICE_NOT_SUPPORT;
 }
