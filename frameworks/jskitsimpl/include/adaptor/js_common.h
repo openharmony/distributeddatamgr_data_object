@@ -75,13 +75,13 @@ namespace OHOS::ObjectStore {
         }                                                                                                    \
     } while (0)
 
-#define CHECK_VALID(assertion)                                                       \
+#define CHECK_VALID(assertion, msg)                                                  \
     do {                                                                             \
         if (!(assertion)) {                                                          \
             std::shared_ptr<InnerError> innerError = std::make_shared<InnerError>(); \
             ctxt->SetError(innerError);                                              \
             ctxt->status = napi_generic_failure;                                     \
-            ctxt->message = std::string("operation failed");                         \
+            ctxt->message = msg;                                                     \
             return;                                                                  \
         }                                                                            \
     } while (0)
