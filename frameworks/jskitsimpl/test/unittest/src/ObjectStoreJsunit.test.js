@@ -708,8 +708,6 @@ describe('objectStoreTest',function () {
             done();
         });
         console.log(TAG + "************* testSave001 end *************");
-        g_object.setSessionId("");
-
     })
 
     /**
@@ -748,10 +746,7 @@ describe('objectStoreTest',function () {
             expect(g_object.age == 18).assertEqual(true);
             expect(g_object.isVis == false).assertEqual(true);
         })
-
         console.log(TAG + "************* testSave002 end *************");
-        g_object.setSessionId("");
-
     })
 
     /**
@@ -799,9 +794,7 @@ describe('objectStoreTest',function () {
                 done();
             })
         })
-
         console.log(TAG + "************* testRevokeSave001 end *************");
-        g_object.setSessionId("");
     })
 
     /**
@@ -853,7 +846,6 @@ describe('objectStoreTest',function () {
         });
 
         console.log(TAG + "************* testRevokeSave002 end *************");
-        g_object.setSessionId("");
     })
 
     /**
@@ -888,7 +880,6 @@ describe('objectStoreTest',function () {
             g_object.setSessionId("");
             done();
         })
-
         console.log(TAG + "************* OnstatusRestored001 end *************");
     })
 
