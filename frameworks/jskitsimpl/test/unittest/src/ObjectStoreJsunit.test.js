@@ -677,31 +677,79 @@ describe('objectStoreTest',function () {
      * @tc.name: testSave001
      * @tc.desc: test save local
      * @tc.type: FUNC
-     * @tc.require: I4WDAK
+     * @tc.require:
      */
-    it('testSave001', 0, async function () {
+    it('testSave001', 0, async function (done) {
         console.log(TAG + "************* testSave001 start *************");
         var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
         expect(g_object == undefined).assertEqual(false);
 
-        g_object.setSessionId("tmpsession1");
-        expect("tmpsession1" == g_object.__sessionId).assertEqual(true);
+        g_object.setSessionId("testSession001");
+        expect("testSession001" == g_object.__sessionId).assertEqual(true);
 
-        let result = await g_object.save("local");
-        expect(result.sessionId == "tmpsession1").assertEqual(true);
-        expect(result.version == g_object.__version).assertEqual(true);
-        expect(result.deviceId == "local").assertEqual(true);
+        g_object.save("local").then((ret) => {
+            expect(ret.sessionId == "testSession001").assertEqual(true);
+            expect(ret.version == g_object.__version).assertEqual(true);
+            expect(ret.deviceId == "local").assertEqual(true);
+            done();
 
-        g_object.setSessionId("");
-        g_object.name = undefined;
-        g_object.age = undefined;
-        g_object.isVis = undefined;
-        g_object.setSessionId("tmpsession1");
+            g_object.setSessionId("");
+            g_object.name = undefined;
+            g_object.age = undefined;
+            g_object.isVis = undefined;
+            g_object.setSessionId("testSession001");
 
-        expect(g_object.name == "Amy").assertEqual(true);
-        expect(g_object.age == 18).assertEqual(true);
-        expect(g_object.isVis == false).assertEqual(true);
+            expect(g_object.name == "Amy").assertEqual(true);
+            expect(g_object.age == 18).assertEqual(true);
+            expect(g_object.isVis == false).assertEqual(true);
+        }).catch((err) => {
+            console.log("==tt== testSave001 save reject");
+            expect("801").assertEqual(err.code.toString());
+            done();
+        });
         console.log(TAG + "************* testSave001 end *************");
+        g_object.setSessionId("");
+
+    })
+
+    /**
+     * @tc.name: testSave002
+     * @tc.desc: test save local
+     * @tc.type: FUNC
+     * @tc.require:
+     */
+    it('testSave002', 0, async function (done) {
+        console.log(TAG + "************* testSave002 start *************");
+        var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
+        expect(g_object == undefined).assertEqual(false);
+
+        g_object.setSessionId("testSession002");
+        expect("testSession002" == g_object.__sessionId).assertEqual(true);
+
+        g_object.save("local", (err, result) => {
+            if (err) {
+                console.log("==tt== testSave002 save reject");
+                expect("801").assertEqual(err.code.toString());
+                done();
+                return;
+            }
+            expect(result.sessionId == "testSession002").assertEqual(true);
+            expect(result.version == g_object.__version).assertEqual(true);
+            expect(result.deviceId == "local").assertEqual(true);
+            done();
+
+            g_object.setSessionId("");
+            g_object.name = undefined;
+            g_object.age = undefined;
+            g_object.isVis = undefined;
+            g_object.setSessionId("testSession002");
+
+            expect(g_object.name == "Amy").assertEqual(true);
+            expect(g_object.age == 18).assertEqual(true);
+            expect(g_object.isVis == false).assertEqual(true);
+        })
+
+        console.log(TAG + "************* testSave002 end *************");
         g_object.setSessionId("");
 
     })
@@ -717,31 +765,95 @@ describe('objectStoreTest',function () {
         var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
         expect(g_object == undefined).assertEqual(false);
 
-        g_object.setSessionId("123456");
-        expect("123456" == g_object.__sessionId).assertEqual(true);
+        g_object.setSessionId("testSession003");
+        expect("testSession003" == g_object.__sessionId).assertEqual(true);
 
-        let result = await g_object.save("local");
-        expect(result.sessionId == "123456").assertEqual(true);
-        expect(result.version == g_object.__version).assertEqual(true);
-        expect(result.deviceId == "local").assertEqual(true);
+        g_object.save("local", (err, result) => {
+            if (err) {
+                console.log("==tt== testRevokeSave001 save reject");
+                expect("801").assertEqual(err.code.toString());
+                done();
+                return;
+            }
+            expect(result.sessionId == "testSession003").assertEqual(true);
+            expect(result.version == g_object.__version).assertEqual(true);
+            expect(result.deviceId == "local").assertEqual(true);
+            done();
+            g_object.revokeSave((err, result) => {
+                if (err) {
+                    expect("801").assertEqual(err.code.toString());
+                    done();
+                    return;
+                }
+                expect("testSession003" == result.__sessionId).assertEqual(true);
 
-        result = await g_object.revokeSave();
+                g_object.setSessionId("");
+                g_object.name = undefined;
+                g_object.age = undefined;
+                g_object.isVis = undefined;
+                g_object.setSessionId("testSession003");
 
-        g_object.setSessionId("");
-        g_object.name = undefined;
-        g_object.age = undefined;
-        g_object.isVis = undefined;
-        g_object.setSessionId("123456");
-
-        expect(g_object.name == undefined).assertEqual(true);
-        expect(g_object.age == undefined).assertEqual(true);
-        expect(g_object.isVis == undefined).assertEqual(true);
-
-        expect(result.sessionId == "123456").assertEqual(true);
+                expect(g_object.name == undefined).assertEqual(true);
+                expect(g_object.age == undefined).assertEqual(true);
+                expect(g_object.isVis == undefined).assertEqual(true);
+                done();
+            })
+        })
 
         console.log(TAG + "************* testRevokeSave001 end *************");
         g_object.setSessionId("");
+    })
 
+    /**
+     * @tc.name: testRevokeSave002
+     * @tc.desc: test save local
+     * @tc.type: FUNC
+     * @tc.require:
+     */
+    it('testRevokeSave002', 0, async function () {
+        console.log(TAG + "************* testRevokeSave002 start *************");
+        var g_object = distributedObject.createDistributedObject({ name: "Amy", age: 18, isVis: false });
+        expect(g_object == undefined).assertEqual(false);
+
+        g_object.setSessionId("testSession004");
+        expect("testSession004" == g_object.__sessionId).assertEqual(true);
+
+        g_object.save("local").then((result) => {
+            console.log("==tt== testRevokeSave002 save resolve");
+            expect(result.sessionId == "testSession004").assertEqual(true);
+            expect(result.version == g_object.__version).assertEqual(true);
+            expect(result.deviceId == "local").assertEqual(true);
+            g_object.revokeSave().then((result) => {
+                console.log("==tt== testRevokeSave002 revokeSave resolve");
+                expect("testSession004" == result.__sessionId).assertEqual(true);
+
+                g_object.setSessionId("");
+                g_object.name = undefined;
+                g_object.age = undefined;
+                g_object.isVis = undefined;
+                g_object.setSessionId("testSession004");
+
+                expect(g_object.name == undefined).assertEqual(true);
+                expect(g_object.age == undefined).assertEqual(true);
+                expect(g_object.isVis == undefined).assertEqual(true);
+                done();
+            }).catch((err) => {
+                console.log("==tt== testRevokeSave002 save reject");
+                console.log("==tt== testRevokeSave002 err.code = " + err.code.toString());
+                expect("801").assertEqual(err.code.toString());
+                g_object.setSessionId("");
+                done();
+            });
+        }).catch((err) => {
+            console.log("==tt== testRevokeSave002 save reject");
+            console.log("==tt== testRevokeSave002 err.code = " + err.code.toString());
+            expect("801").assertEqual(err.code.toString());
+            g_object.setSessionId("");
+            done();
+        });
+
+        console.log(TAG + "************* testRevokeSave002 end *************");
+        g_object.setSessionId("");
     })
 
     /**
@@ -753,24 +865,31 @@ describe('objectStoreTest',function () {
     it('OnstatusRestored001', 0, async function () {
         console.log(TAG + "************* OnstatusRestored001 start *************");
         var g_object = distributedObject.createDistributedObject({ name: undefined, age: undefined, isVis: undefined });
-        g_object.setSessionId("123456");
+        g_object.setSessionId("testSession005");
         g_object.name = "jack";
         g_object.age = 19;
         g_object.isVis = true;
 
-        let result = await g_object.save("local");
-        expect(result.sessionId == "123456").assertEqual(true);
-        expect(result.version == g_object.__version).assertEqual(true);
-        expect(result.deviceId == "local").assertEqual(true);
+        g_object.save("local", (err, result) => {
+            if (err) {
+                expect("801").assertEqual(err.code.toString());
+                done();
+                return;
+            }
+            expect(result.sessionId == "testSession005").assertEqual(true);
+            expect(result.version == g_object.__version).assertEqual(true);
+            expect(result.deviceId == "local").assertEqual(true);
 
-        g_object.setSessionId("");
+            g_object.setSessionId("");
 
-        g_object.on("status", statusCallback4);
+            g_object.on("status", statusCallback4);
 
-        g_object.setSessionId("123456");
-        g_object.setSessionId("");
+            g_object.setSessionId("testSession005");
+            g_object.setSessionId("");
+            done();
+        })
+
         console.log(TAG + "************* OnstatusRestored001 end *************");
-
     })
 
     console.log(TAG + "*************Unit Test End*************");
