@@ -70,7 +70,7 @@ int InnerError::GetCode()
 
 std::string DeviceNotSupportedError::GetMessage()
 {
-    return "Capability no supported.";
+    return "Capability not supported.";
 }
 
 int DeviceNotSupportedError::GetCode()
