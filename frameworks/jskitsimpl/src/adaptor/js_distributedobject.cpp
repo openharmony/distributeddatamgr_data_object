@@ -248,6 +248,16 @@ napi_value JSDistributedObject::JSSave(napi_env env, napi_callback_info info)
     };
     ctxt->GetCbInfo(env, info, getCbOpe);
     CHECH_STATUS_ERRCODE(env, ctxt->status != napi_invalid_arg, ctxt->error);
+    auto execute = [ctxt]() {
+        LOG_INFO("start");
+        CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
+        CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper->GetObject() != nullptr, ctxt, "object is null");
+        uint32_t status = ctxt->wrapper->GetObject()->Save(ctxt->deviceId);
+        CHECK_API_VALID(status != ERR_PROCESSING);
+        CHECK_VALID(status == SUCCESS, "operation failed");
+        ctxt->status = napi_ok;
+        LOG_INFO("end");
+    };
     auto output = [env, ctxt](napi_value &result) {
         if (ctxt->status == napi_ok) {
             CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
@@ -257,22 +267,6 @@ napi_value JSDistributedObject::JSSave(napi_env env, napi_callback_info info)
                 env, GetSaveResultCons(env, sessionId, ctxt->version, ctxt->deviceId), 0, nullptr, &result);
             CHECK_STATUS_RETURN_VOID(ctxt, "output failed!");
         }
-    };
-    auto execute = [ctxt]() {
-        LOG_INFO("start");
-        CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
-        CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper->GetObject() != nullptr, ctxt, "object is null");
-        uint32_t status = ctxt->wrapper->GetObject()->Save(ctxt->deviceId);
-        if (status != SUCCESS) {
-            LOG_ERROR("Save failed, status = %{public}d", status);
-            auto innerError = std::make_shared<InnerError>();
-            ctxt->SetError(innerError);
-            ctxt->status = napi_generic_failure;
-            ctxt->message = std::string("operation failed");
-            return;
-        }
-        ctxt->status = napi_ok;
-        LOG_INFO("end");
     };
     return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
 }
@@ -300,7 +294,15 @@ napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info in
         napi_throw_error((env), std::to_string(ctxt->error->GetCode()).c_str(), ctxt->error->GetMessage().c_str());
         return nullptr;
     }
-
+    auto execute = [ctxt]() {
+        CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
+        CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper->GetObject() != nullptr, ctxt, "object is null");
+        uint32_t status = ctxt->wrapper->GetObject()->RevokeSave();
+        CHECK_API_VALID(status != ERR_PROCESSING);
+        CHECK_VALID(status == SUCCESS, "operation failed");
+        ctxt->status = napi_ok;
+        LOG_INFO("end");
+    };
     auto output = [env, ctxt](napi_value &result) {
         if (ctxt->status == napi_ok) {
             CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
@@ -311,25 +313,7 @@ napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info in
             CHECK_STATUS_RETURN_VOID(ctxt, "output failed!");
         }
     };
-    return NapiQueue::AsyncWork(
-        env, ctxt, std::string(__FUNCTION__),
-        [ctxt]() {
-            LOG_INFO("start");
-            CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
-            CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper->GetObject() != nullptr, ctxt, "object is null");
-            uint32_t status = ctxt->wrapper->GetObject()->RevokeSave();
-            if (status != SUCCESS) {
-                LOG_ERROR("Save failed, status = %{public}d", status);
-                auto innerError = std::make_shared<InnerError>();
-                ctxt->SetError(innerError);
-                ctxt->status = napi_generic_failure;
-                ctxt->message = std::string("operation failed");
-                return;
-            }
-            ctxt->status = napi_ok;
-            LOG_INFO("end");
-        },
-        output);
+    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
 }
 
 napi_value JSDistributedObject::GetSaveResultCons(
