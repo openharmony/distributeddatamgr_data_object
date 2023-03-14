@@ -592,25 +592,19 @@ describe('objectStoreTest', function () {
 
         g_object.save("local", (err, result) => {
             if (err) {
-                console.log("==tt== V9testRevokeSave001 save reject err.code" + err.code.toString());
                 expect("801").assertEqual(err.code.toString());
                 done();
                 return;
             }
-            console.log("==tt== V9testRevokeSave001 result.sessionId = " + result.sessionId);
-            console.log("==tt== V9testRevokeSave001 result.sessionId = " + result.version);
-            console.log("==tt== V9testRevokeSave001 result.sessionId = " + result.deviceId);
             expect(result.sessionId == "mySession4").assertEqual(true);
             expect(result.version == g_object.__version).assertEqual(true);
             expect(result.deviceId == "local").assertEqual(true);
             g_object.revokeSave((err, result) => {
                 if (err) {
-                    console.log("==tt== V9testRevokeSave001 revokeSave reject err.code" + err.code.toString());
                     expect("801").assertEqual(err.code.toString());
                     done();
                     return;
                 }
-                console.log("==tt== V9testRevokeSave001 result.sessionId111 = " + result.sessionId);
                 expect("mySession4" == result.sessionId).assertEqual(true);
                 g_object.setSessionId("");
                 g_object.name = undefined;
@@ -618,9 +612,6 @@ describe('objectStoreTest', function () {
                 g_object.isVis = undefined;
                 g_object.setSessionId("mySession4");
 
-                console.log("==tt== V9testRevokeSave001 g_object.name = " + g_object.name);
-                console.log("==tt== V9testRevokeSave001 g_object.name = " + g_object.age);
-                console.log("==tt== V9testRevokeSave001 g_object.name = " + g_object.isVis);
                 expect(g_object.name == undefined).assertEqual(true);
                 expect(g_object.age == undefined).assertEqual(true);
                 expect(g_object.isVis == undefined).assertEqual(true);
@@ -639,37 +630,24 @@ describe('objectStoreTest', function () {
     it('V9testRevokeSave002', 0, async function () {
         console.log(TAG + "************* V9testRevokeSave002 start *************");
         var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
-        console.log("==tt== V9testRevokeSave002 g_object = " + g_object);
         expect(g_object != undefined).assertEqual(true);
 
         g_object.setSessionId("mySession5");
-        console.log("==tt== V9testRevokeSave002 g_object.__sessionId = " + g_object.__sessionId);
         expect("mySession5" == g_object.__sessionId.toString()).assertEqual(true);
 
         let result = await g_object.save("local").catch((err)=> {
-            console.log("==tt== V9testRevokeSave002 save reject");
-            console.log("==tt== V9testRevokeSave002 err.code = " + err.code.toString());
             expect("801").assertEqual(err.code.toString());
             return CATCH_ERR;
         });
         if (result === CATCH_ERR) {
             return;
         }
-
-        console.log("==tt== V9testRevokeSave002 save resolve");
-
-        console.log("==tt== V9testRevokeSave002 result.sessionId = " + result.sessionId);
-        console.log("==tt== V9testRevokeSave002 result.version = " + result.version);
-        console.log("==tt== V9testRevokeSave002 result.deviceId = " + result.deviceId);
-        console.log("==tt== V9testRevokeSave002 g_object.__version = " + g_object.__version);
 
         expect(result.sessionId.toString() == "mySession5").assertEqual(true);
         expect(result.version.toString() == g_object.__version.toString()).assertEqual(true);
         expect(result.deviceId.toString() == "local").assertEqual(true);
 
         result = await g_object.revokeSave().catch((err)=> {
-            console.log("==tt== V9testRevokeSave002 revokeSave reject");
-            console.log("==tt== V9testRevokeSave002 err.code = " + err.code.toString());
             expect("801").assertEqual(err.code.toString());
             return CATCH_ERR;
         });
@@ -677,16 +655,12 @@ describe('objectStoreTest', function () {
         if (result === CATCH_ERR) {
             return;
         }
-        console.log("==tt== V9testRevokeSave002 RevokeSave resolve");
         g_object.setSessionId("");
         g_object.name = undefined;
         g_object.age = undefined;
         g_object.isVis = undefined;
         g_object.setSessionId("mySession5");
 
-        console.log("==tt== V9testRevokeSave002 g_object.name77 = " + g_object.name);
-        console.log("==tt== V9testRevokeSave002 g_object.age = " + g_object.age);
-        console.log("==tt== V9testRevokeSave002 g_object.isVis = " + g_object.isVis);
         expect(g_object.name == undefined).assertEqual(true);
         expect(g_object.age == undefined).assertEqual(true);
         expect(g_object.isVis == undefined).assertEqual(true);
@@ -702,14 +676,12 @@ describe('objectStoreTest', function () {
     it('V9testRevokeSave003', 0, async function () {
         console.log(TAG + "************* V9testRevokeSave003 start *************");
         var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
-        console.log("==tt== V9testRevokeSave003 global4 = " + g_object);
         expect(g_object == undefined).assertEqual(false);
         g_object.setSessionId("mySession6").then(() => {
             console.info("join session");
         }).catch((error) => {
             console.info(TAG + error.code + error.message);
         });
-        console.log("==tt== V9testRevokeSave003 g_object.__sessionId1 = " + g_object.__sessionId);
         expect("mySession6" == g_object.__sessionId).assertEqual(true);
         let result = await g_object.save("local").catch((err) => {
             expect("801").assertEqual(err.code.toString());
@@ -718,27 +690,17 @@ describe('objectStoreTest', function () {
         if (result === CATCH_ERR) {
             return;
         }
-        console.log("==tt== V9testRevokeSave003 g_object.__sessionId2 = " + g_object.__sessionId);
-        console.log("==tt== V9testRevokeSave003 result.__sessionId2 = " + result.sessionId);
         expect(result.sessionId == "mySession6").assertEqual(true);
-        console.log("==tt== V9testRevokeSave003 g_object.__version = " + g_object.__version);
-        console.log("==tt== V9testRevokeSave003 result.__version = " + result.version);
         expect(result.version == g_object.__version).assertEqual(true);
-        console.log("==tt== V9testRevokeSave003 result.deviceId = " + result.deviceId);
         expect(result.deviceId == "local").assertEqual(true);
         try {
             g_object.revokeSave(123).then((result) => {
-                console.log("==tt== V9testRevokeSave003 g_object.__sessionId3 = " + g_object.__sessionId);
-                console.log("==tt== V9testRevokeSave003 result.__sessionId3 = " + result.sessionId);
                 expect(result.sessionId == "mySession6").assertEqual(true);
             }).catch((err) => {
                 console.log(err.code + err.message);
             });
         } catch (error) {
             console.info(error.code + error.message);
-            console.log("==tt== V9testRevokeSave003 cathe error");
-            console.log("==tt== V9testRevokeSave003 error.code = " + error.code);
-            console.log("==tt== V9testRevokeSave003 error.message" + error.message);
             expect("401").assertEqual(error.code.toString());
         }
         console.log(TAG + "************* V9testRevokeSave003 end *************");

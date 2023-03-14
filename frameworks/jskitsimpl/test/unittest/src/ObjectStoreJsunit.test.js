@@ -704,7 +704,6 @@ describe('objectStoreTest',function () {
             expect(g_object.age == 18).assertEqual(true);
             expect(g_object.isVis == false).assertEqual(true);
         }).catch((err) => {
-            console.log("==tt== testSave001 save reject");
             expect("801").assertEqual(err.code.toString());
             done();
         });
@@ -727,7 +726,6 @@ describe('objectStoreTest',function () {
 
         g_object.save("local", (err, result) => {
             if (err) {
-                console.log("==tt== testSave002 save reject");
                 expect("801").assertEqual(err.code.toString());
                 done();
                 return;
@@ -766,27 +764,19 @@ describe('objectStoreTest',function () {
 
         g_object.save("local", (err, result) => {
             if (err) {
-                console.log("==tt== testRevokeSave001 save reject err.code" + err.code.toString());
                 expect("801").assertEqual(err.code.toString());
-                console.log("==tt== testRevokeSave001 save 1112233");
                 done();
-                console.log("==tt== testRevokeSave001 save 11122");
                 return;
             }
-            console.log("==tt== testRevokeSave001 result.sessionId = " + result.sessionId);
-            console.log("==tt== testRevokeSave001 result.sessionId = " + result.version);
-            console.log("==tt== testRevokeSave001 result.sessionId = " + result.deviceId);
             expect(result.sessionId == "testSession003").assertEqual(true);
             expect(result.version == g_object.__version).assertEqual(true);
             expect(result.deviceId == "local").assertEqual(true);
             g_object.revokeSave((err, result) => {
                 if (err) {
-                    console.log("==tt== testRevokeSave001 revokeSave reject err.code" + err.code.toString());
                     expect("801").assertEqual(err.code.toString());
                     done();
                     return;
                 }
-                console.log("==tt== testRevokeSave001 result.sessionId111 = " + result.sessionId);
                 expect("testSession003" == result.sessionId).assertEqual(true);
                 g_object.setSessionId("");
                 g_object.name = undefined;
@@ -794,9 +784,6 @@ describe('objectStoreTest',function () {
                 g_object.isVis = undefined;
                 g_object.setSessionId("testSession003");
 
-                console.log("==tt== testRevokeSave001 g_object.name = " + g_object.name);
-                console.log("==tt== testRevokeSave001 g_object.name = " + g_object.age);
-                console.log("==tt== testRevokeSave001 g_object.name = " + g_object.isVis);
                 expect(g_object.name == undefined).assertEqual(true);
                 expect(g_object.age == undefined).assertEqual(true);
                 expect(g_object.isVis == undefined).assertEqual(true);
@@ -822,29 +809,18 @@ describe('objectStoreTest',function () {
         expect("testSession004" == g_object.__sessionId).assertEqual(true);
 
         let result = await g_object.save("local").catch((err)=> {
-            console.log("==tt== testRevokeSave002 save reject");
-            console.log("==tt== testRevokeSave002 err.code = " + err.code.toString());
             expect("801").assertEqual(err.code.toString());
             return CATCH_ERR;
         });
         if (result === CATCH_ERR) {
             return;
         }
-
-        console.log("==tt== testRevokeSave002 save resolve");
-
-        console.log("==tt== testRevokeSave002 result.sessionId = " + result.sessionId);
-        console.log("==tt== testRevokeSave002 result.version = " + result.version);
-        console.log("==tt== testRevokeSave002 result.deviceId = " + result.deviceId);
-        console.log("==tt== testRevokeSave002 g_object.__version = " + g_object.__version);
 
         expect(result.sessionId.toString() == "testSession004").assertEqual(true);
         expect(result.version.toString() == g_object.__version.toString()).assertEqual(true);
         expect(result.deviceId.toString() == "local").assertEqual(true);
 
         result = await g_object.revokeSave().catch((err)=> {
-            console.log("==tt== testRevokeSave002 revokeSave reject");
-            console.log("==tt== testRevokeSave002 err.code = " + err.code.toString());
             expect("801").assertEqual(err.code.toString());
             return CATCH_ERR;
         });
@@ -852,16 +828,12 @@ describe('objectStoreTest',function () {
         if (result === CATCH_ERR) {
             return;
         }
-        console.log("==tt== testRevokeSave002 RevokeSave resolve");
         g_object.setSessionId("");
         g_object.name = undefined;
         g_object.age = undefined;
         g_object.isVis = undefined;
         g_object.setSessionId("testSession004");
 
-        console.log("==tt== testRevokeSave002 g_object.name77 = " + g_object.name);
-        console.log("==tt== testRevokeSave002 g_object.age = " + g_object.age);
-        console.log("==tt== testRevokeSave002 g_object.isVis = " + g_object.isVis);
         expect(g_object.name == undefined).assertEqual(true);
         expect(g_object.age == undefined).assertEqual(true);
         expect(g_object.isVis == undefined).assertEqual(true);
@@ -888,11 +860,8 @@ describe('objectStoreTest',function () {
         if (result === CATCH_ERR) {
             return;
         }
-        console.log("==tt== OnstatusRestored001 result.sessionId = " + result.sessionId);
         expect(result.sessionId == "testSession005").assertEqual(true);
-        console.log("==tt== OnstatusRestored001 result.version = " + result.version);
         expect(result.version == g_object.__version).assertEqual(true);
-        console.log("==tt== OnstatusRestored001 result.deviceId = " + result.deviceId);
         expect(result.deviceId == "local").assertEqual(true);
 
         console.log(TAG + "************* OnstatusRestored001 end *************");
