@@ -276,7 +276,7 @@ int32_t CacheManager::SaveObject(const std::string &bundleName, const std::strin
     sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
     if (proxy == nullptr) {
         LOG_ERROR("proxy is nullptr.");
-        return ERR_NULL_PTR;
+        return ERR_PROCESSING;
     }
     sptr<IObjectSaveCallback> objectSaveCallback = new ObjectSaveCallback(callback);
     int32_t status = proxy->ObjectStoreSave(bundleName, sessionId, deviceId, objectData, objectSaveCallback);
@@ -293,7 +293,7 @@ int32_t CacheManager::RevokeSaveObject(
     sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
     if (proxy == nullptr) {
         LOG_ERROR("proxy is nullptr.");
-        return ERR_NULL_PTR;
+        return ERR_PROCESSING;
     }
     sptr<IObjectRevokeSaveCallback> objectRevokeSaveCallback = new ObjectRevokeSaveCallback(callback);
     int32_t status = proxy->ObjectStoreRevokeSave(bundleName, sessionId, objectRevokeSaveCallback);

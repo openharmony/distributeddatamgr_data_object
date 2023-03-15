@@ -67,5 +67,15 @@ int InnerError::GetCode()
 {
     return EXCEPTION_INNER;
 }
+
+std::string DeviceNotSupportedError::GetMessage()
+{
+    return "Capability not supported.";
+}
+
+int DeviceNotSupportedError::GetCode()
+{
+    return EXCEPTION_DEVICE_NOT_SUPPORT;
+}
 } // namespace ObjectStore
 } // namespace OHOS
