@@ -223,7 +223,11 @@ DistributedObjectStore *DistributedObjectStore::GetInstance(const std::string &b
             }
             // Use instMemory to make sure this singleton not free before other object.
             // This operation needn't to malloc memory, we needn't to check nullptr.
-            instPtr = new DistributedObjectStoreImpl(flatObjectStore);
+            instPtr = new (std::nothrow) DistributedObjectStoreImpl(flatObjectStore);
+            if (instPtr == nullptr) {
+                LOG_ERROR("no memory for DistributedObjectStoreImpl malloc!");
+                return nullptr;
+            }
         }
     }
     return instPtr;

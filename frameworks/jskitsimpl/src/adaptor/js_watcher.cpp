@@ -105,7 +105,11 @@ void JSWatcher::Emit(const char *type, const std::string &sessionId, const std::
     }
 
     for (EventHandler *handler = listener->handlers_; handler != nullptr; handler = handler->next) {
-        ChangeArgs *changeArgs = new ChangeArgs(handler->callbackRef, sessionId, changeData);
+        ChangeArgs *changeArgs = new (std::nothrow) ChangeArgs(handler->callbackRef, sessionId, changeData);
+        if (changeArgs == nullptr) {
+            LOG_ERROR("JSWatcher::Emit no memory for changeArgs malloc!");
+            return;
+        }
         CallFunction(ProcessChange, changeArgs);
     }
 }
@@ -171,7 +175,11 @@ void JSWatcher::Emit(
     }
 
     for (EventHandler *handler = listener->handlers_; handler != nullptr; handler = handler->next) {
-        StatusArgs *changeArgs = new StatusArgs(handler->callbackRef, sessionId, networkId, status);
+        StatusArgs *changeArgs = new (std::nothrow) StatusArgs(handler->callbackRef, sessionId, networkId, status);
+        if (changeArgs == nullptr) {
+            LOG_ERROR("JSWatcher::Emit no memory for StatusArgs malloc!");
+            return;
+        }
         CallFunction(ProcessStatus, changeArgs);
     }
     return;
@@ -248,10 +256,18 @@ bool EventListener::Add(napi_env env, napi_value handler)
     }
 
     if (handlers_ == nullptr) {
-        handlers_ = new EventHandler();
+        handlers_ = new (std::nothrow) EventHandler();
+        if (handlers_ == nullptr) {
+            LOG_ERROR("EventListener::Add no memory for EventHandler malloc!");
+            return false;
+        }
         handlers_->next = nullptr;
     } else {
-        auto temp = new EventHandler();
+        auto temp = new (std::nothrow) EventHandler();
+        if (temp == nullptr) {
+            LOG_ERROR("EventListener::Add no memory for EventHandler malloc!");
+            return false;
+        }
         temp->next = handlers_;
         handlers_ = temp;
     }
