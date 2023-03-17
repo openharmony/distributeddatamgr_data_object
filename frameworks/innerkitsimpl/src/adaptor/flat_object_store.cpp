@@ -278,7 +278,11 @@ int32_t CacheManager::SaveObject(const std::string &bundleName, const std::strin
         LOG_ERROR("proxy is nullptr.");
         return ERR_PROCESSING;
     }
-    sptr<IObjectSaveCallback> objectSaveCallback = new ObjectSaveCallback(callback);
+    sptr<IObjectSaveCallback> objectSaveCallback = new (std::nothrow) ObjectSaveCallback(callback);
+    if (objectSaveCallback == nullptr) {
+        LOG_ERROR("CacheManager::SaveObject no memory for ObjectSaveCallback malloc!");
+        return ERR_NULL_PTR;
+    }
     int32_t status = proxy->ObjectStoreSave(bundleName, sessionId, deviceId, objectData, objectSaveCallback);
     if (status != SUCCESS) {
         LOG_ERROR("object save failed code=%d.", static_cast<int>(status));
@@ -295,7 +299,11 @@ int32_t CacheManager::RevokeSaveObject(
         LOG_ERROR("proxy is nullptr.");
         return ERR_PROCESSING;
     }
-    sptr<IObjectRevokeSaveCallback> objectRevokeSaveCallback = new ObjectRevokeSaveCallback(callback);
+    sptr<IObjectRevokeSaveCallback> objectRevokeSaveCallback = new (std::nothrow) ObjectRevokeSaveCallback(callback);
+    if (objectRevokeSaveCallback == nullptr) {
+        LOG_ERROR("CacheManager::RevokeSaveObject no memory for ObjectRevokeSaveCallback malloc!");
+        return ERR_NULL_PTR;
+    }
     int32_t status = proxy->ObjectStoreRevokeSave(bundleName, sessionId, objectRevokeSaveCallback);
     if (status != SUCCESS) {
         LOG_ERROR("object revoke save failed code=%d.", static_cast<int>(status));
@@ -312,7 +320,11 @@ int32_t CacheManager::ResumeObject(const std::string &bundleName, const std::str
         LOG_ERROR("proxy is nullptr.");
         return ERR_NULL_PTR;
     }
-    sptr<IObjectRetrieveCallback> objectRetrieveCallback = new ObjectRetrieveCallback(callback);
+    sptr<IObjectRetrieveCallback> objectRetrieveCallback = new (std::nothrow)ObjectRetrieveCallback(callback);
+    if (objectRetrieveCallback == nullptr) {
+        LOG_ERROR("CacheManager::ResumeObject no memory for ObjectRetrieveCallback malloc!");
+        return ERR_NULL_PTR;
+    }
     int32_t status = proxy->ObjectStoreRetrieve(bundleName, sessionId, objectRetrieveCallback);
     if (status != SUCCESS) {
         LOG_ERROR("object resume failed code=%d.", static_cast<int>(status));
@@ -329,7 +341,11 @@ int32_t CacheManager::SubscribeDataChange(const std::string &bundleName, const s
         LOG_ERROR("proxy is nullptr.");
         return ERR_NULL_PTR;
     }
-    sptr<IObjectChangeCallback> objectRemoteResumeCallback = new ObjectChangeCallback(callback);
+    sptr<IObjectChangeCallback> objectRemoteResumeCallback = new (std::nothrow) ObjectChangeCallback(callback);
+    if (objectRemoteResumeCallback == nullptr) {
+        LOG_ERROR("CacheManager::SubscribeDataChange no memory for ObjectChangeCallback malloc!");
+        return ERR_NULL_PTR;
+    }
     DistributedKv::AppId appId;
     appId.appId = bundleName;
     ClientAdaptor::RegisterClientDeathListener(appId, objectRemoteResumeCallback->AsObject());
