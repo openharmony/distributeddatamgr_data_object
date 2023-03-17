@@ -20,6 +20,7 @@
 
 namespace OHOS {
 namespace ObjectStore {
+static const int EXCEPTION_DEVICE_NOT_SUPPORT = 801;
 static const int EXCEPTION_PARAMETER_CHECK = 401;
 static const int EXCEPTION_NO_PERMISSION = 201;
 static const int EXCEPTION_DB_EXIST = 15400001;
@@ -56,7 +57,6 @@ private:
 class PermissionError : public Error {
 public:
     PermissionError() = default;
-    ;
     std::string GetMessage() override;
     int GetCode() override;
 };
@@ -71,6 +71,13 @@ public:
 class InnerError : public Error {
 public:
     InnerError() = default;
+    std::string GetMessage() override;
+    int GetCode() override;
+};
+
+class DeviceNotSupportedError : public Error {
+public:
+    DeviceNotSupportedError() = default;
     std::string GetMessage() override;
     int GetCode() override;
 };
