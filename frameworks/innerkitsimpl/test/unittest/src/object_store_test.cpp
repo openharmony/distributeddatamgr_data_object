@@ -64,39 +64,6 @@ void StatusNotifierImpl::OnChanged(const std::string &sessionId,
                                    const std::string &onlineStatus)
 {
 }
-static void TestSetSessionId(std::string bundleName, std::string sessionId)
-{
-    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
-    DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
-
-    uint32_t ret = objectStore->DeleteObject(sessionId);
-    EXPECT_EQ(SUCCESS, ret);
-}
-
-static void TestSaveAndRevokeSave(std::string bundleName, std::string sessionId)
-{
-    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
-    DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
-
-    uint32_t ret = object->PutString("name", "zhangsan");
-    EXPECT_EQ(SUCCESS, ret);
-    ret = object->PutDouble("salary", SALARY);
-    EXPECT_EQ(SUCCESS, ret);
-    ret = object->PutBoolean("isTrue", true);
-    EXPECT_EQ(SUCCESS, ret);
-
-    ret = object->Save("local");
-    EXPECT_EQ(SUCCESS, ret);
-    ret = object->RevokeSave();
-    EXPECT_EQ(SUCCESS, ret);
-
-    ret = objectStore->DeleteObject(sessionId);
-    EXPECT_EQ(SUCCESS, ret);
-}
 
 void GrantPermissionNative()
 {
@@ -400,6 +367,15 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetSessionId_001, TestSize.Lev
  */
 HWTEST_F(NativeObjectStoreTest, DistributedObject_TestSetSessionId_001, TestSize.Level1)
 {
+    auto TestSetSessionId = [] (std::string bundleName, std::string sessionId) {
+        DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+        EXPECT_NE(nullptr, objectStore);
+        DistributedObject *object = objectStore->CreateObject(sessionId);
+        EXPECT_NE(nullptr, object);
+
+        uint32_t ret = objectStore->DeleteObject(sessionId);
+        EXPECT_EQ(SUCCESS, ret);
+    };
     std::thread t1(TestSetSessionId, "default1", "session1");
     std::thread t2(TestSetSessionId, "default2", "session2");
     std::thread t3(TestSetSessionId, "default3", "session3");
@@ -454,7 +430,25 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_Save_RevokeSave_001, TestSize.
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
-    TestSaveAndRevokeSave(bundleName, sessionId);
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    EXPECT_NE(nullptr, objectStore);
+    DistributedObject *object = objectStore->CreateObject(sessionId);
+    EXPECT_NE(nullptr, object);
+
+    uint32_t ret = object->PutString("name", "zhangsan");
+    EXPECT_EQ(SUCCESS, ret);
+    ret = object->PutDouble("salary", SALARY);
+    EXPECT_EQ(SUCCESS, ret);
+    ret = object->PutBoolean("isTrue", true);
+    EXPECT_EQ(SUCCESS, ret);
+
+    ret = object->Save("local");
+    EXPECT_EQ(SUCCESS, ret);
+    ret = object->RevokeSave();
+    EXPECT_EQ(SUCCESS, ret);
+
+    ret = objectStore->DeleteObject(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
 }
 
 /**
@@ -464,6 +458,27 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_Save_RevokeSave_001, TestSize.
  */
 HWTEST_F(NativeObjectStoreTest, DistributedObject_Save_RevokeSave_002, TestSize.Level1)
 {
+    auto TestSaveAndRevokeSave = [](std::string bundleName, std::string sessionId) {
+        DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+        EXPECT_NE(nullptr, objectStore);
+        DistributedObject *object = objectStore->CreateObject(sessionId);
+        EXPECT_NE(nullptr, object);
+
+        uint32_t ret = object->PutString("name", "zhangsan");
+        EXPECT_EQ(SUCCESS, ret);
+        ret = object->PutDouble("salary", SALARY);
+        EXPECT_EQ(SUCCESS, ret);
+        ret = object->PutBoolean("isTrue", true);
+        EXPECT_EQ(SUCCESS, ret);
+
+        ret = object->Save("local");
+        EXPECT_EQ(SUCCESS, ret);
+        ret = object->RevokeSave();
+        EXPECT_EQ(SUCCESS, ret);
+
+        ret = objectStore->DeleteObject(sessionId);
+        EXPECT_EQ(SUCCESS, ret);
+    };
     std::thread t1(TestSaveAndRevokeSave, "default1", "session1");
     std::thread t2(TestSaveAndRevokeSave, "default2", "session2");
     std::thread t3(TestSaveAndRevokeSave, "default3", "session3");
