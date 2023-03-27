@@ -367,7 +367,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetSessionId_001, TestSize.Lev
  */
 HWTEST_F(NativeObjectStoreTest, DistributedObject_TestSetSessionId_001, TestSize.Level1)
 {
-    auto TestSetSessionId = [] (std::string bundleName, std::string sessionId) {
+    auto testSetSessionId = [] (std::string bundleName, std::string sessionId) {
         DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
         EXPECT_NE(nullptr, objectStore);
         DistributedObject *object = objectStore->CreateObject(sessionId);
@@ -376,9 +376,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_TestSetSessionId_001, TestSize
         uint32_t ret = objectStore->DeleteObject(sessionId);
         EXPECT_EQ(SUCCESS, ret);
     };
-    std::thread t1(TestSetSessionId, "default1", "session1");
-    std::thread t2(TestSetSessionId, "default2", "session2");
-    std::thread t3(TestSetSessionId, "default3", "session3");
+    std::thread t1(testSetSessionId, "default1", "session1");
+    std::thread t2(testSetSessionId, "default2", "session2");
+    std::thread t3(testSetSessionId, "default3", "session3");
     t1.join();
     t2.join();
     t3.join();
@@ -458,7 +458,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_Save_RevokeSave_001, TestSize.
  */
 HWTEST_F(NativeObjectStoreTest, DistributedObject_Save_RevokeSave_002, TestSize.Level1)
 {
-    auto TestSaveAndRevokeSave = [](std::string bundleName, std::string sessionId) {
+    auto testSaveAndRevokeSave = [](std::string bundleName, std::string sessionId) {
         DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
         EXPECT_NE(nullptr, objectStore);
         DistributedObject *object = objectStore->CreateObject(sessionId);
@@ -479,9 +479,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_Save_RevokeSave_002, TestSize.
         ret = objectStore->DeleteObject(sessionId);
         EXPECT_EQ(SUCCESS, ret);
     };
-    std::thread t1(TestSaveAndRevokeSave, "default1", "session1");
-    std::thread t2(TestSaveAndRevokeSave, "default2", "session2");
-    std::thread t3(TestSaveAndRevokeSave, "default3", "session3");
+    std::thread t1(testSaveAndRevokeSave, "default1", "session1");
+    std::thread t2(testSaveAndRevokeSave, "default2", "session2");
+    std::thread t3(testSaveAndRevokeSave, "default3", "session3");
     t1.join();
     t2.join();
     t3.join();
