@@ -34,7 +34,7 @@ public:
     DeviceInfo GetLocalDevice();
     std::vector<DeviceInfo> GetDeviceList() const;
 
-    std::string GetUdidByNodeId(const std::string &nodeId) const;
+    std::string GetUuidByNodeId(const std::string &nodeId) const;
     // get local device node information;
     DeviceInfo GetLocalBasicInfo() const;
     // get all remote connected device's node information;

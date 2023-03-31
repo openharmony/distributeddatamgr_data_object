@@ -66,9 +66,9 @@ std::vector<DeviceInfo> AppDeviceHandler::GetRemoteNodesBasicInfo() const
     return softbusAdapter_->GetRemoteNodesBasicInfo();
 }
 
-std::string AppDeviceHandler::GetUdidByNodeId(const std::string &nodeId) const
+std::string AppDeviceHandler::GetUuidByNodeId(const std::string &nodeId) const
 {
-    return softbusAdapter_->GetUdidByNodeId(nodeId);
+    return devManager_->GetUuidByNodeId(nodeId);
 }
 } // namespace ObjectStore
 } // namespace OHOS
