@@ -20,6 +20,8 @@ const COMPLEX_TYPE = '[COMPLEX]';
 const STRING_TYPE = '[STRING]';
 const NULL_TYPE = '[NULL]';
 const JS_ERROR = 1;
+const SDK_VERSION_8 = 8;
+const SDK_VERSION_9 = 9;
 
 class Distributed {
   constructor(obj) {
@@ -27,11 +29,11 @@ class Distributed {
   }
 
   setSessionId(sessionId) {
-    if (sessionId == null || sessionId == '') {
+    if (sessionId == null || sessionId === '') {
       leaveSession(this.__sdkVersion, this.__proxy);
       return false;
     }
-    if (this.__proxy[SESSION_ID] == sessionId) {
+    if (this.__proxy[SESSION_ID] === sessionId) {
       console.info('same session has joined ' + sessionId);
       return true;
     }
@@ -59,7 +61,7 @@ class Distributed {
   }
 
   save(deviceId, callback) {
-    if (this.__proxy[SESSION_ID] == null || this.__proxy[SESSION_ID] == '') {
+    if (this.__proxy[SESSION_ID] == null || this.__proxy[SESSION_ID] === '') {
       console.info('not join a session, can not do save');
       return JS_ERROR;
     }
@@ -67,7 +69,7 @@ class Distributed {
   }
 
   revokeSave(callback) {
-    if (this.__proxy[SESSION_ID] == null || this.__proxy[SESSION_ID] == '') {
+    if (this.__proxy[SESSION_ID] == null || this.__proxy[SESSION_ID] === '') {
       console.info('not join a session, can not do revoke save');
       return JS_ERROR;
     }
@@ -77,7 +79,7 @@ class Distributed {
   __proxy;
   __objectId;
   __version;
-  __sdkVersion = 8;
+  __sdkVersion = SDK_VERSION_8;
 }
 
 function constructorMethod(result, obj) {
@@ -125,7 +127,7 @@ function newDistributed(obj) {
 
 function joinSession(version, obj, objectId, sessionId, context) {
   console.info('start joinSession ' + sessionId);
-  if (obj == null || sessionId == null || sessionId == '') {
+  if (obj == null || sessionId == null || sessionId === '') {
     console.error('object is null');
     return null;
   }
@@ -150,7 +152,7 @@ function joinSession(version, obj, objectId, sessionId, context) {
         console.info('start get ' + key);
         let result = object.get(key);
         console.info('get ' + result);
-        if (typeof result == 'string') {
+        if (typeof result === 'string') {
           if (result.startsWith(STRING_TYPE)) {
             result = result.substr(STRING_TYPE.length);
           } else if (result.startsWith(COMPLEX_TYPE)) {
@@ -166,11 +168,11 @@ function joinSession(version, obj, objectId, sessionId, context) {
       },
       set: function (newValue) {
         console.info('start set ' + key + ' ' + newValue);
-        if (typeof newValue == 'object') {
+        if (typeof newValue === 'object') {
           let value = COMPLEX_TYPE + JSON.stringify(newValue);
           object.put(key, value);
           console.info('set ' + key + ' ' + value);
-        } else if (typeof newValue == 'string') {
+        } else if (typeof newValue === 'string') {
           let value = STRING_TYPE + newValue;
           object.put(key, value);
           console.info('set ' + key + ' ' + value);
@@ -198,7 +200,7 @@ function joinSession(version, obj, objectId, sessionId, context) {
 
 function leaveSession(version, obj) {
   console.info('start leaveSession');
-  if (obj == null || obj[SESSION_ID] == null || obj[SESSION_ID] == '') {
+  if (obj == null || obj[SESSION_ID] == null || obj[SESSION_ID] === '') {
     console.warn('object is null');
     return;
   }
@@ -239,10 +241,10 @@ function newDistributedV9(context, obj) {
     throw { code : 401,
         message :"Parameter error. The type of '" + parameter + "' must be '" + type + "'."};
   }
-  if (typeof context != 'object') {
+  if (typeof context !== 'object') {
     checkparameter('context', 'Context');
   } 
-  if (typeof obj != 'object') {
+  if (typeof obj !== 'object') {
     checkparameter('source', 'object');
   }
   if (obj == null) {
@@ -260,11 +262,11 @@ class DistributedV9 {
   }
 
   setSessionId(sessionId, callback) {
-    if (typeof sessionId == 'function' || sessionId == null || sessionId == '') {
+    if (typeof sessionId === 'function' || sessionId == null || sessionId === '') {
       leaveSession(this.__sdkVersion, this.__proxy);
-      if (typeof sessionId == 'function') {
+      if (typeof sessionId === 'function') {
         return sessionId(this.__proxy);
-      } else if (typeof callback == 'function') {
+      } else if (typeof callback === 'function') {
         return callback(null, this.__proxy);
       } else {
         return Promise.resolve(null, this.__proxy);
@@ -272,7 +274,7 @@ class DistributedV9 {
     }
     if (this.__proxy[SESSION_ID] == sessionId) {
       console.info('same session has joined ' + sessionId);
-      if (typeof callback == 'function') {
+      if (typeof callback === 'function') {
         return callback(null, this.__proxy);
       } else {
         return Promise.resolve(null, this.__proxy);
@@ -282,13 +284,13 @@ class DistributedV9 {
     let object = joinSession(this.__sdkVersion, this.__proxy, this.__objectId, sessionId, this.__context);
     if (object != null) {
       this.__proxy = object;
-      if (typeof callback == 'function') {
+      if (typeof callback === 'function') {
         return callback(null, this.__proxy);
       } else {
         return Promise.resolve(null, object);
       }
     } else {
-      if (typeof callback == 'function') {
+      if (typeof callback === 'function') {
         return callback(null, null);
       } else {
         return Promise.reject(null, null);
@@ -311,7 +313,7 @@ class DistributedV9 {
   }
 
   save(deviceId, callback) {
-    if (this.__proxy[SESSION_ID] == null || this.__proxy[SESSION_ID] == '') {
+    if (this.__proxy[SESSION_ID] == null || this.__proxy[SESSION_ID] === '') {
       console.info('not join a session, can not do save');
       return JS_ERROR;
     }
@@ -319,7 +321,7 @@ class DistributedV9 {
   }
 
   revokeSave(callback) {
-    if (this.__proxy[SESSION_ID] == null || this.__proxy[SESSION_ID] == '') {
+    if (this.__proxy[SESSION_ID] == null || this.__proxy[SESSION_ID] === '') {
       console.info('not join a session, can not do revoke save');
       return JS_ERROR;
     }
@@ -330,7 +332,7 @@ class DistributedV9 {
   __proxy;
   __objectId;
   __version;
-  __sdkVersion = 9;
+  __sdkVersion = SDK_VERSION_9;
 }
 
 export default {

@@ -16,10 +16,12 @@
 import distributedObject from '@ohos.data.distributedDataObject';
 import featureAbility from '@ohos.ability.featureAbility';
 
+const REQUEST_MODE = 666;
+
 function grantPermission() {
   console.info('grantPermission');
   let context = featureAbility.getContext();
-  context.requestPermissionsFromUser(['ohos.permission.DISTRIBUTED_DATASYNC'], 666, function (result) {
+  context.requestPermissionsFromUser(['ohos.permission.DISTRIBUTED_DATASYNC'], REQUEST_MODE, function (result) {
     console.info(`result.requestCode=${result.requestCode}`);
 
   });
@@ -115,4 +117,4 @@ export default class DistributedDataModel {
   }
 }
 
-export var g_dataModel = new DistributedDataModel();
+export let dataModel = new DistributedDataModel();

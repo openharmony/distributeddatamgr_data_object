@@ -24,12 +24,12 @@ export default {
     console.info('objectstore in add page');
   },
   doAdd: function () {
-    console.info('doAdd ' + JSON.stringify(distr.g_dataModel));
-    distr.g_dataModel.add(this.title, this.content);
+    console.info('doAdd ' + JSON.stringify(distr.dataModel));
+    distr.dataModel.add(this.title, this.content);
     router.replace({
       uri: 'pages/index/index',
       params: {
-        dataModel: distr.g_dataModel
+        dataModel: distr.dataModel
       }
     });
   },

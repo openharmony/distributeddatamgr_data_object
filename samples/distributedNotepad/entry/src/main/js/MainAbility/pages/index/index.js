@@ -18,16 +18,16 @@ import * as distr from '../../../model/DistributedDataModel.js';
 
 export default {
   data: {
-    dataModel: distr.g_dataModel
+    dataModel: distr.dataModel
   },
   changeCallback(sessionId, changeData) {
     changeData.forEach(element => {
-      if (element == 'documentList') {
+      if (element === 'documentList') {
         console.info('newest data ' + JSON.stringify(this.dataModel.distributedObject.documentList));
         // 触发界面刷新
-        this.dataModel.documentList = distr.g_dataModel.distributedObject.documentList;
-      } else if (element == 'documentSize') {
-        let size = distr.g_dataModel.distributedObject.documentSize;
+        this.dataModel.documentList = distr.dataModel.distributedObject.documentList;
+      } else if (element === 'documentSize') {
+        let size = distr.dataModel.distributedObject.documentSize;
         console.info('newest size ' + size);
         // 触发界面刷新
         this.dataModel.distributedObject.documentSize = size;
@@ -37,11 +37,11 @@ export default {
   onInit() {
     console.info('objectstore in index page ');
     console.info(JSON.stringify(this.dataModel.documentList));
-    console.info(JSON.stringify(distr.g_dataModel.distributedObject.documentList));
-    distr.g_dataModel.setCallback(this.changeCallback.bind(this));
-    distr.g_dataModel.setStatusCallback((sessionId, networkId, status) => {
+    console.info(JSON.stringify(distr.dataModel.distributedObject.documentList));
+    distr.dataModel.setCallback(this.changeCallback.bind(this));
+    distr.dataModel.setStatusCallback((sessionId, networkId, status) => {
       console.info('objectstore status change ${networkId} ${status}');
-      if (status == 'online') {
+      if (status === 'online') {
         this.dataModel.imgSrc = 'common/green.png';
       } else {
         this.dataModel.imgSrc = 'common/red.png';
@@ -50,7 +50,7 @@ export default {
   },
   onDestroy() {
     console.info('objectstore exit index page');
-    distr.g_dataModel.clearCallback();
+    distr.dataModel.clearCallback();
   },
   add: function () {
     router.replace({
@@ -61,7 +61,7 @@ export default {
     // 触发界面刷新
     this.dataModel.documentList = [];
     this.dataModel.distributedObject.documentSize = 0;
-    distr.g_dataModel.clear();
+    distr.dataModel.clear();
   },
   detail: function (msg) {
     router.replace({
