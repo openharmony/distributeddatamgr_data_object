@@ -150,10 +150,10 @@ changeCallback(sessionId, changeData) {
 	changeData.forEach(element => {
 		if (element == "documentList") {
 			// 刷新界面上的备忘录数据列表
-			this.dataModel.documentList = distr.g_dataModel.distributedObject.documentList;
+			this.dataModel.documentList = distr.dataModel.distributedObject.documentList;
 		}
 		else if (element == "documentSize") {
-			let size = distr.g_dataModel.distributedObject.documentSize;
+			let size = distr.dataModel.distributedObject.documentSize;
 			// 刷新界面上列表总数
 			this.dataModel.distributedObject.documentSize = size;
 		}
@@ -168,9 +168,9 @@ changeCallback(sessionId, changeData) {
 onInit() {
 	// 监听对端设备的数据变更
 	// 发起方要在changeCallback里刷新界面，则需要将正确的this绑定给changeCallback
-	distr.g_dataModel.setCallback(this.changeCallback.bind(this));
+	distr.dataModel.setCallback(this.changeCallback.bind(this));
 	// 监听分布式对象的上下线状态
-	distr.g_dataModel.setStatusCallback((sessionId, networkId, status) => {  
+	distr.dataModel.setStatusCallback((sessionId, networkId, status) => {  
 	// 刷新红绿灯界面
 		if (status == "online") {
 			this.dataModel.imgSrc = "common/green.png";
@@ -188,7 +188,7 @@ onInit() {
 
 ```js
 doAdd: function () {
-	distr.g_dataModel.add(this.title, this.content);
+	distr.dataModel.add(this.title, this.content);
 	...
 }
 ```
@@ -209,7 +209,7 @@ add(title, content) {
 ```js
 save: function () {
 	// 使用页面数据更新分布式对象属性数据
-	distr.g_dataModel.update(this.editIndex,  this.title, this.content);
+	distr.dataModel.update(this.editIndex,  this.title, this.content);
 	...
 }
 ```
@@ -230,7 +230,7 @@ update(index, title, content) {
 clear: function () {
 	 // 触发界面刷新
 	this.dataModel.documentList = [];
-	distr.g_dataModel.clear();
+	distr.dataModel.clear();
 	this.dataModel.distributedObject.documentSize = 0;
  },
 ```

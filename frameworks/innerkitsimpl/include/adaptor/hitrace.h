@@ -19,14 +19,14 @@
 
 namespace OHOS {
 namespace ObjectStore {
-class HiTrace final {
+class DataObjectHiTrace final {
 public:
-    inline HiTrace(const std::string &value)
+    inline DataObjectHiTrace(const std::string &value)
     {
         StartTrace(HITRACE_TAG_DISTRIBUTEDDATA, value);
     }
 
-    inline ~HiTrace()
+    inline ~DataObjectHiTrace()
     {
         FinishTrace(HITRACE_TAG_DISTRIBUTEDDATA);
     }
