@@ -29,7 +29,7 @@ export default {
     router.replace({
       uri: 'pages/index/index',
       params: {
-        dataModel: distr.g_dataModel
+        dataModel: distr.dataModel
       }
     });
   },
@@ -41,11 +41,11 @@ export default {
   },
   save: function () {
     console.info('start save ' + JSON.stringify(this.data));
-    distr.g_dataModel.update(this.editIndex, this.title, this.content);
+    distr.dataModel.update(this.editIndex, this.title, this.content);
     router.replace({
       uri: 'pages/index/index',
       params: {
-        dataModel: distr.g_dataModel
+        dataModel: distr.dataModel
       }
     });
   }
