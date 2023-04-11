@@ -50,12 +50,12 @@ export default class DistributedDataModel {
   }
 
   setCallback(callback) {
-    if (this.#callback == callback) {
+    if (this.#callback === callback) {
       console.info('same callback');
       return;
     }
     console.info('start off');
-    if (this.#callback != undefined) {
+    if (this.#callback !== undefined) {
       this.distributedObject.off('change', this.#callback);
     }
     this.#callback = callback;
@@ -64,12 +64,12 @@ export default class DistributedDataModel {
   }
 
   setStatusCallback(callback) {
-    if (this.#statusCallback == callback) {
+    if (this.#statusCallback === callback) {
       console.info('same callback');
       return;
     }
     console.info('start off');
-    if (this.#statusCallback != undefined) {
+    if (this.#statusCallback !== undefined) {
       this.distributedObject.off('status', this.#statusCallback);
     }
     this.#statusCallback = callback;
@@ -79,7 +79,7 @@ export default class DistributedDataModel {
 
   share() {
     console.info('start share');
-    if (this.distributedObject.__sessionId == undefined) {
+    if (this.distributedObject.__sessionId === undefined) {
       grantPermission();
       this.distributedObject.setSessionId('123456');
     } 

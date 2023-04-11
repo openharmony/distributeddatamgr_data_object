@@ -53,7 +53,7 @@ class Distributed {
 
   off(type, callback) {
     offWatch(this.__sdkVersion, type, this.__proxy, callback);
-    if (callback != undefined || callback != null) {
+    if (callback !== undefined || callback != null) {
       distributedObject.deleteCallback(this.__sdkVersion, type, this.__objectId, callback);
     } else {
       distributedObject.deleteCallback(this.__sdkVersion, type, this.__objectId);
@@ -133,7 +133,7 @@ function joinSession(version, obj, objectId, sessionId, context) {
   }
 
   let object = null;
-  if (context != undefined || context != null) {
+  if (context !== undefined || context != null) {
     object = distributedObject.createObjectSync(version, sessionId, objectId, context);
   } else {
     object = distributedObject.createObjectSync(version, sessionId, objectId);
@@ -186,7 +186,7 @@ function joinSession(version, obj, objectId, sessionId, context) {
         }
       }
     });
-    if (obj[key] != undefined) {
+    if (obj[key] !== undefined) {
       object[key] = obj[key];
     }
   });
@@ -219,15 +219,15 @@ function leaveSession(version, obj) {
 
 function onWatch(version, type, obj, callback) {
   console.info('start on ' + obj[SESSION_ID]);
-  if (obj[SESSION_ID] != null && obj[SESSION_ID] != undefined && obj[SESSION_ID].length > 0) {
+  if (obj[SESSION_ID] != null && obj[SESSION_ID] !== undefined && obj[SESSION_ID].length > 0) {
     distributedObject.on(version, type, obj, callback);
   }
 }
 
 function offWatch(version, type, obj, callback = undefined) {
   console.info('start off ' + obj[SESSION_ID] + ' ' + callback);
-  if (obj[SESSION_ID] != null && obj[SESSION_ID] != undefined && obj[SESSION_ID].length > 0) {
-    if (callback != undefined || callback != null) {
+  if (obj[SESSION_ID] != null && obj[SESSION_ID] !== undefined && obj[SESSION_ID].length > 0) {
+    if (callback !== undefined || callback != null) {
       distributedObject.off(version, type, obj, callback);
     } else {
       distributedObject.off(version, type, obj);
@@ -238,9 +238,10 @@ function offWatch(version, type, obj, callback = undefined) {
 function newDistributedV9(context, obj) {
   console.info('start newDistributed');
   let checkparameter = function(parameter, type) {
-    throw { code : 401,
-        message :"Parameter error. The type of '" + parameter + "' must be '" + type + "'."};
-  }
+    throw {
+      code: 401,
+      message :"Parameter error. The type of '" + parameter + "' must be '" + type + "'."};
+  };
   if (typeof context !== 'object') {
     checkparameter('context', 'Context');
   } 
@@ -272,7 +273,7 @@ class DistributedV9 {
         return Promise.resolve(null, this.__proxy);
       }
     }
-    if (this.__proxy[SESSION_ID] == sessionId) {
+    if (this.__proxy[SESSION_ID] === sessionId) {
       console.info('same session has joined ' + sessionId);
       if (typeof callback === 'function') {
         return callback(null, this.__proxy);
@@ -305,7 +306,7 @@ class DistributedV9 {
 
   off(type, callback) {
     offWatch(this.__sdkVersion, type, this.__proxy, callback);
-    if (callback != undefined || callback != null) {
+    if (callback !== undefined || callback != null) {
       distributedObject.deleteCallback(this.__sdkVersion, type, this.__objectId, callback);
     } else {
       distributedObject.deleteCallback(this.__sdkVersion, type, this.__objectId);
@@ -336,7 +337,7 @@ class DistributedV9 {
 }
 
 export default {
-    createDistributedObject: newDistributed,
-    create: newDistributedV9,
-    genSessionId: randomNum
+  createDistributedObject: newDistributed,
+  create: newDistributedV9,
+  genSessionId: randomNum
 };
