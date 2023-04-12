@@ -253,8 +253,8 @@ napi_value JSDistributedObject::JSSave(napi_env env, napi_callback_info info)
         CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
         CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper->GetObject() != nullptr, ctxt, "object is null");
         uint32_t status = ctxt->wrapper->GetObject()->Save(ctxt->deviceId);
-        CHECK_API_VALID(status != ERR_PROCESSING);
-        CHECK_VALID(status == SUCCESS, "operation failed");
+        CHECK_API_VALID_ELSE_RETURN_VOID(status != ERR_PROCESSING);
+        CHECK_VALID_ELSE_RETURN_VOID(status == SUCCESS, "operation failed");
         ctxt->status = napi_ok;
         LOG_INFO("end");
     };
@@ -298,8 +298,8 @@ napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info in
         CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
         CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper->GetObject() != nullptr, ctxt, "object is null");
         uint32_t status = ctxt->wrapper->GetObject()->RevokeSave();
-        CHECK_API_VALID(status != ERR_PROCESSING);
-        CHECK_VALID(status == SUCCESS, "operation failed");
+        CHECK_API_VALID_ELSE_RETURN_VOID(status != ERR_PROCESSING);
+        CHECK_VALID_ELSE_RETURN_VOID(status == SUCCESS, "operation failed");
         ctxt->status = napi_ok;
         LOG_INFO("end");
     };
