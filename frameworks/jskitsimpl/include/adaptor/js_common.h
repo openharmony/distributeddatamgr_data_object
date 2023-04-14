@@ -65,7 +65,7 @@ namespace OHOS::ObjectStore {
         }                                               \
     }
 
-#define CHECK_API_VALID_ELSE_RETURN_VOID(assertion)                                                                           \
+#define CHECK_API_VALID_ELSE_RETURN_VOID(assertion)                                                          \
     do {                                                                                                     \
         if (!(assertion)) {                                                                                  \
             std::shared_ptr<DeviceNotSupportedError> apiError = std::make_shared<DeviceNotSupportedError>(); \
@@ -75,7 +75,7 @@ namespace OHOS::ObjectStore {
         }                                                                                                    \
     } while (0)
 
-#define CHECK_VALID_ELSE_RETURN_VOID(assertion, msg)                                                  \
+#define CHECK_VALID_ELSE_RETURN_VOID(assertion, msg)                                 \
     do {                                                                             \
         if (!(assertion)) {                                                          \
             std::shared_ptr<InnerError> innerError = std::make_shared<InnerError>(); \
