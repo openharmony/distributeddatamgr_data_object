@@ -15,6 +15,7 @@
 #ifndef DATA_OBJECT_DEV_MANAGER_H
 #define DATA_OBJECT_DEV_MANAGER_H
 #include <cstdint>
+#include <string>
 namespace OHOS {
 namespace ObjectStore {
 class DevManager {
@@ -25,6 +26,7 @@ public:
         return instance;
     }
     void RegisterDevCallback();
+    std::string GetUuidByNodeId(const std::string &nodeId) const;
 
 private:
     DevManager();

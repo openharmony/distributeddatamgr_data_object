@@ -44,24 +44,24 @@ private:
 
 void DMStateCallback::OnDeviceOnline(const DmDeviceInfo &deviceInfo)
 {
-    std::string udid = softBusAdapter_->GetUdidByNodeId(std::string(deviceInfo.networkId));
-    LOG_INFO("[Online] id:%{public}s, name:%{public}s, typeId:%{public}d", SoftBusAdapter::ToBeAnonymous(udid).c_str(),
+    std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(std::string(deviceInfo.networkId));
+    LOG_INFO("[Online] id:%{public}s, name:%{public}s, typeId:%{public}d", SoftBusAdapter::ToBeAnonymous(uuid).c_str(),
         deviceInfo.deviceName, deviceInfo.deviceTypeId);
     NotifyAll(deviceInfo, DeviceChangeType::DEVICE_ONLINE);
 }
 
 void DMStateCallback::OnDeviceOffline(const DmDeviceInfo &deviceInfo)
 {
-    std::string udid = softBusAdapter_->GetUdidByNodeId(std::string(deviceInfo.networkId));
+    std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(std::string(deviceInfo.networkId));
     LOG_INFO("[Offline] id:%{public}s, name:%{public}s, typeId:%{public}d",
-        SoftBusAdapter::ToBeAnonymous(udid).c_str(), deviceInfo.deviceName, deviceInfo.deviceTypeId);
+        SoftBusAdapter::ToBeAnonymous(uuid).c_str(), deviceInfo.deviceName, deviceInfo.deviceTypeId);
     NotifyAll(deviceInfo, DeviceChangeType::DEVICE_OFFLINE);
 }
 
 void DMStateCallback::OnDeviceChanged(const DmDeviceInfo &deviceInfo)
 {
-    std::string udid = softBusAdapter_->GetUdidByNodeId(std::string(deviceInfo.networkId));
-    LOG_INFO("[InfoChange] id:%{public}s, name:%{public}s", SoftBusAdapter::ToBeAnonymous(udid).c_str(),
+    std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(std::string(deviceInfo.networkId));
+    LOG_INFO("[InfoChange] id:%{public}s, name:%{public}s", SoftBusAdapter::ToBeAnonymous(uuid).c_str(),
         deviceInfo.deviceName);
 }
 
@@ -133,6 +133,18 @@ void DevManager::RegisterDevCallback()
         LOG_INFO("register device callback exit now: %{public}d times, status: %{public}d", i, status);
     });
     th.detach();
+}
+
+std::string DevManager::GetUuidByNodeId(const std::string &nodeId) const
+{
+    std::string uuid = "";
+    int32_t ret = DistributedHardware::DeviceManager::GetInstance().GetEncryptedUuidByNetworkId(
+        "ohos.objectstore", nodeId.c_str(), uuid);
+    if (ret != DM_OK) {
+        LOG_WARN("GetEncryptedUuidByNetworkId error, nodeId:%{public}s", SoftBusAdapter::ToBeAnonymous(nodeId).c_str());
+        return "";
+    }
+    return uuid;
 }
 
 } // namespace ObjectStore

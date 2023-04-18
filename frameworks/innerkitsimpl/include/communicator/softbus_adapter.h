@@ -42,7 +42,6 @@ public:
     void NotifyAll(const DeviceInfo &deviceInfo, const DeviceChangeType &type);
     DeviceInfo GetLocalDevice();
     std::vector<DeviceInfo> GetDeviceList() const;
-    std::string GetUdidByNodeId(const std::string &nodeId) const;
     // get local device node information;
     DeviceInfo GetLocalBasicInfo() const;
     // get all remote connected device's node information;
@@ -86,7 +85,7 @@ public:
 private:
     std::shared_ptr<ConditionLock<int32_t>> GetSemaphore (int32_t sessinId);
     mutable std::mutex networkMutex_{};
-    mutable std::map<std::string, std::string> networkId2Udid_{};
+    mutable std::map<std::string, std::string> networkId2Uuid_{};
     DeviceInfo localInfo_{};
     static std::shared_ptr<SoftBusAdapter> instance_;
     std::mutex deviceChangeMutex_;
