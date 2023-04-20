@@ -43,7 +43,7 @@ action("gen_distributed_data_object_abc") {
 }
 
 config("objectstore_config") {
-  visibility = [ "//foundation/distributeddatamgr/objectstore:*" ]
+  visibility = [ ":*" ]
 
   cflags = [ "-DHILOG_ENABLE" ]
 

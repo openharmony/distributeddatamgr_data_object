@@ -13,7 +13,7 @@
 import("//build/ohos.gni")
 
 config("objectstore_config") {
-  visibility = [ "//foundation/distributeddatamgr/data_object:*" ]
+  visibility = [ ":*" ]
 
   cflags = [ "-DHILOG_ENABLE" ]
 
