@@ -78,7 +78,7 @@ import distributedObject from '@ohos.data.distributedDataObject'
 分布式数据对象在备忘录应用中，通过分布式数据对象框架，当用户在某一端设备上新增备忘录事件，修改编辑事件标题和内容以及清空事件列表时，产生的数据变更结果均可以同步刷新显现在可信组网内其他设备上。
 
 ## 相关仓
-- [分布式数据对象开发指导](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/database/database-distributedobject-guidelines.md)
+- [分布式数据对象开发指导](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/database/data-sync-of-distributed-data-object.md)
 - [分布式数据对象API文档](https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/reference/apis/js-apis-data-distributedobject.md)
 - [distributeddatamgr\_datamgr](https://gitee.com/openharmony/distributeddatamgr_datamgr)
 - [third\_party\_sqlite](https://gitee.com/openharmony/third_party_sqlite)
