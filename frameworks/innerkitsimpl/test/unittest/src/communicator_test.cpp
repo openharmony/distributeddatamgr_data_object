@@ -26,6 +26,7 @@
 #include "token_setproc.h"
 #include "app_types.h"
 #include "softbus_adapter.h"
+#include "dev_manager.h"
 #include "app_device_status_change_listener.h"
 #include "app_data_change_listener.h"
 #include "mock_app_device_change_listener.h"
@@ -491,16 +492,14 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_GetSessionStatus_001, TestSize.L
 }
 
 /**
- * @tc.name: SoftBusAdapter_GetUdidByNodeId_001
- * @tc.desc: test SoftBusAdapter GetSessionStatus.
+ * @tc.name: DevManager_GetUuidByNodeId_001
+ * @tc.desc: test DevManager GetUuidByNodeId.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_GetUdidByNodeId_001, TestSize.Level1)
+HWTEST_F(NativeCommunicatorTest, DevManager_GetUuidByNodeId_001, TestSize.Level1)
 {
     std::string nodeId = "nodeId01";
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    auto ret = softBusAdapter->GetUdidByNodeId(nodeId);
+    auto ret = DevManager::GetInstance()->GetUuidByNodeId(nodeId);
     EXPECT_EQ(true, ret.empty());
-    delete softBusAdapter;
 }
 }

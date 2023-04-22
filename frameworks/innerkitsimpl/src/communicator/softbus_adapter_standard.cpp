@@ -24,6 +24,7 @@
 #include "session.h"
 #include "softbus_adapter.h"
 #include "softbus_bus_center.h"
+#include "dev_manager.h"
 
 namespace OHOS {
 namespace ObjectStore {
@@ -37,7 +38,6 @@ constexpr int32_t SOFTBUS_ERR = 1;
 constexpr int32_t INVALID_SESSION_ID = -1;
 constexpr int32_t SESSION_NAME_SIZE_MAX = 65;
 constexpr int32_t DEVICE_ID_SIZE_MAX = 65;
-constexpr int32_t ID_BUF_LEN = 65;
 using namespace std;
 
 class AppDataListenerWrap {
@@ -118,15 +118,15 @@ void SoftBusAdapter::NotifyAll(const DeviceInfo &deviceInfo, const DeviceChangeT
             }
         }
         LOG_DEBUG("high");
-        std::string udid = GetUdidByNodeId(deviceInfo.deviceId);
-        LOG_DEBUG("[Notify] to DB from: %{public}s, type:%{public}d", ToBeAnonymous(udid).c_str(), type);
+        std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(deviceInfo.deviceId);
+        LOG_DEBUG("[Notify] to DB from: %{public}s, type:%{public}d", ToBeAnonymous(uuid).c_str(), type);
         UpdateRelationship(deviceInfo.deviceId, type);
         for (const auto &device : listeners) {
             if (device == nullptr) {
                 continue;
             }
             if (device->GetChangeLevelType() == ChangeLevelType::HIGH) {
-                DeviceInfo di = { udid, deviceInfo.deviceName, deviceInfo.deviceType };
+                DeviceInfo di = { uuid, deviceInfo.deviceName, deviceInfo.deviceType };
                 device->OnDeviceChanged(di, type);
                 break;
             }
@@ -137,7 +137,7 @@ void SoftBusAdapter::NotifyAll(const DeviceInfo &deviceInfo, const DeviceChangeT
                 continue;
             }
             if (device->GetChangeLevelType() == ChangeLevelType::LOW) {
-                DeviceInfo di = { udid, deviceInfo.deviceName, deviceInfo.deviceType };
+                DeviceInfo di = { uuid, deviceInfo.deviceName, deviceInfo.deviceType };
                 device->OnDeviceChanged(di, DeviceChangeType::DEVICE_OFFLINE);
                 device->OnDeviceChanged(di, type);
             }
@@ -148,7 +148,7 @@ void SoftBusAdapter::NotifyAll(const DeviceInfo &deviceInfo, const DeviceChangeT
                 continue;
             }
             if (device->GetChangeLevelType() == ChangeLevelType::MIN) {
-                DeviceInfo di = { udid, deviceInfo.deviceName, deviceInfo.deviceType };
+                DeviceInfo di = { uuid, deviceInfo.deviceName, deviceInfo.deviceType };
                 device->OnDeviceChanged(di, type);
             }
         }
@@ -171,8 +171,8 @@ std::vector<DeviceInfo> SoftBusAdapter::GetDeviceList() const
     LOG_INFO("GetAllNodeDeviceInfo success infoNum=%{public}d", infoNum);
 
     for (int i = 0; i < infoNum; i++) {
-        std::string udid = GetUdidByNodeId(std::string(info[i].networkId));
-        DeviceInfo deviceInfo = { udid, std::string(info[i].deviceName), std::to_string(info[i].deviceTypeId) };
+        std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(std::string(info[i].networkId));
+        DeviceInfo deviceInfo = { uuid, std::string(info[i].deviceName), std::to_string(info[i].deviceTypeId) };
         dis.push_back(deviceInfo);
     }
     if (info != nullptr) {
@@ -193,23 +193,11 @@ DeviceInfo SoftBusAdapter::GetLocalDevice()
         LOG_ERROR("GetLocalNodeDeviceInfo error");
         return DeviceInfo();
     }
-    std::string uuid = GetUdidByNodeId(std::string(info.networkId));
+    std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(std::string(info.networkId));
     LOG_DEBUG("[LocalDevice] id:%{private}s, name:%{private}s, type:%{private}d", ToBeAnonymous(uuid).c_str(),
         info.deviceName, info.deviceTypeId);
     localInfo_ = { uuid, std::string(info.deviceName), std::to_string(info.deviceTypeId) };
     return localInfo_;
-}
-
-std::string SoftBusAdapter::GetUdidByNodeId(const std::string &nodeId) const
-{
-    char udid[ID_BUF_LEN] = { 0 };
-    int32_t ret = GetNodeKeyInfo("ohos.objectstore", nodeId.c_str(), NodeDeviceInfoKey::NODE_KEY_UDID,
-        reinterpret_cast<uint8_t *>(udid), ID_BUF_LEN);
-    if (ret != SOFTBUS_OK) {
-        LOG_WARN("GetNodeKeyInfo error, nodeId:%{public}s", ToBeAnonymous(nodeId).c_str());
-        return "";
-    }
-    return std::string(udid);
 }
 
 DeviceInfo SoftBusAdapter::GetLocalBasicInfo() const
@@ -256,19 +244,19 @@ std::vector<DeviceInfo> SoftBusAdapter::GetRemoteNodesBasicInfo() const
 
 void SoftBusAdapter::UpdateRelationship(const std::string &networkid, const DeviceChangeType &type)
 {
-    auto udid = GetUdidByNodeId(networkid);
+    auto uuid = DevManager::GetInstance()->GetUuidByNodeId(networkid);
     lock_guard<mutex> lock(networkMutex_);
     switch (type) {
         case DeviceChangeType::DEVICE_OFFLINE: {
-            auto size = this->networkId2Udid_.erase(networkid);
+            auto size = this->networkId2Uuid_.erase(networkid);
             if (size == 0) {
                 LOG_WARN("not found id:%{public}s.", networkid.c_str());
             }
             break;
         }
         case DeviceChangeType::DEVICE_ONLINE: {
-            std::pair<std::string, std::string> value = { networkid, udid };
-            auto res = this->networkId2Udid_.insert(std::move(value));
+            std::pair<std::string, std::string> value = { networkid, uuid };
+            auto res = this->networkId2Uuid_.insert(std::move(value));
             if (!res.second) {
                 LOG_WARN("insert failed.");
             }
@@ -284,8 +272,8 @@ std::string SoftBusAdapter::ToNodeID(const std::string &nodeId) const
 {
     {
         lock_guard<mutex> lock(networkMutex_);
-        for (auto const &e : networkId2Udid_) {
-            if (nodeId == e.second) { // id is udid
+        for (auto const &e : networkId2Uuid_) {
+            if (nodeId == e.second) { // id is uuid
                 return e.first;
             }
         }
@@ -300,12 +288,12 @@ std::string SoftBusAdapter::ToNodeID(const std::string &nodeId) const
     if (ret == SOFTBUS_OK) {
         lock_guard<mutex> lock(networkMutex_);
         for (int i = 0; i < infoNum; i++) {
-            if (networkId2Udid_.find(info[i].networkId) != networkId2Udid_.end()) {
+            if (networkId2Uuid_.find(info[i].networkId) != networkId2Uuid_.end()) {
                 continue;
             }
-            auto udid = GetUdidByNodeId(std::string(info[i].networkId));
-            networkId2Udid_.insert({ info[i].networkId, udid });
-            if (udid == nodeId) {
+            auto uuid = DevManager::GetInstance()->GetUuidByNodeId(std::string(info[i].networkId));
+            networkId2Uuid_.insert({ info[i].networkId, uuid });
+            if (uuid == nodeId) {
                 networkId = info[i].networkId;
             }
         }
@@ -532,15 +520,15 @@ int AppDataListenerWrap::OnSessionOpened(int sessionId, int result)
         LOG_WARN("get my peer device id failed, session id is %{public}d.", sessionId);
         return SOFTBUS_ERR;
     }
-    std::string peerUdid = softBusAdapter_->GetUdidByNodeId(std::string(peerDevId));
+    std::string peerUuid = DevManager::GetInstance()->GetUuidByNodeId(std::string(peerDevId));
     LOG_DEBUG("[SessionOpen] mySessionName:%{public}s, "
               "peerSessionName:%{public}s, peerDevId:%{public}s",
-        mySessionName, peerSessionName, SoftBusAdapter::ToBeAnonymous(peerUdid).c_str());
+        mySessionName, peerSessionName, SoftBusAdapter::ToBeAnonymous(peerUuid).c_str());
 
     if (strlen(peerSessionName) < 1) {
-        softBusAdapter_->InsertSession(std::string(mySessionName) + peerUdid);
+        softBusAdapter_->InsertSession(std::string(mySessionName) + peerUuid);
     } else {
-        softBusAdapter_->InsertSession(std::string(peerSessionName) + peerUdid);
+        softBusAdapter_->InsertSession(std::string(peerSessionName) + peerUuid);
     }
     return 0;
 }
@@ -568,15 +556,15 @@ void AppDataListenerWrap::OnSessionClosed(int sessionId)
         LOG_WARN("get my peer device id failed, session id is %{public}d.", sessionId);
         return;
     }
-    std::string peerUdid = softBusAdapter_->GetUdidByNodeId(std::string(peerDevId));
+    std::string peerUuid = DevManager::GetInstance()->GetUuidByNodeId(std::string(peerDevId));
     LOG_DEBUG("[SessionClosed] mySessionName:%{public}s, "
               "peerSessionName:%{public}s, peerDevId:%{public}s",
-        mySessionName, peerSessionName, SoftBusAdapter::ToBeAnonymous(peerUdid).c_str());
+        mySessionName, peerSessionName, SoftBusAdapter::ToBeAnonymous(peerUuid).c_str());
 
     if (strlen(peerSessionName) < 1) {
-        softBusAdapter_->DeleteSession(std::string(mySessionName) + peerUdid);
+        softBusAdapter_->DeleteSession(std::string(mySessionName) + peerUuid);
     } else {
-        softBusAdapter_->DeleteSession(std::string(peerSessionName) + peerUdid);
+        softBusAdapter_->DeleteSession(std::string(peerSessionName) + peerUuid);
     }
 }
 
@@ -598,11 +586,11 @@ void AppDataListenerWrap::OnMessageReceived(int sessionId, const void *data, uns
         LOG_WARN("get my peer device id failed, session id is %{public}d.", sessionId);
         return;
     }
-    std::string peerUdid = softBusAdapter_->GetUdidByNodeId(std::string(peerDevId));
+    std::string peerUuid = DevManager::GetInstance()->GetUuidByNodeId(std::string(peerDevId));
     LOG_DEBUG("[MessageReceived] session id:%{public}d, "
               "peerSessionName:%{public}s, peerDevId:%{public}s",
-        sessionId, peerSessionName, SoftBusAdapter::ToBeAnonymous(peerUdid).c_str());
-    NotifyDataListeners(reinterpret_cast<const uint8_t *>(data), dataLen, peerUdid, { std::string(peerSessionName) });
+        sessionId, peerSessionName, SoftBusAdapter::ToBeAnonymous(peerUuid).c_str());
+    NotifyDataListeners(reinterpret_cast<const uint8_t *>(data), dataLen, peerUuid, { std::string(peerSessionName) });
 }
 
 void AppDataListenerWrap::OnBytesReceived(int sessionId, const void *data, unsigned int dataLen)
@@ -623,11 +611,11 @@ void AppDataListenerWrap::OnBytesReceived(int sessionId, const void *data, unsig
         LOG_WARN("get my peer device id failed, session id is %{public}d.", sessionId);
         return;
     }
-    std::string peerUdid = softBusAdapter_->GetUdidByNodeId(std::string(peerDevId));
+    std::string peerUuid = DevManager::GetInstance()->GetUuidByNodeId(std::string(peerDevId));
     LOG_DEBUG("[BytesReceived] session id:%{public}d, peerSessionName:%{public}s, "
               "peerDevId:%{public}s",
-        sessionId, peerSessionName, SoftBusAdapter::ToBeAnonymous(peerUdid).c_str());
-    NotifyDataListeners(reinterpret_cast<const uint8_t *>(data), dataLen, peerUdid, { std::string(peerSessionName) });
+        sessionId, peerSessionName, SoftBusAdapter::ToBeAnonymous(peerUuid).c_str());
+    NotifyDataListeners(reinterpret_cast<const uint8_t *>(data), dataLen, peerUuid, { std::string(peerSessionName) });
 }
 
 void AppDataListenerWrap::NotifyDataListeners(
