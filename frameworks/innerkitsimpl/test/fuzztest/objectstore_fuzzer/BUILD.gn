@@ -33,8 +33,8 @@ ohos_fuzztest("ObjectStoreFuzzTest") {
 
   configs = [ ":module_private_config" ]
   deps = [
-    "../../../../../../kv_store/frameworks/libs/distributeddb:distributeddb",
     "//foundation/distributeddatamgr/data_object/interfaces/innerkits:distributeddataobject_static",
+    "//foundation/distributeddatamgr/kv_store/frameworks/libs/distributeddb:distributeddb",
   ]
 
   external_deps = [ "hilog_native:libhilog" ]
