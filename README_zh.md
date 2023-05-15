@@ -73,7 +73,7 @@ import distributedObject from '@ohos.data.distributedDataObject'
 
 针对分布式数据对象，有以下开发实例可供参考：
 
-[备忘录应用](https://gitee.com/openharmony/distributeddatamgr_objectstore/tree/master/samples/distributedNotepad)
+[备忘录应用](https://gitee.com/openharmony/distributeddatamgr_data_object/tree/master/samples/distributedNotepad)
 
 分布式数据对象在备忘录应用中，通过分布式数据对象框架，当用户在某一端设备上新增备忘录事件，修改编辑事件标题和内容以及清空事件列表时，产生的数据变更结果均可以同步刷新显现在可信组网内其他设备上。
 
