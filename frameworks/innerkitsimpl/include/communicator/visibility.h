@@ -12,6 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+#ifndef VISIBILITY_H
+#define VISIBILITY_H
+
 #ifndef API_EXPORT
 #if _WIN32
 #define API_EXPORT __declspec(dllexport)
@@ -21,4 +25,6 @@
 #endif
 #ifndef KVSTORE_API
 #define KVSTORE_API API_EXPORT
+#endif
+
 #endif
