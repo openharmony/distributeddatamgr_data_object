@@ -144,6 +144,7 @@ uint32_t DistributedObjectStoreImpl::Watch(DistributedObject *object, std::share
         LOG_ERROR("DistributedObjectStoreImpl::Sync object err ");
         return ERR_NULL_OBJECTSTORE;
     }
+    std::lock_guard<std::mutex> lock(watchersLock_);
     if (watchers_.count(object) != 0) {
         LOG_ERROR("DistributedObjectStoreImpl::Watch already gets object");
         return ERR_EXIST;
@@ -174,6 +175,7 @@ uint32_t DistributedObjectStoreImpl::UnWatch(DistributedObject *object)
         LOG_ERROR("DistributedObjectStoreImpl::Watch failed %{public}d", status);
         return status;
     }
+    std::lock_guard<std::mutex> lock(watchersLock_);
     watchers_.erase(object);
     LOG_INFO("DistributedObjectStoreImpl:UnWatch object success.");
     return SUCCESS;

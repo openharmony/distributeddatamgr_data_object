@@ -50,6 +50,7 @@ private:
     std::map<DistributedObject *, std::shared_ptr<WatcherProxy>> watchers_;
     std::shared_mutex dataMutex_ {};
     std::vector<DistributedObject *> objects_ {};
+    std::mutex watchersLock_;
 };
 class StatusNotifierProxy : public StatusWatcher {
 public:
