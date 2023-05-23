@@ -84,10 +84,12 @@ ohos_shared_library("distributeddataobject_impl") {
 }
 
 ohos_static_library("distributeddataobject_static") {
+  part_name = "data_object"
   sources = object_source_config
 
   configs = [ ":objectstore_config" ]
   deps = object_deps_config
   external_deps = object_external_deps_config
   public_configs = [ ":objectstore_public_config" ]
+  subsystem_name = "distributeddatamgr"
 }
