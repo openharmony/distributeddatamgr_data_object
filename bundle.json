@@ -1,11 +1,11 @@
 {
-    "name": "@ohos/distributeddatamgr_data_object", 
-    "version": "",                              
+    "name": "@ohos/data_object", 
+    "version": "3.1.0",
     "description": "The distributed data object management framework is an object-oriented in-memory data management framework",
     "homePage": "https://gitee.com/openharmony",
     "license": "Apache V2",
     "repository": "https://gitee.com/openharmony/distributeddatamgr_data_object ",
-    "domain": "os",
+    "domain": "ohos",
     "language": "",
     "publishAs": "code-segment",
     "private": false,
@@ -40,8 +40,8 @@
         "adapted_system_type": [
             "standard"
         ],
-        "rom": "",
-        "ram": "",
+        "rom": "1024KB",
+        "ram": "1024KB",
         "deps": {
             "components": [
                 "ability_base",
