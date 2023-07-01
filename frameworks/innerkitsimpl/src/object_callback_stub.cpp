@@ -32,7 +32,7 @@ int ObjectSaveCallbackStub::OnRemoteRequest(
         ZLOGE("interface token is not equal");
         return -1;
     }
-    if (code == COMPLETED) {
+    if (code == static_cast<uint32_t>(ObjectStore::ObjectStoreInterfaceCode::COMPLETED)) {
         std::map<std::string, int32_t> results;
         if (!ITypesUtil::Unmarshal(data, results)) {
             ZLOGE("Unmarshalling failed");
@@ -54,7 +54,7 @@ int ObjectRevokeSaveCallbackStub::OnRemoteRequest(
         ZLOGE("interface token is not equal");
         return -1;
     }
-    if (code == COMPLETED) {
+    if (code == static_cast<uint32_t>(ObjectStore::ObjectStoreInterfaceCode::COMPLETED)) {
         int32_t status;
         if (!ITypesUtil::Unmarshal(data, status)) {
             ZLOGE("write descriptor failed");
@@ -76,7 +76,7 @@ int ObjectRetrieveCallbackStub::OnRemoteRequest(
         ZLOGE("interface token is not equal");
         return -1;
     }
-    if (code == COMPLETED) {
+    if (code == static_cast<uint32_t>(ObjectStore::ObjectStoreInterfaceCode::COMPLETED)) {
         std::map<std::string, std::vector<uint8_t>> results;
         if (!ITypesUtil::Unmarshal(data, results)) {
             ZLOGE("write descriptor failed");
@@ -98,7 +98,7 @@ int ObjectChangeCallbackStub::OnRemoteRequest(
         ZLOGE("interface token is not equal");
         return -1;
     }
-    if (code == COMPLETED) {
+    if (code == static_cast<uint32_t>(ObjectStore::ObjectStoreInterfaceCode::COMPLETED)) {
         std::map<std::string, std::vector<uint8_t>> results;
         if (!ITypesUtil::Unmarshal(data, results)) {
             ZLOGE("write descriptor failed");
