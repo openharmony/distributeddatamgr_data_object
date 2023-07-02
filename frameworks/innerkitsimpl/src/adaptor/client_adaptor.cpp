@@ -25,7 +25,7 @@
 namespace OHOS::ObjectStore {
 std::shared_ptr<ObjectStoreDataServiceProxy> ClientAdaptor::distributedDataMgr_ = nullptr;
 
-using KvStoreCode = ObjectService::KvStoreServiceInterfaceCode;
+using KvStoreCode = OHOS::DistributedObject::ObjectService::KvStoreServiceInterfaceCode;
 
 sptr<OHOS::DistributedObject::IObjectService> ClientAdaptor::GetObjectService()
 {
