@@ -24,7 +24,7 @@
 namespace OHOS::DistributedObject {
 using namespace ObjectStore;
 
-using ObjectCode = ObjectService::ObjectServiceInterfaceCode;
+using ObjectCode = ObjectStoreService::ObjectServiceInterfaceCode;
 
 ObjectServiceProxy::ObjectServiceProxy(const sptr<IRemoteObject> &impl) : IRemoteProxy<IObjectService>(impl)
 {
