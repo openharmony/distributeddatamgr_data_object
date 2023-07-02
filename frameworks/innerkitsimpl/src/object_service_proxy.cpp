@@ -23,6 +23,9 @@
 
 namespace OHOS::DistributedObject {
 using namespace ObjectStore;
+
+using ObjectCode = ObjectService::ObjectServiceInterfaceCode;
+
 ObjectServiceProxy::ObjectServiceProxy(const sptr<IRemoteObject> &impl) : IRemoteProxy<IObjectService>(impl)
 {
     ZLOGI("init service proxy.");
@@ -43,7 +46,7 @@ int32_t ObjectServiceProxy::ObjectStoreSave(const std::string &bundleName, const
     }
     MessageParcel reply;
     MessageOption mo { MessageOption::TF_SYNC };
-    int32_t error = Remote()->SendRequest(OBJECTSTORE_SAVE, data, reply, mo);
+    int32_t error = Remote()->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_SAVE), data, reply, mo);
     if (error != 0) {
         ZLOGE("SendRequest returned %d", error);
         return ERR_IPC;
@@ -67,7 +70,7 @@ int32_t ObjectServiceProxy::ObjectStoreRevokeSave(
 
     MessageParcel reply;
     MessageOption mo { MessageOption::TF_SYNC };
-    int32_t error = Remote()->SendRequest(OBJECTSTORE_REVOKE_SAVE, data, reply, mo);
+    int32_t error = Remote()->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_REVOKE_SAVE), data, reply, mo);
     if (error != 0) {
         ZLOGE("SendRequest returned %d", error);
         return ERR_IPC;
@@ -91,7 +94,7 @@ int32_t ObjectServiceProxy::ObjectStoreRetrieve(
 
     MessageParcel reply;
     MessageOption mo { MessageOption::TF_SYNC };
-    int32_t error = Remote()->SendRequest(OBJECTSTORE_RETRIEVE, data, reply, mo);
+    int32_t error = Remote()->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_RETRIEVE), data, reply, mo);
     if (error != 0) {
         ZLOGE("SendRequest returned %d", error);
         return ERR_IPC;
@@ -115,7 +118,8 @@ int32_t ObjectServiceProxy::RegisterDataObserver(const std::string &bundleName,
     
     MessageParcel reply;
     MessageOption mo { MessageOption::TF_SYNC };
-    int32_t error = Remote()->SendRequest(OBJECTSTORE_REGISTER_OBSERVER, data, reply, mo);
+    int32_t error = Remote()->SendRequest(
+        static_cast<uint32_t>(ObjectCode::OBJECTSTORE_REGISTER_OBSERVER), data, reply, mo);
     if (error != 0) {
         ZLOGE("SendRequest returned %d", error);
         return ERR_IPC;
@@ -138,7 +142,8 @@ int32_t ObjectServiceProxy::UnregisterDataChangeObserver(const std::string &bund
     
     MessageParcel reply;
     MessageOption mo { MessageOption::TF_SYNC };
-    int32_t error = Remote()->SendRequest(OBJECTSTORE_UNREGISTER_OBSERVER, data, reply, mo);
+    int32_t error = Remote()->SendRequest(
+        static_cast<uint32_t>(ObjectCode::OBJECTSTORE_UNREGISTER_OBSERVER), data, reply, mo);
     if (error != 0) {
         ZLOGE("SendRequest returned %d", error);
         return ERR_IPC;
