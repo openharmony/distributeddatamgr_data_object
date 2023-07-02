@@ -19,7 +19,7 @@
 #define DISTRIBUTEDDATA_OBJECT_STORE_IPC_INTERFACE_H
 
 namespace OHOS::DistributedObject {
-namespace ObjectService {
+namespace ObjectStoreService {
 enum class ObjectServiceInterfaceCode {
     OBJECTSTORE_SAVE,
     OBJECTSTORE_REVOKE_SAVE,
