@@ -112,7 +112,7 @@ sptr<IRemoteObject> ObjectStoreDataServiceProxy::GetFeatureInterface(const std::
 
     MessageParcel reply;
     MessageOption mo { MessageOption::TF_SYNC };
-    int32_t error = Remote()->SendRequest(static_cast<uint32_t>(GET_FEATURE_INTERFACE), data, reply, mo);
+    int32_t error = Remote()->SendRequest(static_cast<uint32_t>(KvStoreCode::GET_FEATURE_INTERFACE), data, reply, mo);
     if (error != 0) {
         LOG_ERROR("SendRequest returned %{public}d", error);
         return nullptr;
@@ -145,7 +145,7 @@ uint32_t ObjectStoreDataServiceProxy::RegisterClientDeathObserver(
 
     MessageOption mo { MessageOption::TF_SYNC };
     int32_t error = Remote()->SendRequest(
-        static_cast<uint32_t>(REGISTERCLIENTDEATHOBSERVER), data, reply, mo);
+        static_cast<uint32_t>(KvStoreCode::REGISTERCLIENTDEATHOBSERVER), data, reply, mo);
     if (error != 0) {
         LOG_WARN("failed during IPC. errCode %d", error);
         return ERR_IPC;
