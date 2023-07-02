@@ -14,13 +14,24 @@
  */
 
 /* SAID:1301 */
+/* FeatureSystem: object_service */
 #ifndef DISTRIBUTEDDATA_OBJECT_STORE_IPC_INTERFACE_H
 #define DISTRIBUTEDDATA_OBJECT_STORE_IPC_INTERFACE_H
 
 namespace OHOS::DistributedObject {
-namespace ObjectStore {
-enum class ObjectStoreInterfaceCode {
-    COMPLETED = 0,
+namespace ObjectService {
+enum class ObjectServiceInterfaceCode {
+    OBJECTSTORE_SAVE,
+    OBJECTSTORE_REVOKE_SAVE,
+    OBJECTSTORE_RETRIEVE,
+    OBJECTSTORE_REGISTER_OBSERVER,
+    OBJECTSTORE_UNREGISTER_OBSERVER,
+    OBJECTSTORE_SERVICE_CMD_MAX
+};
+
+enum class KvStoreServiceInterfaceCode {
+    GET_FEATURE_INTERFACE = 0,
+    REGISTERCLIENTDEATHOBSERVER,
 };
 }
 } // namespace OHOS
