@@ -19,10 +19,12 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "distributeddata_object_store_ipc_interface_code.h"
 
 namespace OHOS {
 namespace DistributedObject {
+enum {
+    COMPLETED = 0,
+};
 
 class IObjectSaveCallback {
 public:
