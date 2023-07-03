@@ -20,6 +20,7 @@
 
 #include <iremote_broker.h>
 #include "object_service.h"
+#include "distributeddata_object_store_ipc_interface_code.h"
 
 namespace OHOS::DistributedObject {
 class IObjectService : public ObjectService, public IRemoteBroker {
@@ -29,11 +30,6 @@ public:
 
 class IKvStoreDataService : public IRemoteBroker {
 public:
-    enum {
-        GET_FEATURE_INTERFACE = 0,
-        REGISTERCLIENTDEATHOBSERVER,
-    };
-
     DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.DistributedKv.IKvStoreDataService");
 
     virtual sptr<IRemoteObject> GetFeatureInterface(const std::string &name) = 0;
