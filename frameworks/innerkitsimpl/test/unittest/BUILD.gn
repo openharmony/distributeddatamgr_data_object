@@ -54,7 +54,7 @@ ohos_unittest("NativeObjectStoreTest") {
     "access_token:libaccesstoken_sdk",
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",
-    "hilog_native:libhilog",
+    "hilog:libhilog",
   ]
 
   deps = [
