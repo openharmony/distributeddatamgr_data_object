@@ -38,8 +38,8 @@ public:
     // stop DataChangeListener to watch data change;
     Status StopWatchDataChange(const AppDataChangeListener *observer, const PipeInfo &pipeInfo);
     // Send data to other device, function will be called back after sent to notify send result.
-    Status SendData(
-        const PipeInfo &pipeInfo, const DeviceId &deviceId, const uint8_t *ptr, int size, const MessageInfo &info);
+    Status SendData(const PipeInfo &pipeInfo, const DeviceId &deviceId, const DataInfo &dataInfo, uint32_t totalLength,
+        const MessageInfo &info);
     bool IsSameStartedOnPeer(const struct PipeInfo &pipeInfo, const struct DeviceId &peer);
 
     int CreateSessionServer(const std::string &sessionName) const;
