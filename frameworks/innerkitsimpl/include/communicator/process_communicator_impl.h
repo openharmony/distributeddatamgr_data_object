@@ -42,6 +42,8 @@ public:
     KVSTORE_API DBStatus RegOnDataReceive(const OnDataReceive &callback) override;
 
     KVSTORE_API DBStatus SendData(const DeviceInfos &dstDevInfo, const uint8_t *data, uint32_t length) override;
+    KVSTORE_API DBStatus SendData(
+        const DeviceInfos &dstDevInfo, const uint8_t *data, uint32_t length, uint32_t totalLength) override;
     KVSTORE_API uint32_t GetMtuSize() override;
     KVSTORE_API uint32_t GetMtuSize(const DeviceInfos &devInfo) override;
     KVSTORE_API DeviceInfos GetLocalDeviceInfos() override;

@@ -53,6 +53,27 @@ struct DeviceId {
     std::string deviceId;
 };
 
+enum RouteType : int32_t {
+    INVALID_ROUTE_TYPE = -1,
+    ROUTE_TYPE_ALL = 0,
+    WIFI_STA = 1,
+    WIFI_P2P = 2,
+    BT_BR = 3,
+    BT_BLE = 4,
+    BUTT = 5,
+};
+
+enum RecOperate : int32_t {
+    KEEP,
+    CHANGE_TO_P2P,
+    CHANGE_TO_BLUETOOTH,
+};
+
+struct DataInfo {
+    uint8_t *data;
+    uint32_t length;
+};
+
 // app_distributed_data_manager using sub error code 0
 constexpr ErrCode APP_DISTRIBUTEDDATAMGR_ERR_OFFSET = ErrCodeOffset(SUBSYS_DISTRIBUTEDDATAMNG, 0);
 

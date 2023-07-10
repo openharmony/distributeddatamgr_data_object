@@ -18,13 +18,13 @@
 #include <mutex>
 #include <thread>
 
+#include "dev_manager.h"
 #include "kv_store_delegate_manager.h"
 #include "process_communicator_impl.h"
 #include "securec.h"
 #include "session.h"
 #include "softbus_adapter.h"
 #include "softbus_bus_center.h"
-#include "dev_manager.h"
 
 namespace OHOS {
 namespace ObjectStore {
@@ -33,16 +33,15 @@ constexpr int32_t END_SIZE = 3;
 constexpr int32_t MIN_SIZE = HEAD_SIZE + END_SIZE + 3;
 constexpr const char *REPLACE_CHAIN = "***";
 constexpr const char *DEFAULT_ANONYMOUS = "******";
-constexpr int32_t INVALID_SESSIONID = -1;
 constexpr int32_t SOFTBUS_OK = 0;
 constexpr int32_t SOFTBUS_ERR = 1;
 constexpr int32_t INVALID_SESSION_ID = -1;
 constexpr int32_t SESSION_NAME_SIZE_MAX = 65;
 constexpr int32_t DEVICE_ID_SIZE_MAX = 65;
 constexpr size_t TASK_CAPACITY_MAX = 15;
+constexpr int32_t SELF_SIDE = 1;
 
 using namespace std;
-
 class AppDataListenerWrap {
 public:
     static void SetDataHandler(SoftBusAdapter *handler);
@@ -78,6 +77,8 @@ SoftBusAdapter::~SoftBusAdapter()
         taskQueue_->Clean();
         taskQueue_ = nullptr;
     }
+    dataCaches_.clear();
+    sessionIds_.clear();
 }
 
 Status SoftBusAdapter::StartWatchDeviceChange(
@@ -362,55 +363,179 @@ Status SoftBusAdapter::StopWatchDataChange(
     return Status::ERROR;
 }
 
-Status SoftBusAdapter::SendData(
-    const PipeInfo &pipeInfo, const DeviceId &deviceId, const uint8_t *ptr, int size, const MessageInfo &info)
+RecOperate SoftBusAdapter::CalcRecOperate(uint32_t dataSize, RouteType currentRouteType, bool &isP2P) const
 {
-    lock_guard<mutex> lock(sendDataMutex_);
-    uint8_t *tempCopied = new uint8_t[size];
-    if (tempCopied == nullptr) {
+    if (currentRouteType == RouteType::WIFI_STA) {
+        return KEEP;
+    }
+    if (currentRouteType == RouteType::INVALID_ROUTE_TYPE || currentRouteType == BT_BR || currentRouteType == BT_BLE) {
+        if (dataSize > P2P_SIZE_THRESHOLD) {
+            isP2P = true;
+            return CHANGE_TO_P2P;
+        }
+    }
+    if (currentRouteType == WIFI_P2P) {
+        if (dataSize < P2P_SIZE_THRESHOLD * SWITCH_DELAY_FACTOR) {
+            return CHANGE_TO_BLUETOOTH;
+        }
+        isP2P = true;
+    }
+    return KEEP;
+}
+
+SessionAttribute SoftBusAdapter::GetSessionAttribute(bool isP2P)
+{
+    SessionAttribute attr;
+    attr.dataType = TYPE_BYTES;
+    // If the dataType is BYTES, the default strategy is wifi_5G > wifi_2.4G > BR, without P2P;
+    if (!isP2P) {
+        return attr;
+    }
+
+    int index = 0;
+    attr.linkType[index++] = LINK_TYPE_WIFI_WLAN_5G;
+    attr.linkType[index++] = LINK_TYPE_WIFI_WLAN_2G;
+    attr.linkType[index++] = LINK_TYPE_WIFI_P2P;
+    attr.linkType[index++] = LINK_TYPE_BR;
+    attr.linkTypeNum = index;
+    return attr;
+}
+
+Status SoftBusAdapter::CacheData(const std::string &deviceId, const DataInfo &dataInfo)
+{
+    uint8_t *data = new uint8_t[dataInfo.length];
+    if (data == nullptr) {
         LOG_ERROR("[SendData] create buffer fail.");
         return Status::INVALID_ARGUMENT;
     }
-    if (memcpy_s(tempCopied, size, ptr, size) != EOK) {
+    if (memcpy_s(data, dataInfo.length, dataInfo.data, dataInfo.length) != EOK) {
         LOG_ERROR("[SendData] memcpy_s fail.");
-        delete[] tempCopied;
+        delete[] data;
         return Status::INVALID_ARGUMENT;
     }
-    BytesMsg bytesMsg = { tempCopied, size, false };
-    sessionsData_.Compute(INVALID_SESSIONID, [&bytesMsg](const int key, std::vector<BytesMsg> &bytesList) {
-        LOG_DEBUG("[SendData] Insert invalid sessionId.");
-        bytesList.push_back(bytesMsg);
-        return true;
-    });
-    SessionAttribute attr;
-    attr.dataType = TYPE_BYTES;
-    LOG_INFO("[SendData] to %{public}s ,session:%{public}s, size:%{public}d", ToBeAnonymous(deviceId.deviceId).c_str(),
-        pipeInfo.pipeId.c_str(), size);
-    int sessionId = OpenSession(pipeInfo.pipeId.c_str(), pipeInfo.pipeId.c_str(), ToNodeID(deviceId.deviceId).c_str(),
-        "GROUP_ID", &attr);
-    sessionsData_.Compute(sessionId, [&bytesMsg](const int key, std::vector<BytesMsg> &bytesList) {
-        if (bytesList.empty()) {
-            bytesList.push_back(bytesMsg);
-            return true;
+    BytesMsg bytesMsg = { data, dataInfo.length };
+    lock_guard<mutex> lock(deviceDataLock_);
+    auto deviceIdData = dataCaches_.find(deviceId);
+    if (deviceIdData == dataCaches_.end()) {
+        dataCaches_[deviceId] = { bytesMsg };
+    } else {
+        deviceIdData->second.push_back(bytesMsg);
+        if (deviceIdData->second.size() > VECTOR_SIZE_THRESHOLD) {
+            deviceIdData->second.erase(deviceIdData->second.begin());
         }
-        bool isPushMsg = true;
-        for (auto it = bytesList.begin(); it != bytesList.end();) {
-            if (bytesMsg.ptr == it->ptr) {
-                isPushMsg = false;
-            }
-            if (it->isSend) {
-                it = bytesList.erase(it);
-            } else {
-                ++it;
-            }
-        }
-        if (isPushMsg) {
-            bytesList.push_back(bytesMsg);
-        }
-        return true;
-    });
-    sessionsData_.Erase(INVALID_SESSIONID);
+    }
     return Status::SUCCESS;
+}
+
+uint32_t SoftBusAdapter::GetSize(const std::string &deviceId)
+{
+    uint32_t dataSize = 0;
+    lock_guard<mutex> lock(deviceDataLock_);
+    auto it = dataCaches_.find(deviceId);
+    if (it == dataCaches_.end() || it->second.empty()) {
+        return dataSize;
+    }
+    for (const auto &msg : it->second) {
+        dataSize += msg.size;
+    }
+    return dataSize;
+}
+
+RouteType SoftBusAdapter::GetRouteType(int sessionId)
+{
+    RouteType routeType = RouteType::INVALID_ROUTE_TYPE;
+    int ret = GetSessionOption(sessionId, SESSION_OPTION_LINK_TYPE, &routeType, sizeof(routeType));
+    if (ret != SOFTBUS_OK) {
+        LOG_ERROR("getSessionOption failed, ret is %{public}d.", ret);
+    }
+    return routeType;
+}
+
+Status SoftBusAdapter::SendData(const PipeInfo &pipeInfo, const DeviceId &deviceId, const DataInfo &dataInfo,
+    uint32_t totalLength, const MessageInfo &info)
+{
+    lock_guard<mutex> lock(sendDataMutex_);
+    auto result = CacheData(deviceId.deviceId, dataInfo);
+    if (result != Status::SUCCESS) {
+        return result;
+    }
+    uint32_t dataSize = GetSize(deviceId.deviceId) + totalLength;
+    int sessionId = GetSessionId(deviceId.deviceId);
+    bool isP2P = false;
+    RouteType currentRouteType = GetRouteType(sessionId);
+    RecOperate recOperate = CalcRecOperate(dataSize, currentRouteType, isP2P);
+    if (recOperate != KEEP && sessionId != INVALID_SESSION_ID) {
+        LOG_INFO("close session : %{public}d, currentRouteType : %{public}d, recOperate : %{public}d", sessionId,
+            currentRouteType, recOperate);
+        CloseSession(sessionId);
+    }
+    SessionAttribute attr = GetSessionAttribute(isP2P);
+    sessionId = OpenSession(
+        pipeInfo.pipeId.c_str(), pipeInfo.pipeId.c_str(), ToNodeID(deviceId.deviceId).c_str(), "GROUP_ID", &attr);
+    return Status::SUCCESS;
+}
+
+void SoftBusAdapter::CacheSession(int32_t sessionId)
+{
+    std::string deviceId;
+    if (GetDeviceId(sessionId, deviceId) == SOFTBUS_OK) {
+        lock_guard<mutex> lock(deviceSessionLock_);
+        sessionIds_[deviceId] = sessionId;
+    }
+}
+
+void SoftBusAdapter::DoSend()
+{
+    auto task([this]() {
+        lock_guard<mutex> lockSession(deviceSessionLock_);
+        for (auto &it : sessionIds_) {
+            if (it.second == INVALID_SESSION_ID) {
+                continue;
+            }
+            lock_guard<mutex> lock(deviceDataLock_);
+            auto dataCache = dataCaches_.find(it.first);
+            if (dataCache == dataCaches_.end()) {
+                continue;
+            }
+            for (auto msg = dataCache->second.begin(); msg != dataCache->second.end();) {
+                auto &byteMsg = *msg;
+                int32_t ret = SendBytes(it.second, byteMsg.ptr, byteMsg.size);
+                if (ret != SOFTBUS_OK) {
+                    LOG_ERROR("[SendBytes] to %{public}d failed, ret:%{public}d.", it.second, ret);
+                }
+                LOG_DEBUG("[SendBytes] delete msgPtr.");
+                delete[] byteMsg.ptr;
+                msg = dataCache->second.erase(msg);
+            }
+        }
+    });
+    taskQueue_->Execute(std::move(task));
+}
+
+int SoftBusAdapter::GetDeviceId(int sessionId, std::string &deviceId)
+{
+    char peerDevId[DEVICE_ID_SIZE_MAX] = "";
+    int ret = GetPeerDeviceId(sessionId, peerDevId, sizeof(peerDevId));
+    if (ret != SOFTBUS_OK) {
+        LOG_ERROR("get peerDeviceId failed, sessionId :%{public}d", sessionId);
+        return ret;
+    }
+    lock_guard<mutex> lock(networkMutex_);
+    auto it = networkId2Uuid_.find(std::string(peerDevId));
+    if (it != networkId2Uuid_.end()) {
+        deviceId = it->second;
+    }
+    return ret;
+}
+
+int SoftBusAdapter::GetSessionId(const std::string &deviceId)
+{
+    lock_guard<mutex> lock(deviceSessionLock_);
+    auto it = sessionIds_.find(deviceId);
+    if (it != sessionIds_.end()) {
+        return it->second;
+    }
+    return INVALID_SESSION_ID;
 }
 
 void SoftBusAdapter::OnSessionOpen(int32_t sessionId, int32_t status)
@@ -419,56 +544,26 @@ void SoftBusAdapter::OnSessionOpen(int32_t sessionId, int32_t status)
         LOG_DEBUG("[OnSessionOpen] OpenSession failed");
         return;
     }
-    auto item = sessionsData_.Find(INVALID_SESSIONID);
-    if (item.first && !item.second.empty()) {
-        sessionsData_.Compute(sessionId, [item](const int key, std::vector<BytesMsg> &bytesList) {
-            LOG_DEBUG("[OnSessionOpen] replace invalid sessionId with valid sessionId");
-            bytesList = item.second;
-            return true;
-        });
-        sessionsData_.Erase(INVALID_SESSIONID);
+    if (GetSessionSide(sessionId) != SELF_SIDE) {
+        return;
     }
-    auto task([this, sessionId]() {
-        sessionsData_.Compute(sessionId, [](const int key, std::vector<BytesMsg> &bytesList) {
-            for (auto &bytesMsg : bytesList) {
-                if (bytesMsg.isSend) {
-                    continue;
-                }
-                LOG_INFO("[SendBytes] start,session id is %{public}d", key);
-                uint8_t *msgPtr = bytesMsg.ptr;
-                int size = bytesMsg.size;
-                int32_t ret = SendBytes(key, static_cast<void*>(msgPtr), size);
-                if (ret != SOFTBUS_OK) {
-                    LOG_ERROR("[SendBytes] to %{public}d failed, ret:%{public}d.", key, ret);
-                }
-                LOG_DEBUG("[SendBytes] delete msgPtr.");
-                delete[] msgPtr;
-                bytesMsg.isSend = true;
-            }
-            return true;
-        });
-    });
-
-    taskQueue_->Execute(std::move(task));
+    CacheSession(sessionId);
+    DoSend();
 }
 
 void SoftBusAdapter::OnSessionClose(int32_t sessionId)
 {
-    lock_guard<mutex> lock(statusMutex_);
-    auto it = sessionsStatus_.find(sessionId);
-    if (it != sessionsStatus_.end()) {
-        it->second->Clear();
-        sessionsStatus_.erase(it);
+    std::string deviceId;
+    if (GetSessionSide(sessionId) != SELF_SIDE) {
+        return;
     }
-}
-
-std::shared_ptr<ConditionLock<int32_t>> SoftBusAdapter::GetSemaphore(int32_t sessionId)
-{
-    lock_guard<mutex> lock(statusMutex_);
-    if (sessionsStatus_.find(sessionId) == sessionsStatus_.end()) {
-        sessionsStatus_.emplace(sessionId, std::make_shared<ConditionLock<int32_t>>());
+    if (GetDeviceId(sessionId, deviceId) == SOFTBUS_OK) {
+        lock_guard<mutex> lock(deviceSessionLock_);
+        if (sessionIds_.find(deviceId) != sessionIds_.end()) {
+            sessionIds_.erase(deviceId);
+        }
     }
-    return sessionsStatus_[sessionId];
+    DoSend();
 }
 
 bool SoftBusAdapter::IsSameStartedOnPeer(
@@ -519,7 +614,7 @@ int SoftBusAdapter::RemoveSessionServerAdapter(const std::string &sessionName) c
 void SoftBusAdapter::InsertSession(const std::string &sessionName)
 {
     lock_guard<mutex> lock(busSessionMutex_);
-    busSessionMap_.insert({sessionName, true});
+    busSessionMap_.insert({ sessionName, true });
 }
 
 void SoftBusAdapter::DeleteSession(const std::string &sessionName)
@@ -616,7 +711,6 @@ void AppDataListenerWrap::OnSessionClosed(int sessionId)
     LOG_DEBUG("[SessionClosed] mySessionName:%{public}s, "
               "peerSessionName:%{public}s, peerDevId:%{public}s",
         mySessionName, peerSessionName, SoftBusAdapter::ToBeAnonymous(peerUuid).c_str());
-
     if (strlen(peerSessionName) < 1) {
         softBusAdapter_->DeleteSession(std::string(mySessionName) + peerUuid);
     } else {

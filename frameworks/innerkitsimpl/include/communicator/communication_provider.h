@@ -50,8 +50,8 @@ public:
 
     // Send data to other device, function will be called back after sent to notify send result
     KVSTORE_API
-    virtual Status SendData(const PipeInfo &pipeInfo, const DeviceId &deviceId, const uint8_t *ptr, int size,
-        const MessageInfo &info = { MessageType::DEFAULT }) = 0;
+    virtual Status SendData(const PipeInfo &pipeInfo, const DeviceId &deviceId, const DataInfo &DataInfo,
+        uint32_t totalLength, const MessageInfo &info = { MessageType::DEFAULT }) = 0;
 
     // Get online deviceList
     KVSTORE_API virtual std::vector<DeviceInfo> GetDeviceList() const = 0;

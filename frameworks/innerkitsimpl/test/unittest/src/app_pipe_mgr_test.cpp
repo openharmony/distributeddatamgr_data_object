@@ -220,12 +220,13 @@ HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_SendData_001, TestSize.Level
 {
     PipeInfo pipeInfo = {};
     DeviceId deviceId = {"devideId01"};
-    int size = 1;
+    uint32_t size = 1;
     uint8_t tmpNum = 1;
     uint8_t *ptr = &tmpNum;
+    const DataInfo dataInfo = { const_cast<uint8_t *>(ptr), size };
     MessageInfo messageInfo = {MessageType::DEFAULT};
     AppPipeMgr *appPipeMgr = new AppPipeMgr();
-    auto ret = appPipeMgr->SendData(pipeInfo, deviceId, ptr, size, messageInfo);
+    auto ret = appPipeMgr->SendData(pipeInfo, deviceId, dataInfo, size, messageInfo);
     EXPECT_EQ(Status::ERROR, ret);
 }
 
@@ -238,12 +239,13 @@ HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_SendData_002, TestSize.Level
 {
     PipeInfo pipeInfo = {"pipInfo02"};
     DeviceId deviceId = {"devideId02"};
-    int size = 1;
+    uint32_t size = 1;
     uint8_t tmpNum = 1;
     uint8_t *ptr = &tmpNum;
+    const DataInfo dataInfo = { const_cast<uint8_t *>(ptr), size };
     MessageInfo messageInfo = { MessageType::DEFAULT };
     AppPipeMgr *appPipeMgr = new AppPipeMgr();
-    auto ret = appPipeMgr->SendData(pipeInfo, deviceId, ptr, size, messageInfo);
+    auto ret = appPipeMgr->SendData(pipeInfo, deviceId, dataInfo, size, messageInfo);
     EXPECT_EQ(Status::KEY_NOT_FOUND, ret);
 }
 
