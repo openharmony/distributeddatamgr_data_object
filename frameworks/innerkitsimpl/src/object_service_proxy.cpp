@@ -46,7 +46,12 @@ int32_t ObjectServiceProxy::ObjectStoreSave(const std::string &bundleName, const
     }
     MessageParcel reply;
     MessageOption mo { MessageOption::TF_SYNC };
-    int32_t error = Remote()->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_SAVE), data, reply, mo);
+    sptr<IRemoteObject> remoteObject = Remote();
+    if (remoteObject == nullptr) {
+        LOG_ERROR("ObjectStoreSave remoteObject is nullptr.");
+        return ERR_IPC;
+    }
+    int32_t error = remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_SAVE), data, reply, mo);
     if (error != 0) {
         ZLOGE("SendRequest returned %d", error);
         return ERR_IPC;
@@ -70,7 +75,13 @@ int32_t ObjectServiceProxy::ObjectStoreRevokeSave(
 
     MessageParcel reply;
     MessageOption mo { MessageOption::TF_SYNC };
-    int32_t error = Remote()->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_REVOKE_SAVE), data, reply, mo);
+    sptr<IRemoteObject> remoteObject = Remote();
+    if (remoteObject == nullptr) {
+        LOG_ERROR("ObjectStoreRevokeSave remoteObject is nullptr.");
+        return ERR_IPC;
+    }
+    int32_t error =
+        remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_REVOKE_SAVE), data, reply, mo);
     if (error != 0) {
         ZLOGE("SendRequest returned %d", error);
         return ERR_IPC;
@@ -94,7 +105,13 @@ int32_t ObjectServiceProxy::ObjectStoreRetrieve(
 
     MessageParcel reply;
     MessageOption mo { MessageOption::TF_SYNC };
-    int32_t error = Remote()->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_RETRIEVE), data, reply, mo);
+    sptr<IRemoteObject> remoteObject = Remote();
+    if (remoteObject == nullptr) {
+        LOG_ERROR("ObjectStoreRetrieve remoteObject is nullptr.");
+        return ERR_IPC;
+    }
+    int32_t error =
+        remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_RETRIEVE), data, reply, mo);
     if (error != 0) {
         ZLOGE("SendRequest returned %d", error);
         return ERR_IPC;
@@ -118,8 +135,13 @@ int32_t ObjectServiceProxy::RegisterDataObserver(const std::string &bundleName,
     
     MessageParcel reply;
     MessageOption mo { MessageOption::TF_SYNC };
-    int32_t error = Remote()->SendRequest(
-        static_cast<uint32_t>(ObjectCode::OBJECTSTORE_REGISTER_OBSERVER), data, reply, mo);
+    sptr<IRemoteObject> remoteObject = Remote();
+    if (remoteObject == nullptr) {
+        LOG_ERROR("RegisterDataObserver remoteObject is nullptr.");
+        return ERR_IPC;
+    }
+    int32_t error =
+        remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_REGISTER_OBSERVER), data, reply, mo);
     if (error != 0) {
         ZLOGE("SendRequest returned %d", error);
         return ERR_IPC;
@@ -142,8 +164,13 @@ int32_t ObjectServiceProxy::UnregisterDataChangeObserver(const std::string &bund
     
     MessageParcel reply;
     MessageOption mo { MessageOption::TF_SYNC };
-    int32_t error = Remote()->SendRequest(
-        static_cast<uint32_t>(ObjectCode::OBJECTSTORE_UNREGISTER_OBSERVER), data, reply, mo);
+    sptr<IRemoteObject> remoteObject = Remote();
+    if (remoteObject == nullptr) {
+        LOG_ERROR("UnregisterDataChangeObserver remoteObject is nullptr.");
+        return ERR_IPC;
+    }
+    int32_t error =
+        remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_UNREGISTER_OBSERVER), data, reply, mo);
     if (error != 0) {
         ZLOGE("SendRequest returned %d", error);
         return ERR_IPC;
