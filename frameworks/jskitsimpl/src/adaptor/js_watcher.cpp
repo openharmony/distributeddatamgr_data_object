@@ -140,9 +140,9 @@ void JSWatcher::ProcessStatus(napi_env env, std::list<void *> &args)
         ASSERT_MATCH_ELSE_GOTO_ERROR(status == napi_ok);
         status = JSUtil::SetValue(env, statusArgs->sessionId_, param[0]);
         ASSERT_MATCH_ELSE_GOTO_ERROR(status == napi_ok);
-        JSUtil::SetValue(env, statusArgs->networkId_, param[1]);
+        status = JSUtil::SetValue(env, statusArgs->networkId_, param[1]);
         ASSERT_MATCH_ELSE_GOTO_ERROR(status == napi_ok);
-        JSUtil::SetValue(env, statusArgs->status_, param[2]);
+        status = JSUtil::SetValue(env, statusArgs->status_, param[2]);
         ASSERT_MATCH_ELSE_GOTO_ERROR(status == napi_ok);
         LOG_INFO("start %{public}s, %{public}s, %{public}s", statusArgs->sessionId_.c_str(),
             statusArgs->networkId_.c_str(), statusArgs->status_.c_str());

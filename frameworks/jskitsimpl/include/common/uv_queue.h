@@ -25,7 +25,7 @@
 
 namespace OHOS::ObjectStore {
 typedef void (*Process)(napi_env env, std::list<void *> &);
-class UvQueue {
+class UvQueue : public std::enable_shared_from_this<UvQueue> {
 public:
     UvQueue(napi_env env);
     virtual ~UvQueue();
@@ -33,6 +33,10 @@ public:
     void CallFunction(Process process, void *argv);
 
 private:
+    struct UvEntry {
+        std::weak_ptr<UvQueue> uvQueue_;
+    };
+
     napi_env env_;
     std::shared_mutex mutex_{};
     // key is callback,value is list of args

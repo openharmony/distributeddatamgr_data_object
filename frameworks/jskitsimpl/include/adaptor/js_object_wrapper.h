@@ -40,7 +40,7 @@ public:
 private:
     DistributedObjectStore *objectStore_;
     DistributedObject *object_;
-    std::unique_ptr<JSWatcher> watcher_ = nullptr;
+    std::shared_ptr<JSWatcher> watcher_ = nullptr;
     std::shared_mutex watchMutex_{};
     std::vector<std::string> undefinedProperties;
     std::string objectId_;

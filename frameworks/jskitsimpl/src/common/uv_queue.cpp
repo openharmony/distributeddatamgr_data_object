@@ -38,7 +38,11 @@ void UvQueue::CallFunction(Process process, void *argv)
         LOG_ERROR("no memory for uv_work_t");
         return;
     }
-    work->data = this;
+    work->data = new (std::nothrow)UvEntry { weak_from_this() };
+    if (work->data == nullptr) {
+        LOG_ERROR("no memory for UvEntry");
+        return;
+    }
     {
         std::unique_lock<std::shared_mutex> cacheLock(mutex_);
         if (args_.count(process) != 0) {
@@ -55,17 +59,18 @@ void UvQueue::CallFunction(Process process, void *argv)
     uv_queue_work(
         loop_, work, [](uv_work_t *work) {},
         [](uv_work_t *work, int uvstatus) {
-            auto queue = static_cast<UvQueue *>(work->data);
-            {
+            std::shared_ptr<UvEntry> entry(static_cast<UvEntry *>(work->data), [work](UvEntry *data) {
+                delete data;
+                delete work;
+            });
+            auto queue = entry->uvQueue_.lock();
+            if (queue != nullptr) {
                 std::unique_lock<std::shared_mutex> cacheLock(queue->mutex_);
                 for (auto &item : queue->args_) {
                     item.first(queue->env_, item.second);
                 }
                 queue->args_.clear();
             }
-
-            delete work;
-            work = nullptr;
         });
 }
 } // namespace OHOS::ObjectStore
