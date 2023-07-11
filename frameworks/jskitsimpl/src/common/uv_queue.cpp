@@ -56,13 +56,10 @@ void UvQueue::CallFunction(Process process, void *argv)
         }
     }
 
-    uv_queue_work(
+    int ret = uv_queue_work(
         loop_, work, [](uv_work_t *work) {},
         [](uv_work_t *work, int uvstatus) {
-            std::shared_ptr<UvEntry> entry(static_cast<UvEntry *>(work->data), [work](UvEntry *data) {
-                delete data;
-                delete work;
-            });
+            UvEntry *entry = static_cast<UvEntry *>(work->data);
             auto queue = entry->uvQueue_.lock();
             if (queue != nullptr) {
                 std::unique_lock<std::shared_mutex> cacheLock(queue->mutex_);
@@ -71,6 +68,21 @@ void UvQueue::CallFunction(Process process, void *argv)
                 }
                 queue->args_.clear();
             }
+            delete entry;
+            entry = nullptr;
+            delete work;
+            work = nullptr;
         });
+    if (ret != 0) {
+        if (work->data != nullptr) {
+            UvEntry *uvEntry = static_cast<UvEntry *>(work->data);
+            delete uvEntry;
+            uvEntry = nullptr;
+        }
+        if (work != nullptr) {
+            delete work;
+            work = nullptr;
+        }
+    }
 }
 } // namespace OHOS::ObjectStore
