@@ -37,7 +37,7 @@ ohos_fuzztest("ObjectStoreFuzzTest") {
     "//foundation/distributeddatamgr/kv_store/frameworks/libs/distributeddb:distributeddb",
   ]
 
-  external_deps = [ "hilog_native:libhilog" ]
+  external_deps = [ "hilog:libhilog" ]
 }
 
 ###############################################################################

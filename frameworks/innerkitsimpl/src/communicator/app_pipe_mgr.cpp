@@ -54,15 +54,15 @@ Status AppPipeMgr::StopWatchDataChange(const AppDataChangeListener *observer, co
 }
 
 // Send data to other device, function will be called back after sent to notify send result.
-Status AppPipeMgr::SendData(
-    const PipeInfo &pipeInfo, const DeviceId &deviceId, const uint8_t *ptr, int size, const MessageInfo &info)
+Status AppPipeMgr::SendData(const PipeInfo &pipeInfo, const DeviceId &deviceId, const DataInfo &dataInfo,
+    uint32_t totalLength, const MessageInfo &info)
 {
-    if (size > MAX_TRANSFER_SIZE || size <= 0 || ptr == nullptr || pipeInfo.pipeId.empty()
-        || deviceId.deviceId.empty()) {
-        LOG_WARN("Input is invalid, maxSize:%{public}d, current size:%{public}d", MAX_TRANSFER_SIZE, size);
+    if (dataInfo.length > MAX_TRANSFER_SIZE || dataInfo.length <= 0 || dataInfo.data == nullptr
+        || pipeInfo.pipeId.empty() || deviceId.deviceId.empty()) {
+        LOG_WARN("Input is invalid, maxSize:%{public}d, current size:%{public}u", MAX_TRANSFER_SIZE, dataInfo.length);
         return Status::ERROR;
     }
-    LOG_DEBUG("pipeInfo:%{public}s ,size:%{public}d", pipeInfo.pipeId.c_str(), size);
+    LOG_DEBUG("pipeInfo:%{public}s ,size:%{public}u", pipeInfo.pipeId.c_str(), dataInfo.length);
     std::shared_ptr<AppPipeHandler> appPipeHandler;
     {
         std::lock_guard<std::mutex> lock(dataBusMapMutex_);
@@ -73,7 +73,7 @@ Status AppPipeMgr::SendData(
         }
         appPipeHandler = it->second;
     }
-    return appPipeHandler->SendData(pipeInfo, deviceId, ptr, size, info);
+    return appPipeHandler->SendData(pipeInfo, deviceId, dataInfo, totalLength, info);
 }
 
 // start server

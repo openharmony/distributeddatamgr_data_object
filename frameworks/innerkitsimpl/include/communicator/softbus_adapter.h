@@ -24,11 +24,11 @@
 #include "app_data_change_listener.h"
 #include "app_device_status_change_listener.h"
 #include "app_types.h"
+#include "concurrent_map.h"
+#include "condition_lock.h"
 #include "session.h"
 #include "softbus_bus_center.h"
-#include "condition_lock.h"
 #include "task_scheduler.h"
-#include "concurrent_map.h"
 
 namespace OHOS {
 namespace ObjectStore {
@@ -37,7 +37,7 @@ public:
     SoftBusAdapter();
     ~SoftBusAdapter();
     static std::shared_ptr<SoftBusAdapter> GetInstance();
-    
+
     // add DeviceChangeListener to watch device change;
     Status StartWatchDeviceChange(const AppDeviceStatusChangeListener *observer, const PipeInfo &pipeInfo);
     // stop DeviceChangeListener to watch device change;
@@ -58,8 +58,8 @@ public:
     Status StopWatchDataChange(const AppDataChangeListener *observer, const PipeInfo &pipeInfo);
 
     // Send data to other device, function will be called back after sent to notify send result.
-    Status SendData(
-        const PipeInfo &pipeInfo, const DeviceId &deviceId, const uint8_t *ptr, int size, const MessageInfo &info);
+    Status SendData(const PipeInfo &pipeInfo, const DeviceId &deviceId, const DataInfo &dataInfo, uint32_t totalLength,
+        const MessageInfo &info);
 
     bool IsSameStartedOnPeer(const struct PipeInfo &pipeInfo, const struct DeviceId &peer);
 
@@ -86,10 +86,20 @@ public:
 private:
     struct BytesMsg {
         uint8_t *ptr;
-        int size;
-        bool isSend;
+        uint32_t size;
     };
-    std::shared_ptr<ConditionLock<int32_t>> GetSemaphore (int32_t sessinId);
+    static constexpr uint32_t P2P_SIZE_THRESHOLD = 0x10000u;    // 64KB
+    static constexpr uint32_t VECTOR_SIZE_THRESHOLD = 100;
+    static constexpr float SWITCH_DELAY_FACTOR = 0.6f;
+    Status CacheData(const std::string &deviceId, const DataInfo &dataInfo);
+    uint32_t GetSize(const std::string &deviceId);
+    RouteType GetRouteType(int sessionId);
+    RecOperate CalcRecOperate(uint32_t dataSize, RouteType currentRouteType, bool &isP2P) const;
+    void CacheSession(int32_t sessionId);
+    void DoSend();
+    int GetDeviceId(int sessionId, std::string &deviceId);
+    int GetSessionId(const std::string &deviceId);
+    SessionAttribute GetSessionAttribute(bool isP2P);
     mutable std::mutex networkMutex_{};
     mutable std::map<std::string, std::string> networkId2Uuid_{};
     DeviceInfo localInfo_{};
@@ -102,10 +112,13 @@ private:
     std::map<std::string, bool> busSessionMap_{};
     bool flag_ = true; // only for br flag
     ISessionListener sessionListener_{};
-    std::mutex statusMutex_ {};
-    std::mutex sendDataMutex_ {};
-    std::map<int32_t, std::shared_ptr<ConditionLock<int32_t>>> sessionsStatus_;
-    ConcurrentMap<int, std::vector<BytesMsg>> sessionsData_;
+    std::mutex statusMutex_{};
+    std::mutex sendDataMutex_{};
+    std::mutex mapLock_;
+    std::mutex deviceSessionLock_;
+    std::map<std::string, int> sessionIds_;
+    std::mutex deviceDataLock_;
+    std::map<std::string, std::vector<BytesMsg>> dataCaches_;
     std::shared_ptr<TaskScheduler> taskQueue_;
 };
 } // namespace ObjectStore

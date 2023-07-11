@@ -43,7 +43,7 @@ public:
     Status StopWatchDataChange(const AppDataChangeListener *observer, const PipeInfo &pipeInfo) override;
 
     // Send data to other device, function will be called back after sent to notify send result.
-    Status SendData(const PipeInfo &pipeInfo, const DeviceId &deviceId, const uint8_t *ptr, int size,
+    Status SendData(const PipeInfo &pipeInfo, const DeviceId &deviceId, const DataInfo &DataInfo, uint32_t totalLength,
         const MessageInfo &info) override;
 
     // Get online deviceList
