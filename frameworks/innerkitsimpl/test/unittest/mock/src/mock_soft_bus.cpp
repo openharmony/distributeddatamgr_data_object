@@ -48,7 +48,7 @@ int RemoveSessionServer(const char *pkgName, const char *sessionName)
 }
 int GetMySessionName(int sessionId, char *sessionName, unsigned int len)
 {
-    return -1;
+    return 0;
 }
 int GetPeerSessionName(int sessionId, char *sessionName, unsigned int len)
 {

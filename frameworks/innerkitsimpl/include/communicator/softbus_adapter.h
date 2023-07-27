@@ -121,6 +121,21 @@ private:
     std::map<std::string, std::vector<BytesMsg>> dataCaches_;
     std::shared_ptr<TaskScheduler> taskQueue_;
 };
+
+class AppDataListenerWrap {
+public:
+    static void SetDataHandler(SoftBusAdapter *handler);
+    static int OnSessionOpened(int sessionId, int result);
+    static void OnSessionClosed(int sessionId);
+    static void OnMessageReceived(int sessionId, const void *data, unsigned int dataLen);
+    static void OnBytesReceived(int sessionId, const void *data, unsigned int dataLen);
+
+public:
+    // notifiy all listeners when received message
+    static void NotifyDataListeners(
+        const uint8_t *ptr, const int size, const std::string &deviceId, const PipeInfo &pipeInfo);
+    static SoftBusAdapter *softBusAdapter_;
+};
 } // namespace ObjectStore
 } // namespace OHOS
 #endif /* DISTRIBUTEDDATAFWK_SRC_SOFTBUS_ADAPTER_H */

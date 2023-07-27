@@ -16,12 +16,71 @@
 #define DATA_OBJECT_MOCK_APP_DEVICE_CHANGE_LISTENER_H
 
 #include <gmock/gmock.h>
-#include "app_device_status_change_listener.h"
 
+#include <condition_variable>
+#include <memory>
+#include <mutex>
+
+#include "app_device_status_change_listener.h"
 namespace OHOS {
 namespace ObjectStore {
 class MockAppDeviceStatusChangeListener : public AppDeviceStatusChangeListener {
-    MOCK_CONST_METHOD2(OnDeviceChanged, void(const DeviceInfo &info, const DeviceChangeType &type));
+public:
+    MockAppDeviceStatusChangeListener()
+    {
+    }
+    void OnDeviceChanged(const DeviceInfo &info, const DeviceChangeType &type) const override
+    {
+        std::unique_lock<std::mutex> lock(mutex_);
+        deviceInfo_ = info;
+        result_ = true;
+        cond_.notify_all();
+    }
+
+    void Wait()
+    {
+        std::unique_lock<std::mutex> lock(mutex_);
+        if (!result_) {
+            cond_.wait(lock, [this] { return result_; });
+        }
+    }
+
+    bool Compare(const DeviceInfo &deviceInfo)
+    {
+        if (deviceInfo_.deviceId == "" && deviceInfo_.deviceName == deviceInfo.deviceName
+            && deviceInfo_.deviceType == deviceInfo.deviceType) {
+            return true;
+        }
+        return false;
+    }
+
+public:
+    mutable std::mutex mutex_;
+    mutable std::condition_variable cond_;
+    mutable bool result_;
+    mutable DeviceInfo deviceInfo_;
+};
+class MockAppDeviceStatusChangeListenerLow : public MockAppDeviceStatusChangeListener {
+    ChangeLevelType GetChangeLevelType() const override
+    {
+        return ChangeLevelType::LOW;
+    }
+};
+
+class MockAppDeviceStatusChangeListenerHigh : public MockAppDeviceStatusChangeListener {
+public:
+    ChangeLevelType GetChangeLevelType() const override
+    {
+        return ChangeLevelType::HIGH;
+    }
+};
+
+class MockAppDeviceStatusChangeListenerMin : public MockAppDeviceStatusChangeListener {
+public:
+    ChangeLevelType GetChangeLevelType() const override
+    {
+        return ChangeLevelType::MIN;
+    }
 };
 } // namespace ObjectStore
 } // namespace OHOS

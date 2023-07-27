@@ -47,6 +47,8 @@ public:
     static void TearDownTestCase(void);
     void SetUp();
     void TearDown();
+public:
+    SoftBusAdapter softBusAdapter_;
 };
 
 void NativeCommunicatorTest::SetUpTestCase(void)
@@ -71,33 +73,29 @@ void NativeCommunicatorTest::TearDown(void)
 
 /**
  * @tc.name: SoftBusAdapter_StartWatchDeviceChange_001
- * @tc.desc: test SoftBusAdapter NotifyAll.
+ * @tc.desc: test SoftBusAdapter StartWatchDeviceChange. insert a normal observer
  * @tc.type: FUNC
  */
 HWTEST_F(NativeCommunicatorTest, StartWatchDeviceChange_001, TestSize.Level1)
 {
     PipeInfo pipeInfo = { "pipInfo001" };
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    MockAppDeviceStatusChangeListener *mockAppDeviceStatusChangeListener = new MockAppDeviceStatusChangeListener();
-    auto ret = softBusAdapter->StartWatchDeviceChange(mockAppDeviceStatusChangeListener, pipeInfo);
+    SoftBusAdapter softBusAdapter;
+    MockAppDeviceStatusChangeListener listener;
+    auto ret = softBusAdapter.StartWatchDeviceChange(&listener, pipeInfo);
     EXPECT_EQ(Status::SUCCESS, ret);
-    delete softBusAdapter;
-    delete mockAppDeviceStatusChangeListener;
 }
 
 /**
  * @tc.name: SoftBusAdapter_StartWatchDeviceChange_002
- * @tc.desc: test SoftBusAdapter NotifyAll. input parameter of observer is null
+ * @tc.desc: test SoftBusAdapter StartWatchDeviceChange. inserted observer is null
  * @tc.type: FUNC
  */
 HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_StartWatchDeviceChange_002, TestSize.Level1)
 {
     PipeInfo pipeInfo = { "pipInfo002" };
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    MockAppDeviceStatusChangeListener *mockAppDeviceStatusChangeListener = nullptr;
-    auto ret = softBusAdapter->StartWatchDeviceChange(mockAppDeviceStatusChangeListener, pipeInfo);
+    SoftBusAdapter softBusAdapter;
+    auto ret = softBusAdapter.StartWatchDeviceChange(nullptr, pipeInfo);
     EXPECT_EQ(Status::ERROR, ret);
-    delete softBusAdapter;
 }
 
 /**
@@ -108,14 +106,12 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_StartWatchDeviceChange_002, Test
 HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_StartWatchDeviceChange_003, TestSize.Level1)
 {
     PipeInfo pipeInfo = { "pipInfo003" };
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    MockAppDeviceStatusChangeListener *mockAppDeviceStatusChangeListener = new MockAppDeviceStatusChangeListener();
-    auto ret = softBusAdapter->StartWatchDeviceChange(mockAppDeviceStatusChangeListener, pipeInfo);
+    SoftBusAdapter softBusAdapter;
+    MockAppDeviceStatusChangeListener listener;
+    auto ret = softBusAdapter.StartWatchDeviceChange(&listener, pipeInfo);
     EXPECT_EQ(Status::SUCCESS, ret);
-    ret = softBusAdapter->StartWatchDeviceChange(mockAppDeviceStatusChangeListener, pipeInfo);
+    ret = softBusAdapter.StartWatchDeviceChange(&listener, pipeInfo);
     EXPECT_EQ(Status::ERROR, ret);
-    delete softBusAdapter;
-    delete mockAppDeviceStatusChangeListener;
 }
 
 /**
@@ -126,14 +122,12 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_StartWatchDeviceChange_003, Test
 HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_StopWatchDeviceChange_001, TestSize.Level1)
 {
     PipeInfo pipeInfo = { "pipInfo001" };
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    MockAppDeviceStatusChangeListener *mockAppDeviceStatusChangeListener = new MockAppDeviceStatusChangeListener();
-    auto ret = softBusAdapter->StartWatchDeviceChange(mockAppDeviceStatusChangeListener, pipeInfo);
+    SoftBusAdapter softBusAdapter;
+    MockAppDeviceStatusChangeListener listener;
+    auto ret = softBusAdapter.StartWatchDeviceChange(&listener, pipeInfo);
     EXPECT_EQ(Status::SUCCESS, ret);
-    ret = softBusAdapter->StopWatchDeviceChange(mockAppDeviceStatusChangeListener, pipeInfo);
+    ret = softBusAdapter.StopWatchDeviceChange(&listener, pipeInfo);
     EXPECT_EQ(Status::SUCCESS, ret);
-    delete softBusAdapter;
-    delete mockAppDeviceStatusChangeListener;
 }
 
 /**
@@ -144,14 +138,12 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_StopWatchDeviceChange_001, TestS
 HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_StopWatchDeviceChange_002, TestSize.Level1)
 {
     PipeInfo pipeInfo = { "pipInfo002" };
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    MockAppDeviceStatusChangeListener *mockAppDeviceStatusChangeListener = new MockAppDeviceStatusChangeListener();
-    auto ret = softBusAdapter->StartWatchDeviceChange(mockAppDeviceStatusChangeListener, pipeInfo);
+    SoftBusAdapter softBusAdapter;
+    MockAppDeviceStatusChangeListener listener;
+    auto ret = softBusAdapter.StartWatchDeviceChange(&listener, pipeInfo);
     EXPECT_EQ(Status::SUCCESS, ret);
-    ret = softBusAdapter->StopWatchDeviceChange(nullptr, pipeInfo);
+    ret = softBusAdapter.StopWatchDeviceChange(nullptr, pipeInfo);
     EXPECT_EQ(Status::ERROR, ret);
-    delete softBusAdapter;
-    delete mockAppDeviceStatusChangeListener;
 }
 
 /**
@@ -162,16 +154,70 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_StopWatchDeviceChange_002, TestS
 HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_StopWatchDeviceChange_003, TestSize.Level1)
 {
     PipeInfo pipeInfo = { "pipInfo003" };
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    MockAppDeviceStatusChangeListener *mockAppDeviceStatusChangeListener1 = new MockAppDeviceStatusChangeListener();
-    MockAppDeviceStatusChangeListener *mockAppDeviceStatusChangeListener2 = new MockAppDeviceStatusChangeListener();
-    auto ret = softBusAdapter->StartWatchDeviceChange(mockAppDeviceStatusChangeListener1, pipeInfo);
+    SoftBusAdapter softBusAdapter;
+    MockAppDeviceStatusChangeListener listener1;
+    MockAppDeviceStatusChangeListener listener2;
+    auto ret = softBusAdapter.StartWatchDeviceChange(&listener1, pipeInfo);
     EXPECT_EQ(Status::SUCCESS, ret);
-    ret = softBusAdapter->StopWatchDeviceChange(mockAppDeviceStatusChangeListener2, pipeInfo);
+    ret = softBusAdapter.StopWatchDeviceChange(&listener2, pipeInfo);
     EXPECT_EQ(Status::ERROR, ret);
-    delete softBusAdapter;
-    delete mockAppDeviceStatusChangeListener1;
-    delete mockAppDeviceStatusChangeListener2;
+}
+
+/**
+ * @tc.name: SoftBusAdapter_NotifyAll_001
+ * @tc.desc: test SoftBusAdapter NotifyAll. input parameter of GetChangeLevelType is low
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_NotifyAll_001, TestSize.Level1)
+{
+    OHOS::ObjectStore::DeviceInfo deviceInfo = { "001", "localLow", "phoneLow" };
+    PipeInfo pipeInfo = { "pipInfo001" };
+    SoftBusAdapter softBusAdapter;
+    MockAppDeviceStatusChangeListenerLow listener;
+    auto ret = softBusAdapter.StartWatchDeviceChange(&listener, pipeInfo);
+    EXPECT_EQ(Status::SUCCESS, ret);
+
+    softBusAdapter.NotifyAll(deviceInfo, DeviceChangeType::DEVICE_ONLINE);
+    listener.Wait();
+    EXPECT_EQ(listener.Compare(deviceInfo), true);
+}
+
+/**
+ * @tc.name: SoftBusAdapter_NotifyAll_002
+ * @tc.desc: test SoftBusAdapter NotifyAll. input parameter of GetChangeLevelType is high
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_NotifyAll_002, TestSize.Level1)
+{
+    OHOS::ObjectStore::DeviceInfo deviceInfo = { "001", "localHigh", "phoneHigh" };
+    PipeInfo pipeInfo = { "pipInfo001" };
+    SoftBusAdapter softBusAdapter;
+    MockAppDeviceStatusChangeListenerHigh listener;
+    auto ret = softBusAdapter.StartWatchDeviceChange(&listener, pipeInfo);
+    EXPECT_EQ(Status::SUCCESS, ret);
+
+    softBusAdapter.NotifyAll(deviceInfo, DeviceChangeType::DEVICE_ONLINE);
+    listener.Wait();
+    EXPECT_EQ(listener.Compare(deviceInfo), true);
+}
+
+/**
+ * @tc.name: SoftBusAdapter_NotifyAll_003
+ * @tc.desc: test SoftBusAdapter NotifyAll. input parameter of GetChangeLevelType is min
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_NotifyAll_003, TestSize.Level1)
+{
+    OHOS::ObjectStore::DeviceInfo deviceInfo = { "001", "localMin", "phoneMin" };
+    PipeInfo pipeInfo = { "pipInfo001" };
+    SoftBusAdapter softBusAdapter;
+    MockAppDeviceStatusChangeListenerMin listener;
+    auto ret = softBusAdapter.StartWatchDeviceChange(&listener, pipeInfo);
+    EXPECT_EQ(Status::SUCCESS, ret);
+
+    softBusAdapter.NotifyAll(deviceInfo, DeviceChangeType::DEVICE_ONLINE);
+    listener.Wait();
+    EXPECT_EQ(listener.Compare(deviceInfo), true);
 }
 
 /**
@@ -183,10 +229,9 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_IsSameStartedOnPeer_001, TestSiz
 {
     PipeInfo pipeInfo = { "pipInfo001" };
     DeviceId deviceId = { "deviceId01" };
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    auto ret = softBusAdapter->IsSameStartedOnPeer(pipeInfo, deviceId);
+    SoftBusAdapter softBusAdapter;
+    auto ret = softBusAdapter.IsSameStartedOnPeer(pipeInfo, deviceId);
     EXPECT_EQ(false, ret);
-    delete softBusAdapter;
 }
 
 /**
@@ -198,13 +243,12 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_IsSameStartedOnPeer_002, TestSiz
 {
     PipeInfo pipeInfo = { "pipInfo002" };
     DeviceId deviceId = { "deviceId02" };
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
+    SoftBusAdapter softBusAdapter;
     std::string sessionName = "pipInfo002deviceId02";
-    softBusAdapter->InsertSession(sessionName);
-    auto ret = softBusAdapter->IsSameStartedOnPeer(pipeInfo, deviceId);
+    softBusAdapter.InsertSession(sessionName);
+    auto ret = softBusAdapter.IsSameStartedOnPeer(pipeInfo, deviceId);
     EXPECT_EQ(true, ret);
-    softBusAdapter->DeleteSession(sessionName);
-    delete softBusAdapter;
+    softBusAdapter.DeleteSession(sessionName);
 }
 
 /**
@@ -215,12 +259,10 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_IsSameStartedOnPeer_002, TestSiz
 HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_StartWatchDataChange_001, TestSize.Level1)
 {
     PipeInfo pipeInfo = { "pipInfo001" };
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    AppDataChangeListener *observer = new MockAppDataChangeListener();
-    auto ret = softBusAdapter->StartWatchDataChange(observer, pipeInfo);
+    SoftBusAdapter softBusAdapter;
+    MockAppDataChangeListener listener;
+    auto ret = softBusAdapter.StartWatchDataChange(&listener, pipeInfo);
     EXPECT_EQ(Status::SUCCESS, ret);
-    delete softBusAdapter;
-    delete observer;
 }
 
 /**
@@ -231,13 +273,11 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_StartWatchDataChange_001, TestSi
 HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_StartWatchDataChange_002, TestSize.Level1)
 {
     PipeInfo pipeInfo = { "pipInfo002" };
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    AppDataChangeListener *observer = new MockAppDataChangeListener();
-    auto ret = softBusAdapter->StartWatchDataChange(observer, pipeInfo);
-    ret = softBusAdapter->StartWatchDataChange(observer, pipeInfo);
+    SoftBusAdapter softBusAdapter;
+    MockAppDataChangeListener listener;
+    auto ret = softBusAdapter.StartWatchDataChange(&listener, pipeInfo);
+    ret = softBusAdapter.StartWatchDataChange(&listener, pipeInfo);
     EXPECT_EQ(Status::ERROR, ret);
-    delete softBusAdapter;
-    delete observer;
 }
 
 /**
@@ -248,10 +288,9 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_StartWatchDataChange_002, TestSi
 HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_StartWatchDataChange_003, TestSize.Level1)
 {
     PipeInfo pipeInfo = { "pipInfo002" };
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    auto ret = softBusAdapter->StartWatchDataChange(nullptr, pipeInfo);
+    SoftBusAdapter softBusAdapter;
+    auto ret = softBusAdapter.StartWatchDataChange(nullptr, pipeInfo);
     EXPECT_EQ(Status::INVALID_ARGUMENT, ret);
-    delete softBusAdapter;
 }
 
 /**
@@ -262,14 +301,12 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_StartWatchDataChange_003, TestSi
 HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_StopWatchDataChange_001, TestSize.Level1)
 {
     PipeInfo pipeInfo = { "pipInfo001" };
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    AppDataChangeListener *observer = new MockAppDataChangeListener();
-    auto ret = softBusAdapter->StartWatchDataChange(observer, pipeInfo);
+    SoftBusAdapter softBusAdapter;
+    MockAppDataChangeListener listener;
+    auto ret = softBusAdapter.StartWatchDataChange(&listener, pipeInfo);
     EXPECT_EQ(Status::SUCCESS, ret);
-    softBusAdapter->StopWatchDataChange(observer, pipeInfo);
+    softBusAdapter.StopWatchDataChange(&listener, pipeInfo);
     EXPECT_EQ(Status::SUCCESS, ret);
-    delete softBusAdapter;
-    delete observer;
 }
 
 /**
@@ -280,10 +317,9 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_StopWatchDataChange_001, TestSiz
 HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_StopWatchDataChange_002, TestSize.Level1)
 {
     PipeInfo pipeInfo = { "pipInfo001" };
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    auto ret = softBusAdapter->StopWatchDataChange(nullptr, pipeInfo);
+    SoftBusAdapter softBusAdapter;
+    auto ret = softBusAdapter.StopWatchDataChange(nullptr, pipeInfo);
     EXPECT_EQ(Status::ERROR, ret);
-    delete softBusAdapter;
 }
 
 /**
@@ -294,10 +330,9 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_StopWatchDataChange_002, TestSiz
 HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_ToBeAnonymous_001, TestSize.Level1)
 {
     std::string name = "na";
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    auto ret = softBusAdapter->ToBeAnonymous(name);
+    SoftBusAdapter softBusAdapter;
+    auto ret = softBusAdapter.ToBeAnonymous(name);
     EXPECT_EQ(DEFAULT_ANONYMOUS, ret);
-    delete softBusAdapter;
 }
 
 /**
@@ -308,10 +343,9 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_ToBeAnonymous_001, TestSize.Leve
 HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_ToBeAnonymous_002, TestSize.Level1)
 {
     std::string name = "name";
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    auto ret = softBusAdapter->ToBeAnonymous(name);
+    SoftBusAdapter softBusAdapter;
+    auto ret = softBusAdapter.ToBeAnonymous(name);
     EXPECT_EQ(name.substr(0, HEAD_SIZE) + REPLACE_CHAIN, ret);
-    delete softBusAdapter;
 }
 
 /**
@@ -321,12 +355,11 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_ToBeAnonymous_002, TestSize.Leve
  */
 HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_GetLocalBasicInfo_001, TestSize.Level1)
 {
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    auto ret = softBusAdapter->GetLocalBasicInfo();
+    SoftBusAdapter softBusAdapter;
+    auto ret = softBusAdapter.GetLocalBasicInfo();
     EXPECT_EQ(true, ret.deviceId.empty());
     EXPECT_EQ(true, ret.deviceName.empty());
     EXPECT_EQ(true, ret.deviceType.empty());
-    delete softBusAdapter;
 }
 
 /**
@@ -336,10 +369,9 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_GetLocalBasicInfo_001, TestSize.
  */
 HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_GetLocalBasicInfo_002, TestSize.Level1)
 {
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    auto ret = softBusAdapter->GetRemoteNodesBasicInfo();
+    SoftBusAdapter softBusAdapter;
+    auto ret = softBusAdapter.GetRemoteNodesBasicInfo();
     EXPECT_EQ(true, ret.empty());
-    delete softBusAdapter;
 }
 
 /**
@@ -350,12 +382,11 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_GetLocalBasicInfo_002, TestSize.
 HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_UpdateRelationship_001, TestSize.Level1)
 {
     std::string networdId01 = "networdId01";
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    softBusAdapter->UpdateRelationship(networdId01, DeviceChangeType::DEVICE_ONLINE);
-    auto ret = softBusAdapter->ToNodeID("");
+    SoftBusAdapter softBusAdapter;
+    softBusAdapter.UpdateRelationship(networdId01, DeviceChangeType::DEVICE_ONLINE);
+    auto ret = softBusAdapter.ToNodeID("");
     EXPECT_EQ(networdId01, ret);
-    softBusAdapter->UpdateRelationship(networdId01, DeviceChangeType::DEVICE_OFFLINE);
-    delete softBusAdapter;
+    softBusAdapter.UpdateRelationship(networdId01, DeviceChangeType::DEVICE_OFFLINE);
 }
 
 /**
@@ -367,14 +398,13 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_UpdateRelationship_002, TestSize
 {
     std::string networdId01 = "networdId01";
     std::string networdId02 = "networdId02";
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    softBusAdapter->UpdateRelationship(networdId01, DeviceChangeType::DEVICE_ONLINE);
-    softBusAdapter->UpdateRelationship(networdId02, DeviceChangeType::DEVICE_ONLINE);
-    softBusAdapter->UpdateRelationship(networdId02, DeviceChangeType::DEVICE_OFFLINE);
-    auto ret = softBusAdapter->ToNodeID("");
+    SoftBusAdapter softBusAdapter;
+    softBusAdapter.UpdateRelationship(networdId01, DeviceChangeType::DEVICE_ONLINE);
+    softBusAdapter.UpdateRelationship(networdId02, DeviceChangeType::DEVICE_ONLINE);
+    softBusAdapter.UpdateRelationship(networdId02, DeviceChangeType::DEVICE_OFFLINE);
+    auto ret = softBusAdapter.ToNodeID("");
     EXPECT_EQ(networdId01, ret);
-    softBusAdapter->UpdateRelationship(networdId01, DeviceChangeType::DEVICE_OFFLINE);
-    delete softBusAdapter;
+    softBusAdapter.UpdateRelationship(networdId01, DeviceChangeType::DEVICE_OFFLINE);
 }
 
 /**
@@ -386,13 +416,12 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_UpdateRelationship_003, TestSize
 {
     std::string networdId01 = "networdId01";
     std::string networdId02 = "networdId02";
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    softBusAdapter->UpdateRelationship(networdId01, DeviceChangeType::DEVICE_ONLINE);
-    softBusAdapter->UpdateRelationship(networdId01, DeviceChangeType::DEVICE_ONLINE);
-    auto ret = softBusAdapter->ToNodeID("");
+    SoftBusAdapter softBusAdapter;
+    softBusAdapter.UpdateRelationship(networdId01, DeviceChangeType::DEVICE_ONLINE);
+    softBusAdapter.UpdateRelationship(networdId01, DeviceChangeType::DEVICE_ONLINE);
+    auto ret = softBusAdapter.ToNodeID("");
     EXPECT_EQ(networdId01, ret);
-    softBusAdapter->UpdateRelationship(networdId01, DeviceChangeType::DEVICE_OFFLINE);
-    delete softBusAdapter;
+    softBusAdapter.UpdateRelationship(networdId01, DeviceChangeType::DEVICE_OFFLINE);
 }
 
 /**
@@ -404,13 +433,29 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_UpdateRelationship_004, TestSize
 {
     std::string networdId01 = "networdId01";
     std::string networdId02 = "networdId02";
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    softBusAdapter->UpdateRelationship(networdId01, DeviceChangeType::DEVICE_ONLINE);
-    softBusAdapter->UpdateRelationship(networdId02, DeviceChangeType::DEVICE_OFFLINE);
-    auto ret = softBusAdapter->ToNodeID("");
+    SoftBusAdapter softBusAdapter;
+    softBusAdapter.UpdateRelationship(networdId01, DeviceChangeType::DEVICE_ONLINE);
+    softBusAdapter.UpdateRelationship(networdId02, DeviceChangeType::DEVICE_OFFLINE);
+    auto ret = softBusAdapter.ToNodeID("");
     EXPECT_EQ(networdId01, ret);
-    softBusAdapter->UpdateRelationship(networdId01, DeviceChangeType::DEVICE_OFFLINE);
-    delete softBusAdapter;
+    softBusAdapter.UpdateRelationship(networdId01, DeviceChangeType::DEVICE_OFFLINE);
+}
+
+/**
+ * @tc.name: SoftBusAdapter_UpdateRelationship_005
+ * @tc.desc: test SoftBusAdapter UpdateRelationship. The input parameter is an incorrect DeviceChangeType
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_UpdateRelationship_005, TestSize.Level1)
+{
+    std::string networdId01 = "networdId01";
+    std::string networdId02 = "networdId02";
+    SoftBusAdapter softBusAdapter;
+    softBusAdapter.UpdateRelationship(networdId01, DeviceChangeType::DEVICE_ONLINE);
+    softBusAdapter.UpdateRelationship(networdId02, static_cast<DeviceChangeType>(-1));
+    auto ret = softBusAdapter.ToNodeID("");
+    EXPECT_EQ(networdId01, ret);
+    softBusAdapter.UpdateRelationship(networdId01, DeviceChangeType::DEVICE_OFFLINE);
 }
 
 /**
@@ -421,10 +466,9 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_UpdateRelationship_004, TestSize
 HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_RemoveSessionServerAdapter_001, TestSize.Level1)
 {
     std::string sessionName = "sessionName01";
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    auto ret = softBusAdapter->RemoveSessionServerAdapter(sessionName);
+    SoftBusAdapter softBusAdapter;
+    auto ret = softBusAdapter.RemoveSessionServerAdapter(sessionName);
     EXPECT_EQ(SUCCESS, ret);
-    delete softBusAdapter;
 }
 
 /**
@@ -434,10 +478,9 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_RemoveSessionServerAdapter_001, 
  */
 HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_GetDeviceList_001, TestSize.Level1)
 {
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    auto ret = softBusAdapter->GetDeviceList();
+    SoftBusAdapter softBusAdapter;
+    auto ret = softBusAdapter.GetDeviceList();
     EXPECT_EQ(true, ret.empty());
-    delete softBusAdapter;
 }
 
 /**
@@ -447,14 +490,99 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_GetDeviceList_001, TestSize.Leve
  */
 HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_GetLocalDevice_001, TestSize.Level1)
 {
-    SoftBusAdapter *softBusAdapter = new SoftBusAdapter();
-    auto ret = softBusAdapter->GetLocalDevice();
+    SoftBusAdapter softBusAdapter;
+    auto ret = softBusAdapter.GetLocalDevice();
     EXPECT_EQ(true, ret.deviceId.empty());
     EXPECT_EQ(true, ret.deviceName.empty());
     EXPECT_EQ(true, ret.deviceType.empty());
-    delete softBusAdapter;
 }
 
+/**
+ * @tc.name: SoftBusAdapter_SendData_001
+ * @tc.desc: test SoftBusAdapter SendData.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_SendData_001, TestSize.Level1)
+{
+    PipeInfo pipeInfo = {};
+    DeviceId deviceId = {"devideId01"};
+    uint32_t size = 1;
+    uint8_t tmpNum = 1;
+    uint8_t *ptr = &tmpNum;
+    const DataInfo dataInfo = { const_cast<uint8_t *>(ptr), size };
+    MessageInfo messageInfo = {MessageType::DEFAULT};
+    SoftBusAdapter softBusAdapter;
+    auto ret = softBusAdapter.SendData(pipeInfo, deviceId, dataInfo, size, messageInfo);
+    EXPECT_EQ(Status::SUCCESS, ret);
+}
+
+/**
+ * @tc.name: AppDataListenerWrap_OnSessionOpened_001
+ * @tc.desc: test AppDataListenerWrap OnSessionOpened.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeCommunicatorTest, AppDataListenerWrap_OnSessionOpened_001, TestSize.Level1)
+{
+    int sessionId = 1;
+    int result = 0;
+    AppDataListenerWrap::SetDataHandler(&softBusAdapter_);
+    auto ret = AppDataListenerWrap::OnSessionOpened(sessionId, result);
+    EXPECT_EQ(0, ret);
+    AppDataListenerWrap::OnSessionClosed(sessionId);
+}
+
+/**
+ * @tc.name: AppDataListenerWrap_OnSessionOpened_002
+ * @tc.desc: test AppDataListenerWrap OnSessionOpened.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeCommunicatorTest, AppDataListenerWrap_OnSessionOpened_002, TestSize.Level1)
+{
+    int sessionId = 1;
+    int result = 1;
+    AppDataListenerWrap::SetDataHandler(&softBusAdapter_);
+    auto ret = AppDataListenerWrap::OnSessionOpened(sessionId, result);
+    EXPECT_EQ(1, ret);
+    AppDataListenerWrap::OnSessionClosed(sessionId);
+}
+
+/**
+ * @tc.name: AppDataListenerWrap_OnMessageReceived_001
+ * @tc.desc: test AppDataListenerWrap OnMessageReceived.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeCommunicatorTest, AppDataListenerWrap_OnMessageReceived_001, TestSize.Level1)
+{
+    PipeInfo pipeInfo = { "" };
+    SoftBusAdapter softBusAdapter;
+    MockAppDataChangeListener observer;
+    auto ret = softBusAdapter.StartWatchDataChange(&observer, pipeInfo);
+    EXPECT_EQ(Status::SUCCESS, ret);
+    int sessionId = 1;
+    AppDataListenerWrap::SetDataHandler(&softBusAdapter);
+    std::string data = "OnMessageReceived";
+    AppDataListenerWrap::OnMessageReceived(sessionId, reinterpret_cast<const void *>(data.c_str()), data.size());
+    EXPECT_EQ(data, observer.data);
+}
+
+/**
+ * @tc.name: AppDataListenerWrap_OnBytesReceived_001
+ * @tc.desc: test AppDataListenerWrap OnBytesReceived.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeCommunicatorTest, AppDataListenerWrap_OnBytesReceived_001, TestSize.Level1)
+{
+    PipeInfo pipeInfo = { "" };
+    SoftBusAdapter softBusAdapter;
+    MockAppDataChangeListener observer;
+    auto ret = softBusAdapter.StartWatchDataChange(&observer, pipeInfo);
+    EXPECT_EQ(Status::SUCCESS, ret);
+    int sessionId = 1;
+    AppDataListenerWrap::SetDataHandler(&softBusAdapter);
+    std::string data = "OnBytesReceived";
+    AppDataListenerWrap::OnBytesReceived(sessionId, reinterpret_cast<const void *>(data.c_str()), data.size());
+    EXPECT_EQ(data, observer.data);
+}
 
 /**
  * @tc.name: DevManager_GetUuidByNodeId_001
