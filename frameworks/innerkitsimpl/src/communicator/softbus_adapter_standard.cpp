@@ -42,20 +42,6 @@ constexpr size_t TASK_CAPACITY_MAX = 15;
 constexpr int32_t SELF_SIDE = 1;
 
 using namespace std;
-class AppDataListenerWrap {
-public:
-    static void SetDataHandler(SoftBusAdapter *handler);
-    static int OnSessionOpened(int sessionId, int result);
-    static void OnSessionClosed(int sessionId);
-    static void OnMessageReceived(int sessionId, const void *data, unsigned int dataLen);
-    static void OnBytesReceived(int sessionId, const void *data, unsigned int dataLen);
-
-public:
-    // notifiy all listeners when received message
-    static void NotifyDataListeners(
-        const uint8_t *ptr, const int size, const std::string &deviceId, const PipeInfo &pipeInfo);
-    static SoftBusAdapter *softBusAdapter_;
-};
 SoftBusAdapter *AppDataListenerWrap::softBusAdapter_;
 std::shared_ptr<SoftBusAdapter> SoftBusAdapter::instance_;
 
@@ -470,8 +456,8 @@ Status SoftBusAdapter::SendData(const PipeInfo &pipeInfo, const DeviceId &device
         CloseSession(sessionId);
     }
     SessionAttribute attr = GetSessionAttribute(isP2P);
-    sessionId = OpenSession(
-        pipeInfo.pipeId.c_str(), pipeInfo.pipeId.c_str(), ToNodeID(deviceId.deviceId).c_str(), "GROUP_ID", &attr);
+    OpenSession(pipeInfo.pipeId.c_str(), pipeInfo.pipeId.c_str(), ToNodeID(deviceId.deviceId).c_str(),
+        "GROUP_ID", &attr);
     return Status::SUCCESS;
 }
 

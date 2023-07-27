@@ -21,8 +21,12 @@
 namespace OHOS {
 namespace ObjectStore {
 class MockAppDataChangeListener : public AppDataChangeListener {
-    MOCK_CONST_METHOD4(OnMessage,
-        void(const DeviceInfo &info, const uint8_t *ptr, const int size, const PipeInfo &pipeInfo));
+    void OnMessage(const DeviceInfo &info, const uint8_t *ptr, const int size, const PipeInfo &pipeInfo) const override
+    {
+        data = std::string(reinterpret_cast<const char *>(ptr));
+    }
+public:
+    mutable std::string data;
 };
 } // namespace ObjectStore
 } // namespace OHOS

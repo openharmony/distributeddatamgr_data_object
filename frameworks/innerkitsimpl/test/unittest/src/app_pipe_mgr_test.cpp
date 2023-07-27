@@ -276,5 +276,4 @@ HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_IsSameStartedOnPeer_002, Tes
     auto ret = appPipeMgr->IsSameStartedOnPeer(pipeInfo, deviceId);
     EXPECT_EQ(false, ret);
 }
-
 }
