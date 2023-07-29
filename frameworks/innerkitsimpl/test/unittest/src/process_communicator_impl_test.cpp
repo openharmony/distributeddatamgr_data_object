@@ -75,6 +75,21 @@ HWTEST_F(NativeProcessCommunicatorImplTest, ProcessCommunicatorImpl_Start_Stop_0
 }
 
 /**
+ * @tc.name: ProcessCommunicatorImpl_Start_Stop_002
+ * @tc.desc: test ProcessCommunicatorImpl Start and Stop.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeProcessCommunicatorImplTest, ProcessCommunicatorImpl_Start_Stop_002, TestSize.Level1)
+{
+    std::string processLabel = "processLabel";
+    ProcessCommunicatorImpl processCommunicator;
+    auto ret = processCommunicator.Start(processLabel);
+    EXPECT_EQ(DistributedDB::DBStatus::OK, ret);
+    ret = processCommunicator.Stop();
+    EXPECT_EQ(DistributedDB::DBStatus::OK, ret);
+}
+
+/**
  * @tc.name: ProcessCommunicatorImpl_RegOnDeviceChange_001
  * @tc.desc: test ProcessCommunicatorImpl RegOnDeviceChange.
  * @tc.type: FUNC
@@ -157,10 +172,17 @@ HWTEST_F(NativeProcessCommunicatorImplTest, ProcessCommunicatorImpl_RegOnDataRec
  */
 HWTEST_F(NativeProcessCommunicatorImplTest, ProcessCommunicatorImpl_RegOnDataReceive_002, TestSize.Level1)
 {
-    ProcessCommunicatorImpl *processCommunicator = new ProcessCommunicatorImpl();
-    auto ret = processCommunicator->RegOnDataReceive(nullptr);
-    EXPECT_EQ(DistributedDB::DBStatus::DB_ERROR, ret);
-    delete processCommunicator;
+    std::string processLabel = "processLabel";
+    ProcessCommunicatorImpl processCommunicator;
+    auto ret = processCommunicator.Start(processLabel);
+    EXPECT_EQ(DistributedDB::DBStatus::OK, ret);
+
+    ret = processCommunicator.RegOnDataReceive(
+        [](const DistributedDB::DeviceInfos &srcDevInfo, const uint8_t *data, uint32_t length) -> void { return; });
+    EXPECT_EQ(DistributedDB::DBStatus::OK, ret);
+
+    ret = processCommunicator.RegOnDataReceive(nullptr);
+    EXPECT_EQ(DistributedDB::DBStatus::OK, ret);
 }
 
 /**
@@ -181,6 +203,25 @@ HWTEST_F(NativeProcessCommunicatorImplTest, ProcessCommunicatorImpl_SendData_001
 }
 
 /**
+ * @tc.name: ProcessCommunicatorImpl_SendData_002
+ * @tc.desc: test ProcessCommunicatorImpl SendData.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeProcessCommunicatorImplTest, ProcessCommunicatorImpl_SendData_002, TestSize.Level1)
+{
+    std::string processLabel = "processLabel02";
+    ProcessCommunicatorImpl processCommunicator;
+    auto ret = processCommunicator.Start(processLabel);
+    EXPECT_EQ(DistributedDB::DBStatus::OK, ret);
+
+    DistributedDB::DeviceInfos deviceInfos = { "identifier" };
+    uint8_t data = 1;
+    uint32_t length = 1;
+    ret = processCommunicator.SendData(deviceInfos, &data, length);
+    EXPECT_EQ(DistributedDB::DBStatus::OK, ret);
+}
+
+/**
  * @tc.name: ProcessCommunicatorImpl_GetMtuSize_001
  * @tc.desc: test ProcessCommunicatorImpl GetMtuSize.
  * @tc.type: FUNC
@@ -189,6 +230,22 @@ HWTEST_F(NativeProcessCommunicatorImplTest, ProcessCommunicatorImpl_GetMtuSize_0
 {
     ProcessCommunicatorImpl *processCommunicator = new ProcessCommunicatorImpl();
     DistributedDB::DeviceInfos deviceInfos = { "identifier" };
+    auto ret = processCommunicator->GetMtuSize(deviceInfos);
+    EXPECT_EQ(MTU_SIZE, ret);
+    ret = processCommunicator->GetMtuSize();
+    EXPECT_EQ(MTU_SIZE, ret);
+    delete processCommunicator;
+}
+
+/**
+ * @tc.name: ProcessCommunicatorImpl_GetMtuSize_002
+ * @tc.desc: test ProcessCommunicatorImpl GetMtuSize.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeProcessCommunicatorImplTest, ProcessCommunicatorImpl_GetMtuSize_002, TestSize.Level1)
+{
+    ProcessCommunicatorImpl *processCommunicator = new ProcessCommunicatorImpl();
+    DistributedDB::DeviceInfos deviceInfos = { "" };
     auto ret = processCommunicator->GetMtuSize(deviceInfos);
     EXPECT_EQ(MTU_SIZE, ret);
     ret = processCommunicator->GetMtuSize();

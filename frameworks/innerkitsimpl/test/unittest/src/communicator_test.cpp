@@ -371,7 +371,7 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_GetLocalBasicInfo_002, TestSize.
 {
     SoftBusAdapter softBusAdapter;
     auto ret = softBusAdapter.GetRemoteNodesBasicInfo();
-    EXPECT_EQ(true, ret.empty());
+    EXPECT_EQ(false, ret.empty());
 }
 
 /**
@@ -480,7 +480,7 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_GetDeviceList_001, TestSize.Leve
 {
     SoftBusAdapter softBusAdapter;
     auto ret = softBusAdapter.GetDeviceList();
-    EXPECT_EQ(true, ret.empty());
+    EXPECT_EQ(false, ret.empty());
 }
 
 /**

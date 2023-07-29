@@ -188,11 +188,7 @@ uint32_t DistributedObjectStoreImpl::SetStatusNotifier(std::shared_ptr<StatusNot
         return ERR_NULL_OBJECTSTORE;
     }
     std::shared_ptr<StatusNotifierProxy> watcherProxy = std::make_shared<StatusNotifierProxy>(notifier);
-    uint32_t status = flatObjectStore_->SetStatusNotifier(watcherProxy);
-    if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectStoreImpl::Watch failed %{public}d", status);
-    }
-    return status;
+    return flatObjectStore_->SetStatusNotifier(watcherProxy);
 }
 
 void DistributedObjectStoreImpl::NotifyCachedStatus(const std::string &sessionId)

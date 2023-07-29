@@ -13,16 +13,18 @@
  * limitations under the License.
  */
 
+#include "app_pipe_mgr.h"
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+
 #include <string>
 
-#include "app_pipe_mgr.h"
 #include "app_types.h"
 #include "auto_launch_export.h"
 #include "ipc_skeleton.h"
-#include "objectstore_errors.h"
 #include "mock_app_data_change_listener.h"
+#include "objectstore_errors.h"
 
 namespace {
 using namespace testing::ext;
@@ -63,7 +65,7 @@ void NativeAppPipeMgrTest::TearDown(void)
  */
 HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_StartWatchDataChange_001, TestSize.Level1)
 {
-    PipeInfo pipeInfo = {""};
+    PipeInfo pipeInfo = { "" };
     AppDataChangeListener *observer = new MockAppDataChangeListener();
     AppPipeMgr *appPipeMgr = new AppPipeMgr();
     auto ret = appPipeMgr->StartWatchDataChange(observer, pipeInfo);
@@ -82,6 +84,35 @@ HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_StartWatchDataChange_002, Te
     AppPipeMgr *appPipeMgr = new AppPipeMgr();
     auto ret = appPipeMgr->StartWatchDataChange(observer, pipeInfo);
     EXPECT_EQ(Status::ERROR, ret);
+}
+
+/**
+ * @tc.name: NativeAppPipeMgrTest_StartWatchDataChange_003
+ * @tc.desc: test NativeAppPipeMgrTest StartWatchDataChange. observer is nullptr.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_StartWatchDataChange_003, TestSize.Level1)
+{
+    PipeInfo pipeInfo = { "pipId01" };
+    AppPipeMgr appPipeMgr;
+    auto ret = appPipeMgr.StartWatchDataChange(nullptr, pipeInfo);
+    EXPECT_EQ(Status::INVALID_ARGUMENT, ret);
+}
+
+/**
+ * @tc.name: NativeAppPipeMgrTest_StartWatchDataChange_004
+ * @tc.desc: test NativeAppPipeMgrTest StartWatchDataChange. the pipId can be found.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_StartWatchDataChange_004, TestSize.Level1)
+{
+    PipeInfo pipeInfo = { "pipId01" };
+    AppPipeMgr appPipeMgr;
+    auto ret = appPipeMgr.Start(pipeInfo);
+    EXPECT_EQ(Status::SUCCESS, ret);
+    MockAppDataChangeListener observer;
+    ret = appPipeMgr.StartWatchDataChange(&observer, pipeInfo);
+    EXPECT_EQ(Status::SUCCESS, ret);
 }
 
 /**
@@ -118,11 +149,15 @@ HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_StopWatchDataChange_002, Tes
  */
 HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_StopWatchDataChange_003, TestSize.Level1)
 {
-    PipeInfo pipeInfo = { "pipId01" };
-    AppPipeMgr *appPipeMgr = new AppPipeMgr();
-    AppDataChangeListener *observer = new MockAppDataChangeListener();
-    auto ret = appPipeMgr->StopWatchDataChange(observer, pipeInfo);
-    EXPECT_EQ(Status::ERROR, ret);
+    PipeInfo pipeInfo = { "pipId02" };
+    AppPipeMgr appPipeMgr;
+    auto ret = appPipeMgr.Start(pipeInfo);
+    EXPECT_EQ(Status::SUCCESS, ret);
+    MockAppDataChangeListener observer;
+    ret = appPipeMgr.StartWatchDataChange(&observer, pipeInfo);
+    EXPECT_EQ(Status::SUCCESS, ret);
+    ret = appPipeMgr.StopWatchDataChange(&observer, pipeInfo);
+    EXPECT_EQ(Status::SUCCESS, ret);
 }
 
 /**
@@ -145,7 +180,7 @@ HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_Start_001, TestSize.Level1)
  */
 HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_Start_002, TestSize.Level1)
 {
-    PipeInfo pipeInfo = {"INVALID_SESSION_NAME"};
+    PipeInfo pipeInfo = { "INVALID_SESSION_NAME" };
     AppPipeMgr *appPipeMgr = new AppPipeMgr();
     auto ret = appPipeMgr->Start(pipeInfo);
     EXPECT_EQ(Status::ILLEGAL_STATE, ret);
@@ -219,14 +254,38 @@ HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_Stop_002, TestSize.Level1)
 HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_SendData_001, TestSize.Level1)
 {
     PipeInfo pipeInfo = {};
-    DeviceId deviceId = {"devideId01"};
+    DeviceId deviceId = { "devideId01" };
     uint32_t size = 1;
     uint8_t tmpNum = 1;
     uint8_t *ptr = &tmpNum;
     const DataInfo dataInfo = { const_cast<uint8_t *>(ptr), size };
-    MessageInfo messageInfo = {MessageType::DEFAULT};
-    AppPipeMgr *appPipeMgr = new AppPipeMgr();
-    auto ret = appPipeMgr->SendData(pipeInfo, deviceId, dataInfo, size, messageInfo);
+    MessageInfo messageInfo = { MessageType::DEFAULT };
+    AppPipeMgr appPipeMgr;
+    // pipeInfo is empty
+    auto ret = appPipeMgr.SendData(pipeInfo, deviceId, dataInfo, size, messageInfo);
+    EXPECT_EQ(Status::ERROR, ret);
+
+    // deviceId is empty
+    PipeInfo pipeInfo1 = { "pipeInfo" };
+    DeviceId deviceId1 = { "" };
+    ret = appPipeMgr.SendData(pipeInfo1, deviceId1, dataInfo, size, messageInfo);
+    EXPECT_EQ(Status::ERROR, ret);
+
+    // dataInfo.length is less than or equal to 0
+    DeviceId deviceId2 = { "devideId01" };
+    const DataInfo dataInfo1 = { const_cast<uint8_t *>(ptr), 0 };
+    ret = appPipeMgr.SendData(pipeInfo1, deviceId2, dataInfo1, size, messageInfo);
+    EXPECT_EQ(Status::ERROR, ret);
+
+    // dataInfo.length exceeds limit
+    static const int MAX_TRANSFER_SIZE = 1024 * 1024 * 5;
+    const DataInfo dataInfo2 = { const_cast<uint8_t *>(ptr), MAX_TRANSFER_SIZE + 1 };
+    ret = appPipeMgr.SendData(pipeInfo1, deviceId2, dataInfo2, size, messageInfo);
+    EXPECT_EQ(Status::ERROR, ret);
+
+    // dataInfo.data is nullptr
+    const DataInfo dataInfo3 = { nullptr, size };
+    ret = appPipeMgr.SendData(pipeInfo1, deviceId2, dataInfo3, size, messageInfo);
     EXPECT_EQ(Status::ERROR, ret);
 }
 
@@ -237,8 +296,8 @@ HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_SendData_001, TestSize.Level
  */
 HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_SendData_002, TestSize.Level1)
 {
-    PipeInfo pipeInfo = {"pipInfo02"};
-    DeviceId deviceId = {"devideId02"};
+    PipeInfo pipeInfo = { "pipInfo02" };
+    DeviceId deviceId = { "devideId02" };
     uint32_t size = 1;
     uint8_t tmpNum = 1;
     uint8_t *ptr = &tmpNum;
@@ -247,6 +306,27 @@ HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_SendData_002, TestSize.Level
     AppPipeMgr *appPipeMgr = new AppPipeMgr();
     auto ret = appPipeMgr->SendData(pipeInfo, deviceId, dataInfo, size, messageInfo);
     EXPECT_EQ(Status::KEY_NOT_FOUND, ret);
+}
+
+/**
+ * @tc.name: NativeAppPipeMgrTest_SendData_003
+ * @tc.desc: test NativeAppPipeMgrTest SendData. pipInfo not found
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_SendData_003, TestSize.Level1)
+{
+    PipeInfo pipeInfo = { "pipInfo02" };
+    DeviceId deviceId = { "devideId02" };
+    uint32_t size = 1;
+    uint8_t tmpNum = 1;
+    uint8_t *ptr = &tmpNum;
+    const DataInfo dataInfo = { const_cast<uint8_t *>(ptr), size };
+    MessageInfo messageInfo = { MessageType::DEFAULT };
+    AppPipeMgr appPipeMgr;
+    Status ret = appPipeMgr.Start(pipeInfo);
+    EXPECT_EQ(Status::SUCCESS, ret);
+    ret = appPipeMgr.SendData(pipeInfo, deviceId, dataInfo, size, messageInfo);
+    EXPECT_EQ(Status::SUCCESS, ret);
 }
 
 /**
@@ -271,9 +351,24 @@ HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_IsSameStartedOnPeer_001, Tes
 HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_IsSameStartedOnPeer_002, TestSize.Level1)
 {
     PipeInfo pipeInfo = { "pipInfo02" };
-    DeviceId deviceId = {"deviceId02"};
+    DeviceId deviceId = { "deviceId02" };
     AppPipeMgr *appPipeMgr = new AppPipeMgr();
     auto ret = appPipeMgr->IsSameStartedOnPeer(pipeInfo, deviceId);
     EXPECT_EQ(false, ret);
 }
+
+/**
+ * @tc.name: NativeAppPipeMgrTest_IsSameStartedOnPeer_003
+ * @tc.desc: test NativeAppPipeMgrTest IsSameStartedOnPeer. pipInfo not found
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_IsSameStartedOnPeer_003, TestSize.Level1)
+{
+    PipeInfo pipeInfo = { "pipInfo02" };
+    DeviceId deviceId = { "deviceId02" };
+    AppPipeMgr appPipeMgr;
+    appPipeMgr.Start(pipeInfo);
+    auto ret = appPipeMgr.IsSameStartedOnPeer(pipeInfo, deviceId);
+    EXPECT_EQ(false, ret);
 }
+} // namespace

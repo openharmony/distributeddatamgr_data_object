@@ -60,11 +60,7 @@ uint32_t DistributedObjectImpl::PutDouble(const std::string &key, double value)
     Type type = Type::TYPE_DOUBLE;
     PutNum(&type, 0, sizeof(type), data);
     PutNum(&value, sizeof(type), sizeof(value), data);
-    uint32_t status = flatObjectStore_->Put(sessionId_, FIELDS_PREFIX + key, data);
-    if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectImpl::PutDouble setField err %{public}d", status);
-    }
-    return status;
+    return flatObjectStore_->Put(sessionId_, FIELDS_PREFIX + key, data);
 }
 
 uint32_t DistributedObjectImpl::PutBoolean(const std::string &key, bool value)
@@ -74,11 +70,7 @@ uint32_t DistributedObjectImpl::PutBoolean(const std::string &key, bool value)
     Type type = Type::TYPE_BOOLEAN;
     PutNum(&type, 0, sizeof(type), data);
     PutNum(&value, sizeof(type), sizeof(value), data);
-    uint32_t status = flatObjectStore_->Put(sessionId_, FIELDS_PREFIX + key, data);
-    if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectImpl::PutBoolean setField err %{public}d", status);
-    }
-    return status;
+    return flatObjectStore_->Put(sessionId_, FIELDS_PREFIX + key, data);
 }
 
 uint32_t DistributedObjectImpl::PutString(const std::string &key, const std::string &value)
@@ -89,11 +81,7 @@ uint32_t DistributedObjectImpl::PutString(const std::string &key, const std::str
     PutNum(&type, 0, sizeof(type), data);
     Bytes dst = StringUtils::StrToBytes(value);
     data.insert(data.end(), dst.begin(), dst.end());
-    uint32_t status = flatObjectStore_->Put(sessionId_, FIELDS_PREFIX + key, data);
-    if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectImpl::PutString setField err %{public}d", status);
-    }
-    return status;
+    return flatObjectStore_->Put(sessionId_, FIELDS_PREFIX + key, data);
 }
 
 uint32_t DistributedObjectImpl::GetDouble(const std::string &key, double &value)

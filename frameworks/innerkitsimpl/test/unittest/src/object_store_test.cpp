@@ -18,20 +18,23 @@
 #include <string>
 #include <thread>
 
+#include "accesstoken_kit.h"
 #include "auto_launch_export.h"
-#include "flat_object_store.h"
-#include "flat_object_storage_engine.h"
 #include "distributed_object.h"
+#include "distributed_object_impl.h"
 #include "distributed_objectstore.h"
 #include "distributed_objectstore_impl.h"
+#include "flat_object_storage_engine.h"
+#include "flat_object_store.h"
 #include "hilog/log.h"
+#include "ipc_skeleton.h"
 #include "kv_store_delegate_manager.h"
+#include "mock_flat_object_watcher.h"
+#include "mock_object_watcher.h"
+#include "nativetoken_kit.h"
 #include "object_storage_engine.h"
 #include "objectstore_errors.h"
 #include "store_observer.h"
-#include "ipc_skeleton.h"
-#include "accesstoken_kit.h"
-#include "nativetoken_kit.h"
 #include "token_setproc.h"
 
 using namespace testing::ext;
@@ -192,6 +195,150 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Create_Destroy_004, TestS
 }
 
 /**
+ * @tc.name: DistributedObjectStoreImpl_CreateObject_001
+ * @tc.desc: test Create DistributedObjectStoreImpl
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_CreateObject_001, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    EXPECT_NE(nullptr, objectStore);
+
+    DistributedObject *object = objectStore->CreateObject("");
+    EXPECT_EQ(nullptr, object);
+}
+
+/**
+ * @tc.name: DistributedObjectStoreImpl_CreateObject_002
+ * @tc.desc: test Create DistributedObjectStoreImpl
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_CreateObject_002, TestSize.Level1)
+{
+    std::string sessionId = "123456";
+    auto objectStore = DistributedObjectStoreImpl(nullptr);
+    uint32_t status = -1;
+    DistributedObject *object = objectStore.CreateObject(sessionId, status);
+    EXPECT_EQ(nullptr, object);
+    EXPECT_EQ(ERR_NULL_OBJECTSTORE, status);
+
+    status = objectStore.DeleteObject(sessionId);
+    EXPECT_EQ(ERR_NULL_OBJECTSTORE, status);
+}
+
+/**
+ * @tc.name: DistributedObjectStoreImpl_CreateObject_003
+ * @tc.desc: test Create DistributedObjectStoreImpl
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_CreateObject_003, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "";
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    EXPECT_NE(nullptr, objectStore);
+
+    uint32_t status = -1;
+    DistributedObject *object = objectStore->CreateObject(sessionId, status);
+    EXPECT_EQ(nullptr, object);
+    EXPECT_EQ(ERR_INVALID_ARGS, status);
+
+    status = objectStore->DeleteObject(sessionId);
+    EXPECT_EQ(ERR_DB_NOT_EXIST, status);
+}
+
+/**
+ * @tc.name: DistributedObjectStoreImpl_Get_001
+ * @tc.desc: test DistributedObjectStoreImpl Get
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_Get_001, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "sessionId";
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    EXPECT_NE(nullptr, objectStore);
+
+    DistributedObject *object = objectStore->CreateObject(sessionId);
+    EXPECT_NE(nullptr, object);
+
+    DistributedObject *Object1 = nullptr;
+    uint32_t status = objectStore->Get("", &Object1);
+    EXPECT_EQ(ERR_GET_OBJECT, status);
+
+    status = objectStore->DeleteObject(sessionId);
+    EXPECT_EQ(SUCCESS, status);
+}
+
+/**
+ * @tc.name: DistributedObjectStoreImpl_Watch_001
+ * @tc.desc: test DistributedObjectStoreImpl Watch
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_Watch_001, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "sessionId";
+    auto objectStore = new DistributedObjectStoreImpl(nullptr);
+
+    std::shared_ptr<MockObjectWatcher> watcher = std::make_shared<MockObjectWatcher>();
+    uint32_t status = objectStore->Watch(nullptr, watcher);
+    EXPECT_EQ(ERR_NULL_OBJECT, status);
+
+    auto flatObjectStore = new FlatObjectStore(bundleName);
+    auto object = new DistributedObjectImpl(sessionId, flatObjectStore);
+
+    status = objectStore->Watch(object, watcher);
+    EXPECT_EQ(ERR_NULL_OBJECTSTORE, status);
+
+    status = objectStore->UnWatch(object);
+    EXPECT_EQ(ERR_NULL_OBJECTSTORE, status);
+    delete objectStore;
+    delete flatObjectStore;
+    delete object;
+}
+
+/**
+ * @tc.name: DistributedObjectStoreImpl_Watch_002
+ * @tc.desc: test DistributedObjectStoreImpl Watch
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_Watch_002, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "sessionId";
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    EXPECT_NE(nullptr, objectStore);
+
+    DistributedObject *object = objectStore->CreateObject(sessionId);
+    EXPECT_NE(nullptr, object);
+
+    std::shared_ptr<MockObjectWatcher> watcher = std::make_shared<MockObjectWatcher>();
+    uint32_t status = objectStore->Watch(object, watcher);
+    EXPECT_EQ(SUCCESS, status);
+
+    status = objectStore->Watch(object, watcher);
+    EXPECT_EQ(ERR_EXIST, status);
+
+    std::string bundleName1 = "default1";
+    std::string sessionId1 = "sessionId1";
+    auto flatObjectStore = new FlatObjectStore(bundleName1);
+    auto object1 = new DistributedObjectImpl(sessionId1, flatObjectStore);
+    status = objectStore->Watch(object1, watcher);
+    EXPECT_EQ(ERR_DB_NOT_EXIST, status);
+
+    status = objectStore->UnWatch(object1);
+    EXPECT_EQ(ERR_DB_NOT_EXIST, status);
+
+    status = objectStore->DeleteObject(sessionId);
+    EXPECT_EQ(SUCCESS, status);
+    delete flatObjectStore;
+    delete object1;
+}
+
+/**
  * @tc.name: DistributedObjectStore_Get_001
  * @tc.desc: test DistributedObjectStore Get.
  * @tc.type: FUNC
@@ -259,6 +406,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_SetStatusNotifier_001, Te
     uint32_t ret = objectStore->SetStatusNotifier(notifierPtr);
     EXPECT_EQ(ret, 0);
 
+    objectStore->NotifyCachedStatus(sessionId);
     ret = objectStore->DeleteObject(sessionId);
     EXPECT_EQ(ret, 0);
 }
@@ -284,6 +432,29 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_Double_001, TestSize.Level1)
     object->GetDouble("salary", value);
     EXPECT_EQ(ret, 0);
     EXPECT_EQ(value, SALARY);
+
+    ret = objectStore->DeleteObject(sessionId);
+    EXPECT_EQ(ret, 0);
+}
+
+/**
+ * @tc.name: DistributedObject_GetDouble_001
+ * @tc.desc: test DistributedObjectStore GetDouble.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetDouble_001, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    EXPECT_NE(nullptr, objectStore);
+    DistributedObject *object = objectStore->CreateObject(sessionId);
+    EXPECT_NE(nullptr, object);
+
+    double value = 0.0;
+    uint32_t ret = object->GetDouble("salary", value);
+    EXPECT_EQ(ret, DistributedDB::DBStatus::NOT_FOUND);
+    EXPECT_EQ(value, 0.0);
 
     ret = objectStore->DeleteObject(sessionId);
     EXPECT_EQ(ret, 0);
@@ -316,6 +487,29 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_Boolean_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: DistributedObject_GetBoolean_001
+ * @tc.desc: test DistributedObjectStore GetBoolean.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetBoolean_001, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    EXPECT_NE(nullptr, objectStore);
+    DistributedObject *object = objectStore->CreateObject(sessionId);
+    EXPECT_NE(nullptr, object);
+
+    bool value = false;
+    uint32_t ret = object->GetBoolean("isTrue", value);
+    EXPECT_EQ(DistributedDB::DBStatus::NOT_FOUND, ret);
+    EXPECT_EQ(false, value);
+
+    ret = objectStore->DeleteObject(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+}
+
+/**
  * @tc.name: DistributedObject_String_001
  * @tc.desc: test DistributedObjectStore String.
  * @tc.type: FUNC
@@ -342,6 +536,29 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_String_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: DistributedObject_GetString_001
+ * @tc.desc: test DistributedObjectStore GetString.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetString_001, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    EXPECT_NE(nullptr, objectStore);
+    DistributedObject *object = objectStore->CreateObject(sessionId);
+    EXPECT_NE(nullptr, object);
+
+    std::string value = "";
+    uint32_t ret = object->GetString("name", value);
+    EXPECT_EQ(DistributedDB::DBStatus::NOT_FOUND, ret);
+    EXPECT_EQ(value, "");
+
+    ret = objectStore->DeleteObject(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+}
+
+/**
  * @tc.name: DistributedObject_GetSessionId_001
  * @tc.desc: test DistributedObjectStore GetSessionId.
  * @tc.type: FUNC
@@ -357,6 +574,71 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetSessionId_001, TestSize.Lev
     std::string getSessionId = object->GetSessionId();
     EXPECT_EQ(sessionId, getSessionId);
     uint32_t ret = objectStore->DeleteObject(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+}
+
+/**
+ * @tc.name: DistributedObject_PutComplex_001
+ * @tc.desc: test DistributedObjectStore PutComplex.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_PutComplex_001, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    EXPECT_NE(nullptr, objectStore);
+    DistributedObject *object = objectStore->CreateObject(sessionId);
+    EXPECT_NE(nullptr, object);
+
+    std::vector<uint8_t> value = {'z', 'h'};
+    uint32_t ret = object->PutComplex("name", value);
+    EXPECT_EQ(SUCCESS, ret);
+    ret = objectStore->DeleteObject(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+}
+
+/**
+ * @tc.name: DistributedObject_GetComplex_001
+ * @tc.desc: test DistributedObjectStore GetComplex.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetComplex_001, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    EXPECT_NE(nullptr, objectStore);
+    DistributedObject *object = objectStore->CreateObject(sessionId);
+    EXPECT_NE(nullptr, object);
+
+    std::vector<uint8_t> value = {'z', 'h'};
+    uint32_t ret = object->PutComplex("name", value);
+    EXPECT_EQ(SUCCESS, ret);
+    ret = object->GetComplex("name", value);
+    EXPECT_EQ(SUCCESS, ret);
+    ret = objectStore->DeleteObject(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+}
+
+/**
+ * @tc.name: DistributedObject_GetComplex_002
+ * @tc.desc: test DistributedObjectStore GetComplex.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetComplex_002, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    EXPECT_NE(nullptr, objectStore);
+    DistributedObject *object = objectStore->CreateObject(sessionId);
+    EXPECT_NE(nullptr, object);
+
+    std::vector<uint8_t> value = {'z', 'h'};
+    uint32_t ret = object->GetComplex("name", value);
+    EXPECT_EQ(DistributedDB::DBStatus::NOT_FOUND, ret);
+    ret = objectStore->DeleteObject(sessionId);
     EXPECT_EQ(SUCCESS, ret);
 }
 
@@ -422,6 +704,29 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetType_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: DistributedObject_GetType_002
+ * @tc.desc: test DistributedObject GetType.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetType_002, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    EXPECT_NE(nullptr, objectStore);
+    DistributedObject *object = objectStore->CreateObject(sessionId);
+    EXPECT_NE(nullptr, object);
+
+    Type type;
+    uint32_t ret = object->GetType("name", type);
+    EXPECT_EQ(DistributedDB::DBStatus::NOT_FOUND, ret);
+    EXPECT_EQ(TYPE_STRING, type);
+
+    ret = objectStore->DeleteObject(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+}
+
+/**
  * @tc.name: DistributedObject_Save_RevokeSave_001
  * @tc.desc: test DistributedObjectStore Save.
  * @tc.type: FUNC
@@ -434,6 +739,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_Save_RevokeSave_001, TestSize.
     EXPECT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
     EXPECT_NE(nullptr, object);
+
 
     uint32_t ret = object->PutString("name", "zhangsan");
     EXPECT_EQ(SUCCESS, ret);
@@ -485,6 +791,27 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_Save_RevokeSave_002, TestSize.
     t1.join();
     t2.join();
     t3.join();
+}
+
+/**
+ * @tc.name: DistributedObject_Save_RevokeSave_003
+ * @tc.desc: test DistributedObjectStore Save.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_Save_RevokeSave_003, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    EXPECT_NE(nullptr, objectStore);
+    DistributedObject *object = objectStore->CreateObject(sessionId);
+    EXPECT_NE(nullptr, object);
+
+    uint32_t ret = object->RevokeSave();
+    EXPECT_EQ(SUCCESS, ret);
+
+    ret = objectStore->DeleteObject(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
 }
 
 /**
@@ -695,10 +1022,10 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItems_001, TestSize.Leve
 
 /**
  * @tc.name: FlatObjectStore_UpdateItems_002
- * @tc.desc: test FlatObjectStore FilterData.
+ * @tc.desc: test FlatObjectStore UpdateItems.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItems_002, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_UpdateItems_002, TestSize.Level1)
 {
     std::string bundleName = "default07";
     std::string sessionId = "session07";
@@ -753,11 +1080,11 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_NotifyChange_001, TestSize.Lev
 }
 
 /**
- * @tc.name: DistributedObject_CheckRetrieveCache_001
+ * @tc.name: FlatObjectStore_CheckRetrieveCache_001
  * @tc.desc: test FlatObjectStore CheckRetrieveCache.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_CheckRetrieveCache_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_CheckRetrieveCache_001, TestSize.Level1)
 {
     std::string sessionId = "session05";
     std::string bundleName = "default07";
@@ -770,11 +1097,11 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_CheckRetrieveCache_001, TestSi
 }
 
 /**
- * @tc.name: DistributedObject_SyncAllData_001
+ * @tc.name: FlatObjectStore_SyncAllData_001
  * @tc.desc: test FlatObjectStore SyncAllData.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_SyncAllData_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_SyncAllData_001, TestSize.Level1)
 {
     std::string sessionId = "session258";
     std::string bundleName = "default07";
@@ -788,11 +1115,194 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_SyncAllData_001, TestSize.Leve
         }
     };
     ret = flatObjectStore->SyncAllData(sessionId, onComplete);
-    EXPECT_EQ(ERR_SINGLE_DEVICE, ret);
+    EXPECT_EQ(SUCCESS, ret);
     ret = flatObjectStore->SyncAllData("", onComplete);
     EXPECT_EQ(ERR_DB_NOT_EXIST, ret);
     ret = flatObjectStore->Delete(sessionId);
     EXPECT_EQ(SUCCESS, ret);
+}
+
+/**
+ * @tc.name: FlatObjectStore_Delete_001
+ * @tc.desc: test FlatObjectStore Delete. wrong sessionId
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_Delete_001, TestSize.Level1)
+{
+    std::string sessionId = "session001";
+    std::string bundleName = "default001";
+    std::shared_ptr<FlatObjectStore> flatObjectStore = std::make_shared<FlatObjectStore>(bundleName);
+    uint32_t ret = flatObjectStore->CreateObject(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+    sessionId = "session002";
+    ret = flatObjectStore->Delete(sessionId);
+    EXPECT_EQ(ERR_DB_NOT_EXIST, ret);
+}
+
+/**
+ * @tc.name: FlatObjectStore_Delete_002
+ * @tc.desc: test FlatObjectStore Delete. wrong sessionId
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_Delete_002, TestSize.Level1)
+{
+    std::string sessionId = "session001";
+    std::string bundleName = "";
+    std::shared_ptr<FlatObjectStore> flatObjectStore = std::make_shared<FlatObjectStore>(bundleName);
+    uint32_t ret = flatObjectStore->CreateObject(sessionId);
+    EXPECT_EQ(ERR_DB_GETKV_FAIL, ret);
+}
+
+/**
+ * @tc.name: FlatObjectStore_Watch_001
+ * @tc.desc: test FlatObjectStore Watch. wrong sessionId
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_Watch_001, TestSize.Level1)
+{
+    std::string sessionId = "session002";
+    std::string bundleName = "default002";
+    std::shared_ptr<FlatObjectStore> flatObjectStore = std::make_shared<FlatObjectStore>(bundleName);
+    uint32_t ret = flatObjectStore->CreateObject(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+    sessionId = "session003";
+    std::shared_ptr<MockFlatObjectWatcher> watcher = std::make_shared<MockFlatObjectWatcher>(sessionId);
+    ret = flatObjectStore->Watch(sessionId, watcher);
+    EXPECT_EQ(ERR_DB_NOT_EXIST, ret);
+}
+
+/**
+ * @tc.name: FlatObjectStore_UnWatch_001
+ * @tc.desc: test FlatObjectStore UnWatch. wrong sessionId
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_UnWatch_001, TestSize.Level1)
+{
+    std::string sessionId = "session003";
+    std::string bundleName = "default003";
+    std::shared_ptr<FlatObjectStore> flatObjectStore = std::make_shared<FlatObjectStore>(bundleName);
+    uint32_t ret = flatObjectStore->CreateObject(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+    sessionId = "session004";
+    std::shared_ptr<MockFlatObjectWatcher> watcher = std::make_shared<MockFlatObjectWatcher>(sessionId);
+    ret = flatObjectStore->UnWatch(sessionId);
+    EXPECT_EQ(ERR_DB_NOT_EXIST, ret);
+}
+
+/**
+ * @tc.name: FlatObjectStore_Save_001
+ * @tc.desc: test FlatObjectStore Save. wrong sessionId
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_Save_001, TestSize.Level1)
+{
+    std::string sessionId = "session004";
+    std::string bundleName = "default004";
+    std::string deviceId = "deviceId004";
+    std::shared_ptr<FlatObjectStore> flatObjectStore = std::make_shared<FlatObjectStore>(bundleName);
+    uint32_t ret = flatObjectStore->CreateObject(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+    sessionId = "session005";
+    std::shared_ptr<MockFlatObjectWatcher> watcher = std::make_shared<MockFlatObjectWatcher>(sessionId);
+    ret = flatObjectStore->Save(sessionId, deviceId);
+    EXPECT_EQ(ERR_DB_NOT_EXIST, ret);
+}
+
+/**
+ * @tc.name: FlatObjectStore_OnComplete_001
+ * @tc.desc: test FlatObjectStore OnComplete.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_OnComplete_001, TestSize.Level1)
+{
+    std::string bundleName = "default005";
+    std::string sessionId = "session005";
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    uint32_t ret = storageEngine->Open(bundleName);
+    EXPECT_EQ(SUCCESS, ret);
+    ret = storageEngine->CreateTable(sessionId);
+    std::shared_ptr<StatusNotifierImpl> statusWatcher = std::make_shared<StatusNotifierImpl>();
+    DistributedDB::DBStatus status = DistributedDB::DBStatus::OK;
+    std::map<std::string, DistributedDB::DBStatus> devices = { { sessionId, status } };
+    storageEngine->OnComplete(sessionId, devices, statusWatcher);
+    ret = storageEngine->DeleteTable(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+}
+
+/**
+ * @tc.name: CacheManager_Save_001
+ * @tc.desc: test CacheManager Save.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, CacheManager_Save_001, TestSize.Level1)
+{
+    std::string bundleName = "";
+    std::string sessionId = "";
+    std::string deviceId = "";
+    std::map<std::string, std::vector<uint8_t>> objectData;
+    CacheManager cacheManager;
+    auto ret = cacheManager.Save(bundleName, sessionId, deviceId, objectData);
+    EXPECT_EQ(DistributedDB::DBStatus::INVALID_ARGS, ret);
+}
+
+/**
+ * @tc.name: CacheManager_RevokeSave_001
+ * @tc.desc: test CacheManager RevokeSave.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, CacheManager_RevokeSave_001, TestSize.Level1)
+{
+    std::string bundleName = "";
+    std::string sessionId = "";
+    CacheManager cacheManager;
+    auto ret = cacheManager.RevokeSave(bundleName, sessionId);
+    EXPECT_EQ(DistributedDB::DBStatus::INVALID_ARGS, ret);
+}
+
+/**
+ * @tc.name: CacheManager_ResumeObject_001
+ * @tc.desc: test CacheManager ResumeObject.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, CacheManager_ResumeObject_001, TestSize.Level1)
+{
+    std::string bundleName = "";
+    std::string sessionId = "";
+    CacheManager cacheManager;
+    std::function<void(const std::map<std::string, std::vector<uint8_t>> &data)> callback =
+        [](const std::map<std::string, std::vector<uint8_t>> &data) {};
+    auto ret = cacheManager.ResumeObject(bundleName, sessionId, callback);
+    EXPECT_EQ(DistributedDB::DBStatus::INVALID_ARGS, ret);
+}
+
+/**
+ * @tc.name: CacheManager_SubscribeDataChange_001
+ * @tc.desc: test CacheManager SubscribeDataChange.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, CacheManager_SubscribeDataChange_001, TestSize.Level1)
+{
+    std::string bundleName = "";
+    std::string sessionId = "";
+    CacheManager cacheManager;
+    std::function<void(const std::map<std::string, std::vector<uint8_t>> &data)> callback =
+        [](const std::map<std::string, std::vector<uint8_t>> &data) {};
+    auto ret = cacheManager.SubscribeDataChange(bundleName, sessionId, callback);
+    EXPECT_EQ(DistributedDB::DBStatus::INVALID_ARGS, ret);
+}
+
+/**
+ * @tc.name: CacheManager_UnregisterDataChange_001
+ * @tc.desc: test CacheManager UnregisterDataChange.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, CacheManager_UnregisterDataChange_001, TestSize.Level1)
+{
+    std::string bundleName = "";
+    std::string sessionId = "";
+    CacheManager cacheManager;
+    auto ret = cacheManager.UnregisterDataChange(bundleName, sessionId);
+    EXPECT_EQ(DistributedDB::DBStatus::INVALID_ARGS, ret);
 }
 
 /**
@@ -831,27 +1341,6 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_UnWatch_001, TestSize.Level1)
     uint32_t ret = objectStore->UnWatch(nullptr);
     EXPECT_EQ(ERR_NULL_OBJECT, ret);
     ret = objectStore->DeleteObject(sessionId);
-    EXPECT_EQ(SUCCESS, ret);
-}
-
-/**
- * @tc.name: DistributedObject_OnComplete_001
- * @tc.desc: test FlatObjectStore OnComplete.
- * @tc.type: FUNC
- */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_OnComplete_001, TestSize.Level1)
-{
-    std::string bundleName = "default";
-    std::string sessionId = "123456";
-    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
-    uint32_t ret = storageEngine->Open(bundleName);
-    EXPECT_EQ(SUCCESS, ret);
-    ret = storageEngine->CreateTable(sessionId);
-    std::shared_ptr<StatusNotifierImpl> statusWatcher = std::make_shared<StatusNotifierImpl>();
-    DistributedDB::DBStatus status = DistributedDB::DBStatus::OK;
-    std::map<std::string, DistributedDB::DBStatus> devices = { { sessionId, status } };
-    storageEngine->OnComplete(sessionId, devices, statusWatcher);
-    ret = storageEngine->DeleteTable(sessionId);
     EXPECT_EQ(SUCCESS, ret);
 }
 
