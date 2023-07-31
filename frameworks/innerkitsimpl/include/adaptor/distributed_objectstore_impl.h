@@ -21,7 +21,7 @@
 #include <shared_mutex>
 
 #include "distributed_objectstore.h"
-
+#include "flat_object_store.h"
 namespace OHOS::ObjectStore {
 class WatcherProxy;
 enum SyncStatus {

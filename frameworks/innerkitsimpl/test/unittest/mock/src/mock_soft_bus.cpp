@@ -71,7 +71,9 @@ int32_t GetLocalNodeDeviceInfo(const char *pkgName, NodeBasicInfo *info)
 
 int32_t GetAllNodeDeviceInfo(const char *pkgName, NodeBasicInfo **info, int32_t *infoNum)
 {
-    return -1;
+    (*info) = (NodeBasicInfo *)malloc(sizeof(NodeBasicInfo));
+    (*infoNum) = 1;
+    return 0;
 }
 
 int32_t GetNodeKeyInfo(const char *pkgName, const char *networkId, NodeDeviceInfoKey key, uint8_t *info,
