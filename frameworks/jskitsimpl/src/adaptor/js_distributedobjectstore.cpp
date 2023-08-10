@@ -16,6 +16,7 @@
 #include "js_distributedobjectstore.h"
 
 #include <cstring>
+#include <random>
 
 #include "ability_context.h"
 #include "accesstoken_kit.h"
@@ -32,11 +33,9 @@
 
 namespace OHOS::ObjectStore {
 constexpr size_t TYPE_SIZE = 10;
-const int MIN_NUMERIC = 999999;
 const std::string DISTRIBUTED_DATASYNC = "ohos.permission.DISTRIBUTED_DATASYNC";
 static ConcurrentMap<std::string, std::list<napi_ref>> g_statusCallBacks;
 static ConcurrentMap<std::string, std::list<napi_ref>> g_changeCallBacks;
-std::atomic<uint32_t> JSDistributedObjectStore::sequenceNum_{ MIN_NUMERIC };
 bool JSDistributedObjectStore::AddCallback(napi_env env, ConcurrentMap<std::string, std::list<napi_ref>> &callbacks,
     const std::string &objectId, napi_value callback)
 {
@@ -507,7 +506,9 @@ napi_value JSDistributedObjectStore::JSDeleteCallback(napi_env env, napi_callbac
 
 napi_value JSDistributedObjectStore::JSEquenceNum(napi_env env, napi_callback_info info)
 {
-    std::string str = std::to_string(sequenceNum_++);
+    std::random_device randomDevice;
+    std::uniform_int_distribution<uint32_t> distribution(0, std::numeric_limits<uint32_t>::max());
+    std::string str = std::to_string(distribution(randomDevice));
     napi_value result = nullptr;
     napi_status status = napi_create_string_utf8(env, str.c_str(), str.size(), &result);
     CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);

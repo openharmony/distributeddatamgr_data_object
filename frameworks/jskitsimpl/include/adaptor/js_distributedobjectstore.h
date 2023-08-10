@@ -46,7 +46,6 @@ private:
     static bool GetBundleNameWithContext(napi_env env, napi_value argv, std::string &bundleName);
     static std::string GetBundleName(napi_env env);
     static bool IsSandBox();
-    static std::atomic<uint32_t> sequenceNum_;
 };
 } // namespace OHOS::ObjectStore
 #endif // JS_DISTRIBUTEDDATAOBJECTSTORE_H
