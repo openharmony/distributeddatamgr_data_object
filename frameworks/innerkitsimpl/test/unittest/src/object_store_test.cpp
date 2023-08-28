@@ -332,6 +332,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_Watch_002, TestSize.L
     status = objectStore->UnWatch(object1);
     EXPECT_EQ(ERR_DB_NOT_EXIST, status);
 
+    status = objectStore->UnWatch(object);
+    EXPECT_EQ(SUCCESS, status);
+
     status = objectStore->DeleteObject(sessionId);
     EXPECT_EQ(SUCCESS, status);
     delete flatObjectStore;
