@@ -151,7 +151,6 @@ function joinSession(version, obj, objectId, sessionId, context) {
       get: function () {
         console.info('start get ' + key);
         let result = object.get(key);
-        console.info('get ' + result);
         if (typeof result === 'string') {
           if (result.startsWith(STRING_TYPE)) {
             result = result.substr(STRING_TYPE.length);
@@ -160,10 +159,10 @@ function joinSession(version, obj, objectId, sessionId, context) {
           } else if (result.startsWith(NULL_TYPE)) {
             result = null;
           } else {
-            console.error('error type ' + result);
+            console.error('error type');
           }
         }
-        console.info('get ' + result + ' success');
+        console.info('get success');
         return result;
       },
       set: function (newValue) {
