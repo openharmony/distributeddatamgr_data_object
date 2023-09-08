@@ -223,6 +223,7 @@ DistributedObjectStore *DistributedObjectStore::GetInstance(const std::string &b
             // This operation needn't to malloc memory, we needn't to check nullptr.
             instPtr = new (std::nothrow) DistributedObjectStoreImpl(flatObjectStore);
             if (instPtr == nullptr) {
+                delete flatObjectStore;
                 LOG_ERROR("no memory for DistributedObjectStoreImpl malloc!");
                 return nullptr;
             }
