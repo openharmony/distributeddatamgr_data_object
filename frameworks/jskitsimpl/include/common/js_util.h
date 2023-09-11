@@ -49,7 +49,7 @@ public:
     static void GenerateNapiError(napi_env env, int32_t status, int32_t &errCode, std::string &errMessage);
 };
 
-#define NAPI_ASSERT_ERRCODE(env, assertion, version, err)                                                       \
+#define NAPI_ASSERT_ERRCODE_V9(env, assertion, version, err)                                                       \
     do {                                                                                                        \
         if (!(assertion)) {                                                                                     \
             if ((version) >= 9) {                                                                               \
@@ -59,7 +59,7 @@ public:
         }                                                                                                       \
     } while (0)
 
-#define CHECH_STATUS_ERRCODE(env, condition, err)                                                           \
+#define NAPI_ASSERT_ERRCODE(env, condition, err)                                                           \
     do {                                                                                                    \
         if (!(condition)) {                                                                                 \
             napi_throw_error((env), std::to_string((err)->GetCode()).c_str(), (err)->GetMessage().c_str()); \

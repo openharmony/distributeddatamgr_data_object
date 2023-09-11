@@ -49,10 +49,6 @@ uint32_t FlatObjectStorageEngine::Open(const std::string &bundleName)
         LOG_ERROR("set distributed db communicator failed.");
     }
     storeManager_ = std::make_shared<DistributedDB::KvStoreDelegateManager>(bundleName, "default");
-    if (storeManager_ == nullptr) {
-        LOG_ERROR("FlatObjectStorageEngine::make shared fail");
-        return ERR_NOMEM;
-    }
 
     DistributedDB::KvStoreConfig config;
     config.dataDir = "/data/log";

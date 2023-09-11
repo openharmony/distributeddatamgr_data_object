@@ -40,7 +40,7 @@ static napi_value DistributedDataObjectExport(napi_env env, napi_value exports)
     };
 
     status = napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
-    CHECK_EQUAL_WITH_RETURN_NULL(status, napi_ok);
+    NOT_MATCH_RETURN_NULL(status == napi_ok);
     return exports;
 }
 

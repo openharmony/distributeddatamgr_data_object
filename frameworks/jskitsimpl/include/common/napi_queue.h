@@ -66,7 +66,7 @@ private:
 };
 
 /* check condition related to argc/argv, return and logging. */
-#define CHECK_ARGS_RETURN_VOID(ctxt, condition, message, err)    \
+#define INVALID_ARGS_RETURN_ERROR(ctxt, condition, message, err)    \
     do {                                                         \
         if (!(condition)) {                                      \
             (ctxt)->status = napi_invalid_arg;                   \
@@ -76,7 +76,7 @@ private:
         }                                                        \
     } while (0)
 
-#define CHECK_STATUS_RETURN_VOID(ctxt, error)                           \
+#define INVALID_STATUS_RETURN_ERROR(ctxt, error)                           \
     do {                                                                \
         if ((ctxt)->status != napi_ok) {                                \
             (ctxt)->message = error;                                    \

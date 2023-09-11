@@ -19,7 +19,6 @@
 
 #include <condition_variable>
 #include <memory>
-#include <mutex>
 
 #include "app_device_status_change_listener.h"
 namespace OHOS {

@@ -17,47 +17,31 @@
 #define JS_COMMON_H
 #include "hilog/log.h"
 namespace OHOS::ObjectStore {
-#define CHECK_EQUAL_WITH_RETURN_NULL(status, value)                   \
-    {                                                                 \
-        if (status != value) {                                        \
-            LOG_ERROR("error! %{public}d %{public}d", status, value); \
-            return nullptr;                                           \
-        }                                                             \
-    }
+class Constants {
+public:
+    static constexpr const char*CHANGE = "change";
+    static constexpr const char*STATUS = "status";
+};
+#define OBJECT_REVT_NOTHING
 
-#define CHECK_EQUAL_WITH_RETURN_VOID(status, value)                   \
-    {                                                                 \
-        if (status != value) {                                        \
-            LOG_ERROR("error! %{public}d %{public}d", status, value); \
-            return;                                                   \
-        }                                                             \
-    }
-
-#define CHECK_EQUAL_WITH_RETURN_FALSE(status, value)                  \
-    {                                                                 \
-        if (status != value) {                                        \
-            LOG_ERROR("error! %{public}d %{public}d", status, value); \
-            return false;                                             \
-        }                                                             \
-    }
-
-#define ASSERT_MATCH_ELSE_RETURN_VOID(condition)        \
-    {                                                   \
+#define NOT_MATCH_RETURN(condition, res)                \
+    do {                                                \
         if (!(condition)) {                             \
             LOG_ERROR("error! %{public}s", #condition); \
-            return;                                     \
+            return res;                                 \
         }                                               \
-    }
+    } while (0)
 
-#define ASSERT_MATCH_ELSE_RETURN_NULL(condition)        \
-    {                                                   \
-        if (!(condition)) {                             \
-            LOG_ERROR("error! %{public}s", #condition); \
-            return nullptr;                             \
-        }                                               \
-    }
+#define NOT_MATCH_RETURN_VOID(condition)        \
+    NOT_MATCH_RETURN(condition, OBJECT_REVT_NOTHING)
 
-#define ASSERT_MATCH_ELSE_GOTO_ERROR(condition)         \
+#define NOT_MATCH_RETURN_NULL(condition)        \
+    NOT_MATCH_RETURN(condition, nullptr)
+
+#define NOT_MATCH_RETURN_FALSE(condition)       \
+    NOT_MATCH_RETURN(condition, false)
+
+#define NOT_MATCH_GOTO_ERROR(condition)         \
     {                                                   \
         if (!(condition)) {                             \
             LOG_ERROR("error! %{public}s", #condition); \
@@ -65,7 +49,7 @@ namespace OHOS::ObjectStore {
         }                                               \
     }
 
-#define CHECK_API_VALID_ELSE_RETURN_VOID(assertion)                                                          \
+#define INVALID_API_THROW_ERROR(assertion)                                                                   \
     do {                                                                                                     \
         if (!(assertion)) {                                                                                  \
             std::shared_ptr<DeviceNotSupportedError> apiError = std::make_shared<DeviceNotSupportedError>(); \
@@ -75,7 +59,7 @@ namespace OHOS::ObjectStore {
         }                                                                                                    \
     } while (0)
 
-#define CHECK_VALID_ELSE_RETURN_VOID(assertion, msg)                                 \
+#define INVALID_STATUS_THROW_ERROR(assertion, msg)                                   \
     do {                                                                             \
         if (!(assertion)) {                                                          \
             std::shared_ptr<InnerError> innerError = std::make_shared<InnerError>(); \
@@ -86,6 +70,4 @@ namespace OHOS::ObjectStore {
         }                                                                            \
     } while (0)
 } // namespace OHOS::ObjectStore
-static const char *CHANGE = "change";
-static const char *STATUS = "status";
 #endif // JS_COMMON_H

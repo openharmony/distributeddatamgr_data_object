@@ -70,19 +70,19 @@ void JSWatcher::ProcessChange(napi_env env, std::list<void *> &args)
     napi_value param[ARGV_SIZE];
     napi_value result;
     napi_status status = napi_get_global(env, &global);
-    ASSERT_MATCH_ELSE_GOTO_ERROR(status == napi_ok);
+    NOT_MATCH_GOTO_ERROR(status == napi_ok);
     for (auto item : args) {
         ChangeArgs *changeArgs = static_cast<ChangeArgs *>(item);
         status = napi_get_reference_value(env, changeArgs->callback_, &callback);
-        ASSERT_MATCH_ELSE_GOTO_ERROR(status == napi_ok);
+        NOT_MATCH_GOTO_ERROR(status == napi_ok);
         status = JSUtil::SetValue(env, changeArgs->sessionId_, param[0]);
-        ASSERT_MATCH_ELSE_GOTO_ERROR(status == napi_ok);
+        NOT_MATCH_GOTO_ERROR(status == napi_ok);
         JSUtil::SetValue(env, changeArgs->changeData_, param[1]);
-        ASSERT_MATCH_ELSE_GOTO_ERROR(status == napi_ok);
+        NOT_MATCH_GOTO_ERROR(status == napi_ok);
         LOG_INFO("start %{public}s, %{public}zu", changeArgs->sessionId_.c_str(), changeArgs->changeData_.size());
         status = napi_call_function(env, global, callback, ARGV_SIZE, param, &result);
         LOG_INFO("end %{public}s, %{public}zu", changeArgs->sessionId_.c_str(), changeArgs->changeData_.size());
-        ASSERT_MATCH_ELSE_GOTO_ERROR(status == napi_ok);
+        NOT_MATCH_GOTO_ERROR(status == napi_ok);
     }
 ERROR:
     for (auto item : args) {
@@ -116,10 +116,10 @@ void JSWatcher::Emit(const char *type, const std::string &sessionId, const std::
 
 EventListener *JSWatcher::Find(const char *type)
 {
-    if (!strcmp(CHANGE, type)) {
+    if (!strcmp(Constants::CHANGE, type)) {
         return changeEventListener_;
     }
-    if (!strcmp(STATUS, type)) {
+    if (!strcmp(Constants::STATUS, type)) {
         return statusEventListener_;
     }
     return nullptr;
@@ -133,23 +133,23 @@ void JSWatcher::ProcessStatus(napi_env env, std::list<void *> &args)
     napi_value param[ARGV_SIZE];
     napi_value result;
     napi_status status = napi_get_global(env, &global);
-    ASSERT_MATCH_ELSE_GOTO_ERROR(status == napi_ok);
+    NOT_MATCH_GOTO_ERROR(status == napi_ok);
     for (auto item : args) {
         StatusArgs *statusArgs = static_cast<StatusArgs *>(item);
         status = napi_get_reference_value(env, statusArgs->callback_, &callback);
-        ASSERT_MATCH_ELSE_GOTO_ERROR(status == napi_ok);
+        NOT_MATCH_GOTO_ERROR(status == napi_ok);
         status = JSUtil::SetValue(env, statusArgs->sessionId_, param[0]);
-        ASSERT_MATCH_ELSE_GOTO_ERROR(status == napi_ok);
+        NOT_MATCH_GOTO_ERROR(status == napi_ok);
         status = JSUtil::SetValue(env, statusArgs->networkId_, param[1]);
-        ASSERT_MATCH_ELSE_GOTO_ERROR(status == napi_ok);
+        NOT_MATCH_GOTO_ERROR(status == napi_ok);
         status = JSUtil::SetValue(env, statusArgs->status_, param[2]);
-        ASSERT_MATCH_ELSE_GOTO_ERROR(status == napi_ok);
+        NOT_MATCH_GOTO_ERROR(status == napi_ok);
         LOG_INFO("start %{public}s, %{public}s, %{public}s", statusArgs->sessionId_.c_str(),
             statusArgs->networkId_.c_str(), statusArgs->status_.c_str());
         status = napi_call_function(env, global, callback, ARGV_SIZE, param, &result);
         LOG_INFO("end %{public}s, %{public}s, %{public}s", statusArgs->sessionId_.c_str(),
             statusArgs->networkId_.c_str(), statusArgs->status_.c_str());
-        ASSERT_MATCH_ELSE_GOTO_ERROR(status == napi_ok);
+        NOT_MATCH_GOTO_ERROR(status == napi_ok);
     }
 ERROR:
     LOG_DEBUG("do clear");
@@ -281,7 +281,7 @@ void WatcherImpl::OnChanged(const std::string &sessionid, const std::vector<std:
         LOG_ERROR("watcher_ is null");
         return;
     }
-    watcher_->Emit(CHANGE, sessionid, changedData);
+    watcher_->Emit(Constants::CHANGE, sessionid, changedData);
 }
 
 WatcherImpl::~WatcherImpl()
@@ -294,10 +294,6 @@ bool ChangeEventListener::Add(napi_env env, napi_value handler)
 {
     if (!isWatched_ && object_ != nullptr) {
         std::shared_ptr<WatcherImpl> watcher = std::make_shared<WatcherImpl>(watcher_);
-        if (watcher == nullptr) {
-            LOG_ERROR("new %{public}s error", object_->GetSessionId().c_str());
-            return false;
-        }
         uint32_t ret = objectStore_->Watch(object_, watcher);
         if (ret != SUCCESS) {
             LOG_ERROR("Watch %{public}s error", object_->GetSessionId().c_str());
