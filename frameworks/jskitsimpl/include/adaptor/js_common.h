@@ -19,8 +19,8 @@
 namespace OHOS::ObjectStore {
 class Constants {
 public:
-    static constexpr const char*CHANGE = "change";
-    static constexpr const char*STATUS = "status";
+    static constexpr const char *CHANGE = "change";
+    static constexpr const char *STATUS = "status";
 };
 #define OBJECT_REVT_NOTHING
 
