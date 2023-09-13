@@ -125,6 +125,44 @@ function newDistributed(obj) {
   return new Distributed(obj);
 }
 
+function getObjectValue(object, key) {
+    console.info('start get ' + key);
+    let result = object.get(key);
+    if (typeof result === 'string') {
+      if (result.startsWith(STRING_TYPE)) {
+        result = result.substr(STRING_TYPE.length);
+      } else if (result.startsWith(COMPLEX_TYPE)) {
+        result = JSON.parse(result.substr(COMPLEX_TYPE.length));
+      } else if (result.startsWith(NULL_TYPE)) {
+        result = null;
+      } else {
+        console.error('error type');
+      }
+    }
+    console.info('get success');
+    return result;
+}
+
+function setObjectValue(object, key, newValue) {
+  console.info('start set ' + key + ' ' + newValue);
+  if (typeof newValue === 'object') {
+    let value = COMPLEX_TYPE + JSON.stringify(newValue);
+    object.put(key, value);
+    console.info('set ' + key + ' ' + value);
+  } else if (typeof newValue === 'string') {
+    let value = STRING_TYPE + newValue;
+    object.put(key, value);
+    console.info('set ' + key + ' ' + value);
+  } else if (newValue == null) {
+    let value = NULL_TYPE;
+    object.put(key, value);
+    console.info('set ' + key + ' ' + value);
+  } else {
+    object.put(key, newValue);
+    console.info('set ' + key + ' ' + newValue);
+  }
+}
+
 function joinSession(version, obj, objectId, sessionId, context) {
   console.info('start joinSession ' + sessionId);
   if (obj == null || sessionId == null || sessionId === '') {
@@ -149,40 +187,10 @@ function joinSession(version, obj, objectId, sessionId, context) {
       enumerable: true,
       configurable: true,
       get: function () {
-        console.info('start get ' + key);
-        let result = object.get(key);
-        if (typeof result === 'string') {
-          if (result.startsWith(STRING_TYPE)) {
-            result = result.substr(STRING_TYPE.length);
-          } else if (result.startsWith(COMPLEX_TYPE)) {
-            result = JSON.parse(result.substr(COMPLEX_TYPE.length));
-          } else if (result.startsWith(NULL_TYPE)) {
-            result = null;
-          } else {
-            console.error('error type');
-          }
-        }
-        console.info('get success');
-        return result;
+        return getObjectValue(object, key);
       },
       set: function (newValue) {
-        console.info('start set ' + key + ' ' + newValue);
-        if (typeof newValue === 'object') {
-          let value = COMPLEX_TYPE + JSON.stringify(newValue);
-          object.put(key, value);
-          console.info('set ' + key + ' ' + value);
-        } else if (typeof newValue === 'string') {
-          let value = STRING_TYPE + newValue;
-          object.put(key, value);
-          console.info('set ' + key + ' ' + value);
-        } else if (newValue == null) {
-          let value = NULL_TYPE;
-          object.put(key, value);
-          console.info('set ' + key + ' ' + value);
-        } else {
-          object.put(key, newValue);
-          console.info('set ' + key + ' ' + newValue);
-        }
+        setObjectValue(object, key, newValue);
       }
     });
     if (obj[key] !== undefined) {
