@@ -25,7 +25,7 @@ config("module_private_config") {
 
 ##############################fuzztest##########################################
 ohos_fuzztest("ObjectStoreFuzzTest") {
-  module_out_path = "data_object/impl"
+  module_out_path = "data_object/data_object"
 
   fuzz_config_file = "//foundation/distributeddatamgr/data_object/frameworks/innerkitsimpl/test/fuzztest/objectstore_fuzzer"
 
