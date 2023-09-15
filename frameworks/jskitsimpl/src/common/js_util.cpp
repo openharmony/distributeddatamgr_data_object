@@ -54,7 +54,7 @@ napi_status JSUtil::GetValue(napi_env env, napi_value in, std::string &out)
 {
     size_t maxLen = STR_MAX_LENGTH;
     napi_status status = napi_get_value_string_utf8(env, in, NULL, 0, &maxLen);
-    if (maxLen <= 0) {
+    if (status != napi_ok || maxLen <= 0) {
         return napi_generic_failure;
     }
     char *buf = new (std::nothrow) char[maxLen + STR_TAIL_LENGTH];
