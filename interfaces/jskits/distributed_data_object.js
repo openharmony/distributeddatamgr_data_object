@@ -126,21 +126,21 @@ function newDistributed(obj) {
 }
 
 function getObjectValue(object, key) {
-    console.info('start get ' + key);
-    let result = object.get(key);
-    if (typeof result === 'string') {
-      if (result.startsWith(STRING_TYPE)) {
-        result = result.substr(STRING_TYPE.length);
-      } else if (result.startsWith(COMPLEX_TYPE)) {
-        result = JSON.parse(result.substr(COMPLEX_TYPE.length));
-      } else if (result.startsWith(NULL_TYPE)) {
-        result = null;
-      } else {
-        console.error('error type');
-      }
+  console.info('start get ' + key);
+  let result = object.get(key);
+  if (typeof result === 'string') {
+    if (result.startsWith(STRING_TYPE)) {
+      result = result.substr(STRING_TYPE.length);
+    } else if (result.startsWith(COMPLEX_TYPE)) {
+      result = JSON.parse(result.substr(COMPLEX_TYPE.length));
+    } else if (result.startsWith(NULL_TYPE)) {
+      result = null;
+    } else {
+      console.error('error type');
     }
-    console.info('get success');
-    return result;
+  }
+  console.info('get success');
+  return result;
 }
 
 function setObjectValue(object, key, newValue) {
