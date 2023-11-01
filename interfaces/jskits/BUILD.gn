@@ -73,6 +73,12 @@ gen_js_obj("distributed_data_object_abc") {
 }
 
 ohos_shared_library("distributeddataobject") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   part_name = "data_object"
   sources = [
     "../../frameworks/jskitsimpl/src/adaptor/js_distributedobject.cpp",
