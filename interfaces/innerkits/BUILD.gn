@@ -71,6 +71,12 @@ object_external_deps_config = [
   "samgr:samgr_proxy",
 ]
 ohos_shared_library("distributeddataobject_impl") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   part_name = "data_object"
   sources = object_source_config
 
@@ -84,6 +90,12 @@ ohos_shared_library("distributeddataobject_impl") {
 }
 
 ohos_static_library("distributeddataobject_static") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   part_name = "data_object"
   sources = object_source_config
 
