@@ -74,7 +74,7 @@ public:
      * @return Returns 0 for success, others for failure.
      */
     virtual uint32_t PutComplex(const std::string &key, const std::vector<uint8_t> &value) = 0;
-    
+
     /**
      * @brief Get the data whose value type is double from the database according to the key,
      * which means that the data of objects in the same sessionId is get.
@@ -118,7 +118,7 @@ public:
      * @return Returns 0 for success, others for failure.
      */
     virtual uint32_t GetComplex(const std::string &key, std::vector<uint8_t> &value) = 0;
-    
+
     /**
      * @brief Get the value type of key-value data by the key
      *
@@ -151,6 +151,8 @@ public:
      * @return Returns sessionId of the object.
      */
     virtual std::string &GetSessionId() = 0;
+
+    virtual uint32_t PutDeviceId(const std::string &key) = 0;
 };
 
 class ObjectWatcher {

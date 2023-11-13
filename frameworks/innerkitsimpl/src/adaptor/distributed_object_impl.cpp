@@ -15,6 +15,7 @@
 
 #include "distributed_object_impl.h"
 
+#include "communication_provider.h"
 #include "hitrace.h"
 #include "objectstore_errors.h"
 #include "string_utils.h"
@@ -201,5 +202,19 @@ uint32_t DistributedObjectImpl::RevokeSave()
         return status;
     }
     return status;
+}
+
+uint32_t DistributedObjectImpl::PutDeviceId(const std::string &key)
+{
+    DataObjectHiTrace trace("DistributedObjectImpl::PutDeviceId");
+    DeviceInfo device = CommunicationProvider::GetInstance().GetLocalDevice();
+    std::string value = "[STRING]" + device.deviceId;
+    std::string newKey = key.substr(0, key.rfind('.')) + ".deviceId";
+    Bytes data;
+    Type type = Type::TYPE_STRING;
+    PutNum(&type, 0, sizeof(type), data);
+    Bytes dst = StringUtils::StrToBytes(value);
+    data.insert(data.end(), dst.begin(), dst.end());
+    return flatObjectStore_->Put(sessionId_, FIELDS_PREFIX + newKey, data);
 }
 } // namespace OHOS::ObjectStore

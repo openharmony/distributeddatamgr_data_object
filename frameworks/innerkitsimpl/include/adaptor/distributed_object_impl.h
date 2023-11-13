@@ -37,6 +37,7 @@ public:
     uint32_t Save(const std::string &deviceId) override;
     uint32_t RevokeSave() override;
     uint32_t GetType(const std::string &key, Type &type) override;
+    uint32_t PutDeviceId(const std::string &key) override;
 
 private:
     std::string sessionId_;

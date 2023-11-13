@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 const distributedObject = requireInternal('data.distributedDataObject');
 const SESSION_ID = '__sessionId';
 const VERSION = '__version';
@@ -163,6 +163,57 @@ function setObjectValue(object, key, newValue) {
   }
 }
 
+function isAsset(obj) {
+  if (Object.prototype.toString.call(obj) !== '[object Object]') {
+    return false;
+  }
+  if (obj.hasOwnProperty('status') && typeof obj['status'] != 'number') {
+    return false;
+  }
+  const attrs = ['name', 'uri', 'createTime', 'modifyTime', 'size', 'path'];
+  const exceptLength = obj.hasOwnProperty('status') ? attrs.length + 1 : attrs.length;
+  if (Object.keys(obj).length !== exceptLength) {
+    return false;
+  }
+  for (const attr of attrs) {
+    if (!obj.hasOwnProperty(attr) || typeof obj[attr] != 'string') {
+      return false;
+    }
+  }
+  return true;
+}
+
+function getAssetValue(object, key) {
+  let assetValue = {};
+  let attrs = ['status', 'name', 'uri', 'createTime', 'modifyTime', 'size', 'path']
+  Object.values(attrs).forEach(subKey => {
+    Object.defineProperty(assetValue, subKey, {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        return getObjectValue(object, key + '.' + subKey);
+      },
+      set: function (newValue) {
+        setObjectValue(object, key + '.' + subKey, newValue);
+      }
+    });
+  });
+  Object.preventExtensions(assetValue);
+  return assetValue;
+}
+
+function setAssetValue(object, key, newValue) {
+  if (!isAsset(newValue)) {
+    throw {
+      code: 401,
+      message: 'error type'
+    };
+  }
+  Object.keys(newValue).forEach(subKey => {
+    setObjectValue(object, key + '.' + subKey, newValue[subKey]);
+  });
+}
+
 function joinSession(version, obj, objectId, sessionId, context) {
   console.info('start joinSession ' + sessionId);
   if (obj == null || sessionId == null || sessionId === '') {
@@ -183,16 +234,29 @@ function joinSession(version, obj, objectId, sessionId, context) {
   }
   Object.keys(obj).forEach(key => {
     console.info('start define ' + key);
-    Object.defineProperty(object, key, {
-      enumerable: true,
-      configurable: true,
-      get: function () {
-        return getObjectValue(object, key);
-      },
-      set: function (newValue) {
-        setObjectValue(object, key, newValue);
-      }
-    });
+    if (isAsset(obj[key])) {
+      Object.defineProperty(object, key, {
+        enumerable: true,
+        configurable: true,
+        get: function () {
+          return getAssetValue(object, key);
+        },
+        set: function (newValue) {
+          setAssetValue(object, key, newValue);
+        }
+      });
+    } else {
+      Object.defineProperty(object, key, {
+        enumerable: true,
+        configurable: true,
+        get: function () {
+          return getObjectValue(object, key);
+        },
+        set: function (newValue) {
+          setObjectValue(object, key, newValue);
+        }
+      });
+    }
     if (obj[key] !== undefined) {
       object[key] = obj[key];
     }
@@ -218,6 +282,16 @@ function leaveSession(version, obj) {
       writable: true,
       enumerable: true,
     });
+    if (isAsset(obj[key])) {
+      Object.keys(obj[key]).forEach(subKey => {
+        Object.defineProperty(obj[key], subKey, {
+          value: obj[key][subKey],
+          configurable: true,
+          writable: true,
+          enumerable: true,
+        })
+      });
+    }
   });
   // disconnect,delete object
   distributedObject.destroyObjectSync(version, obj);
@@ -244,14 +318,15 @@ function offWatch(version, type, obj, callback = undefined) {
 
 function newDistributedV9(context, obj) {
   console.info('start newDistributed');
-  let checkparameter = function(parameter, type) {
+  let checkparameter = function (parameter, type) {
     throw {
       code: 401,
-      message :"Parameter error. The type of '" + parameter + "' must be '" + type + "'."};
+      message: "Parameter error. The type of '" + parameter + "' must be '" + type + "'."
+    };
   };
   if (typeof context !== 'object') {
     checkparameter('context', 'Context');
-  } 
+  }
   if (typeof obj !== 'object') {
     checkparameter('source', 'object');
   }
