@@ -163,6 +163,52 @@ function setObjectValue(object, key, newValue) {
   }
 }
 
+function isAsset(obj) {
+  if (!obj.hasOwnProperty('status') || typeof obj['status'] != 'number') {
+    return false;
+  }
+  const attrs = ['name', 'uri', 'createTime', 'modifyTime', 'size', 'path'];
+  if (Object.keys(obj).length != attrs.length + 1) {
+    return false;
+  }
+  for (const attr of attrs) {
+    if (!obj.hasOwnProperty(attr) || typeof obj[attr] != 'string') {
+      return false;
+    }
+  }
+  return true;
+}
+
+function getAssetValue(object, key) {
+  let assetValue = {};
+  let attrs = ['status', 'name', 'uri', 'createTime', 'modifyTime', 'size', 'path']
+  Object.values(attrs).forEach(subKey => {
+    Object.defineProperty(assetValue, subKey, {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        return getObjectValue(object, key + '.' + subKey);
+      },
+      set: function (newValue) {
+        setObjectValue(object, key + '.' + subKey, newValue);
+      }
+    });
+  });
+  return assetValue;
+}
+
+function setAssetValue(object, key, newValue) {
+  if (!isAsset(newValue)) {
+    throw {
+      code: 401,
+      message: 'error type'
+    };
+  }
+  Object.keys(newValue).forEach(subKey => {
+    setObjectValue(object, key + '.' + subKey, newValue[subKey]);
+  });
+}
+
 function joinSession(version, obj, objectId, sessionId, context) {
   console.info('start joinSession ' + sessionId);
   if (obj == null || sessionId == null || sessionId === '') {
@@ -183,16 +229,29 @@ function joinSession(version, obj, objectId, sessionId, context) {
   }
   Object.keys(obj).forEach(key => {
     console.info('start define ' + key);
-    Object.defineProperty(object, key, {
-      enumerable: true,
-      configurable: true,
-      get: function () {
-        return getObjectValue(object, key);
-      },
-      set: function (newValue) {
-        setObjectValue(object, key, newValue);
-      }
-    });
+    if (isAsset(obj[key])) {
+      Object.defineProperty(object, key, {
+        enumerable: true,
+        configurable: true,
+        get: function () {
+          return getAssetValue(object, key);
+        },
+        set: function (newValue) {
+          setAssetValue(object, key, newValue);
+        }
+      });
+    } else {
+      Object.defineProperty(object, key, {
+        enumerable: true,
+        configurable: true,
+        get: function () {
+          return getObjectValue(object, key);
+        },
+        set: function (newValue) {
+          setObjectValue(object, key, newValue);
+        }
+      });
+    }
     if (obj[key] !== undefined) {
       object[key] = obj[key];
     }
@@ -218,6 +277,16 @@ function leaveSession(version, obj) {
       writable: true,
       enumerable: true,
     });
+    if (isAsset(obj[key])) {
+      Object.keys(obj[key]).forEach(subKey => {
+        Object.defineProperty(obj[key], subKey, {
+          value: obj[key][subKey],
+          configurable: true,
+          writable: true,
+          enumerable: true,
+        })
+      });
+    }
   });
   // disconnect,delete object
   distributedObject.destroyObjectSync(version, obj);
