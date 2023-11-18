@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+ 
 const distributedObject = requireInternal('data.distributedDataObject');
 const SESSION_ID = '__sessionId';
 const VERSION = '__version';
@@ -326,7 +326,7 @@ function newDistributedV9(context, obj) {
   };
   if (typeof context !== 'object') {
     checkparameter('context', 'Context');
-  }
+  } 
   if (typeof obj !== 'object') {
     checkparameter('source', 'object');
   }
