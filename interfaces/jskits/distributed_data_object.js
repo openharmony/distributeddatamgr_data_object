@@ -163,6 +163,57 @@ function setObjectValue(object, key, newValue) {
   }
 }
 
+function isAsset(obj) {
+  if (Object.prototype.toString.call(obj) !== '[object Object]') {
+    return false;
+  }
+  if (obj.hasOwnProperty('status') && typeof obj['status'] != 'number') {
+    return false;
+  }
+  const attrs = ['name', 'uri', 'createTime', 'modifyTime', 'size', 'path'];
+  const exceptLength = obj.hasOwnProperty('status') ? attrs.length + 1 : attrs.length;
+  if (Object.keys(obj).length !== exceptLength) {
+    return false;
+  }
+  for (const attr of attrs) {
+    if (!obj.hasOwnProperty(attr) || typeof obj[attr] != 'string') {
+      return false;
+    }
+  }
+  return true;
+}
+
+function getAssetValue(object, key) {
+  let assetValue = {};
+  let attrs = ['status', 'name', 'uri', 'createTime', 'modifyTime', 'size', 'path']
+  Object.values(attrs).forEach(subKey => {
+    Object.defineProperty(assetValue, subKey, {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        return getObjectValue(object, key + '.' + subKey);
+      },
+      set: function (newValue) {
+        setObjectValue(object, key + '.' + subKey, newValue);
+      }
+    });
+  });
+  Object.preventExtensions(assetValue);
+  return assetValue;
+}
+
+function setAssetValue(object, key, newValue) {
+  if (!isAsset(newValue)) {
+    throw {
+      code: 401,
+      message: 'error type'
+    };
+  }
+  Object.keys(newValue).forEach(subKey => {
+    setObjectValue(object, key + '.' + subKey, newValue[subKey]);
+  });
+}
+
 function joinSession(version, obj, objectId, sessionId, context) {
   console.info('start joinSession ' + sessionId);
   if (obj == null || sessionId == null || sessionId === '') {
@@ -267,11 +318,10 @@ function offWatch(version, type, obj, callback = undefined) {
 
 function newDistributedV9(context, obj) {
   console.info('start newDistributed');
-  let checkparameter = function (parameter, type) {
+  let checkparameter = function(parameter, type) {
     throw {
       code: 401,
-      message: "Parameter error. The type of '" + parameter + "' must be '" + type + "'."
-    };
+      message :"Parameter error. The type of '" + parameter + "' must be '" + type + "'."};
   };
   if (typeof context !== 'object') {
     checkparameter('context', 'Context');
