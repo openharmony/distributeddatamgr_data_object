@@ -184,11 +184,11 @@ function isAsset(obj) {
   return true;
 }
 
-function getAssetValue(object, key) {
+function getAssetValue(object, key, obj) {
   let assetValue = {};
   let attrs = ['status', 'name', 'uri', 'createTime', 'modifyTime', 'size', 'path']
-  Object.values(attrs).forEach(subKey => {
-    Object.defineProperty(assetValue, subKey, {
+  Object.keys(obj).forEach(subKey => {
+    Object.defineProperty(obj, subKey, {
       enumerable: true,
       configurable: true,
       get: function () {
@@ -199,8 +199,7 @@ function getAssetValue(object, key) {
       }
     });
   });
-  Object.preventExtensions(assetValue);
-  return assetValue;
+  return obj;
 }
 
 function setAssetValue(object, key, newValue) {
@@ -240,7 +239,7 @@ function joinSession(version, obj, objectId, sessionId, context) {
         enumerable: true,
         configurable: true,
         get: function () {
-          return getAssetValue(object, key);
+          return getAssetValue(object, key, obj[key]);
         },
         set: function (newValue) {
           setAssetValue(object, key, newValue);
