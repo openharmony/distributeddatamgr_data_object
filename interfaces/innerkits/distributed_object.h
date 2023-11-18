@@ -151,8 +151,6 @@ public:
      * @return Returns sessionId of the object.
      */
     virtual std::string &GetSessionId() = 0;
-
-    virtual uint32_t PutDeviceId(const std::string &key) = 0;
 };
 
 class ObjectWatcher {

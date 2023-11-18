@@ -204,17 +204,15 @@ uint32_t DistributedObjectImpl::RevokeSave()
     return status;
 }
 
-uint32_t DistributedObjectImpl::PutDeviceId(const std::string &key)
+uint32_t DistributedObjectImpl::PutDeviceId()
 {
     DataObjectHiTrace trace("DistributedObjectImpl::PutDeviceId");
-    DeviceInfo device = CommunicationProvider::GetInstance().GetLocalDevice();
-    std::string value = "[STRING]" + device.deviceId;
-    std::string newKey = key.substr(0, key.rfind('.')) + ".deviceId";
+    DevManager::DetailInfo detailInfo = DevManager::GetInstance()->GetLocalDevice();
     Bytes data;
     Type type = Type::TYPE_STRING;
     PutNum(&type, 0, sizeof(type), data);
-    Bytes dst = StringUtils::StrToBytes(value);
+    Bytes dst = StringUtils::StrToBytes(detailInfo.uuid);
     data.insert(data.end(), dst.begin(), dst.end());
-    return flatObjectStore_->Put(sessionId_, FIELDS_PREFIX + newKey, data);
+    return flatObjectStore_->Put(sessionId_, DEVICE_ID, data);
 }
 } // namespace OHOS::ObjectStore

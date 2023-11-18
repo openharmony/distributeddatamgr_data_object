@@ -164,9 +164,6 @@ void JSDistributedObject::DoPut(
             break;
         }
     }
-    if (keyString.find('.') != std::string::npos) {
-        wrapper->GetObject()->PutDeviceId(keyString);
-    }
 }
 
 void JSDistributedObject::DoGet(napi_env env, JSObjectWrapper *wrapper, char *key, napi_value &value)

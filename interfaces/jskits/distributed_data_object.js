@@ -19,6 +19,7 @@ const VERSION = '__version';
 const COMPLEX_TYPE = '[COMPLEX]';
 const STRING_TYPE = '[STRING]';
 const NULL_TYPE = '[NULL]';
+const DOT = '.';
 const JS_ERROR = 1;
 const SDK_VERSION_8 = 8;
 const SDK_VERSION_9 = 9;
@@ -191,10 +192,10 @@ function getAssetValue(object, key) {
       enumerable: true,
       configurable: true,
       get: function () {
-        return getObjectValue(object, key + '.' + subKey);
+        return getObjectValue(object, key + DOT + subKey);
       },
       set: function (newValue) {
-        setObjectValue(object, key + '.' + subKey, newValue);
+        setObjectValue(object, key + DOT + subKey, newValue);
       }
     });
   });
@@ -206,11 +207,11 @@ function setAssetValue(object, key, newValue) {
   if (!isAsset(newValue)) {
     throw {
       code: 401,
-      message: 'error type'
+      message: 'cannot set ' + key + ' by non Asset type data'
     };
   }
   Object.keys(newValue).forEach(subKey => {
-    setObjectValue(object, key + '.' + subKey, newValue[subKey]);
+    setObjectValue(object, key + DOT + subKey, newValue[subKey]);
   });
 }
 
