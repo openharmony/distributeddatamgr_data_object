@@ -15,12 +15,13 @@
 
 #include "distributed_object_impl.h"
 
-#include "communication_provider.h"
 #include "hitrace.h"
 #include "objectstore_errors.h"
 #include "string_utils.h"
+#include "dev_manager.h"
 
 namespace OHOS::ObjectStore {
+static const char *DEVICE_ID = "#DEVICE_ID#";
 DistributedObjectImpl::~DistributedObjectImpl()
 {
 }
@@ -56,6 +57,7 @@ uint32_t GetNum(Bytes &data, uint32_t offset, void *val, uint32_t valLen)
 
 uint32_t DistributedObjectImpl::PutDouble(const std::string &key, double value)
 {
+    PutDeviceId();
     DataObjectHiTrace trace("DistributedObjectImpl::PutDouble");
     Bytes data;
     Type type = Type::TYPE_DOUBLE;
@@ -66,6 +68,7 @@ uint32_t DistributedObjectImpl::PutDouble(const std::string &key, double value)
 
 uint32_t DistributedObjectImpl::PutBoolean(const std::string &key, bool value)
 {
+    PutDeviceId();
     DataObjectHiTrace trace("DistributedObjectImpl::PutBoolean");
     Bytes data;
     Type type = Type::TYPE_BOOLEAN;
@@ -76,6 +79,7 @@ uint32_t DistributedObjectImpl::PutBoolean(const std::string &key, bool value)
 
 uint32_t DistributedObjectImpl::PutString(const std::string &key, const std::string &value)
 {
+    PutDeviceId();
     DataObjectHiTrace trace("DistributedObjectImpl::PutString");
     Bytes data;
     Type type = Type::TYPE_STRING;
@@ -161,6 +165,7 @@ DistributedObjectImpl::DistributedObjectImpl(const std::string &sessionId, FlatO
 
 uint32_t DistributedObjectImpl::PutComplex(const std::string &key, const std::vector<uint8_t> &value)
 {
+    PutDeviceId();
     DataObjectHiTrace trace("DistributedObjectImpl::PutComplex");
     Bytes data;
     Type type = Type::TYPE_COMPLEX;
