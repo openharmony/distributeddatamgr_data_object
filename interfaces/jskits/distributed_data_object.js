@@ -12,13 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 const distributedObject = requireInternal('data.distributedDataObject');
 const SESSION_ID = '__sessionId';
 const VERSION = '__version';
 const COMPLEX_TYPE = '[COMPLEX]';
 const STRING_TYPE = '[STRING]';
 const NULL_TYPE = '[NULL]';
+const ASSET_KEYS = ['status', 'name', 'uri', 'path', 'createTime', 'modifyTime', 'size'];
 const DOT = '.';
 const JS_ERROR = 1;
 const SDK_VERSION_8 = 8;
@@ -168,16 +169,15 @@ function isAsset(obj) {
   if (Object.prototype.toString.call(obj) !== '[object Object]') {
     return false;
   }
+  let length = obj.hasOwnProperty('status') ? ASSET_KEYS.length : ASSET_KEYS.length - 1;
+  if (Object.keys(obj).length !== length) {
+    return false;
+  }
   if (obj.hasOwnProperty('status') && typeof obj['status'] != 'number') {
     return false;
   }
-  const attrs = ['name', 'uri', 'createTime', 'modifyTime', 'size', 'path'];
-  const exceptLength = obj.hasOwnProperty('status') ? attrs.length + 1 : attrs.length;
-  if (Object.keys(obj).length !== exceptLength) {
-    return false;
-  }
-  for (const attr of attrs) {
-    if (!obj.hasOwnProperty(attr) || typeof obj[attr] != 'string') {
+  for (const key of ASSET_KEYS.slice(1)) {
+    if (!obj.hasOwnProperty(key) || typeof obj[key] != 'string') {
       return false;
     }
   }
@@ -185,8 +185,6 @@ function isAsset(obj) {
 }
 
 function getAssetValue(object, key, obj) {
-  let assetValue = {};
-  let attrs = ['status', 'name', 'uri', 'createTime', 'modifyTime', 'size', 'path']
   Object.keys(obj).forEach(subKey => {
     Object.defineProperty(obj, subKey, {
       enumerable: true,
@@ -209,7 +207,7 @@ function setAssetValue(object, key, newValue) {
       message: 'cannot set ' + key + ' by non Asset type data'
     };
   }
-  Object.keys(newValue).forEach(subKey => {
+  Object.values(ASSET_KEYS).forEach(subKey => {
     setObjectValue(object, key + DOT + subKey, newValue[subKey]);
   });
 }
@@ -325,7 +323,7 @@ function newDistributedV9(context, obj) {
   };
   if (typeof context !== 'object') {
     checkparameter('context', 'Context');
-  } 
+  }
   if (typeof obj !== 'object') {
     checkparameter('source', 'object');
   }

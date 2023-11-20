@@ -21,7 +21,7 @@
 #include "dev_manager.h"
 
 namespace OHOS::ObjectStore {
-static constexpr char *DEVICE_ID = "#DEVICE_ID#";
+static constexpr const char *DEVICE_ID = "#DEVICE_ID#";
 DistributedObjectImpl::~DistributedObjectImpl()
 {
 }
