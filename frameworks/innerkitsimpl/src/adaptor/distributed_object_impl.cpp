@@ -215,7 +215,7 @@ uint32_t DistributedObjectImpl::PutDeviceId()
     Bytes data;
     Type type = Type::TYPE_STRING;
     PutNum(&type, 0, sizeof(type), data);
-    Bytes dst = StringUtils::StrToBytes(detailInfo.uuid);
+    Bytes dst = StringUtils::StrToBytes(detailInfo.networkId);
     data.insert(data.end(), dst.begin(), dst.end());
     return flatObjectStore_->Put(sessionId_, DEVICE_ID, data);
 }
