@@ -21,7 +21,7 @@
 #include "dev_manager.h"
 
 namespace OHOS::ObjectStore {
-static constexpr const char *DEVICE_ID = "#DEVICE_ID#";
+static constexpr const char *DEVICE_ID = "p_#DeviceId#";
 static constexpr const char DOT = '.';
 DistributedObjectImpl::~DistributedObjectImpl()
 {
@@ -59,9 +59,6 @@ uint32_t GetNum(Bytes &data, uint32_t offset, void *val, uint32_t valLen)
 uint32_t DistributedObjectImpl::PutDouble(const std::string &key, double value)
 {
     DataObjectHiTrace trace("DistributedObjectImpl::PutDouble");
-    if(std::string::npos != key.find(DOT)){
-        PutDeviceId();
-    }
     Bytes data;
     Type type = Type::TYPE_DOUBLE;
     PutNum(&type, 0, sizeof(type), data);
