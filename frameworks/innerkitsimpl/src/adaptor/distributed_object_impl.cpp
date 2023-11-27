@@ -22,7 +22,7 @@
 
 namespace OHOS::ObjectStore {
 static constexpr const char *DEVICE_ID = "p_#DeviceId#";
-static constexpr const char DOT = '.';
+static constexpr const char ASSET_KEY_SEPARATOR = '.';
 DistributedObjectImpl::~DistributedObjectImpl()
 {
 }
@@ -79,7 +79,7 @@ uint32_t DistributedObjectImpl::PutBoolean(const std::string &key, bool value)
 uint32_t DistributedObjectImpl::PutString(const std::string &key, const std::string &value)
 {
     DataObjectHiTrace trace("DistributedObjectImpl::PutString");
-    if(std::string::npos != key.find(DOT)){
+    if (key.find(ASSET_KEY_SEPARATOR) != std::string::npos) {
         PutDeviceId();
     }
     Bytes data;

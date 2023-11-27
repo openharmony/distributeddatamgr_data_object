@@ -20,7 +20,8 @@ const COMPLEX_TYPE = '[COMPLEX]';
 const STRING_TYPE = '[STRING]';
 const NULL_TYPE = '[NULL]';
 const ASSET_KEYS = ['status', 'name', 'uri', 'path', 'createTime', 'modifyTime', 'size'];
-const DOT = '.';
+const STATUS_INDEX = 0;
+const ASSET_KEY_SEPARATOR = '.';
 const JS_ERROR = 1;
 const SDK_VERSION_8 = 8;
 const SDK_VERSION_9 = 9;
@@ -169,11 +170,11 @@ function isAsset(obj) {
   if (Object.prototype.toString.call(obj) !== '[object Object]') {
     return false;
   }
-  let length = obj.hasOwnProperty('status') ? ASSET_KEYS.length : ASSET_KEYS.length - 1;
+  let length = obj.hasOwnProperty(ASSET_KEYS[STATUS_INDEX]) ? ASSET_KEYS.length : ASSET_KEYS.length - 1;
   if (Object.keys(obj).length !== length) {
     return false;
   }
-  if (obj.hasOwnProperty('status') && typeof obj['status'] != 'number') {
+  if (obj.hasOwnProperty(ASSET_KEYS[STATUS_INDEX]) && typeof obj[ASSET_KEYS[STATUS_INDEX]] != 'number') {
     return false;
   }
   for (const key of ASSET_KEYS.slice(1)) {
@@ -190,10 +191,10 @@ function getAssetValue(object, key, obj) {
       enumerable: true,
       configurable: true,
       get: function () {
-        return getObjectValue(object, key + DOT + subKey);
+        return getObjectValue(object, key + ASSET_KEY_SEPARATOR + subKey);
       },
       set: function (newValue) {
-        setObjectValue(object, key + DOT + subKey, newValue);
+        setObjectValue(object, key + ASSET_KEY_SEPARATOR + subKey, newValue);
       }
     });
   });
@@ -208,7 +209,7 @@ function setAssetValue(object, key, newValue) {
     };
   }
   Object.values(ASSET_KEYS).forEach(subKey => {
-    setObjectValue(object, key + DOT + subKey, newValue[subKey]);
+    setObjectValue(object, key + ASSET_KEY_SEPARATOR + subKey, newValue[subKey]);
   });
 }
 
