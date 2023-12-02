@@ -409,6 +409,14 @@ class DistributedV9 {
     return this.__proxy.revokeSave(callback);
   }
 
+  bindAssetStore(assetkey, bindInfo, callback) {
+    if (this.__proxy[SESSION_ID] == null || this.__proxy[SESSION_ID] === '') {
+      console.info('not join a session, can not do bindAssetStore');
+      return JS_ERROR;
+    }
+    return this.__proxy.bindAssetStore(assetkey, bindInfo, callback);
+  }
+
   __context;
   __proxy;
   __objectId;

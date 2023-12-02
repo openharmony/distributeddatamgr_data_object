@@ -30,6 +30,7 @@ config("module_private_config") {
     "${data_object_innerkits_path}/include/adaptor",
     "${data_object_innerkits_path}/include/common",
     "${data_object_innerkits_path}/include/communicator",
+    "${data_object_innerkits_path}/include",
     "${kv_store_include_path}/include",
     "${kv_store_include_path}/interfaces/include/",
     "${kv_store_include_path}/interfaces/include/relational",
@@ -55,6 +56,7 @@ ohos_unittest("NativeObjectStoreTest") {
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",
     "hilog:libhilog",
+    "relational_store:common_type"
   ]
 
   deps = [

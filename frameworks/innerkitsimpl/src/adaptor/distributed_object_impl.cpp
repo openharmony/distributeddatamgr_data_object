@@ -118,4 +118,42 @@ uint32_t DistributedObjectImpl::PutDeviceId()
     DevManager::DetailInfo detailInfo = DevManager::GetInstance()->GetLocalDevice();
     return PutString(DEVICE_ID, detailInfo.networkId);
 }
+
+uint32_t DistributedObjectImpl::GetAssetValue(const std::string &assetKey, Asset &assetValue)
+{
+    double assetStatus = 0.0;
+    auto status = GetDouble(assetKey + STATUS_SUFFIX, assetStatus);
+    if (status == SUCCESS) {
+        assetValue.status = static_cast<uint32_t>(assetStatus);
+    }
+    status = GetString(assetKey + NAME_SUFFIX, assetValue.name);
+    LOG_ERROR_RETURN(status == SUCCESS, "get name failed!", status);
+    status = GetString(assetKey + URI_SUFFIX, assetValue.uri);
+    LOG_ERROR_RETURN(status == SUCCESS, "get uri failed!", status);
+    status = GetString(assetKey + PATH_SUFFIX, assetValue.path);
+    LOG_ERROR_RETURN(status == SUCCESS, "get path failed!", status);
+    status = GetString(assetKey + CREATE_TIME_SUFFIX, assetValue.createTime);
+    LOG_ERROR_RETURN(status == SUCCESS, "get createTime failed!", status);
+    status = GetString(assetKey + MODIFY_TIME_SUFFIX, assetValue.modifyTime);
+    LOG_ERROR_RETURN(status == SUCCESS, "get modifyTime failed!", status);
+    status = GetString(assetKey + SIZE_SUFFIX, assetValue.size);
+    LOG_ERROR_RETURN(status == SUCCESS, "get size failed!", status);
+    return status;
+}
+
+uint32_t DistributedObjectImpl::BindAssetStore(const std::string &assetKey, AssetBindInfo &bindInfo)
+{
+    Asset assetValue;
+    auto status = GetAssetValue(assetKey, assetValue);
+    if (status != SUCCESS) {
+        LOG_ERROR("DistributedObjectImpl:GetAssetValue failed. status = %{public}d", status);
+        return status;
+    }
+    status = flatObjectStore_->BindAssetStore(sessionId_, bindInfo, assetValue);
+    if (status != SUCCESS) {
+        LOG_ERROR("DistributedObjectImpl:BindAssetStore failed. status = %{public}d", status);
+        return status;
+    }
+    return status;
+}
 } // namespace OHOS::ObjectStore

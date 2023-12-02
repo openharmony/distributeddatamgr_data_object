@@ -19,7 +19,7 @@
 #include <logger.h>
 #include "log_print.h"
 #include "objectstore_errors.h"
-#include "object_types_utils.h"
+#include "object_types_util.h"
 
 namespace OHOS::DistributedObject {
 using namespace ObjectStore;
@@ -203,6 +203,36 @@ int32_t ObjectServiceProxy::UnregisterDataChangeObserver(const std::string &bund
     }
     int32_t error =
         remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_UNREGISTER_OBSERVER), data, reply, mo);
+    if (error != 0) {
+        ZLOGE("SendRequest returned %d", error);
+        return ERR_IPC;
+    }
+    return reply.ReadInt32();
+}
+
+int32_t ObjectServiceProxy::ObjectStoreBindAsset(const std::string &bundleName, const std::string &sessionId,
+    Asset &asset, AssetBindInfo &bindInfo)
+{
+    MessageParcel data;
+    if (!data.WriteInterfaceToken(ObjectServiceProxy::GetDescriptor())) {
+        ZLOGE("write descriptor failed");
+        return ERR_IPC;
+    }
+    
+    if (!ITypesUtil::Marshal(data, bundleName, sessionId, asset, bindInfo)) {
+        ZLOGE("Marshalling failed, bundleName = %{public}s", bundleName.c_str());
+        return ERR_IPC;
+    }
+
+    MessageParcel reply;
+    MessageOption mo { MessageOption::TF_SYNC };
+    sptr<IRemoteObject> remoteObject = Remote();
+    if (remoteObject == nullptr) {
+        LOG_ERROR("ObjectStoreBindAsset remoteObject is nullptr.");
+        return ERR_IPC;
+    }
+    int32_t error =
+        remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_BIND_ASSET), data, reply, mo);
     if (error != 0) {
         ZLOGE("SendRequest returned %d", error);
         return ERR_IPC;

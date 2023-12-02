@@ -13,21 +13,19 @@
  * limitations under the License.
  */
 
-#ifndef OBJECT_TYPES_UTILS_H
-#define OBJECT_TYPES_UTILS_H
-
-#include "itypes_util.h"
-#include "asset_value.h"
+#include "object_types_util.h"
 
 namespace OHOS::ITypesUtil {
-static inline bool Marshalling(const Asset &input, MessageParcel &data){
-    return Marshal(data, input.status, input.name, input.uri, 
-        input.path, input.createTime, input.modifyTime, input.size);
+template<>
+bool Marshalling(const AssetBindInfo &input, MessageParcel &data)
+{
+    return ITypesUtil::Marshal(data, input.storeName, input.tableName, input.primaryKey, input.field,
+        input.assetName);
 }
-
-static inline bool Unmarshalling(Asset &output, MessageParcel &data){
-    return Unmarshal(data, output.status, output.name, output.uri, 
-        output.path, output.createTime, output.modifyTime, output.size);
+template<>
+bool Unmarshalling(AssetBindInfo &output, MessageParcel &data)
+{
+    return ITypesUtil::Unmarshal(data, output.storeName, output.tableName, output.primaryKey, output.field,
+        output.assetName);
 }
-} // namespace OHOS::ITypesUtil
-#endif // OBJECT_TYPES_UTILS_H
+}

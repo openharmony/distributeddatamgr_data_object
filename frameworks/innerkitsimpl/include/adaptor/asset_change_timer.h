@@ -16,7 +16,7 @@
 #define ASSET_CHANGE_TIMER_H
 #include <unordered_map>
 
-#include "asset_value.h"
+#include "object_types.h"
 #include "executor_pool.h"
 #include "flat_object_store.h"
 

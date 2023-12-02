@@ -23,6 +23,7 @@
 #include "flat_object_storage_engine.h"
 #include "condition_lock.h"
 #include "distributed_object.h"
+#include "object_types.h"
 
 namespace OHOS::ObjectStore {
 class FlatObjectWatcher : public TableWatcher {
@@ -81,6 +82,8 @@ public:
     uint32_t GetType(const std::string &sessionId, const std::string &key, Type &type);
     std::string GetBundleName();
 
+    uint32_t BindAssetStore(const std::string &sessionId, AssetBindInfo &bindInfo, Asset &assetValue);
+    
 private:
     uint32_t Put(const std::string &sessionId, const std::string &key, std::vector<uint8_t> value);
     uint32_t Get(const std::string &sessionId, const std::string &key, Bytes &value);

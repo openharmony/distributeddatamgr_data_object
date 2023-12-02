@@ -55,7 +55,8 @@
                 "c_utils",
                 "device_manager",
                 "kv_store",
-                "common_event_service"
+                "common_event_service",
+                "relational_store"
             ],
             "third_party": [
                 "libuv",

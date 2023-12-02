@@ -26,7 +26,6 @@ static const int32_t FIELDS_PREFIX_LEN = 2;
 static const std::string STRING_PREFIX = "[STRING]";
 static const int32_t STRING_PREFIX_LEN = STRING_PREFIX.length();
 
-
 static const std::string DEVICEID_KEY = "#DEVICE_ID#";
 static const std::string STATUS_SUFFIX = ".status";
 static const std::string NAME_SUFFIX = ".name";

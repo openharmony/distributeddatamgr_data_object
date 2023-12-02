@@ -14,6 +14,7 @@
  */
 import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it} from 'deccjsunit/index';
 import distributedObject from '@ohos.data.distributedDataObject';
+import commonType from '@ohos.data.commonType';
 import abilityAccessCtrl from '@ohos.abilityAccessCtrl';
 import featureAbility from '@ohos.ability.featureAbility';
 import bundle from '@ohos.bundle';
