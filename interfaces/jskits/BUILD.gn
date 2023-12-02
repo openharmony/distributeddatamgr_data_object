@@ -40,6 +40,7 @@ config("objectstore_config") {
     "../../frameworks/jskitsimpl/include/common",
     "../../frameworks/innerkitsimpl/include/adaptor",
     "../../frameworks/innerkitsimpl/include/common",
+    "../../frameworks/innerkitsimpl/include",
     "../../frameworks/innerkitsimpl/include/communicator",
     "../../interfaces/innerkits",
     "${kvstore_path}/common",
@@ -112,6 +113,7 @@ ohos_shared_library("distributeddataobject") {
     "hilog:libhilog",
     "kv_store:distributeddb",
     "napi:ace_napi",
+    "relational_store:common_type"
   ]
 
   public_configs = [ ":objectstore_public_config" ]

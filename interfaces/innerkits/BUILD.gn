@@ -53,6 +53,7 @@ object_source_config = [
   "../../frameworks/innerkitsimpl/src/communicator/softbus_adapter_standard.cpp",
   "../../frameworks/innerkitsimpl/src/object_callback_stub.cpp",
   "../../frameworks/innerkitsimpl/src/object_service_proxy.cpp",
+  "../../frameworks/innerkitsimpl/src/object_types_util.cpp"
 ]
 object_deps_config = [
   "//third_party/bounds_checking_function:libsec_shared",
@@ -69,6 +70,7 @@ object_external_deps_config = [
   "kv_store:distributeddata_inner",
   "kv_store:distributeddb",
   "samgr:samgr_proxy",
+  "relational_store:common_type"
 ]
 ohos_shared_library("distributeddataobject_impl") {
   branch_protector_ret = "pac_ret"

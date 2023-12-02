@@ -22,6 +22,7 @@
 #include "bytes.h"
 #include "flat_object_storage_engine.h"
 #include "condition_lock.h"
+#include "object_types.h"
 
 namespace OHOS::ObjectStore {
 class FlatObjectWatcher : public TableWatcher {
@@ -70,6 +71,7 @@ public:
     void CheckRetrieveCache(const std::string &sessionId);
     void FilterData(const std::string &sessionId,
                     std::map<std::string, std::vector<uint8_t>> &data);
+    uint32_t BindAssetStore(const std::string &sessionId, AssetBindInfo &bindInfo, Asset &assetValue);
     
 private:
     std::shared_ptr<FlatObjectStorageEngine> storageEngine_;

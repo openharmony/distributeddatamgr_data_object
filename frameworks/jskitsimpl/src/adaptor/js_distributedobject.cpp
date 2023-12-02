@@ -113,6 +113,7 @@ napi_value JSDistributedObject::GetCons(napi_env env)
         DECLARE_NAPI_FUNCTION("get", JSDistributedObject::JSGet),
         DECLARE_NAPI_FUNCTION("save", JSDistributedObject::JSSave),
         DECLARE_NAPI_FUNCTION("revokeSave", JSDistributedObject::JSRevokeSave),
+        DECLARE_NAPI_FUNCTION("bindAssetStore", JSDistributedObject::JSBindAssetStore),//yltest
     };
 
     napi_status status = napi_define_class(env, distributedObjectName, strlen(distributedObjectName),
@@ -347,5 +348,41 @@ napi_value JSDistributedObject::GetRevokeSaveResultCons(napi_env env, std::strin
         sizeof(desc) / sizeof(desc[0]), desc, &result);
     NOT_MATCH_RETURN_NULL(status == napi_ok);
     return result;
+}
+
+napi_value JSDistributedObject::JSBindAssetStore(napi_env env, napi_callback_info info)//yltest
+{
+    struct BindAssetStoreContext : public ContextBase {
+        std::string assetKey;
+        AssetBindInfo bindInfo;
+        JSObjectWrapper *wrapper;
+    };
+    auto ctxt = std::make_shared<BindAssetStoreContext>();
+    auto input = [env, ctxt](size_t argc, napi_value *argv) {
+        INVALID_ARGS_RETURN_ERROR(ctxt, argc >= 2, "arguments error", std::make_shared<ParametersNum>("2"));
+        ctxt->status = JSUtil::GetValue(env, argv[0], ctxt->assetKey);
+        INVALID_ARGS_RETURN_ERROR(ctxt, ctxt->status == napi_ok, "arguments error",
+            std::make_shared<ParametersType>("assetKey", "string"));
+
+        ctxt->status = JSUtil::GetValue(env, argv[1], ctxt->bindInfo);
+        INVALID_ARGS_RETURN_ERROR(ctxt, ctxt->status == napi_ok, "arguments error",
+            std::make_shared<ParametersType>("bindInfo", "BindInfo"));
+        JSObjectWrapper *wrapper = nullptr;
+        napi_status status = napi_unwrap(env, ctxt->self, (void **)&wrapper);
+        NOT_MATCH_RETURN_VOID(status == napi_ok && wrapper != nullptr && wrapper->GetObject() != nullptr);
+        ctxt->wrapper = wrapper;
+    };
+    ctxt->GetCbInfo(env, info, input);
+    NAPI_ASSERT_ERRCODE(env, ctxt->status == napi_ok, ctxt->error);
+    auto execute = [ctxt]() {
+        CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
+        CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper->GetObject() != nullptr, ctxt, "object is null");
+        uint32_t status = ctxt->wrapper->GetObject()->BindAssetStore(ctxt->assetKey, ctxt->bindInfo);
+        LOG_INFO("BindAssetStore return: %{public}d", status);
+        INVALID_API_THROW_ERROR(status != ERR_PROCESSING);
+        INVALID_STATUS_THROW_ERROR(status == SUCCESS, "operation failed");
+        ctxt->status = napi_ok;
+    };
+    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute);
 }
 } // namespace OHOS::ObjectStore

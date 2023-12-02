@@ -36,7 +36,8 @@ public:
     int32_t RegisterDataObserver(const std::string &bundleName, const std::string &sessionId,
         sptr<IRemoteObject> callback) override;
     int32_t UnregisterDataChangeObserver(const std::string &bundleName, const std::string &sessionId) override;
-
+    int32_t ObjectStoreBindAsset(const std::string &bundleName, const std::string &sessionId,
+       ObjectStore::Asset &asset, ObjectStore::AssetBindInfo &bindInfo) override;
 private:
     static inline BrokerDelegator<ObjectServiceProxy> delegator_;
 };

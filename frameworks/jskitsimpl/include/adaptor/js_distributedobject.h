@@ -33,6 +33,7 @@ public:
     static napi_value JSPut(napi_env env, napi_callback_info info);
     static napi_value JSSave(napi_env env, napi_callback_info info);
     static napi_value JSRevokeSave(napi_env env, napi_callback_info info);
+    static napi_value JSBindAssetStore(napi_env env, napi_callback_info info);
     static napi_value GetCons(napi_env env);
 
 private:

@@ -37,12 +37,22 @@ public:
     uint32_t Save(const std::string &deviceId) override;
     uint32_t RevokeSave() override;
     uint32_t GetType(const std::string &key, Type &type) override;
+    uint32_t BindAssetStore(const std::string &assetKey, AssetBindInfo &bindInfo) override;
 
 private:
+    uint32_t GetAssetValue(const std::string &assetKey, Asset &assetValue);
     std::string sessionId_;
     FlatObjectStore *flatObjectStore_ = nullptr;
     uint32_t PutDeviceId();
 };
+
+#define LOG_ERROR_RETURN(condition, message, retVal)             \
+    do {                                                         \
+        if (!(condition)) {                                      \
+            LOG_ERROR("test (" #condition ") failed: " message); \
+            return retVal;                                       \
+        }                                                        \
+    } while (0)
 } // namespace OHOS::ObjectStore
 
 #endif // DISTRIBUTED_OBJECT_IMPL_H

@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 #include "distributeddata_object_store_ipc_interface_code.h"
+#include "object_types.h"
 
 namespace OHOS::DistributedObject {
 class ObjectService {
@@ -34,6 +35,8 @@ public:
     virtual int32_t RegisterDataObserver(
         const std::string &bundleName, const std::string &sessionId, sptr<IRemoteObject> callback) = 0;
     virtual int32_t UnregisterDataChangeObserver(const std::string &bundleName, const std::string &sessionId) = 0;
+    virtual int32_t ObjectStoreBindAsset(const std::string &bundleName, const std::string &sessionId,
+        ObjectStore::Asset &asset, ObjectStore::AssetBindInfo &bindInfo) = 0;
 };
 } // namespace OHOS::DistributedObject
 #endif
