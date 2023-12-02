@@ -187,11 +187,6 @@ int32_t ObjectServiceProxy::ObjectStoreBindAsset(const std::string &bundleName, 
         return ERR_IPC;
     }
     
-    LOG_ERROR("yltest asset is: %{public}s, %{public}s, %{public}s, %{public}s, %{public}s, %{public}s, %{public}d,", 
-    asset.name.c_str(), asset.uri.c_str(), asset.path.c_str(), asset.createTime.c_str(), asset.modifyTime.c_str(), asset.size.c_str(), asset.status);
-    LOG_ERROR("yltest AssetBindInfo is: %{public}s, %{public}s, %{public}s, %{public}s", 
-    bindInfo.storeName.c_str(), bindInfo.tableName.c_str(), bindInfo.field.c_str(), bindInfo.assetName.c_str());
-
     if (!ITypesUtil::Marshal(data, bundleName, sessionId, asset, bindInfo)) {
         ZLOGE("Marshalling failed, bundleName = %{public}s", bundleName.c_str());
         return ERR_IPC;
@@ -204,8 +199,8 @@ int32_t ObjectServiceProxy::ObjectStoreBindAsset(const std::string &bundleName, 
         LOG_ERROR("ObjectStoreBindAsset remoteObject is nullptr.");
         return ERR_IPC;
     }
-    int32_t error = SUCCESS;
-        // remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_BIND_ASSET), data, reply, mo);
+    int32_t error =
+        remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_BIND_ASSET), data, reply, mo);
     if (error != 0) {
         ZLOGE("SendRequest returned %d", error);
         return ERR_IPC;
