@@ -37,6 +37,8 @@ public:
         sptr<IRemoteObject> callback) override;
     int32_t UnregisterDataChangeObserver(const std::string &bundleName, const std::string &sessionId) override;
 
+    int32_t OnAssetChanged(const std::string &bundleName, const std::string &sessionId,
+        const std::string &deviceId, const Asset &assetValue) override;
 private:
     static inline BrokerDelegator<ObjectServiceProxy> delegator_;
 };

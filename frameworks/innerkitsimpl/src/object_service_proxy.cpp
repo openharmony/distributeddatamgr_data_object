@@ -17,9 +17,9 @@
 #include "object_service_proxy.h"
 
 #include <logger.h>
-#include "itypes_util.h"
 #include "log_print.h"
 #include "objectstore_errors.h"
+#include "object_types_utils.h"
 
 namespace OHOS::DistributedObject {
 using namespace ObjectStore;
@@ -52,6 +52,38 @@ int32_t ObjectServiceProxy::ObjectStoreSave(const std::string &bundleName, const
         return ERR_IPC;
     }
     int32_t error = remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_SAVE), data, reply, mo);
+    if (error != 0) {
+        ZLOGE("SendRequest returned %d", error);
+        return ERR_IPC;
+    }
+    return reply.ReadInt32();
+}
+
+int32_t ObjectServiceProxy::OnAssetChanged(const std::string &bundleName, const std::string &sessionId,
+    const std::string &deviceId, const Asset &assetValue)
+{
+    MessageParcel data;
+    if (!data.WriteInterfaceToken(ObjectServiceProxy::GetDescriptor())) {
+        ZLOGE("write descriptor failed");
+        return ERR_IPC;
+    }
+    if (!ITypesUtil::Marshal(data, bundleName, sessionId, deviceId)) {
+        ZLOGE("Marshalling failed, bundleName = %{public}s", bundleName.c_str());
+        return ERR_IPC;
+    }
+    if (!ITypesUtil::Marshalling(assetValue, data)) {
+        ZLOGE("Marshalling failed assetValue");
+        return ERR_IPC;
+    }
+    MessageParcel reply;
+    MessageOption mo { MessageOption::TF_SYNC };
+    sptr<IRemoteObject> remoteObject = Remote();
+    if (remoteObject == nullptr) {
+        LOG_ERROR("OnAssetChanged remoteObject is nullptr.");
+        return ERR_IPC;
+    }
+    int32_t error = remoteObject->SendRequest(
+        static_cast<uint32_t>(ObjectCode::OBJECTSTORE_ON_ASSET_CHANGED), data, reply, mo);
     if (error != 0) {
         ZLOGE("SendRequest returned %d", error);
         return ERR_IPC;

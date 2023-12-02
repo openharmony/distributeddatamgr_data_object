@@ -22,6 +22,7 @@
 #include "bytes.h"
 #include "flat_object_storage_engine.h"
 #include "condition_lock.h"
+#include "distributed_object.h"
 
 namespace OHOS::ObjectStore {
 class FlatObjectWatcher : public TableWatcher {
@@ -60,8 +61,6 @@ public:
     uint32_t Delete(const std::string &objectId);
     uint32_t Watch(const std::string &objectId, std::shared_ptr<FlatObjectWatcher> watcher);
     uint32_t UnWatch(const std::string &objectId);
-    uint32_t Put(const std::string &sessionId, const std::string &key, std::vector<uint8_t> value);
-    uint32_t Get(std::string &sessionId, const std::string &key, Bytes &value);
     uint32_t SetStatusNotifier(std::shared_ptr<StatusWatcher> sharedPtr);
     uint32_t SyncAllData(const std::string &sessionId,
         const std::function<void(const std::map<std::string, DistributedDB::DBStatus> &)> &onComplete);
@@ -70,8 +69,22 @@ public:
     void CheckRetrieveCache(const std::string &sessionId);
     void FilterData(const std::string &sessionId,
                     std::map<std::string, std::vector<uint8_t>> &data);
-    
+
+    uint32_t PutDouble(const std::string &sessionId, const std::string &key, double value);
+    uint32_t PutBoolean(const std::string &sessionId, const std::string &key, bool value);
+    uint32_t PutString(const std::string &sessionId, const std::string &key, const std::string &value);
+    uint32_t GetDouble(const std::string &sessionId, const std::string &key, double &value);
+    uint32_t GetBoolean(const std::string &sessionId, const std::string &key, bool &value);
+    uint32_t GetString(const std::string &sessionId, const std::string &key, std::string &value);
+    uint32_t PutComplex(const std::string &sessionId, const std::string &key, const std::vector<uint8_t> &value);
+    uint32_t GetComplex(const std::string &sessionId, const std::string &key, std::vector<uint8_t> &value);
+    uint32_t GetType(const std::string &sessionId, const std::string &key, Type &type);
+    std::string GetBundleName();
+
 private:
+    uint32_t Put(const std::string &sessionId, const std::string &key, std::vector<uint8_t> value);
+    uint32_t Get(const std::string &sessionId, const std::string &key, Bytes &value);
+
     std::shared_ptr<FlatObjectStorageEngine> storageEngine_;
     CacheManager *cacheManager_;
     std::mutex mutex_;
