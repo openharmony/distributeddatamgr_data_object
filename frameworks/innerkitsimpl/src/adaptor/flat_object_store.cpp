@@ -204,7 +204,7 @@ uint32_t FlatObjectStore::RevokeSave(const std::string &sessionId)
     return cacheManager_->RevokeSave(bundleName_, sessionId);
 }
 
-uint32_t FlatObjectStore::BindAssetStore(const std::string &sessionId, AssetBindInfo &bindInfo, Asset &assetValue) //yltest
+uint32_t FlatObjectStore::BindAssetStore(const std::string &sessionId, AssetBindInfo &bindInfo, Asset &assetValue)
 {
     std::unique_lock<std::mutex> lck(mutex_);
     sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
@@ -216,7 +216,8 @@ uint32_t FlatObjectStore::BindAssetStore(const std::string &sessionId, AssetBind
     if (status != SUCCESS) {
         LOG_ERROR("object bind asset failed code=%{public}d.", static_cast<int>(status));
     }
-    LOG_INFO("object bind asset successful");
+    LOG_DEBUG("object bind asset successful sessionId: %{public}s and assetName %{public}s", sessionId.c_str(),
+        assetValue.name.c_str());
     return status;
 }
 
