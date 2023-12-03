@@ -74,7 +74,8 @@
                         "header_files": [
                             "distributed_object.h",
                             "distributed_objectstore.h",
-                            "objectstore_errors.h"
+                            "objectstore_errors.h",
+                            "object_types.h"
                         ],
                         "header_base": "//foundation/distributeddatamgr/data_object/interfaces/innerkits"
                     }

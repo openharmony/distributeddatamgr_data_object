@@ -156,8 +156,8 @@ public:
     /**
      * @brief Bind Asset.
      *
-     * @param 
-     * @param 
+     * @param assetKey Indicates the assetKey key.
+     * @param bindInfo Indicates asset info.
      * 
      * @return Returns 0 for success, others for failure.
      */

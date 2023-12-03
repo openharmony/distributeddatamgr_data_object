@@ -990,9 +990,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_FilterData_001, TestSize.Level
     FlatObjectStore *flatObjectStore = new FlatObjectStore(bundleName);
     uint32_t ret = flatObjectStore->CreateObject(sessionId);
     EXPECT_EQ(SUCCESS, ret);
-    ret = flatObjectStore->Put(sessionId, "phone", value);
+    ret = flatObjectStore->PutComplex(sessionId, "phone", value);
     EXPECT_EQ(SUCCESS, ret);
-    ret = flatObjectStore->Put(sessionId, "age", value);
+    ret = flatObjectStore->PutComplex(sessionId, "age", value);
     EXPECT_EQ(SUCCESS, ret);
     std::map<std::string, std::vector<uint8_t>> data = { { "age", value }, { "age", value } };
     auto dataSize = data.size();

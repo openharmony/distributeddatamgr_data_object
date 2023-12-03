@@ -214,7 +214,7 @@ uint32_t FlatObjectStore::BindAssetStore(const std::string &sessionId, AssetBind
     }
     int32_t status = proxy->ObjectStoreBindAsset(bundleName_, sessionId, assetValue, bindInfo);
     if (status != SUCCESS) {
-        LOG_ERROR("object bind asset failed code=%d.", static_cast<int>(status));
+        LOG_ERROR("object bind asset failed code=%{public}d.", static_cast<int>(status));
     }
     LOG_INFO("object bind asset successful");
     return status;

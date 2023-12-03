@@ -232,7 +232,7 @@ int32_t ObjectServiceProxy::ObjectStoreBindAsset(const std::string &bundleName, 
         return ERR_IPC;
     }
     int32_t error =
-        remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_BIND_ASSET), data, reply, mo);
+        remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_BIND_ASSET_STORE), data, reply, mo);
     if (error != 0) {
         ZLOGE("SendRequest returned %d", error);
         return ERR_IPC;

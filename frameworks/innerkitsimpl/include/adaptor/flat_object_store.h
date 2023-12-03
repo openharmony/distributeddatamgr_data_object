@@ -80,6 +80,9 @@ public:
     uint32_t GetString(const std::string &sessionId, const std::string &key, std::string &value);
     uint32_t GetComplex(const std::string &sessionId, const std::string &key, std::vector<uint8_t> &value);
     uint32_t GetType(const std::string &sessionId, const std::string &key, Type &type);
+
+    uint32_t BindAssetStore(const std::string &sessionId, AssetBindInfo &bindInfo, Asset &assetValue);
+    
 private:
     uint32_t Put(const std::string &sessionId, const std::string &key, std::vector<uint8_t> value);
     uint32_t Get(const std::string &sessionId, const std::string &key, Bytes &value);

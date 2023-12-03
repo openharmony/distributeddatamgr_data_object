@@ -17,7 +17,7 @@
 #define OHOS_OBJECT_ASSET_VALUE_H
 
 #include <string>
-#include "values_bucket.h"
+#include "common_values_bucket.h"
 
 namespace OHOS {
 namespace ObjectStore {

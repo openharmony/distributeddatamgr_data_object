@@ -18,7 +18,7 @@
 #include <securec.h>
 
 #include "logger.h"
-#include "value_object.h"
+#include "common_value_object.h"
 
 namespace OHOS::ObjectStore {
 constexpr int32_t STR_MAX_LENGTH = 4096;

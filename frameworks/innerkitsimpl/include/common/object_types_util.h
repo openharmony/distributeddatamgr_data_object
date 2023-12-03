@@ -26,15 +26,5 @@ template<>
 API_EXPORT bool Marshalling(const AssetBindInfo &input, MessageParcel &data);
 template<>
 API_EXPORT bool Unmarshalling(AssetBindInfo &output, MessageParcel &data);
-
-static inline bool Marshalling(const ObjectStore::Asset &input, MessageParcel &data){
-    return Marshal(data, input.status, input.name, input.uri, 
-        input.path, input.createTime, input.modifyTime, input.size);
-}
-
-static inline bool Unmarshalling(ObjectStore::Asset &output, MessageParcel &data){
-    return Unmarshal(data, output.status, output.name, output.uri, 
-        output.path, output.createTime, output.modifyTime, output.size);
-}
 }
 #endif // DISTRIBUTED_RDB_RDB_TYPES_UTIL_H
