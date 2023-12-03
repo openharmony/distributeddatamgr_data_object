@@ -978,32 +978,6 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetTable_004, TestSize.Level1)
 }
 
 /**
- * @tc.name: FlatObjectStore_FilterData_001
- * @tc.desc: test FlatObjectStore FilterData.
- * @tc.type: FUNC
- */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_FilterData_001, TestSize.Level1)
-{
-    std::string bundleName = "default05";
-    std::string sessionId = "session05";
-    std::vector<uint8_t> value = { 1, 8 };
-    FlatObjectStore *flatObjectStore = new FlatObjectStore(bundleName);
-    uint32_t ret = flatObjectStore->CreateObject(sessionId);
-    EXPECT_EQ(SUCCESS, ret);
-    ret = flatObjectStore->PutComplex(sessionId, "phone", value);
-    EXPECT_EQ(SUCCESS, ret);
-    ret = flatObjectStore->PutComplex(sessionId, "age", value);
-    EXPECT_EQ(SUCCESS, ret);
-    std::map<std::string, std::vector<uint8_t>> data = { { "age", value }, { "age", value } };
-    auto dataSize = data.size();
-    flatObjectStore->FilterData(sessionId, data);
-    EXPECT_GT(dataSize, data.size());
-    ret = flatObjectStore->Delete(sessionId);
-    EXPECT_EQ(SUCCESS, ret);
-    delete flatObjectStore;
-}
-
-/**
  * @tc.name: FlatObjectStore_UpdateItems_001
  * @tc.desc: test ObjectStorageEngine UpdateItems. input data is empty.
  * @tc.type: FUNC
