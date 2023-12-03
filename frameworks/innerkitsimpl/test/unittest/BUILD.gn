@@ -56,7 +56,7 @@ ohos_unittest("NativeObjectStoreTest") {
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",
     "hilog:libhilog",
-    "relational_store:common_type"
+    "relational_store:common_type",
   ]
 
   deps = [
