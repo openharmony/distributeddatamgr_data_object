@@ -25,16 +25,6 @@ static const char *FIELDS_PREFIX = "p_";
 static const int32_t FIELDS_PREFIX_LEN = 2;
 static const std::string STRING_PREFIX = "[STRING]";
 static const int32_t STRING_PREFIX_LEN = STRING_PREFIX.length();
-
-static const std::string DEVICEID_KEY = "#DEVICE_ID#";
-static const std::string STATUS_SUFFIX = ".status";
-static const std::string NAME_SUFFIX = ".name";
-static const std::string URI_SUFFIX = ".uri";
-static const std::string PATH_SUFFIX = ".path";
-static const std::string CREATE_TIME_SUFFIX = ".createTime";
-static const std::string MODIFY_TIME_SUFFIX = ".modifyTime";
-static const std::string SIZE_SUFFIX = ".size";
-static const std::string ASSET_DOT = ".";
 } // namespace OHOS::ObjectStore
 
 #endif // BYTES_H

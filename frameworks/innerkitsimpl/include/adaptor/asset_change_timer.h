@@ -16,41 +16,40 @@
 #define ASSET_CHANGE_TIMER_H
 #include <unordered_map>
 
-#include "object_types.h"
 #include "executor_pool.h"
 #include "flat_object_store.h"
+#include "object_types.h"
 
 namespace OHOS::ObjectStore {
 class AssetChangeTimer {
 public:
     static AssetChangeTimer *GetInstance(FlatObjectStore *flatObjectStore, std::shared_ptr<ObjectWatcher> watcher);
-    void OnAssetChanged(
-        const std::string &sessionId, const std::string &assetName, const std::vector<std::string> &assetKeys);
+    void OnAssetChanged(const std::string &sessionId, const std::string &assetKey);
 
 private:
+    AssetChangeTimer() = default;
     ~AssetChangeTimer() = default;
     AssetChangeTimer(const AssetChangeTimer &) = delete;
     AssetChangeTimer &operator=(const AssetChangeTimer &) = delete;
     AssetChangeTimer(FlatObjectStore *flatObjectStore, std::shared_ptr<ObjectWatcher> watcher);
-    void StartTimer(
-        const std::string &sessionId, const std::string &assetName, const std::vector<std::string> &assetKeys);
-    void StopTimer(const std::string &sessionId, const std::string &assetName);
-    std::function<void()> ProcessTask(
-        const std::string &sessionId, const std::string &assetName, const std::vector<std::string> &assetKeys);
-    uint32_t HandleAssetChanges(const std::string &sessionId, const std::string &assetName);
-    bool GetAssetValue(const std::string &sessionId, const std::string &assetName, Asset &assetValue);
+    void StartTimer(const std::string &sessionId, const std::string &assetKey);
+    void StopTimer(const std::string &sessionId, const std::string &assetKey);
+    std::function<void()> ProcessTask(const std::string &sessionId, const std::string &assetKey);
+    uint32_t HandleAssetChanges(const std::string &sessionId, const std::string &assetKey);
+    bool GetAssetValue(const std::string &sessionId, const std::string &assetKey, Asset &assetValue);
+
     std::mutex mutex_;
     std::unordered_map<std::string, Executor::TaskId> assetChangeTasks_;
     FlatObjectStore *flatObjectStore_ = nullptr;
     std::shared_ptr<ExecutorPool> executor_;
     std::shared_ptr<ObjectWatcher> watcher_;
 
-    static std::mutex instanceMutex_;
-    static AssetChangeTimer *INSTANCE;
-    static const std::string assetSeparator;
+    static std::mutex instanceMutex;
+    static AssetChangeTimer *instance;
+    static constexpr size_t MAX_THREADS = 3;
+    static constexpr size_t MIN_THREADS = 0;
     static constexpr uint32_t WAIT_INTERVAL = 100;
-    size_t MAX_THREADS = 3;
-    size_t MIN_THREADS = 0;
+    static constexpr char ASSET_SEPARATOR = '#';
 };
 } // namespace OHOS::ObjectStore
 #endif // ASSET_CHANGE_TIMER_H

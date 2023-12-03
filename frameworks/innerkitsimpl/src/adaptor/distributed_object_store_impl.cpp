@@ -14,6 +14,7 @@
  */
 
 #include <thread>
+#include <unordered_set>
 
 #include "hitrace.h"
 #include "distributed_object_impl.h"
@@ -152,10 +153,9 @@ uint32_t DistributedObjectStoreImpl::Watch(DistributedObject *object, std::share
     }
     std::shared_ptr<WatcherProxy> watcherProxy = std::make_shared<WatcherProxy>(watcher, object->GetSessionId());
     watcherProxy->SetAssetChangeCallBack(
-        [&](const std::string &sessionId, const std::string &assetName, 
-                const std::vector<std::string> &assetKeys, std::shared_ptr<ObjectWatcher> objectWatcher) {
+        [=](const std::string &sessionId, const std::string &assetKey, std::shared_ptr<ObjectWatcher> objectWatcher) {
             AssetChangeTimer *assetChangeTimer = AssetChangeTimer::GetInstance(flatObjectStore_, objectWatcher);
-            assetChangeTimer->OnAssetChanged(sessionId, assetName, assetKeys);
+            assetChangeTimer->OnAssetChanged(sessionId, assetKey);
         });
     uint32_t status = flatObjectStore_->Watch(object->GetSessionId(), watcherProxy);
     if (status != SUCCESS) {
@@ -210,24 +210,25 @@ WatcherProxy::WatcherProxy(const std::shared_ptr<ObjectWatcher> objectWatcher, c
 
 void WatcherProxy::OnChanged(const std::string &sessionId, const std::vector<std::string> &changedData)
 {
-    std::unordered_map<std::string, std::vector<std::string>> assetNameToKeys;
+    std::unordered_set<std::string> assetKeys;
     std::vector<std::string> otherKeys;
     for (const auto &str : changedData) {
         std::size_t dotPos = str.find(ASSET_DOT);
-        if (dotPos != std::string::npos) {
-            std::string assetName = str.substr(0, dotPos);
-            assetNameToKeys[assetName].push_back(str.substr(dotPos + 1));
+        if (dotPos != std::string::npos){
+            if((str.size() > MODIFY_TIME_SUFFIX.length() && str.substr(dotPos) == MODIFY_TIME_SUFFIX)||
+                    (str.size() > SIZE_SUFFIX.length() && str.substr(dotPos) == SIZE_SUFFIX)) {
+                assetKeys.insert(str.substr(0, dotPos));
+            }
         } else if (str != DEVICEID_KEY) {
             otherKeys.push_back(str);
         }
     }
-
     if (!otherKeys.empty()) {
         objectWatcher_->OnChanged(sessionId, otherKeys);
     }
-    if (assetChangeCallback_ != nullptr && !assetNameToKeys.empty()) {
-        for (auto &assetKeys : assetNameToKeys) {
-            assetChangeCallback_(sessionId, assetKeys.first, assetKeys.second, objectWatcher_);
+    if (assetChangeCallback_ != nullptr && !assetKeys.empty()) {
+        for (auto &assetKey : assetKeys) {
+            assetChangeCallback_(sessionId, assetKey, objectWatcher_);
         }
     }
 }

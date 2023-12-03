@@ -15,77 +15,73 @@
 #define LOG_TAG "AssetChangeTimer"
 
 #include "asset_change_timer.h"
-#include "objectstore_errors.h"
 #include "client_adaptor.h"
 #include "logger.h"
+#include "objectstore_errors.h"
 
 namespace OHOS::ObjectStore {
+std::mutex AssetChangeTimer::instanceMutex;
+AssetChangeTimer *AssetChangeTimer::instance = nullptr;
 
-std::mutex AssetChangeTimer::instanceMutex_;
-AssetChangeTimer* AssetChangeTimer::INSTANCE = nullptr;
-const std::string AssetChangeTimer::assetSeparator = "#";
-
-AssetChangeTimer *AssetChangeTimer::GetInstance(FlatObjectStore *flatObjectStore, 
-    std::shared_ptr<ObjectWatcher> watcher)
+AssetChangeTimer *AssetChangeTimer::GetInstance(
+    FlatObjectStore *flatObjectStore, std::shared_ptr<ObjectWatcher> watcher)
 {
-    std::lock_guard<decltype(instanceMutex_)> lockGuard(instanceMutex_);
-    if (INSTANCE == nullptr){
-        INSTANCE = new(std::nothrow) AssetChangeTimer(flatObjectStore, watcher);
+    if (instance == nullptr){
+        std::lock_guard<decltype(instanceMutex)> lockGuard(instanceMutex);
+        if (instance == nullptr) {
+            instance = new (std::nothrow) AssetChangeTimer(flatObjectStore, watcher);
+        }
     }
-    return INSTANCE;
+    return instance;
 }
 
-AssetChangeTimer::AssetChangeTimer(FlatObjectStore *flatObjectStore, std::shared_ptr<ObjectWatcher> watcher){
+AssetChangeTimer::AssetChangeTimer(FlatObjectStore *flatObjectStore, std::shared_ptr<ObjectWatcher> watcher)
+{
     flatObjectStore_ = flatObjectStore;
     watcher_ = watcher;
     executor_ = std::make_shared<ExecutorPool>(MAX_THREADS, MIN_THREADS);
 }
 
-void AssetChangeTimer::OnAssetChanged(const std::string &sessionId, const std::string &assetName, 
-    const std::vector<std::string> &assetKeys)
+void AssetChangeTimer::OnAssetChanged(const std::string &sessionId, const std::string &assetKey)
 {
-    StartTimer(sessionId, assetName, assetKeys);
+    StartTimer(sessionId, assetKey);
 }
 
-void AssetChangeTimer::StartTimer(const std::string &sessionId, const std::string &assetName, 
-    const std::vector<std::string> &assetKeys)
+void AssetChangeTimer::StartTimer(const std::string &sessionId, const std::string &assetKey)
 {
-    std::string key = sessionId + assetSeparator + assetName;
+    std::string key = sessionId + ASSET_SEPARATOR + assetKey;
     std::lock_guard<decltype(mutex_)> lockGuard(mutex_);
-    if (assetChangeTasks_.find(key) == assetChangeTasks_.end()){
-        assetChangeTasks_[key] = 
-            executor_->Schedule(std::chrono::milliseconds(WAIT_INTERVAL), 
-                ProcessTask(sessionId, assetName, assetKeys));
+    if (assetChangeTasks_.find(key) == assetChangeTasks_.end()) {
+        assetChangeTasks_[key] = executor_->Schedule(
+            std::chrono::milliseconds(WAIT_INTERVAL), ProcessTask(sessionId, assetKey));
     } else {
-        assetChangeTasks_[key] = 
-            executor_->Reset(assetChangeTasks_[key], std::chrono::milliseconds(WAIT_INTERVAL));
+        assetChangeTasks_[key] = executor_->Reset(assetChangeTasks_[key], std::chrono::milliseconds(WAIT_INTERVAL));
     }
 }
 
-std::function<void()> AssetChangeTimer::ProcessTask(const std::string &sessionId, 
-    const std::string &assetName, const std::vector<std::string> &assetKeys)
+std::function<void()> AssetChangeTimer::ProcessTask(const std::string &sessionId, const std::string &assetKey)
 {
     return [=]() {
-        StopTimer(sessionId, assetName);
-        uint32_t status = HandleAssetChanges(sessionId, assetName);
-        if (status == SUCCESS){
-            watcher_->OnChanged(sessionId, {assetName});
+        StopTimer(sessionId, assetKey);
+        uint32_t status = HandleAssetChanges(sessionId, assetKey);
+        if (status == SUCCESS) {
+            watcher_->OnChanged(sessionId, {assetKey});
         }
     };
 }
 
-void AssetChangeTimer::StopTimer(const std::string &sessionId, const std::string &assetName)
+void AssetChangeTimer::StopTimer(const std::string &sessionId, const std::string &assetKey)
 {
-    std::string key = sessionId + assetSeparator + assetName;
+    std::string key = sessionId + ASSET_SEPARATOR + assetKey;
     std::lock_guard<decltype(mutex_)> lockGuard(mutex_);
     executor_->Remove(assetChangeTasks_[key]);
     assetChangeTasks_.erase(key);
 }
 
-uint32_t AssetChangeTimer::HandleAssetChanges(const std::string &sessionId, const std::string &assetName)
+uint32_t AssetChangeTimer::HandleAssetChanges(const std::string &sessionId, const std::string &assetKey)
 {
     Asset assetValue;
-    if(!GetAssetValue(sessionId, assetName, assetValue)){
+    if (!GetAssetValue(sessionId, assetKey, assetValue)) {
         LOG_ERROR("GetAssetValue assetValue is not complete");
         return ERR_DB_GET_FAIL;
     }
@@ -109,24 +105,23 @@ uint32_t AssetChangeTimer::HandleAssetChanges(const std::string &sessionId, cons
     return status;
 }
 
-bool AssetChangeTimer::GetAssetValue(const std::string &sessionId, const std::string &assetName, 
-    Asset &assetValue)
+bool AssetChangeTimer::GetAssetValue(const std::string &sessionId, const std::string &assetKey, Asset &assetValue)
 {
     double doubleStatus;
-    if (flatObjectStore_->GetDouble(sessionId, assetName + STATUS_SUFFIX, doubleStatus) == SUCCESS){
+    if (flatObjectStore_->GetDouble(sessionId, assetKey + STATUS_SUFFIX, doubleStatus) == SUCCESS) {
         assetValue.status = static_cast<uint32_t>(doubleStatus);
     }
     bool isComplete = true;
-    isComplete &= (flatObjectStore_->GetString(sessionId, assetName + NAME_SUFFIX, assetValue.name) == SUCCESS);
-    isComplete &= (flatObjectStore_->GetString(sessionId, assetName + URI_SUFFIX, assetValue.uri) == SUCCESS);
-    isComplete &= (flatObjectStore_->GetString(sessionId, assetName + PATH_SUFFIX, assetValue.path) == SUCCESS);
-    isComplete &= (flatObjectStore_->GetString(
-        sessionId, assetName + CREATE_TIME_SUFFIX, assetValue.createTime) == SUCCESS);
-    isComplete &= (flatObjectStore_->GetString(
-        sessionId, assetName + MODIFY_TIME_SUFFIX, assetValue.modifyTime) == SUCCESS);
-    isComplete &= (flatObjectStore_->GetString(sessionId, assetName + SIZE_SUFFIX, assetValue.size) == SUCCESS);
+    isComplete &= (flatObjectStore_->GetString(sessionId, assetKey + NAME_SUFFIX, assetValue.name) == SUCCESS);
+    isComplete &= (flatObjectStore_->GetString(sessionId, assetKey + URI_SUFFIX, assetValue.uri) == SUCCESS);
+    isComplete &= (flatObjectStore_->GetString(sessionId, assetKey + PATH_SUFFIX, assetValue.path) == SUCCESS);
+    isComplete &=
+        (flatObjectStore_->GetString(sessionId, assetKey + CREATE_TIME_SUFFIX, assetValue.createTime) == SUCCESS);
+    isComplete &=
+        (flatObjectStore_->GetString(sessionId, assetKey + MODIFY_TIME_SUFFIX, assetValue.modifyTime) == SUCCESS);
+    isComplete &= (flatObjectStore_->GetString(sessionId, assetKey + SIZE_SUFFIX, assetValue.size) == SUCCESS);
 
-    if (isComplete){
+    if (isComplete) {
         assetValue.name = assetValue.name.substr(STRING_PREFIX_LEN);
         assetValue.uri = assetValue.uri.substr(STRING_PREFIX_LEN);
         assetValue.path = assetValue.path.substr(STRING_PREFIX_LEN);

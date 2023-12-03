@@ -33,6 +33,16 @@ using Asset = CommonType::AssetValue;
 using ValuesBucket = CommonType::ValuesBucket;
 using ValueObject = CommonType::ValueObject;
 using Assets = std::vector<Asset>;
+
+static const std::string STATUS_SUFFIX = ".status";
+static const std::string NAME_SUFFIX = ".name";
+static const std::string URI_SUFFIX = ".uri";
+static const std::string PATH_SUFFIX = ".path";
+static const std::string CREATE_TIME_SUFFIX = ".createTime";
+static const std::string MODIFY_TIME_SUFFIX = ".modifyTime";
+static const std::string SIZE_SUFFIX = ".size";
+static const std::string ASSET_DOT = ".";
+static const std::string DEVICEID_KEY = "__deviceId";
 } // namespace ObjectStore
 } // namespace OHOS
 #endif // OHOS_OBJECT_ASSET_VALUE_H

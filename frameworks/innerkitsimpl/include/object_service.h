@@ -36,7 +36,7 @@ public:
         const std::string &bundleName, const std::string &sessionId, sptr<IRemoteObject> callback) = 0;
     virtual int32_t UnregisterDataChangeObserver(const std::string &bundleName, const std::string &sessionId) = 0;
     virtual int32_t OnAssetChanged(const std::string &bundleName, const std::string &sessionId,
-        const std::string &deviceId, const Asset &assetValue)  = 0;
+        const std::string &deviceId, const ObjectStore::Asset &assetValue)  = 0;
     virtual int32_t ObjectStoreBindAsset(const std::string &bundleName, const std::string &sessionId,
         ObjectStore::Asset &asset, ObjectStore::AssetBindInfo &bindInfo) = 0;
 };
