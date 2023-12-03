@@ -62,9 +62,13 @@ void AssetChangeTimer::StartTimer(const std::string &sessionId, const std::strin
 std::function<void()> AssetChangeTimer::ProcessTask(const std::string &sessionId, const std::string &assetKey)
 {
     return [=]() {
+        LOG_DEBUG("Start working on a task, sessionId: %{public}s, assetKey: %{public}s", sessionId.c_str(), 
+            assetKey.c_str());
         StopTimer(sessionId, assetKey);
         uint32_t status = HandleAssetChanges(sessionId, assetKey);
         if (status == SUCCESS) {
+            LOG_DEBUG("Asset change task end, start callback, sessionId: %{public}s, assetKey: %{public}s", 
+                sessionId.c_str(), assetKey.c_str());
             watcher_->OnChanged(sessionId, {assetKey});
         }
     };
@@ -82,7 +86,8 @@ uint32_t AssetChangeTimer::HandleAssetChanges(const std::string &sessionId, cons
 {
     Asset assetValue;
     if (!GetAssetValue(sessionId, assetKey, assetValue)) {
-        LOG_ERROR("GetAssetValue assetValue is not complete");
+        LOG_ERROR("GetAssetValue assetValue is not complete, sessionId: %{public}s, assetKey: %{public}s", 
+            sessionId.c_str(), assetKey.c_str());
         return ERR_DB_GET_FAIL;
     }
 
@@ -100,7 +105,8 @@ uint32_t AssetChangeTimer::HandleAssetChanges(const std::string &sessionId, cons
     }
     status = proxy->OnAssetChanged(flatObjectStore_->GetBundleName(), sessionId, deviceId, assetValue);
     if (status != SUCCESS) {
-        LOG_ERROR("CacheManager OnAssetChanged failed code=%d.", static_cast<int>(status));
+        LOG_ERROR("OnAssetChanged failed status: %{public}d, sessionId: %{public}s, assetKey: %{public}s", 
+            status, sessionId.c_str(), assetKey.c_str());
     }
     return status;
 }

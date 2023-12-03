@@ -71,6 +71,7 @@ public:
     void OnChanged(const std::string &sessionId, const std::vector<std::string> &changedData) override;
     void SetAssetChangeCallBack(const AssetChangeCallback &assetChangeCallback);
 private:
+    bool FindChangedAssetKey(const std::string &changedKey, std::string &assetKey);
     std::shared_ptr<ObjectWatcher> objectWatcher_;
     AssetChangeCallback assetChangeCallback_;
 };
