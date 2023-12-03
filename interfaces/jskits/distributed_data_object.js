@@ -288,7 +288,7 @@ function leaveSession(version, obj) {
           configurable: true,
           writable: true,
           enumerable: true,
-        })
+        });
       });
     }
   });

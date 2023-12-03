@@ -199,7 +199,7 @@ napi_status JSUtil::GetValue(napi_env env, napi_value in, Asset &asset)
     napi_valuetype type;
     napi_status status = napi_typeof(env, in, &type);
     LOG_ERROR("asset napi_typeof %{public}d and %{public}d", status, type);
-    LOG_ERROR_RETURN((status == napi_ok) && (type == napi_object), "Asset type invalid", napi_invalid_arg); 
+    LOG_ERROR_RETURN((status == napi_ok) && (type == napi_object), "Asset type invalid", napi_invalid_arg);
     status = GetNamedProperty(env, in, "name", asset.name);
     LOG_ERROR_RETURN(status == napi_ok, "get name param failed", status);
     status = GetNamedProperty(env, in, "uri", asset.uri);

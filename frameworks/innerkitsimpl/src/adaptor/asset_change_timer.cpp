@@ -86,7 +86,7 @@ uint32_t AssetChangeTimer::HandleAssetChanges(const std::string &sessionId, cons
 {
     Asset assetValue;
     if (!GetAssetValue(sessionId, assetKey, assetValue)) {
-        LOG_ERROR("GetAssetValue assetValue is not complete, sessionId: %{public}s, assetKey: %{public}s", 
+        LOG_ERROR("GetAssetValue assetValue is not complete, sessionId: %{public}s, assetKey: %{public}s",
             sessionId.c_str(), assetKey.c_str());
         return ERR_DB_GET_FAIL;
     }
