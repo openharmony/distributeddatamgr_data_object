@@ -41,7 +41,7 @@ uint32_t DistributedObjectImpl::PutBoolean(const std::string &key, bool value)
 uint32_t DistributedObjectImpl::PutString(const std::string &key, const std::string &value)
 {
     DataObjectHiTrace trace("DistributedObjectImpl::PutString");
-    if(key.find(ASSET_DOT) != std::string::npos){
+    if (key.find(ASSET_DOT) != std::string::npos) {
         PutDeviceId();
     }
     return flatObjectStore_->PutString(sessionId_, key, value);

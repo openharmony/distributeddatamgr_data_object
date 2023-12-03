@@ -73,7 +73,8 @@ public:
     static bool IsNull(napi_env env, napi_value value);
 
     template <typename T>
-    static inline napi_status GetNamedProperty(napi_env env, napi_value in, const std::string& prop, T& value, bool optional = false)
+    static inline napi_status GetNamedProperty(napi_env env, napi_value in, const std::string& prop,
+        T& value, bool optional = false)
     {
         bool hasProp = false;
         napi_status status = napi_has_named_property(env, in, prop.c_str(), &hasProp);

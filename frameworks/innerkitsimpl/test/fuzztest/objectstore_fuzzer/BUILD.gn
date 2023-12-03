@@ -14,14 +14,13 @@
 #####################hydra-fuzz###################
 import("//build/config/features.gni")
 import("//build/test.gni")
-data_object_base_path = "//foundation/distributeddatamgr/data_object"
 config("module_private_config") {
   visibility = [ ":*" ]
 
   include_dirs = [
     "../../../../../frameworks/innerkitsimpl/include/adaptor",
     "../../../../../frameworks/innerkitsimpl/include/common",
-    "${data_object_base_path}/frameworks/innerkitsimpl/include"
+    "${data_object_base_path}/frameworks/innerkitsimpl/include",
   ]
 }
 
@@ -39,9 +38,9 @@ ohos_fuzztest("ObjectStoreFuzzTest") {
     "//foundation/distributeddatamgr/kv_store/frameworks/libs/distributeddb:distributeddb",
   ]
 
-  external_deps = [ 
-    "hilog:libhilog", 
-    "relational_store:common_type"
+  external_deps = [
+    "hilog:libhilog",
+    "relational_store:common_type",
   ]
 }
 

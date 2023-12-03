@@ -64,7 +64,7 @@ private:
 };
 class WatcherProxy : public FlatObjectWatcher {
 public:
-    using AssetChangeCallback = std::function<void(const std::string& sessionId, 
+    using AssetChangeCallback = std::function<void(const std::string& sessionId,
         const std::string &assetKey, std::shared_ptr<ObjectWatcher> watcher)>;
 
     WatcherProxy(const std::shared_ptr<ObjectWatcher> objectWatcher, const std::string &sessionId);

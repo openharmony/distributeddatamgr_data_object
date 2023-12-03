@@ -158,7 +158,7 @@ public:
      *
      * @param assetKey Indicates the assetKey key.
      * @param bindInfo Indicates asset info.
-     * 
+     *
      * @return Returns 0 for success, others for failure.
      */
     virtual uint32_t BindAssetStore(const std::string &assetKey, AssetBindInfo &bindInfo) = 0;

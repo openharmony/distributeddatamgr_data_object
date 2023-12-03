@@ -317,7 +317,7 @@ uint32_t FlatObjectStore::GetString(const std::string &sessionId, const std::str
     return status;
 }
 
-uint32_t FlatObjectStore::PutComplex(const std::string &sessionId, const std::string &key, 
+uint32_t FlatObjectStore::PutComplex(const std::string &sessionId, const std::string &key,
     const std::vector<uint8_t> &value)
 {
     Bytes data;
@@ -331,7 +331,7 @@ uint32_t FlatObjectStore::PutComplex(const std::string &sessionId, const std::st
     return status;
 }
 
-uint32_t FlatObjectStore::GetComplex(const std::string &sessionId, const std::string &key, 
+uint32_t FlatObjectStore::GetComplex(const std::string &sessionId, const std::string &key,
     std::vector<uint8_t> &value)
 {
     uint32_t status = Get(sessionId, FIELDS_PREFIX + key, value);

@@ -213,13 +213,13 @@ void WatcherProxy::OnChanged(const std::string &sessionId, const std::vector<std
     std::unordered_set<std::string> assetKeys;
     std::vector<std::string> otherKeys;
     for (const auto &str : changedData) {
-        if (str.find(ASSET_DOT) == std::string::npos){
+        if (str.find(ASSET_DOT) == std::string::npos) {
             if (str != DEVICEID_KEY) {
                 otherKeys.push_back(str);
             }
         } else {
             std::string assetKey;
-            if(FindChangedAssetKey(str, assetKey)){
+            if (FindChangedAssetKey(str, assetKey)) {
                 assetKeys.insert(assetKey);
             }
         }
@@ -234,9 +234,10 @@ void WatcherProxy::OnChanged(const std::string &sessionId, const std::vector<std
     }
 }
 
-bool WatcherProxy::FindChangedAssetKey(const std::string &changedKey, std::string &assetKey){
+bool WatcherProxy::FindChangedAssetKey(const std::string &changedKey, std::string &assetKey)
+{
     std::size_t dotPos = changedKey.find(ASSET_DOT);
-    if((changedKey.size() > MODIFY_TIME_SUFFIX.length() && changedKey.substr(dotPos) == MODIFY_TIME_SUFFIX)||
+    if ((changedKey.size() > MODIFY_TIME_SUFFIX.length() && changedKey.substr(dotPos) == MODIFY_TIME_SUFFIX) ||
             (changedKey.size() > SIZE_SUFFIX.length() && changedKey.substr(dotPos) == SIZE_SUFFIX)) {
         assetKey = changedKey.substr(0, dotPos);
         return true;

@@ -178,7 +178,7 @@ napi_status JSUtil::SetValue(napi_env env, const std::vector<uint8_t> &in, napi_
 
 napi_status JSUtil::GetValue(napi_env env, napi_value in, AssetBindInfo &bindInfo)
 {
-    LOG_ERROR("yltest bindInfo");
+    LOG_ERROR("bindInfo");
     napi_status status = napi_invalid_arg;
     status = GetNamedProperty(env, in, "storeName", bindInfo.storeName);
     LOG_ERROR_RETURN(status == napi_ok, "get store param failed", status);
@@ -198,8 +198,8 @@ napi_status JSUtil::GetValue(napi_env env, napi_value in, Asset &asset)
 {
     napi_valuetype type;
     napi_status status = napi_typeof(env, in, &type);
-    LOG_ERROR("yltest asset napi_typeof %{public}d and %{public}d", status, type);
-    LOG_ERROR_RETURN((status == napi_ok) && (type == napi_object), "Asset type invalid", napi_invalid_arg);    
+    LOG_ERROR("asset napi_typeof %{public}d and %{public}d", status, type);
+    LOG_ERROR_RETURN((status == napi_ok) && (type == napi_object), "Asset type invalid", napi_invalid_arg); 
     status = GetNamedProperty(env, in, "name", asset.name);
     LOG_ERROR_RETURN(status == napi_ok, "get name param failed", status);
     status = GetNamedProperty(env, in, "uri", asset.uri);
@@ -227,7 +227,7 @@ napi_status JSUtil::GetValue(napi_env env, napi_value in, Assets &assets)
     uint32_t arrLen = 0;
     napi_status status = napi_get_array_length(env, in, &arrLen);
     LOG_ERROR_RETURN((status == napi_ok) && (arrLen > 0), "get_array failed!", status);
-    LOG_ERROR("yltest GetValue assets %{public}d", arrLen);
+    LOG_ERROR("GetValue assets %{public}d", arrLen);
     for (uint32_t i = 0; i < arrLen; ++i) {
         napi_value item = nullptr;
         status = napi_get_element(env, in, i, &item);
@@ -243,7 +243,6 @@ napi_status JSUtil::GetValue(napi_env env, napi_value in, Assets &assets)
 napi_status JSUtil::GetValue(napi_env env, napi_value in, ValuesBucket &out)
 {
     napi_value keys = 0;
-    // napi_get_property_names(env, in, &keys);
     napi_get_all_property_names(env, in, napi_key_own_only,
         static_cast<napi_key_filter>(napi_key_enumerable | napi_key_skip_symbols),
         napi_key_numbers_to_strings, &keys);
@@ -259,7 +258,7 @@ napi_status JSUtil::GetValue(napi_env env, napi_value in, ValuesBucket &out)
         LOG_ERROR_RETURN((status == napi_ok), "get key failed", status);
         napi_value valueJs = 0;
         napi_get_property(env, in, jsKey, &valueJs);
-        LOG_ERROR("yltest valuesbucket index: %{public}d and %{public}s", i,key.c_str());
+        LOG_ERROR("valuesbucket index: %{public}d and %{public}s", i, key.c_str());
         ValueObject valueObject;
         status = GetValue(env, valueJs, valueObject.value);
         if (status == napi_ok) {

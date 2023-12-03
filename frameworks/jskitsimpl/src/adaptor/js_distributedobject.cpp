@@ -113,7 +113,7 @@ napi_value JSDistributedObject::GetCons(napi_env env)
         DECLARE_NAPI_FUNCTION("get", JSDistributedObject::JSGet),
         DECLARE_NAPI_FUNCTION("save", JSDistributedObject::JSSave),
         DECLARE_NAPI_FUNCTION("revokeSave", JSDistributedObject::JSRevokeSave),
-        DECLARE_NAPI_FUNCTION("bindAssetStore", JSDistributedObject::JSBindAssetStore),//yltest
+        DECLARE_NAPI_FUNCTION("bindAssetStore", JSDistributedObject::JSBindAssetStore),
     };
 
     napi_status status = napi_define_class(env, distributedObjectName, strlen(distributedObjectName),
@@ -350,7 +350,7 @@ napi_value JSDistributedObject::GetRevokeSaveResultCons(napi_env env, std::strin
     return result;
 }
 
-napi_value JSDistributedObject::JSBindAssetStore(napi_env env, napi_callback_info info)//yltest
+napi_value JSDistributedObject::JSBindAssetStore(napi_env env, napi_callback_info info)
 {
     struct BindAssetStoreContext : public ContextBase {
         std::string assetKey;

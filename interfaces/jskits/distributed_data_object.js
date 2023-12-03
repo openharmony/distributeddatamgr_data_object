@@ -174,11 +174,11 @@ function isAsset(obj) {
   if (Object.keys(obj).length !== length) {
     return false;
   }
-  if (obj.hasOwnProperty(ASSET_KEYS[STATUS_INDEX]) && typeof obj[ASSET_KEYS[STATUS_INDEX]] != 'number') {
+  if (obj.hasOwnProperty(ASSET_KEYS[STATUS_INDEX]) && typeof obj[ASSET_KEYS[STATUS_INDEX]] !== 'number') {
     return false;
   }
   for (const key of ASSET_KEYS.slice(1)) {
-    if (!obj.hasOwnProperty(key) || typeof obj[key] != 'string') {
+    if (!obj.hasOwnProperty(key) || typeof obj[key] !== 'string') {
       return false;
     }
   }
