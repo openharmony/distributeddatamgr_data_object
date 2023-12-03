@@ -39,7 +39,7 @@ public:
 
     int32_t OnAssetChanged(const std::string &bundleName, const std::string &sessionId,
         const std::string &deviceId, const ObjectStore::Asset &assetValue) override;
-    int32_t ObjectStoreBindAsset(const std::string &bundleName, const std::string &sessionId,
+    int32_t BindAssetStore(const std::string &bundleName, const std::string &sessionId,
        ObjectStore::Asset &asset, ObjectStore::AssetBindInfo &bindInfo) override;
 private:
     static inline BrokerDelegator<ObjectServiceProxy> delegator_;

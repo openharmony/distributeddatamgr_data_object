@@ -22,8 +22,6 @@
 #include "bytes_utils.h"
 
 namespace OHOS::ObjectStore {
-static constexpr const char *DEVICE_ID = "__deviceId";
-static constexpr const char ASSET_KEY_SEPARATOR = '.';
 DistributedObjectImpl::~DistributedObjectImpl()
 {
 }
@@ -43,7 +41,7 @@ uint32_t DistributedObjectImpl::PutBoolean(const std::string &key, bool value)
 uint32_t DistributedObjectImpl::PutString(const std::string &key, const std::string &value)
 {
     DataObjectHiTrace trace("DistributedObjectImpl::PutString");
-    if(key.find(ASSET_KEY_SEPARATOR) != std::string::npos){
+    if(key.find(ASSET_DOT) != std::string::npos){
         PutDeviceId();
     }
     return flatObjectStore_->PutString(sessionId_, key, value);
@@ -113,7 +111,7 @@ uint32_t DistributedObjectImpl::RevokeSave()
 uint32_t DistributedObjectImpl::PutDeviceId()
 {
     DevManager::DetailInfo detailInfo = DevManager::GetInstance()->GetLocalDevice();
-    return flatObjectStore_->PutString(sessionId_, DEVICE_ID, detailInfo.networkId);
+    return flatObjectStore_->PutString(sessionId_, DEVICEID_KEY, detailInfo.networkId);
 }
 
 uint32_t DistributedObjectImpl::GetAssetValue(const std::string &assetKey, Asset &assetValue)

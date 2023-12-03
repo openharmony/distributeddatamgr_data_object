@@ -210,7 +210,7 @@ int32_t ObjectServiceProxy::UnregisterDataChangeObserver(const std::string &bund
     return reply.ReadInt32();
 }
 
-int32_t ObjectServiceProxy::ObjectStoreBindAsset(const std::string &bundleName, const std::string &sessionId,
+int32_t ObjectServiceProxy::BindAssetStore(const std::string &bundleName, const std::string &sessionId,
     Asset &asset, AssetBindInfo &bindInfo)
 {
     MessageParcel data;
@@ -228,7 +228,7 @@ int32_t ObjectServiceProxy::ObjectStoreBindAsset(const std::string &bundleName, 
     MessageOption mo { MessageOption::TF_SYNC };
     sptr<IRemoteObject> remoteObject = Remote();
     if (remoteObject == nullptr) {
-        LOG_ERROR("ObjectStoreBindAsset remoteObject is nullptr.");
+        LOG_ERROR("BindAssetStore remoteObject is nullptr.");
         return ERR_IPC;
     }
     int32_t error =
