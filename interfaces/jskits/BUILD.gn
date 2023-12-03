@@ -113,7 +113,7 @@ ohos_shared_library("distributeddataobject") {
     "hilog:libhilog",
     "kv_store:distributeddb",
     "napi:ace_napi",
-    "relational_store:common_type"
+    "relational_store:common_type",
   ]
 
   public_configs = [ ":objectstore_public_config" ]
