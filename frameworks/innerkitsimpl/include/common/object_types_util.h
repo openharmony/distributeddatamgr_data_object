@@ -13,18 +13,18 @@
  * limitations under the License.
  */
 
-#ifndef BYTES_H
-#define BYTES_H
+#ifndef DISTRIBUTED_OBJECT_TYPES_UTIL_H
+#define DISTRIBUTED_OBJECT_TYPES_UTIL_H
 
-#include <memory>
-#include <vector>
+#include "itypes_util.h"
+#include "object_types.h"
 
-namespace OHOS::ObjectStore {
-using Bytes = std::vector<uint8_t>;
-static const char *FIELDS_PREFIX = "p_";
-static const int32_t FIELDS_PREFIX_LEN = 2;
-static const std::string STRING_PREFIX = "[STRING]";
-static const int32_t STRING_PREFIX_LEN = STRING_PREFIX.length();
-} // namespace OHOS::ObjectStore
+namespace OHOS::ITypesUtil {
+using AssetBindInfo = OHOS::ObjectStore::AssetBindInfo;
 
-#endif // BYTES_H
+template<>
+API_EXPORT bool Marshalling(const AssetBindInfo &input, MessageParcel &data);
+template<>
+API_EXPORT bool Unmarshalling(AssetBindInfo &output, MessageParcel &data);
+}
+#endif // DISTRIBUTED_RDB_RDB_TYPES_UTIL_H

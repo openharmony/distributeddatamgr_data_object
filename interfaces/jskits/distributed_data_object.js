@@ -12,13 +12,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 const distributedObject = requireInternal('data.distributedDataObject');
 const SESSION_ID = '__sessionId';
 const VERSION = '__version';
 const COMPLEX_TYPE = '[COMPLEX]';
 const STRING_TYPE = '[STRING]';
 const NULL_TYPE = '[NULL]';
+const ASSET_KEYS = ['status', 'name', 'uri', 'path', 'createTime', 'modifyTime', 'size'];
+const STATUS_INDEX = 0;
+const ASSET_KEY_SEPARATOR = '.';
 const JS_ERROR = 1;
 const SDK_VERSION_8 = 8;
 const SDK_VERSION_9 = 9;
@@ -163,6 +166,53 @@ function setObjectValue(object, key, newValue) {
   }
 }
 
+function isAsset(obj) {
+  if (Object.prototype.toString.call(obj) !== '[object Object]') {
+    return false;
+  }
+  let length = obj.hasOwnProperty(ASSET_KEYS[STATUS_INDEX]) ? ASSET_KEYS.length : ASSET_KEYS.length - 1;
+  if (Object.keys(obj).length !== length) {
+    return false;
+  }
+  if (obj.hasOwnProperty(ASSET_KEYS[STATUS_INDEX]) && typeof obj[ASSET_KEYS[STATUS_INDEX]] !== 'number') {
+    return false;
+  }
+  for (const key of ASSET_KEYS.slice(1)) {
+    if (!obj.hasOwnProperty(key) || typeof obj[key] !== 'string') {
+      return false;
+    }
+  }
+  return true;
+}
+
+function getAssetValue(object, key, obj) {
+  Object.keys(obj).forEach(subKey => {
+    Object.defineProperty(obj, subKey, {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        return getObjectValue(object, key + ASSET_KEY_SEPARATOR + subKey);
+      },
+      set: function (newValue) {
+        setObjectValue(object, key + ASSET_KEY_SEPARATOR + subKey, newValue);
+      }
+    });
+  });
+  return obj;
+}
+
+function setAssetValue(object, key, newValue) {
+  if (!isAsset(newValue)) {
+    throw {
+      code: 401,
+      message: 'cannot set ' + key + ' by non Asset type data'
+    };
+  }
+  Object.values(ASSET_KEYS).forEach(subKey => {
+    setObjectValue(object, key + ASSET_KEY_SEPARATOR + subKey, newValue[subKey]);
+  });
+}
+
 function joinSession(version, obj, objectId, sessionId, context) {
   console.info('start joinSession ' + sessionId);
   if (obj == null || sessionId == null || sessionId === '') {
@@ -183,16 +233,29 @@ function joinSession(version, obj, objectId, sessionId, context) {
   }
   Object.keys(obj).forEach(key => {
     console.info('start define ' + key);
-    Object.defineProperty(object, key, {
-      enumerable: true,
-      configurable: true,
-      get: function () {
-        return getObjectValue(object, key);
-      },
-      set: function (newValue) {
-        setObjectValue(object, key, newValue);
-      }
-    });
+    if (isAsset(obj[key])) {
+      Object.defineProperty(object, key, {
+        enumerable: true,
+        configurable: true,
+        get: function () {
+          return getAssetValue(object, key, obj[key]);
+        },
+        set: function (newValue) {
+          setAssetValue(object, key, newValue);
+        }
+      });
+    } else {
+      Object.defineProperty(object, key, {
+        enumerable: true,
+        configurable: true,
+        get: function () {
+          return getObjectValue(object, key);
+        },
+        set: function (newValue) {
+          setObjectValue(object, key, newValue);
+        }
+      });
+    }
     if (obj[key] !== undefined) {
       object[key] = obj[key];
     }
@@ -218,6 +281,16 @@ function leaveSession(version, obj) {
       writable: true,
       enumerable: true,
     });
+    if (isAsset(obj[key])) {
+      Object.keys(obj[key]).forEach(subKey => {
+        Object.defineProperty(obj[key], subKey, {
+          value: obj[key][subKey],
+          configurable: true,
+          writable: true,
+          enumerable: true,
+        });
+      });
+    }
   });
   // disconnect,delete object
   distributedObject.destroyObjectSync(version, obj);
@@ -251,7 +324,7 @@ function newDistributedV9(context, obj) {
   };
   if (typeof context !== 'object') {
     checkparameter('context', 'Context');
-  } 
+  }
   if (typeof obj !== 'object') {
     checkparameter('source', 'object');
   }
@@ -334,6 +407,14 @@ class DistributedV9 {
       return JS_ERROR;
     }
     return this.__proxy.revokeSave(callback);
+  }
+
+  bindAssetStore(assetkey, bindInfo, callback) {
+    if (this.__proxy[SESSION_ID] == null || this.__proxy[SESSION_ID] === '') {
+      console.info('not join a session, can not do bindAssetStore');
+      return JS_ERROR;
+    }
+    return this.__proxy.bindAssetStore(assetkey, bindInfo, callback);
   }
 
   __context;

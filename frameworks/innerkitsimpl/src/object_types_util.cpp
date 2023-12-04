@@ -13,18 +13,19 @@
  * limitations under the License.
  */
 
-#ifndef BYTES_H
-#define BYTES_H
+#include "object_types_util.h"
 
-#include <memory>
-#include <vector>
-
-namespace OHOS::ObjectStore {
-using Bytes = std::vector<uint8_t>;
-static const char *FIELDS_PREFIX = "p_";
-static const int32_t FIELDS_PREFIX_LEN = 2;
-static const std::string STRING_PREFIX = "[STRING]";
-static const int32_t STRING_PREFIX_LEN = STRING_PREFIX.length();
-} // namespace OHOS::ObjectStore
-
-#endif // BYTES_H
+namespace OHOS::ITypesUtil {
+template<>
+bool Marshalling(const AssetBindInfo &input, MessageParcel &data)
+{
+    return ITypesUtil::Marshal(data, input.storeName, input.tableName, input.primaryKey, input.field,
+        input.assetName);
+}
+template<>
+bool Unmarshalling(AssetBindInfo &output, MessageParcel &data)
+{
+    return ITypesUtil::Unmarshal(data, output.storeName, output.tableName, output.primaryKey, output.field,
+        output.assetName);
+}
+}

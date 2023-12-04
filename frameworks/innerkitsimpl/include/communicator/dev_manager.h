@@ -16,10 +16,17 @@
 #define DATA_OBJECT_DEV_MANAGER_H
 #include <cstdint>
 #include <string>
+#include <mutex>
 namespace OHOS {
 namespace ObjectStore {
 class DevManager {
 public:
+    struct DetailInfo {
+        std::string uuid;
+        std::string networkId;
+        std::string deviceName;
+        std::string deviceType;
+    };
     static DevManager *GetInstance()
     {
         static DevManager *instance = new DevManager();
@@ -27,11 +34,15 @@ public:
     }
     void RegisterDevCallback();
     std::string GetUuidByNodeId(const std::string &nodeId) const;
+    const DetailInfo &GetLocalDevice();
 
 private:
     DevManager();
     ~DevManager();
     int32_t Init();
+    const DetailInfo invalidDetail_{};
+    DetailInfo localInfo_{};
+    mutable std::mutex mutex_{};
 };
 } // namespace ObjectStore
 } // namespace OHOS

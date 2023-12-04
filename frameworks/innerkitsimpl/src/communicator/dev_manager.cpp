@@ -26,6 +26,7 @@
 namespace OHOS {
 namespace ObjectStore {
 using namespace OHOS::DistributedHardware;
+using DevInfo = OHOS::DistributedHardware::DmDeviceInfo;
 constexpr int32_t DM_OK = 0;
 constexpr int32_t DM_ERROR = -1;
 constexpr const char *PKG_NAME = "ohos.objectstore";
@@ -148,5 +149,27 @@ std::string DevManager::GetUuidByNodeId(const std::string &nodeId) const
     return uuid;
 }
 
+const DevManager::DetailInfo &DevManager::GetLocalDevice()
+{
+    std::lock_guard<decltype(mutex_)> lockGuard(mutex_);
+    if (!localInfo_.uuid.empty()) {
+        return localInfo_;
+    }
+    DevInfo info;
+    auto ret = DeviceManager::GetInstance().GetLocalDeviceInfo(PKG_NAME, info);
+    if (ret != DM_OK) {
+        LOG_ERROR("get local device info fail");
+        return invalidDetail_;
+    }
+    auto networkId = std::string(info.networkId);
+    std::string uuid;
+    DeviceManager::GetInstance().GetEncryptedUuidByNetworkId(PKG_NAME, networkId, uuid);
+    if (uuid.empty() || networkId.empty()) {
+        return invalidDetail_;
+    }
+    localInfo_.networkId = std::move(networkId);
+    localInfo_.uuid = std::move(uuid);
+    return localInfo_;
+}
 } // namespace ObjectStore
 } // namespace OHOS

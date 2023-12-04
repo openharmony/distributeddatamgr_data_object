@@ -22,6 +22,8 @@
 #include "object_service_proxy.h"
 #include "objectstore_errors.h"
 #include "softbus_adapter.h"
+#include "string_utils.h"
+#include "bytes_utils.h"
 
 namespace OHOS::ObjectStore {
 FlatObjectStore::FlatObjectStore(const std::string &bundleName)
@@ -145,7 +147,7 @@ uint32_t FlatObjectStore::Put(const std::string &sessionId, const std::string &k
     return storageEngine_->UpdateItem(sessionId, key, value);
 }
 
-uint32_t FlatObjectStore::Get(std::string &sessionId, const std::string &key, Bytes &value)
+uint32_t FlatObjectStore::Get(const std::string &sessionId, const std::string &key, Bytes &value)
 {
     if (!storageEngine_->isOpened_ && storageEngine_->Open(bundleName_) != SUCCESS) {
         LOG_ERROR("FlatObjectStore::DB has not inited");
@@ -202,6 +204,23 @@ uint32_t FlatObjectStore::RevokeSave(const std::string &sessionId)
     return cacheManager_->RevokeSave(bundleName_, sessionId);
 }
 
+uint32_t FlatObjectStore::BindAssetStore(const std::string &sessionId, AssetBindInfo &bindInfo, Asset &assetValue)
+{
+    std::unique_lock<std::mutex> lck(mutex_);
+    sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
+    if (proxy == nullptr) {
+        LOG_ERROR("proxy is nullptr.");
+        return ERR_PROCESSING;
+    }
+    int32_t status = proxy->BindAssetStore(bundleName_, sessionId, assetValue, bindInfo);
+    if (status != SUCCESS) {
+        LOG_ERROR("object bind asset failed code=%{public}d.", static_cast<int>(status));
+    }
+    LOG_DEBUG("object bind asset successful sessionId: %{public}s and assetName %{public}s", sessionId.c_str(),
+        assetValue.name.c_str());
+    return status;
+}
+
 void FlatObjectStore::CheckRetrieveCache(const std::string &sessionId)
 {
     std::lock_guard<std::mutex> lck(mutex_);
@@ -220,6 +239,129 @@ void FlatObjectStore::FilterData(const std::string &sessionId,
     for (const auto &item : allData) {
         data.erase(item.first);
     }
+}
+
+uint32_t FlatObjectStore::PutDouble(const std::string &sessionId, const std::string &key, double value)
+{
+    Bytes data;
+    Type type = Type::TYPE_DOUBLE;
+    BytesUtils::PutNum(&type, 0, sizeof(type), data);
+    BytesUtils::PutNum(&value, sizeof(type), sizeof(value), data);
+    return Put(sessionId, FIELDS_PREFIX + key, data);
+}
+
+uint32_t FlatObjectStore::PutBoolean(const std::string &sessionId, const std::string &key, bool value)
+{
+    Bytes data;
+    Type type = Type::TYPE_BOOLEAN;
+    BytesUtils::PutNum(&type, 0, sizeof(type), data);
+    BytesUtils::PutNum(&value, sizeof(type), sizeof(value), data);
+    return Put(sessionId, FIELDS_PREFIX + key, data);
+}
+
+uint32_t FlatObjectStore::PutString(const std::string &sessionId, const std::string &key, const std::string &value)
+{
+    Bytes data;
+    Type type = Type::TYPE_STRING;
+    BytesUtils::PutNum(&type, 0, sizeof(type), data);
+    Bytes dst = StringUtils::StrToBytes(value);
+    data.insert(data.end(), dst.begin(), dst.end());
+    return Put(sessionId, FIELDS_PREFIX + key, data);
+}
+
+uint32_t FlatObjectStore::GetDouble(const std::string &sessionId, const std::string &key, double &value)
+{
+    Bytes data;
+    Bytes keyBytes = StringUtils::StrToBytes(key);
+    uint32_t status = Get(sessionId, FIELDS_PREFIX + key, data);
+    if (status != SUCCESS) {
+        LOG_ERROR("GetDouble field not exist. %{public}d %{public}s", status, key.c_str());
+        return status;
+    }
+    status = BytesUtils::GetNum(data, sizeof(Type), &value, sizeof(value));
+    if (status != SUCCESS) {
+        LOG_ERROR("GetDouble getNum err. %{public}d", status);
+    }
+    return status;
+}
+
+uint32_t FlatObjectStore::GetBoolean(const std::string &sessionId, const std::string &key, bool &value)
+{
+    Bytes data;
+    Bytes keyBytes = StringUtils::StrToBytes(key);
+    uint32_t status = Get(sessionId, FIELDS_PREFIX + key, data);
+    if (status != SUCCESS) {
+        LOG_ERROR("GetBoolean field not exist. %{public}d %{public}s", status, key.c_str());
+        return status;
+    }
+    status = BytesUtils::GetNum(data, sizeof(Type), &value, sizeof(value));
+    if (status != SUCCESS) {
+        LOG_ERROR("GetBoolean getNum err. %{public}d", status);
+        return status;
+    }
+    return SUCCESS;
+}
+
+uint32_t FlatObjectStore::GetString(const std::string &sessionId, const std::string &key, std::string &value)
+{
+    Bytes data;
+    uint32_t status = Get(sessionId, FIELDS_PREFIX + key, data);
+    if (status != SUCCESS) {
+        LOG_ERROR("GetString field not exist. %{public}d %{public}s", status, key.c_str());
+        return status;
+    }
+    status = StringUtils::BytesToStrWithType(data, value);
+    if (status != SUCCESS) {
+        LOG_ERROR("GetString dataToVal err. %{public}d", status);
+    }
+    return status;
+}
+
+uint32_t FlatObjectStore::PutComplex(const std::string &sessionId, const std::string &key,
+    const std::vector<uint8_t> &value)
+{
+    Bytes data;
+    Type type = Type::TYPE_COMPLEX;
+    BytesUtils::PutNum(&type, 0, sizeof(type), data);
+    data.insert(data.end(), value.begin(), value.end());
+    uint32_t status = Put(sessionId, FIELDS_PREFIX + key, data);
+    if (status != SUCCESS) {
+        LOG_ERROR("PutBoolean setField err %{public}d", status);
+    }
+    return status;
+}
+
+uint32_t FlatObjectStore::GetComplex(const std::string &sessionId, const std::string &key,
+    std::vector<uint8_t> &value)
+{
+    uint32_t status = Get(sessionId, FIELDS_PREFIX + key, value);
+    if (status != SUCCESS) {
+        LOG_ERROR("GetString field not exist. %{public}d %{public}s", status, key.c_str());
+        return status;
+    }
+    value.erase(value.begin(), value.begin() + sizeof(Type));
+    return status;
+}
+
+uint32_t FlatObjectStore::GetType(const std::string &sessionId, const std::string &key, Type &type)
+{
+    Bytes data;
+    uint32_t status = Get(sessionId, FIELDS_PREFIX + key, data);
+    if (status != SUCCESS) {
+        LOG_ERROR("GetString field not exist. %{public}d %{public}s", status, key.c_str());
+        return status;
+    }
+    status = BytesUtils::GetNum(data, 0, &type, sizeof(type));
+    if (status != SUCCESS) {
+        LOG_ERROR("GetBoolean getNum err. %{public}d", status);
+        return status;
+    }
+    return SUCCESS;
+}
+
+std::string FlatObjectStore::GetBundleName()
+{
+    return bundleName_;
 }
 
 CacheManager::CacheManager()

@@ -64,12 +64,16 @@ private:
 };
 class WatcherProxy : public FlatObjectWatcher {
 public:
-    WatcherProxy(const std::shared_ptr<ObjectWatcher> objectWatcher, const std::string &sessionId);
-    void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override;
+    using AssetChangeCallback = std::function<void(const std::string& sessionId,
+        const std::string &assetKey, std::shared_ptr<ObjectWatcher> watcher)>;
 
+    WatcherProxy(const std::shared_ptr<ObjectWatcher> objectWatcher, const std::string &sessionId);
+    void OnChanged(const std::string &sessionId, const std::vector<std::string> &changedData) override;
+    void SetAssetChangeCallBack(const AssetChangeCallback &assetChangeCallback);
 private:
+    bool FindChangedAssetKey(const std::string &changedKey, std::string &assetKey);
     std::shared_ptr<ObjectWatcher> objectWatcher_;
+    AssetChangeCallback assetChangeCallback_;
 };
 } // namespace OHOS::ObjectStore
-
-#endif // DISTRIBUTED_OBJECTSTORE_H
+#endif // DISTRIBUTED_OBJECTSTORE_IMPL_H

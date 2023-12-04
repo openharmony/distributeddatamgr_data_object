@@ -18,134 +18,53 @@
 #include "hitrace.h"
 #include "objectstore_errors.h"
 #include "string_utils.h"
+#include "dev_manager.h"
+#include "bytes_utils.h"
 
 namespace OHOS::ObjectStore {
 DistributedObjectImpl::~DistributedObjectImpl()
 {
 }
 
-void PutNum(void *val, uint32_t offset, uint32_t valLen, Bytes &data)
-{
-    uint32_t len = valLen + offset;
-    if (len > sizeof(data.front()) * data.size()) {
-        data.resize(len);
-    }
-
-    for (uint32_t i = 0; i < valLen; i++) {
-        // 8 bit = 1 byte
-        data[offset + i] = *(static_cast<uint64_t *>(val)) >> ((valLen - i - 1) * 8);
-    }
-}
-
-uint32_t GetNum(Bytes &data, uint32_t offset, void *val, uint32_t valLen)
-{
-    uint8_t *value = static_cast<uint8_t *>(val);
-    uint32_t len = offset + valLen;
-    uint32_t dataLen = data.size();
-    if (dataLen < len) {
-        LOG_ERROR("DistributedObjectImpl:GetNum data.size() %{public}d, offset %{public}d, valLen %{public}d", dataLen,
-            offset, valLen);
-        return ERR_DATA_LEN;
-    }
-    for (uint32_t i = 0; i < valLen; i++) {
-        value[i] = data[len - 1 - i];
-    }
-    return SUCCESS;
-}
-
 uint32_t DistributedObjectImpl::PutDouble(const std::string &key, double value)
 {
     DataObjectHiTrace trace("DistributedObjectImpl::PutDouble");
-    Bytes data;
-    Type type = Type::TYPE_DOUBLE;
-    PutNum(&type, 0, sizeof(type), data);
-    PutNum(&value, sizeof(type), sizeof(value), data);
-    return flatObjectStore_->Put(sessionId_, FIELDS_PREFIX + key, data);
+    return flatObjectStore_->PutDouble(sessionId_, key, value);
 }
 
 uint32_t DistributedObjectImpl::PutBoolean(const std::string &key, bool value)
 {
     DataObjectHiTrace trace("DistributedObjectImpl::PutBoolean");
-    Bytes data;
-    Type type = Type::TYPE_BOOLEAN;
-    PutNum(&type, 0, sizeof(type), data);
-    PutNum(&value, sizeof(type), sizeof(value), data);
-    return flatObjectStore_->Put(sessionId_, FIELDS_PREFIX + key, data);
+    return flatObjectStore_->PutBoolean(sessionId_, key, value);
 }
 
 uint32_t DistributedObjectImpl::PutString(const std::string &key, const std::string &value)
 {
     DataObjectHiTrace trace("DistributedObjectImpl::PutString");
-    Bytes data;
-    Type type = Type::TYPE_STRING;
-    PutNum(&type, 0, sizeof(type), data);
-    Bytes dst = StringUtils::StrToBytes(value);
-    data.insert(data.end(), dst.begin(), dst.end());
-    return flatObjectStore_->Put(sessionId_, FIELDS_PREFIX + key, data);
+    if (key.find(ASSET_DOT) != std::string::npos) {
+        PutDeviceId();
+    }
+    return flatObjectStore_->PutString(sessionId_, key, value);
 }
 
 uint32_t DistributedObjectImpl::GetDouble(const std::string &key, double &value)
 {
-    Bytes data;
-    Bytes keyBytes = StringUtils::StrToBytes(key);
-    uint32_t status = flatObjectStore_->Get(sessionId_, FIELDS_PREFIX + key, data);
-    if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectImpl:GetDouble field not exist. %{public}d %{public}s", status, key.c_str());
-        return status;
-    }
-    status = GetNum(data, sizeof(Type), &value, sizeof(value));
-    if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectImpl::GetDouble getNum err. %{public}d", status);
-    }
-    return status;
+    return flatObjectStore_->GetDouble(sessionId_, key, value);
 }
 
 uint32_t DistributedObjectImpl::GetBoolean(const std::string &key, bool &value)
 {
-    Bytes data;
-    Bytes keyBytes = StringUtils::StrToBytes(key);
-    uint32_t status = flatObjectStore_->Get(sessionId_, FIELDS_PREFIX + key, data);
-    if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectImpl:GetBoolean field not exist. %{public}d %{public}s", status, key.c_str());
-        return status;
-    }
-    status = GetNum(data, sizeof(Type), &value, sizeof(value));
-    if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectImpl::GetBoolean getNum err. %{public}d", status);
-        return status;
-    }
-    return SUCCESS;
+    return flatObjectStore_->GetBoolean(sessionId_, key, value);
 }
 
 uint32_t DistributedObjectImpl::GetString(const std::string &key, std::string &value)
 {
-    Bytes data;
-    uint32_t status = flatObjectStore_->Get(sessionId_, FIELDS_PREFIX + key, data);
-    if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectImpl:GetString field not exist. %{public}d %{public}s", status, key.c_str());
-        return status;
-    }
-    status = StringUtils::BytesToStrWithType(data, value);
-    if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectImpl::GetString dataToVal err. %{public}d", status);
-    }
-    return status;
+    return flatObjectStore_->GetString(sessionId_, key, value);
 }
 
 uint32_t DistributedObjectImpl::GetType(const std::string &key, Type &type)
 {
-    Bytes data;
-    uint32_t status = flatObjectStore_->Get(sessionId_, FIELDS_PREFIX + key, data);
-    if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectImpl:GetString field not exist. %{public}d %{public}s", status, key.c_str());
-        return status;
-    }
-    status = GetNum(data, 0, &type, sizeof(type));
-    if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectImpl::GetBoolean getNum err. %{public}d", status);
-        return status;
-    }
-    return SUCCESS;
+    return flatObjectStore_->GetType(sessionId_, key, type);
 }
 
 std::string &DistributedObjectImpl::GetSessionId()
@@ -161,26 +80,12 @@ DistributedObjectImpl::DistributedObjectImpl(const std::string &sessionId, FlatO
 uint32_t DistributedObjectImpl::PutComplex(const std::string &key, const std::vector<uint8_t> &value)
 {
     DataObjectHiTrace trace("DistributedObjectImpl::PutComplex");
-    Bytes data;
-    Type type = Type::TYPE_COMPLEX;
-    PutNum(&type, 0, sizeof(type), data);
-    data.insert(data.end(), value.begin(), value.end());
-    uint32_t status = flatObjectStore_->Put(sessionId_, FIELDS_PREFIX + key, data);
-    if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectImpl::PutBoolean setField err %{public}d", status);
-    }
-    return status;
+    return flatObjectStore_->PutComplex(sessionId_, key, value);
 }
 
 uint32_t DistributedObjectImpl::GetComplex(const std::string &key, std::vector<uint8_t> &value)
 {
-    uint32_t status = flatObjectStore_->Get(sessionId_, FIELDS_PREFIX + key, value);
-    if (status != SUCCESS) {
-        LOG_ERROR("DistributedObjectImpl:GetString field not exist. %{public}d %{public}s", status, key.c_str());
-        return status;
-    }
-    value.erase(value.begin(), value.begin() + sizeof(Type));
-    return status;
+    return flatObjectStore_->GetComplex(sessionId_, key, value);
 }
 
 uint32_t DistributedObjectImpl::Save(const std::string &deviceId)
@@ -198,6 +103,50 @@ uint32_t DistributedObjectImpl::RevokeSave()
     uint32_t status = flatObjectStore_->RevokeSave(sessionId_);
     if (status != SUCCESS) {
         LOG_ERROR("DistributedObjectImpl:RevokeSave failed. status = %{public}d", status);
+        return status;
+    }
+    return status;
+}
+
+uint32_t DistributedObjectImpl::PutDeviceId()
+{
+    DevManager::DetailInfo detailInfo = DevManager::GetInstance()->GetLocalDevice();
+    return flatObjectStore_->PutString(sessionId_, DEVICEID_KEY, detailInfo.networkId);
+}
+
+uint32_t DistributedObjectImpl::GetAssetValue(const std::string &assetKey, Asset &assetValue)
+{
+    double assetStatus = 0.0;
+    auto status = GetDouble(assetKey + STATUS_SUFFIX, assetStatus);
+    if (status == SUCCESS) {
+        assetValue.status = static_cast<uint32_t>(assetStatus);
+    }
+    status = GetString(assetKey + NAME_SUFFIX, assetValue.name);
+    LOG_ERROR_RETURN(status == SUCCESS, "get name failed!", status);
+    status = GetString(assetKey + URI_SUFFIX, assetValue.uri);
+    LOG_ERROR_RETURN(status == SUCCESS, "get uri failed!", status);
+    status = GetString(assetKey + PATH_SUFFIX, assetValue.path);
+    LOG_ERROR_RETURN(status == SUCCESS, "get path failed!", status);
+    status = GetString(assetKey + CREATE_TIME_SUFFIX, assetValue.createTime);
+    LOG_ERROR_RETURN(status == SUCCESS, "get createTime failed!", status);
+    status = GetString(assetKey + MODIFY_TIME_SUFFIX, assetValue.modifyTime);
+    LOG_ERROR_RETURN(status == SUCCESS, "get modifyTime failed!", status);
+    status = GetString(assetKey + SIZE_SUFFIX, assetValue.size);
+    LOG_ERROR_RETURN(status == SUCCESS, "get size failed!", status);
+    return status;
+}
+
+uint32_t DistributedObjectImpl::BindAssetStore(const std::string &assetKey, AssetBindInfo &bindInfo)
+{
+    Asset assetValue;
+    auto status = GetAssetValue(assetKey, assetValue);
+    if (status != SUCCESS) {
+        LOG_ERROR("DistributedObjectImpl:GetAssetValue failed. status = %{public}d", status);
+        return status;
+    }
+    status = flatObjectStore_->BindAssetStore(sessionId_, bindInfo, assetValue);
+    if (status != SUCCESS) {
+        LOG_ERROR("DistributedObjectImpl:BindAssetStore failed. status = %{public}d", status);
         return status;
     }
     return status;

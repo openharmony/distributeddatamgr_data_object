@@ -33,7 +33,7 @@ private:
     static std::shared_ptr<ObjectStoreDataServiceProxy> GetDistributedDataManager();
 };
 
-class ObjectStoreDataServiceProxy  : public IRemoteProxy<DistributedObject::IKvStoreDataService> {
+class ObjectStoreDataServiceProxy  : public IRemoteProxy<OHOS::DistributedObject::IKvStoreDataService> {
 public:
     explicit ObjectStoreDataServiceProxy(const sptr<IRemoteObject> &impl);
     ~ObjectStoreDataServiceProxy() = default;

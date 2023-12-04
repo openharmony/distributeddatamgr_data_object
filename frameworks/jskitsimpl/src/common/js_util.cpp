@@ -18,6 +18,7 @@
 #include <securec.h>
 
 #include "logger.h"
+#include "common_value_object.h"
 
 namespace OHOS::ObjectStore {
 constexpr int32_t STR_MAX_LENGTH = 4096;
@@ -47,6 +48,28 @@ napi_status JSUtil::SetValue(napi_env env, const double &in, napi_value &out)
 {
     LOG_DEBUG("napi_value <- double");
     return napi_create_double(env, in, &out);
+}
+
+/* napi_value <-> int64_t */
+napi_status JSUtil::GetValue(napi_env env, napi_value in, int64_t& out)
+{
+    return napi_get_value_int64(env, in, &out);
+}
+
+napi_status JSUtil::SetValue(napi_env env, const int64_t& in, napi_value& out)
+{
+    return napi_create_int64(env, in, &out);
+}
+
+/* napi_value <-> uint32_t */
+napi_status JSUtil::GetValue(napi_env env, napi_value in, uint32_t& out)
+{
+    return napi_get_value_uint32(env, in, &out);
+}
+
+napi_status JSUtil::SetValue(napi_env env, const uint32_t& in, napi_value& out)
+{
+    return napi_create_uint32(env, in, &out);
 }
 
 /* napi_value <-> std::string */
@@ -151,5 +174,120 @@ napi_status JSUtil::SetValue(napi_env env, const std::vector<uint8_t> &in, napi_
     status = napi_create_typedarray(env, napi_uint8_array, in.size(), buffer, 0, &out);
     LOG_ERROR_RETURN((status == napi_ok), "napi_value <- std::vector<uint8_t> invalid value", status);
     return status;
+}
+
+napi_status JSUtil::GetValue(napi_env env, napi_value in, AssetBindInfo &bindInfo)
+{
+    napi_status status = napi_invalid_arg;
+    status = GetNamedProperty(env, in, "storeName", bindInfo.storeName);
+    LOG_ERROR_RETURN(status == napi_ok, "get store param failed", status);
+    status = GetNamedProperty(env, in, "tableName", bindInfo.tableName);
+    LOG_ERROR_RETURN(status == napi_ok, "get table param failed", status);
+    status = GetNamedProperty(env, in, "primaryKey", bindInfo.primaryKey);
+
+    LOG_ERROR_RETURN(status == napi_ok, "get primary param failed", status);
+    status = GetNamedProperty(env, in, "field", bindInfo.field);
+    LOG_ERROR_RETURN(status == napi_ok, "get field param failed", status);
+    status = GetNamedProperty(env, in, "assetName", bindInfo.assetName);
+    LOG_ERROR_RETURN(status == napi_ok, "get assetName param failed", status);
+    return status;
+}
+
+napi_status JSUtil::GetValue(napi_env env, napi_value in, Asset &asset)
+{
+    napi_valuetype type;
+    napi_status status = napi_typeof(env, in, &type);
+    LOG_ERROR_RETURN((status == napi_ok) && (type == napi_object), "Asset type invalid", napi_invalid_arg);
+    status = GetNamedProperty(env, in, "name", asset.name);
+    LOG_ERROR_RETURN(status == napi_ok, "get name param failed", status);
+    status = GetNamedProperty(env, in, "uri", asset.uri);
+    LOG_ERROR_RETURN(status == napi_ok, "get uri param failed", status);
+    status = GetNamedProperty(env, in, "path", asset.path);
+    LOG_ERROR_RETURN(status == napi_ok, "get path param failed", status);
+    status = GetNamedProperty(env, in, "createTime", asset.createTime);
+    LOG_ERROR_RETURN(status == napi_ok, "get createTime param failed", status);
+    status = GetNamedProperty(env, in, "modifyTime", asset.modifyTime);
+    LOG_ERROR_RETURN(status == napi_ok, "get modifyTime param failed", status);
+    status = GetNamedProperty(env, in, "size", asset.size);
+    LOG_ERROR_RETURN(status == napi_ok, "get size param failed", status);
+    status = GetNamedProperty(env, in, "status", asset.status, true);
+    LOG_ERROR_RETURN(status == napi_ok, "get status param failed", status);
+    return status;
+}
+
+napi_status JSUtil::GetValue(napi_env env, napi_value in, Assets &assets)
+{
+    assets.clear();
+    bool isArray = false;
+    napi_is_array(env, in, &isArray);
+    LOG_ERROR_RETURN(isArray, "not an array", napi_generic_failure);
+
+    uint32_t arrLen = 0;
+    napi_status status = napi_get_array_length(env, in, &arrLen);
+    LOG_ERROR_RETURN((status == napi_ok) && (arrLen > 0), "get_array failed!", status);
+    for (uint32_t i = 0; i < arrLen; ++i) {
+        napi_value item = nullptr;
+        status = napi_get_element(env, in, i, &item);
+        LOG_ERROR_RETURN((item != nullptr) && (status == napi_ok), "no element", status);
+        Asset asset;
+        status = GetValue(env, item, asset);
+        LOG_ERROR_RETURN(status == napi_ok, "not a asset object", status);
+        assets.push_back(asset);
+    }
+    return status;
+}
+
+napi_status JSUtil::GetValue(napi_env env, napi_value in, ValuesBucket &out)
+{
+    napi_value keys = 0;
+    napi_get_all_property_names(env, in, napi_key_own_only,
+        static_cast<napi_key_filter>(napi_key_enumerable | napi_key_skip_symbols),
+        napi_key_numbers_to_strings, &keys);
+    uint32_t arrLen = 0;
+    auto status = napi_get_array_length(env, keys, &arrLen);
+    LOG_ERROR_RETURN(status == napi_ok, "error! The type of values must be a ValuesBucket.", status);
+    for (size_t i = 0; i < arrLen; ++i) {
+        napi_value jsKey = 0;
+        status = napi_get_element(env, keys, i, &jsKey);
+        LOG_ERROR_RETURN((status == napi_ok), "no element! The type of values must be a ValuesBucket.", status);
+        std::string key;
+        status = GetValue(env, jsKey, key);
+        LOG_ERROR_RETURN((status == napi_ok), "get key failed", status);
+        napi_value valueJs = 0;
+        napi_get_property(env, in, jsKey, &valueJs);
+        ValueObject valueObject;
+        status = GetValue(env, valueJs, valueObject.value);
+        if (status == napi_ok) {
+            out.Put(key, valueObject);
+        } else if (status != napi_generic_failure) {
+            LOG_ERROR("The value type %{public}s is invalid: ", key.c_str());
+            return status;
+        }
+    }
+    return napi_ok;
+}
+
+napi_status JSUtil::GetValue(napi_env env, napi_value jsValue, std::monostate &out)
+{
+    napi_value tempValue;
+    napi_get_null(env, &tempValue);
+    bool equal = false;
+    napi_strict_equals(env, jsValue, tempValue, &equal);
+    if (equal) {
+        out = std::monostate();
+        return napi_ok;
+    }
+    LOG_DEBUG("jsValue is not null");
+    return napi_invalid_arg;
+}
+
+bool JSUtil::IsNull(napi_env env, napi_value value)
+{
+    napi_valuetype type = napi_undefined;
+    napi_status status = napi_typeof(env, value, &type);
+    if (status == napi_ok && (type == napi_undefined || type == napi_null)) {
+        return true;
+    }
+    return false;
 }
 } // namespace OHOS::ObjectStore

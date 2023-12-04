@@ -19,6 +19,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "object_types.h"
 
 namespace OHOS::ObjectStore {
 enum Type : uint8_t {
@@ -151,6 +152,16 @@ public:
      * @return Returns sessionId of the object.
      */
     virtual std::string &GetSessionId() = 0;
+
+    /**
+     * @brief Bind Asset.
+     *
+     * @param assetKey Indicates the assetKey key.
+     * @param bindInfo Indicates asset info.
+     *
+     * @return Returns 0 for success, others for failure.
+     */
+    virtual uint32_t BindAssetStore(const std::string &assetKey, AssetBindInfo &bindInfo) = 0;
 };
 
 class ObjectWatcher {

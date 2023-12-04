@@ -14,6 +14,7 @@
  */
 
 #include <thread>
+#include <unordered_set>
 
 #include "hitrace.h"
 #include "distributed_object_impl.h"
@@ -21,6 +22,7 @@
 #include "objectstore_errors.h"
 #include "softbus_adapter.h"
 #include "string_utils.h"
+#include "asset_change_timer.h"
 
 namespace OHOS::ObjectStore {
 DistributedObjectStoreImpl::DistributedObjectStoreImpl(FlatObjectStore *flatObjectStore)
@@ -89,7 +91,7 @@ DistributedObject *DistributedObjectStoreImpl::CreateObject(const std::string &s
         status = ERR_NULL_OBJECTSTORE;
         return nullptr;
     }
-    
+
     if (sessionId.empty()) {
         LOG_ERROR("DistributedObjectStoreImpl::CreateObject Invalid sessionId");
         status = ERR_INVALID_ARGS;
@@ -150,6 +152,11 @@ uint32_t DistributedObjectStoreImpl::Watch(DistributedObject *object, std::share
         return ERR_EXIST;
     }
     std::shared_ptr<WatcherProxy> watcherProxy = std::make_shared<WatcherProxy>(watcher, object->GetSessionId());
+    watcherProxy->SetAssetChangeCallBack(
+        [=](const std::string &sessionId, const std::string &assetKey, std::shared_ptr<ObjectWatcher> objectWatcher) {
+            AssetChangeTimer *assetChangeTimer = AssetChangeTimer::GetInstance(flatObjectStore_, objectWatcher);
+            assetChangeTimer->OnAssetChanged(sessionId, assetKey);
+        });
     uint32_t status = flatObjectStore_->Watch(object->GetSessionId(), watcherProxy);
     if (status != SUCCESS) {
         LOG_ERROR("DistributedObjectStoreImpl::Watch failed %{public}d", status);
@@ -201,9 +208,46 @@ WatcherProxy::WatcherProxy(const std::shared_ptr<ObjectWatcher> objectWatcher, c
 {
 }
 
-void WatcherProxy::OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData)
+void WatcherProxy::OnChanged(const std::string &sessionId, const std::vector<std::string> &changedData)
 {
-    objectWatcher_->OnChanged(sessionid, changedData);
+    std::unordered_set<std::string> assetKeys;
+    std::vector<std::string> otherKeys;
+    for (const auto &str : changedData) {
+        if (str.find(ASSET_DOT) == std::string::npos) {
+            if (str != DEVICEID_KEY) {
+                otherKeys.push_back(str);
+            }
+        } else {
+            std::string assetKey;
+            if (FindChangedAssetKey(str, assetKey)) {
+                assetKeys.insert(assetKey);
+            }
+        }
+    }
+    if (!otherKeys.empty()) {
+        objectWatcher_->OnChanged(sessionId, otherKeys);
+    }
+    if (assetChangeCallback_ != nullptr && !assetKeys.empty()) {
+        for (auto &assetKey : assetKeys) {
+            assetChangeCallback_(sessionId, assetKey, objectWatcher_);
+        }
+    }
+}
+
+bool WatcherProxy::FindChangedAssetKey(const std::string &changedKey, std::string &assetKey)
+{
+    std::size_t dotPos = changedKey.find(ASSET_DOT);
+    if ((changedKey.size() > MODIFY_TIME_SUFFIX.length() && changedKey.substr(dotPos) == MODIFY_TIME_SUFFIX) ||
+            (changedKey.size() > SIZE_SUFFIX.length() && changedKey.substr(dotPos) == SIZE_SUFFIX)) {
+        assetKey = changedKey.substr(0, dotPos);
+        return true;
+    }
+    return false;
+}
+
+void WatcherProxy::SetAssetChangeCallBack(const AssetChangeCallback &assetChangeCallback)
+{
+    assetChangeCallback_ = assetChangeCallback;
 }
 
 DistributedObjectStore *DistributedObjectStore::GetInstance(const std::string &bundleName)

@@ -12,3 +12,5 @@
 # limitations under the License.
 
 kvstore_path = "//foundation/distributeddatamgr/kv_store/frameworks"
+
+data_object_base_path = "//foundation/distributeddatamgr/data_object"
