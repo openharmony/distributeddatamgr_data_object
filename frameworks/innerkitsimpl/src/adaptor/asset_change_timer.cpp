@@ -133,6 +133,7 @@ bool AssetChangeTimer::GetAssetValue(const std::string &sessionId, const std::st
         assetValue.createTime = assetValue.createTime.substr(STRING_PREFIX_LEN);
         assetValue.modifyTime = assetValue.modifyTime.substr(STRING_PREFIX_LEN);
         assetValue.size = assetValue.size.substr(STRING_PREFIX_LEN);
+        assetValue.hash = assetValue.modifyTime + "_" + assetValue.size;
     }
     return isComplete;
 }

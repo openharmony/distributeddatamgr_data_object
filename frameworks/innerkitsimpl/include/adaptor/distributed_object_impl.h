@@ -44,6 +44,7 @@ private:
     std::string sessionId_;
     FlatObjectStore *flatObjectStore_ = nullptr;
     uint32_t PutDeviceId();
+    void RemovePrefix(Asset &assetValue);
 };
 
 #define LOG_ERROR_RETURN(condition, message, retVal)             \
