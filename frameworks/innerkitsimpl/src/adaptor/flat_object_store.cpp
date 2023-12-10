@@ -109,6 +109,7 @@ uint32_t FlatObjectStore::Delete(const std::string &sessionId)
         return status;
     }
     cacheManager_->UnregisterDataChange(bundleName_, sessionId);
+    cacheManager_->DeleteSnapshot(bundleName_, sessionId);
     return SUCCESS;
 }
 
@@ -514,6 +515,21 @@ int32_t CacheManager::UnregisterDataChange(const std::string &bundleName, const 
         LOG_ERROR("object remote resume failed code=%d.", static_cast<int>(status));
     }
     LOG_INFO("object unregister data change observer successful");
+    return status;
+}
+
+int32_t CacheManager::DeleteSnapshot(const std::string &bundleName, const std::string &sessionId)
+{
+    sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
+    if (proxy == nullptr) {
+        LOG_ERROR("proxy is nullptr.");
+        return ERR_NULL_PTR;
+    }
+    int32_t status = proxy->DeleteSnapshot(bundleName, sessionId);
+    if (status != SUCCESS) {
+        LOG_ERROR("object delete snapshot failed code=%d.", static_cast<int>(status));
+    }
+    LOG_INFO("object delete snapshot successful");
     return status;
 }
 } // namespace OHOS::ObjectStore

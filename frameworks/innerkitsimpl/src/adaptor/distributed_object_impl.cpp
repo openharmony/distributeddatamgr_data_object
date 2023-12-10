@@ -133,7 +133,19 @@ uint32_t DistributedObjectImpl::GetAssetValue(const std::string &assetKey, Asset
     LOG_ERROR_RETURN(status == SUCCESS, "get modifyTime failed!", status);
     status = GetString(assetKey + SIZE_SUFFIX, assetValue.size);
     LOG_ERROR_RETURN(status == SUCCESS, "get size failed!", status);
+    RemovePrefix(assetValue);
     return status;
+}
+
+void DistributedObjectImpl::RemovePrefix(Asset &assetValue)
+{
+    assetValue.name = assetValue.name.substr(STRING_PREFIX_LEN);
+    assetValue.uri = assetValue.uri.substr(STRING_PREFIX_LEN);
+    assetValue.path = assetValue.path.substr(STRING_PREFIX_LEN);
+    assetValue.createTime = assetValue.createTime.substr(STRING_PREFIX_LEN);
+    assetValue.modifyTime = assetValue.modifyTime.substr(STRING_PREFIX_LEN);
+    assetValue.size = assetValue.size.substr(STRING_PREFIX_LEN);
+    assetValue.hash = assetValue.modifyTime + "_" + assetValue.size;
 }
 
 uint32_t DistributedObjectImpl::BindAssetStore(const std::string &assetKey, AssetBindInfo &bindInfo)
