@@ -239,4 +239,33 @@ int32_t ObjectServiceProxy::BindAssetStore(const std::string &bundleName, const 
     }
     return reply.ReadInt32();
 }
+
+int32_t ObjectServiceProxy::DeleteSnapshot(const std::string &bundleName, const std::string &sessionId)
+{
+    MessageParcel data;
+    if (!data.WriteInterfaceToken(ObjectServiceProxy::GetDescriptor())) {
+        ZLOGE("write descriptor failed");
+        return ERR_IPC;
+    }
+
+    if (!ITypesUtil::Marshal(data, bundleName, sessionId)) {
+        ZLOGE("Marshalling failed, bundleName = %{public}s", bundleName.c_str());
+        return ERR_IPC;
+    }
+
+    MessageParcel reply;
+    MessageOption mo { MessageOption::TF_SYNC };
+    sptr<IRemoteObject> remoteObject = Remote();
+    if (remoteObject == nullptr) {
+        LOG_ERROR("DeleteSnapshot remoteObject is nullptr.");
+        return ERR_IPC;
+    }
+    int32_t error =
+        remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_DELETE_SNAPSHOT), data, reply, mo);
+    if (error != 0) {
+        ZLOGE("SendRequest returned %d", error);
+        return ERR_IPC;
+    }
+    return reply.ReadInt32();
+}
 } // namespace OHOS::DistributedObject

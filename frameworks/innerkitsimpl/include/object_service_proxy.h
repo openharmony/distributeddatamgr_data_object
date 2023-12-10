@@ -41,6 +41,7 @@ public:
         const std::string &deviceId, const ObjectStore::Asset &assetValue) override;
     int32_t BindAssetStore(const std::string &bundleName, const std::string &sessionId,
        ObjectStore::Asset &asset, ObjectStore::AssetBindInfo &bindInfo) override;
+    int32_t DeleteSnapshot(const std::string &bundleName, const std::string &sessionId) override;
 private:
     static inline BrokerDelegator<ObjectServiceProxy> delegator_;
 };
