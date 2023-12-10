@@ -45,6 +45,7 @@ public:
     int32_t SubscribeDataChange(const std::string &bundleName, const std::string &sessionId,
                                 std::function<void(const std::map<std::string, std::vector<uint8_t>> &data)> &callback);
     int32_t UnregisterDataChange(const std::string &bundleName, const std::string &sessionId);
+    int32_t DeleteSnapshot(const std::string &bundleName, const std::string &sessionId);
 private:
     int32_t SaveObject(const std::string &bundleName, const std::string &sessionId,
         const std::string &deviceId, const std::map<std::string, std::vector<uint8_t>> &objectData,
