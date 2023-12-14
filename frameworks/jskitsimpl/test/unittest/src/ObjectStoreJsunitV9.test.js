@@ -81,8 +81,8 @@ describe('objectStoreTest', function () {
      * @tc.desc: object join session and on,object can receive callback when data has been changed
      * @tc.type: Function
      * @tc.number: V9testcreate001
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testcreate001', 0, function () {
         console.log(TAG + "************* V9testcreate001 start *************");
@@ -120,8 +120,8 @@ describe('objectStoreTest', function () {
      * @tc.desc: object join session and on,object can receive callback when data has been changed
      * @tc.type: Function
      * @tc.number: V9testsetSessionId001
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testsetSessionId001', 0, function () {
         console.log(TAG + "************* V9testsetSessionId001 start *************");
@@ -149,8 +149,8 @@ describe('objectStoreTest', function () {
      * @tc.desc: object join session and on,object can receive callback when data has been changed
      * @tc.type: Function
      * @tc.number: V9testsetSessionId002
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testsetSessionId002', 0, function () {
         console.log(TAG + "************* V9testsetSessionId002 start *************");
@@ -175,8 +175,8 @@ describe('objectStoreTest', function () {
      * @tc.desc: object join session and on,object can receive callback when data has been changed
      * @tc.type: Function
      * @tc.number: V9testsetSessionId003
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testsetSessionId003', 0, function () {
         console.log(TAG + "************* V9testsetSessionId003 start *************");
@@ -199,8 +199,8 @@ describe('objectStoreTest', function () {
      * @tc.desc: object join session and on,object can receive callback when data has been changed
      * @tc.type: Function
      * @tc.number: V9testsetSessionId004
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testsetSessionId004', 0, function () {
         console.log(TAG + "************* V9testsetSessionId004 start *************");
@@ -235,8 +235,8 @@ describe('objectStoreTest', function () {
      * @tc.desc: object join session and on,object can receive callback when data has been changed
      * @tc.type: Function
      * @tc.number: V9testOn001
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testOn001', 0, function () {
         console.log(TAG + "************* V9testOn001 start *************");
@@ -281,8 +281,8 @@ describe('objectStoreTest', function () {
      * @tc.desc: object join session and on,then object change data twice,object can receive two callbacks when data has been changed
      * @tc.type: Function
      * @tc.number: V9testOn002
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testOn002', 0, function () {
         console.log(TAG + "************* V9testOn002 start *************");
@@ -318,8 +318,8 @@ describe('objectStoreTest', function () {
      * @tc.desc object join session and on,then object do not change data,object can not receive callbacks
      * @tc.type: Function
      * @tc.number: testOn003
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testOn003', 0, function () {
         console.log(TAG + "************* V9testOn003 start *************");
@@ -356,8 +356,8 @@ describe('objectStoreTest', function () {
      * @tc.desc object join session and on&off,object can not receive callback after off
      * @tc.type: Function
      * @tc.number: V9testOff001
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testOff001', 0, function () {
         console.log(TAG + "************* V9testOff001 start *************");
@@ -405,8 +405,8 @@ describe('objectStoreTest', function () {
      * @tc.desc object join session and off,object can not receive callback
      * @tc.type: Function
      * @tc.number: V9testOff002
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testOff002', 0, function () {
         console.log(TAG + "************* V9testOff002 start *************");
@@ -439,8 +439,8 @@ describe('objectStoreTest', function () {
      * @tc.desc: object set a listener to watch another object online/offline
      * @tc.type: Function
      * @tc.number: V9testOnStatus001
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testOnStatus001', 0, function () {
         console.log(TAG + "************* V9testOnStatus001 start *************");
@@ -468,8 +468,8 @@ describe('objectStoreTest', function () {
      * @tc.desc: object set several listener and can unWatch all watcher
      * @tc.type: Function
      * @tc.number: V9testOnStatus002
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testOnStatus002', 0, function () {
         console.log(TAG + "************* V9testOnStatus002 start *************");
@@ -495,8 +495,8 @@ describe('objectStoreTest', function () {
      * @tc.desc: test save local
      * @tc.type: Function
      * @tc.number: V9testSave001
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testSave001', 0, async function (done) {
         console.log(TAG + "************* V9testSave001 start *************");
@@ -537,8 +537,8 @@ describe('objectStoreTest', function () {
      * @tc.desc: test save local
      * @tc.type: Function
      * @tc.number: V9testSave002
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testSave002', 0, async function (done) {
         console.log(TAG + "************* V9testSave002 start *************");
@@ -577,8 +577,8 @@ describe('objectStoreTest', function () {
      * @tc.desc: test save local
      * @tc.type: Function
      * @tc.number: V9testSave003
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testSave003', 0, async function () {
         console.log(TAG + "************* V9testSave003 start *************");
@@ -627,8 +627,8 @@ describe('objectStoreTest', function () {
      * @tc.desc: test RevokeSave
      * @tc.type: Function
      * @tc.number: V9testRevokeSave001
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testRevokeSave001', 0, async function (done) {
         console.log(TAG + "************* V9testRevokeSave001 start *************");
@@ -675,8 +675,8 @@ describe('objectStoreTest', function () {
      * @tc.type: Function
      * @tc.require:
      * @tc.number: V9testRevokeSave002
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testRevokeSave002', 0, async function () {
         console.log(TAG + "************* V9testRevokeSave002 start *************");
@@ -724,8 +724,8 @@ describe('objectStoreTest', function () {
      * @tc.desc: test RevokeSave
      * @tc.type: Function
      * @tc.number: V9testRevokeSave003
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testRevokeSave003', 0, async function () {
         console.log(TAG + "************* V9testRevokeSave003 start *************");
@@ -765,8 +765,8 @@ describe('objectStoreTest', function () {
      * @tc.desc: Test CommType Enum Value
      * @tc.type: Function
      * @tc.number: V9testbindAssetCommunType001
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testbindAssetCommunType001', 0, function (done) {
         console.log(TAG + "************* V9testbindAssetCommunType001 start *************");
@@ -784,8 +784,8 @@ describe('objectStoreTest', function () {
      * @tc.desc: Test bindAssetStore
      * @tc.type: Function
      * @tc.number: V9testbindAssetStore001
-	 * @tc.size: MEDIUM
-     * @tc.level: Level 3
+	 * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testbindAssetStore001', 0, function (done) {
         console.log(TAG + "************* V9testbindAssetStore001 start *************");
@@ -876,8 +876,8 @@ describe('objectStoreTest', function () {
      * @tc.desc: Test bindAssetStore with invalid args
      * @tc.type: Function
      * @tc.number: V9testsetSessionId002
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testbindAssetStore002', 0, function (done) {
         console.log(TAG + "************* V9testbindAssetStore002 start *************");
@@ -925,8 +925,8 @@ describe('objectStoreTest', function () {
      * @tc.desc: Test bindAssetStore with invalid args
      * @tc.type: Function
      * @tc.number: V9testbindAssetStore003
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testbindAssetStore003', 0, function (done) {
         console.log(TAG + "************* V9testbindAssetStore003 start *************");
@@ -973,8 +973,8 @@ describe('objectStoreTest', function () {
      * @tc.desc: object with asset create distributed data object
      * @tc.type: Function
      * @tc.number: V9testcreate002
-     * @tc.size: MEDIUM
-     * @tc.level: Level 3
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testcreate002', 0, function () {
         console.log(TAG + "************* V9testcreate002 start *************");
