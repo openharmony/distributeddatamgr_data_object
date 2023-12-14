@@ -18,7 +18,7 @@
 #include <securec.h>
 
 #include "logger.h"
-#include "common_value_object.h"
+#include "common_types.h"
 
 namespace OHOS::ObjectStore {
 constexpr int32_t STR_MAX_LENGTH = 4096;
@@ -239,28 +239,31 @@ napi_status JSUtil::GetValue(napi_env env, napi_value in, Assets &assets)
 
 napi_status JSUtil::GetValue(napi_env env, napi_value in, ValuesBucket &out)
 {
-    napi_value keys = 0;
+    out.clear();
+    napi_value values = nullptr;
+    uint32_t count = 0;
     napi_get_all_property_names(env, in, napi_key_own_only,
         static_cast<napi_key_filter>(napi_key_enumerable | napi_key_skip_symbols),
-        napi_key_numbers_to_strings, &keys);
-    uint32_t arrLen = 0;
-    auto status = napi_get_array_length(env, keys, &arrLen);
-    LOG_ERROR_RETURN(status == napi_ok, "error! The type of values must be a ValuesBucket.", status);
-    for (size_t i = 0; i < arrLen; ++i) {
-        napi_value jsKey = 0;
-        status = napi_get_element(env, keys, i, &jsKey);
-        LOG_ERROR_RETURN((status == napi_ok), "no element! The type of values must be a ValuesBucket.", status);
-        std::string key;
-        status = GetValue(env, jsKey, key);
-        LOG_ERROR_RETURN((status == napi_ok), "get key failed", status);
-        napi_value valueJs = 0;
-        napi_get_property(env, in, jsKey, &valueJs);
-        ValueObject valueObject;
-        status = GetValue(env, valueJs, valueObject.value);
+        napi_key_numbers_to_strings, &values);
+    napi_status status = napi_get_array_length(env, values, &count);
+    LOG_INFO("array length: %{public}d", count);
+    LOG_ERROR_RETURN(status == napi_ok && count > 0, "get ValuesBucket failed", napi_invalid_arg);
+    napi_value key = nullptr;
+    napi_value val = nullptr;
+    for (uint32_t index = 0; index < count; index++) {
+        status = napi_get_element(env, values, index, &key);
+        LOG_ERROR_RETURN(status == napi_ok && key != nullptr, "no element", napi_invalid_arg);
+        std::string keyStr;
+        status = GetValue(env, key, keyStr);
+        LOG_ERROR_RETURN(status == napi_ok, "get key failed", status);
+        status = napi_get_property(env, in, key, &val);
+        LOG_ERROR_RETURN(status == napi_ok && val != nullptr, "no element", napi_invalid_arg);
+        ValueObject value;
+        status = GetValue(env, val, value);
         if (status == napi_ok) {
-            out.Put(key, valueObject);
+            out.insert(std::pair<std::string, ValueObject>(keyStr, value));
         } else if (status != napi_generic_failure) {
-            LOG_ERROR("The value type %{public}s is invalid: ", key.c_str());
+            LOG_ERROR("The value type %{public}s is invalid: ", keyStr.c_str());
             return status;
         }
     }

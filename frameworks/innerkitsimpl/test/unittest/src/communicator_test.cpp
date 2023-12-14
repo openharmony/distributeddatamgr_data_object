@@ -498,6 +498,19 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_GetLocalDevice_001, TestSize.Lev
 }
 
 /**
+* @tc.name: DevManager_GetLocalDevice
+* @tc.desc: test DevManager GetLocalDevice.
+* @tc.type: FUNC
+ */
+HWTEST_F(NativeCommunicatorTest, DevManager_GetLocalDevice_001, TestSize.Level1)
+{
+    DevManager *devManager = DevManager::GetInstance();
+    EXPECT_TRUE(devManager != nullptr);
+    DevManager::DetailInfo detailInfo = devManager->GetLocalDevice();
+    EXPECT_FALSE(detailInfo.networkId.empty());
+}
+
+/**
  * @tc.name: SoftBusAdapter_SendData_001
  * @tc.desc: test SoftBusAdapter SendData.
  * @tc.type: FUNC

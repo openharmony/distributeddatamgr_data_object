@@ -646,6 +646,37 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetComplex_002, TestSize.Level
 }
 
 /**
+ * @tc.name: DistributedObject_SetAsset_001
+ * @tc.desc: test DistributedObjectStore SetAsset.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_SetAsset_001, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    EXPECT_NE(nullptr, objectStore);
+    DistributedObject *object = objectStore->CreateObject(sessionId);
+    EXPECT_NE(nullptr, object);
+
+    uint32_t ret = object->PutString("attachment.name", "1.txt");
+    EXPECT_EQ(SUCCESS, ret);
+
+    std::string value;
+    ret = object->GetString("attachment.name", value);
+    EXPECT_EQ(SUCCESS, ret);
+    EXPECT_EQ(value, "1.txt");
+
+    std::string deviceId;
+    ret = object->GetString("__deviceId", deviceId);
+    EXPECT_EQ(SUCCESS, ret);
+    EXPECT_FALSE(deviceId.empty());
+
+    ret = objectStore->DeleteObject(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+}
+
+/**
  * @tc.name: DistributedObject_TestSetSessionId_001
  * @tc.desc: test DistributedObjectStore TestSetSessionId.
  * @tc.type: FUNC
