@@ -1,4 +1,4 @@
-   /*
+/*
  * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 #define LOG_TAG "AssetChangeTimer"
-
 #include "asset_change_timer.h"
+
 #include "client_adaptor.h"
 #include "logger.h"
 #include "objectstore_errors.h"
@@ -23,43 +23,44 @@ namespace OHOS::ObjectStore {
 std::mutex AssetChangeTimer::instanceMutex;
 AssetChangeTimer *AssetChangeTimer::instance = nullptr;
 
-AssetChangeTimer *AssetChangeTimer::GetInstance(
-    FlatObjectStore *flatObjectStore, std::shared_ptr<ObjectWatcher> watcher)
+AssetChangeTimer *AssetChangeTimer::GetInstance(FlatObjectStore *flatObjectStore)
 {
     if (instance == nullptr) {
         std::lock_guard<decltype(instanceMutex)> lockGuard(instanceMutex);
         if (instance == nullptr) {
-            instance = new (std::nothrow) AssetChangeTimer(flatObjectStore, watcher);
+            instance = new (std::nothrow) AssetChangeTimer(flatObjectStore);
         }
     }
     return instance;
 }
 
-AssetChangeTimer::AssetChangeTimer(FlatObjectStore *flatObjectStore, std::shared_ptr<ObjectWatcher> watcher)
+AssetChangeTimer::AssetChangeTimer(FlatObjectStore *flatObjectStore)
 {
     flatObjectStore_ = flatObjectStore;
-    watcher_ = watcher;
     executor_ = std::make_shared<ExecutorPool>(MAX_THREADS, MIN_THREADS);
 }
 
-void AssetChangeTimer::OnAssetChanged(const std::string &sessionId, const std::string &assetKey)
+void AssetChangeTimer::OnAssetChanged(
+    const std::string &sessionId, const std::string &assetKey, std::shared_ptr<ObjectWatcher> watcher)
 {
-    StartTimer(sessionId, assetKey);
+    StartTimer(sessionId, assetKey, watcher);
 }
 
-void AssetChangeTimer::StartTimer(const std::string &sessionId, const std::string &assetKey)
+void AssetChangeTimer::StartTimer(
+    const std::string &sessionId, const std::string &assetKey, std::shared_ptr<ObjectWatcher> watcher)
 {
     std::string key = sessionId + ASSET_SEPARATOR + assetKey;
     std::lock_guard<decltype(mutex_)> lockGuard(mutex_);
     if (assetChangeTasks_.find(key) == assetChangeTasks_.end()) {
-        assetChangeTasks_[key] = executor_->Schedule(
-            std::chrono::milliseconds(WAIT_INTERVAL), ProcessTask(sessionId, assetKey));
+        assetChangeTasks_[key] =
+            executor_->Schedule(std::chrono::milliseconds(WAIT_INTERVAL), ProcessTask(sessionId, assetKey, watcher));
     } else {
         assetChangeTasks_[key] = executor_->Reset(assetChangeTasks_[key], std::chrono::milliseconds(WAIT_INTERVAL));
     }
 }
 
-std::function<void()> AssetChangeTimer::ProcessTask(const std::string &sessionId, const std::string &assetKey)
+std::function<void()> AssetChangeTimer::ProcessTask(
+    const std::string &sessionId, const std::string &assetKey, std::shared_ptr<ObjectWatcher> watcher)
 {
     return [=]() {
         LOG_DEBUG("Start working on a task, sessionId: %{public}s, assetKey: %{public}s", sessionId.c_str(),
@@ -69,7 +70,7 @@ std::function<void()> AssetChangeTimer::ProcessTask(const std::string &sessionId
         if (status == SUCCESS) {
             LOG_DEBUG("Asset change task end, start callback, sessionId: %{public}s, assetKey: %{public}s",
                 sessionId.c_str(), assetKey.c_str());
-            watcher_->OnChanged(sessionId, {assetKey});
+            watcher->OnChanged(sessionId, { assetKey });
         }
     };
 }
@@ -105,8 +106,8 @@ uint32_t AssetChangeTimer::HandleAssetChanges(const std::string &sessionId, cons
     }
     status = proxy->OnAssetChanged(flatObjectStore_->GetBundleName(), sessionId, deviceId, assetValue);
     if (status != SUCCESS) {
-        LOG_ERROR("OnAssetChanged failed status: %{public}d, sessionId: %{public}s, assetKey: %{public}s",
-            status, sessionId.c_str(), assetKey.c_str());
+        LOG_ERROR("OnAssetChanged failed status: %{public}d, sessionId: %{public}s, assetKey: %{public}s", status,
+            sessionId.c_str(), assetKey.c_str());
     }
     return status;
 }

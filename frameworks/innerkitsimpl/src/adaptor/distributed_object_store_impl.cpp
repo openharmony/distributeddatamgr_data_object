@@ -154,8 +154,8 @@ uint32_t DistributedObjectStoreImpl::Watch(DistributedObject *object, std::share
     std::shared_ptr<WatcherProxy> watcherProxy = std::make_shared<WatcherProxy>(watcher, object->GetSessionId());
     watcherProxy->SetAssetChangeCallBack(
         [=](const std::string &sessionId, const std::string &assetKey, std::shared_ptr<ObjectWatcher> objectWatcher) {
-            AssetChangeTimer *assetChangeTimer = AssetChangeTimer::GetInstance(flatObjectStore_, objectWatcher);
-            assetChangeTimer->OnAssetChanged(sessionId, assetKey);
+            AssetChangeTimer *assetChangeTimer = AssetChangeTimer::GetInstance(flatObjectStore_);
+            assetChangeTimer->OnAssetChanged(sessionId, assetKey, objectWatcher);
         });
     uint32_t status = flatObjectStore_->Watch(object->GetSessionId(), watcherProxy);
     if (status != SUCCESS) {

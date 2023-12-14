@@ -23,18 +23,20 @@
 namespace OHOS::ObjectStore {
 class AssetChangeTimer {
 public:
-    static AssetChangeTimer *GetInstance(FlatObjectStore *flatObjectStore, std::shared_ptr<ObjectWatcher> watcher);
-    void OnAssetChanged(const std::string &sessionId, const std::string &assetKey);
+    static AssetChangeTimer *GetInstance(FlatObjectStore *flatObjectStore);
+    void OnAssetChanged(
+        const std::string &sessionId, const std::string &assetKey, std::shared_ptr<ObjectWatcher> watcher);
 
 private:
     AssetChangeTimer() = default;
     ~AssetChangeTimer() = default;
     AssetChangeTimer(const AssetChangeTimer &) = delete;
     AssetChangeTimer &operator=(const AssetChangeTimer &) = delete;
-    AssetChangeTimer(FlatObjectStore *flatObjectStore, std::shared_ptr<ObjectWatcher> watcher);
-    void StartTimer(const std::string &sessionId, const std::string &assetKey);
+    AssetChangeTimer(FlatObjectStore *flatObjectStore);
+    void StartTimer(const std::string &sessionId, const std::string &assetKey, std::shared_ptr<ObjectWatcher> watcher);
     void StopTimer(const std::string &sessionId, const std::string &assetKey);
-    std::function<void()> ProcessTask(const std::string &sessionId, const std::string &assetKey);
+    std::function<void()> ProcessTask(
+        const std::string &sessionId, const std::string &assetKey, std::shared_ptr<ObjectWatcher> watcher);
     uint32_t HandleAssetChanges(const std::string &sessionId, const std::string &assetKey);
     bool GetAssetValue(const std::string &sessionId, const std::string &assetKey, Asset &assetValue);
 
@@ -42,7 +44,6 @@ private:
     std::unordered_map<std::string, Executor::TaskId> assetChangeTasks_;
     FlatObjectStore *flatObjectStore_ = nullptr;
     std::shared_ptr<ExecutorPool> executor_;
-    std::shared_ptr<ObjectWatcher> watcher_;
 
     static std::mutex instanceMutex;
     static AssetChangeTimer *instance;
