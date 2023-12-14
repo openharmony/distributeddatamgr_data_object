@@ -972,8 +972,8 @@ describe('objectStoreTest', function () {
      * @tc.name: V9testcreate002
      * @tc.desc: object with asset create distributed data object
      * @tc.type: Function
-     * @tc.number: V9testbindAssetStore003
-	 * @tc.size: bindAssetStore
+     * @tc.number: V9testcreate002
+	 * @tc.size: create
      * @tc.level:
      */
     it('V9testcreate002', 0, function () {
