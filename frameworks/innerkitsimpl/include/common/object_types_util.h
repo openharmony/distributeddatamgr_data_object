@@ -21,10 +21,15 @@
 
 namespace OHOS::ITypesUtil {
 using AssetBindInfo = OHOS::ObjectStore::AssetBindInfo;
+using Asset = OHOS::ObjectStore::Asset;
 
 template<>
-API_EXPORT bool Marshalling(const AssetBindInfo &input, MessageParcel &data);
+bool Marshalling(const AssetBindInfo &input, MessageParcel &data);
 template<>
-API_EXPORT bool Unmarshalling(AssetBindInfo &output, MessageParcel &data);
+bool Unmarshalling(AssetBindInfo &output, MessageParcel &data);
+template<>
+bool Marshalling(const Asset &input, MessageParcel &data);
+template<>
+bool Unmarshalling(Asset &output, MessageParcel &data);
 }
 #endif // DISTRIBUTED_RDB_RDB_TYPES_UTIL_H

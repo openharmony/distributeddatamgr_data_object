@@ -595,4 +595,17 @@ HWTEST_F(NativeCommunicatorTest, DevManager_GetUuidByNodeId_001, TestSize.Level1
     auto ret = DevManager::GetInstance()->GetUuidByNodeId(nodeId);
     EXPECT_EQ(true, ret.empty());
 }
+
+/**
+* @tc.name: DevManager_GetLocalDevice
+* @tc.desc: test DevManager GetLocalDevice.
+* @tc.type: FUNC
+ */
+HWTEST_F(NativeCommunicatorTest, DevManager_GetLocalDevice_001, TestSize.Level1)
+{
+    DevManager *devManager = DevManager::GetInstance();
+    EXPECT_TRUE(devManager != nullptr);
+    DevManager::DetailInfo detailInfo = devManager->GetLocalDevice();
+    EXPECT_EQ(detailInfo.networkId, "");
+}
 }

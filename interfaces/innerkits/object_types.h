@@ -17,7 +17,7 @@
 #define OHOS_OBJECT_ASSET_VALUE_H
 
 #include <string>
-#include "common_values_bucket.h"
+#include "common_types.h"
 
 namespace OHOS {
 namespace ObjectStore {
@@ -31,7 +31,7 @@ struct AssetBindInfo {
 
 using Asset = CommonType::AssetValue;
 using ValuesBucket = CommonType::ValuesBucket;
-using ValueObject = CommonType::ValueObject;
+using ValueObject = CommonType::Value;
 using Assets = std::vector<Asset>;
 
 static const std::string STATUS_SUFFIX = ".status";

@@ -24,6 +24,7 @@ config("objectstore_config") {
     "../../frameworks/innerkitsimpl/include",
     "../../interfaces/innerkits",
     "${kvstore_path}/common",
+    "${relational_store_path}/interfaces/inner_api/common_type/include",
   ]
 
   ldflags = [ "-Wl,--exclude-libs,ALL" ]
@@ -71,7 +72,6 @@ object_external_deps_config = [
   "kv_store:distributeddata_inner",
   "kv_store:distributeddb",
   "samgr:samgr_proxy",
-  "relational_store:common_type",
 ]
 ohos_shared_library("distributeddataobject_impl") {
   branch_protector_ret = "pac_ret"

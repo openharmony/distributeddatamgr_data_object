@@ -14,6 +14,7 @@
  */
 import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it} from 'deccjsunit/index';
 import distributedObject from '@ohos.data.distributedDataObject';
+import commonType from '@ohos.data.commonType';
 import abilityAccessCtrl from '@ohos.abilityAccessCtrl';
 import featureAbility from '@ohos.ability.featureAbility';
 import bundle from '@ohos.bundle';
@@ -75,11 +76,13 @@ describe('objectStoreTest', function () {
 
     console.log(TAG + "*************Unit Test Begin*************");
 
-
     /**
      * @tc.name: V9testsetSessionId001
      * @tc.desc: object join session and on,object can receive callback when data has been changed
-     * @tc.type: FUNC
+     * @tc.type: Function
+     * @tc.number: V9testcreate001
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testcreate001', 0, function () {
         console.log(TAG + "************* V9testcreate001 start *************");
@@ -115,7 +118,10 @@ describe('objectStoreTest', function () {
     /**
      * @tc.name: V9testsetSessionId001
      * @tc.desc: object join session and on,object can receive callback when data has been changed
-     * @tc.type: FUNC
+     * @tc.type: Function
+     * @tc.number: V9testsetSessionId001
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testsetSessionId001', 0, function () {
         console.log(TAG + "************* V9testsetSessionId001 start *************");
@@ -141,7 +147,10 @@ describe('objectStoreTest', function () {
     /**
      * @tc.name: V9testsetSessionId002
      * @tc.desc: object join session and on,object can receive callback when data has been changed
-     * @tc.type: FUNC
+     * @tc.type: Function
+     * @tc.number: V9testsetSessionId002
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testsetSessionId002', 0, function () {
         console.log(TAG + "************* V9testsetSessionId002 start *************");
@@ -164,7 +173,10 @@ describe('objectStoreTest', function () {
     /**
      * @tc.name: V9testsetSessionId003
      * @tc.desc: object join session and on,object can receive callback when data has been changed
-     * @tc.type: FUNC
+     * @tc.type: Function
+     * @tc.number: V9testsetSessionId003
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testsetSessionId003', 0, function () {
         console.log(TAG + "************* V9testsetSessionId003 start *************");
@@ -185,7 +197,10 @@ describe('objectStoreTest', function () {
     /**
      * @tc.name: V9testsetSessionId004
      * @tc.desc: object join session and on,object can receive callback when data has been changed
-     * @tc.type: FUNC
+     * @tc.type: Function
+     * @tc.number: V9testsetSessionId004
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testsetSessionId004', 0, function () {
         console.log(TAG + "************* V9testsetSessionId004 start *************");
@@ -218,7 +233,10 @@ describe('objectStoreTest', function () {
     /**
      * @tc.name: V9testOn001
      * @tc.desc: object join session and on,object can receive callback when data has been changed
-     * @tc.type: FUNC
+     * @tc.type: Function
+     * @tc.number: V9testOn001
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testOn001', 0, function () {
         console.log(TAG + "************* V9testOn001 start *************");
@@ -261,7 +279,10 @@ describe('objectStoreTest', function () {
     /**
      * @tc.name: V9testOn002
      * @tc.desc: object join session and on,then object change data twice,object can receive two callbacks when data has been changed
-     * @tc.type: FUNC
+     * @tc.type: Function
+     * @tc.number: V9testOn002
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testOn002', 0, function () {
         console.log(TAG + "************* V9testOn002 start *************");
@@ -295,7 +316,10 @@ describe('objectStoreTest', function () {
     /**
      * @tc.name: testOn003
      * @tc.desc object join session and on,then object do not change data,object can not receive callbacks
-     * @tc.type: FUNC
+     * @tc.type: Function
+     * @tc.number: testOn003
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testOn003', 0, function () {
         console.log(TAG + "************* V9testOn003 start *************");
@@ -330,7 +354,10 @@ describe('objectStoreTest', function () {
     /**
      * @tc.name V9testOff001
      * @tc.desc object join session and on&off,object can not receive callback after off
-     * @tc.type: FUNC
+     * @tc.type: Function
+     * @tc.number: V9testOff001
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testOff001', 0, function () {
         console.log(TAG + "************* V9testOff001 start *************");
@@ -376,7 +403,10 @@ describe('objectStoreTest', function () {
     /**
      * @tc.name: V9testOff002
      * @tc.desc object join session and off,object can not receive callback
-     * @tc.type: FUNC
+     * @tc.type: Function
+     * @tc.number: V9testOff002
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testOff002', 0, function () {
         console.log(TAG + "************* V9testOff002 start *************");
@@ -407,7 +437,10 @@ describe('objectStoreTest', function () {
     /**
      * @tc.name: V9testOnStatus001
      * @tc.desc: object set a listener to watch another object online/offline
-     * @tc.type: FUNC
+     * @tc.type: Function
+     * @tc.number: V9testOnStatus001
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testOnStatus001', 0, function () {
         console.log(TAG + "************* V9testOnStatus001 start *************");
@@ -433,7 +466,10 @@ describe('objectStoreTest', function () {
     /**
      * @tc.name: V9testOnStatus002
      * @tc.desc: object set several listener and can unWatch all watcher
-     * @tc.type: FUNC
+     * @tc.type: Function
+     * @tc.number: V9testOnStatus002
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testOnStatus002', 0, function () {
         console.log(TAG + "************* V9testOnStatus002 start *************");
@@ -457,7 +493,10 @@ describe('objectStoreTest', function () {
     /**
      * @tc.name: V9testSave001
      * @tc.desc: test save local
-     * @tc.type: FUNC
+     * @tc.type: Function
+     * @tc.number: V9testSave001
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testSave001', 0, async function (done) {
         console.log(TAG + "************* V9testSave001 start *************");
@@ -496,7 +535,10 @@ describe('objectStoreTest', function () {
     /**
      * @tc.name: V9testSave002
      * @tc.desc: test save local
-     * @tc.type: FUNC
+     * @tc.type: Function
+     * @tc.number: V9testSave002
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testSave002', 0, async function (done) {
         console.log(TAG + "************* V9testSave002 start *************");
@@ -533,7 +575,10 @@ describe('objectStoreTest', function () {
     /**
      * @tc.name: V9testSave003
      * @tc.desc: test save local
-     * @tc.type: FUNC
+     * @tc.type: Function
+     * @tc.number: V9testSave003
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testSave003', 0, async function () {
         console.log(TAG + "************* V9testSave003 start *************");
@@ -580,7 +625,10 @@ describe('objectStoreTest', function () {
     /**
      * @tc.name: V9testRevokeSave001
      * @tc.desc: test RevokeSave
-     * @tc.type: FUNC
+     * @tc.type: Function
+     * @tc.number: V9testRevokeSave001
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testRevokeSave001', 0, async function (done) {
         console.log(TAG + "************* V9testRevokeSave001 start *************");
@@ -624,8 +672,11 @@ describe('objectStoreTest', function () {
     /**
      * @tc.name: V9testRevokeSave002
      * @tc.desc: test save local
-     * @tc.type: FUNC
+     * @tc.type: Function
      * @tc.require:
+     * @tc.number: V9testRevokeSave002
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testRevokeSave002', 0, async function () {
         console.log(TAG + "************* V9testRevokeSave002 start *************");
@@ -671,7 +722,10 @@ describe('objectStoreTest', function () {
     /**
      * @tc.name: V9testRevokeSave003
      * @tc.desc: test RevokeSave
-     * @tc.type: FUNC
+     * @tc.type: Function
+     * @tc.number: V9testRevokeSave003
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
      */
     it('V9testRevokeSave003', 0, async function () {
         console.log(TAG + "************* V9testRevokeSave003 start *************");
@@ -706,5 +760,271 @@ describe('objectStoreTest', function () {
         console.log(TAG + "************* V9testRevokeSave003 end *************");
     })
 
+    /**
+     * @tc.name: V9testbindAssetCommunType001
+     * @tc.desc: Test CommType Enum Value
+     * @tc.type: Function
+     * @tc.number: V9testbindAssetCommunType001
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testbindAssetCommunType001', 0, function (done) {
+        console.log(TAG + "************* V9testbindAssetCommunType001 start *************");
+        expect(commonType.AssetStatus.ASSET_NORMAL == 1).assertTrue();
+        expect(commonType.AssetStatus.ASSET_INSERT == 2).assertTrue();
+        expect(commonType.AssetStatus.ASSET_UPDATE == 3).assertTrue();
+        expect(commonType.AssetStatus.ASSET_DELETE == 4).assertTrue();
+        expect(commonType.AssetStatus.ASSET_ABNORMAL == 5).assertTrue();
+        expect(commonType.AssetStatus.ASSET_DOWNLOADING == 6).assertTrue();
+        done();
+    })
+    
+    /**
+     * @tc.name: V9testsetSessionId001
+     * @tc.desc: Test bindAssetStore
+     * @tc.type: Function
+     * @tc.number: V9testbindAssetStore001
+	 * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testbindAssetStore001', 0, function (done) {
+        console.log(TAG + "************* V9testbindAssetStore001 start *************");
+        let g_object = distributedObject.create(context, {
+            title:"bindAssettest-title",
+            content:"bindAssettest-content",
+            mark:"no mark",
+            asset001:
+            {
+                status:0,
+                name:"1.txt",
+                uri:"file://com.example.myapp/data/dir/1.txt",
+                path:"/dir/1.txt",
+                createTime: "2023/11/30 19:48:00",
+                modifyTime: "2023/11/30 20:10:00",
+                size:"1",
+            }
+        });
+
+        expect(g_object == undefined).assertEqual(false);
+        g_object.setSessionId("sessionBA1");
+
+        let asset1 = {
+            name: "name1",
+            uri: "uri1",
+            createTime: "createTime1",
+            modifyTime: "modifyTime1",
+            size: "size1",
+            path: "path1",
+            status: commonType.AssetStatus.ASSET_NORMAL,
+        }
+
+        let asset2 = {
+            name: "name2",
+            uri: "uri2",
+            createTime: "createTime2",
+            modifyTime: "modifyTime2",
+            size: "size2",
+            path: "path2",
+            status: commonType.AssetStatus.ASSET_UPDATE,
+        }
+
+        let asset3 = {
+            name: "name3",
+            uri: "uri3",
+            createTime: "createTime3",
+            modifyTime: "modifyTime3",
+            size: "size3",
+            path: "path3",
+        }
+
+        let result = new Uint8Array(8);
+        for (let i = 0; i < 8; i++) {
+          result[i] = 1;
+        }
+
+        let arr = [asset1, asset2];
+        let bindInfo  = {
+            storeName:"store1",
+            tableName:"table1",
+            primaryKey:{
+                "data1": 123, 
+                "data2": arr, 
+                "data3": asset3, 
+                "data4": 101.5, 
+                "data5": result, 
+                "data6": false, 
+                "data7": null, 
+                "data8": "test1"},
+            field:"field1",
+            assetName:"asset1"
+        }
+        
+        try {
+            g_object.bindAssetStore("asset001", bindInfo, (err, data)=>{
+                expect(err == undefined).assertEqual(true);
+                done();
+            });
+        } catch (error) {
+            console.info(`V9testbindAssetStore001 err is: ${error.code} and msg is: ${error.message}`);
+            expect(null).assertFail();
+            done();
+        }
+    })
+
+    /**
+     * @tc.name: V9testsetSessionId002
+     * @tc.desc: Test bindAssetStore with invalid args
+     * @tc.type: Function
+     * @tc.number: V9testsetSessionId002
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testbindAssetStore002', 0, function (done) {
+        console.log(TAG + "************* V9testbindAssetStore002 start *************");
+        let g_object = distributedObject.create(context, {
+            title:"bindAssettest-title",
+            content:"bindAssettest-content",
+            mark:"no mark",
+            asset002:
+            {
+                status:0,
+                name:"1.txt",
+                uri:"file://com.example.myapp/data/dir/1.txt",
+                path:"/dir/1.txt",
+                createTime: "2023/11/30 19:48:00",
+                modifyTime: "2023/11/30 20:10:00",
+                size:"1",
+            }
+        });
+
+        expect(g_object == undefined).assertEqual(false);
+        g_object.setSessionId("sessionBA2");
+        
+        let bindInfo  = {
+            storeName: undefined,
+            tableName: "table1",
+            primaryKey: {"data1": 123},
+            field: "field1",
+            assetName: "asset1"
+        }
+        
+        try {
+            g_object.bindAssetStore("asset002", bindInfo, (err, data)=>{
+                expect(null).assertFail();
+                done();
+            });
+        } catch (error) {
+            console.info(`V9testbindAssetStore002 err is: ${error.code} and msg is: ${error.message}`);
+            expect(error.code == 401).assertTrue();
+            done();
+        }
+    })
+
+    /**
+     * @tc.name: V9testbindAssetStore003
+     * @tc.desc: Test bindAssetStore with invalid args
+     * @tc.type: Function
+     * @tc.number: V9testbindAssetStore003
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testbindAssetStore003', 0, function (done) {
+        console.log(TAG + "************* V9testbindAssetStore003 start *************");
+        let g_object = distributedObject.create(context, {
+            title:"bindAssettest-title",
+            content:"bindAssettest-content",
+            mark:"no mark",
+            asset003:
+            {
+                status:0,
+                name:"1.txt",
+                uri:"file://com.example.myapp/data/dir/1.txt",
+                path:"/dir/1.txt",
+                createTime: "2023/11/30 19:48:00",
+                modifyTime: "2023/11/30 20:10:00",
+                size:"1",
+            }
+        });
+        
+        expect(g_object == undefined).assertEqual(false);
+        g_object.setSessionId("sessionBA2");
+        let bindInfo  = {
+            storeName:"name1",
+            tableName: null,
+            primaryKey:{"data1": 123},
+            field:"field1",
+            assetName:"asset1"
+        }
+        
+        try {
+            g_object.bindAssetStore("asset003", bindInfo, (err, data)=>{
+                expect(null).assertFail();
+                done();
+            });
+        } catch (error) {
+            console.info(`V9testbindAssetStore003 err is: ${error.code} and msg is: ${error.message}`);
+            expect(error.code == 401).assertTrue();
+            done();
+        }
+    })
+
+    /**
+     * @tc.name: V9testcreate002
+     * @tc.desc: object with asset create distributed data object
+     * @tc.type: Function
+     * @tc.number: V9testcreate002
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testcreate002', 0, function () {
+        console.log(TAG + "************* V9testcreate002 start *************");
+        var g_object;
+        const attachment = {
+            status: 0,
+            name: "1.txt",
+            uri: "file://com.example.myapplication/data/storage/el2/distributedfiles/dir/1.txt",
+            path: "/dir/1.txt",
+            createTime: "2023-11-26 10:00:00",
+            modifyTime: "2023-11-26 10:00:00",
+            size: "1"
+        };
+        try {
+            g_object = distributedObject.create(context, {
+                title: "my note",
+                content: "It's a nice day today.",
+                mark: false,
+                attachment
+            });
+        } catch (error) {
+            console.info(error.code + error.message);
+        }
+        expect(g_object === undefined).assertEqual(false);
+
+        g_object.setSessionId("123456").then((data) => {
+            console.info(TAG + "V9testcreate002");
+            console.info(TAG + data);
+        }).catch((error) => {
+            console.info(TAG + error);
+        });
+
+        try {
+            g_object.attachment = {};
+        } catch (error) {
+            expect(error.code === 401).assertEqual(true);
+            expect(error.message === "cannot set attachment by non Asset type data").assertEqual(true);
+        }
+
+        g_object.setSessionId("").then((data) => {
+            console.info(TAG + "V9testcreate002");
+            console.info(TAG + data);
+        }).catch((error) => {
+            console.info(TAG + error);
+        });
+
+        console.log(TAG + "************* V9testcreate002 end *************");
+        g_object.setSessionId((error, data) => {
+            console.info(TAG + error + "," + data);
+        });
+    })
     console.log(TAG + "*************Unit Test End*************");
 })

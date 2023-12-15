@@ -28,4 +28,16 @@ bool Unmarshalling(AssetBindInfo &output, MessageParcel &data)
     return ITypesUtil::Unmarshal(data, output.storeName, output.tableName, output.primaryKey, output.field,
         output.assetName);
 }
+template<>
+bool Marshalling(const Asset &input, MessageParcel &data)
+{
+    return ITypesUtil::Marshal(data, input.name, input.uri, input.path, input.createTime,
+        input.modifyTime, input.size, input.status, input.hash);
+}
+template<>
+bool Unmarshalling(Asset &output, MessageParcel &data)
+{
+    return ITypesUtil::Unmarshal(data, output.name, output.uri, output.path, output.createTime,
+        output.modifyTime, output.size, output.status, output.hash);
+}
 }
