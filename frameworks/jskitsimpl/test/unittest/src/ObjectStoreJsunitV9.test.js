@@ -1007,6 +1007,13 @@ describe('objectStoreTest', function () {
             console.info(TAG + error);
         });
 
+        try {
+            g_object.attachment = {};
+        } catch (error) {
+            expect(error.code === 401).assertEqual(true);
+            expect(error.message === "cannot set attachment by non Asset type data").assertEqual(true);
+        }
+
         g_object.setSessionId("").then((data) => {
             console.info(TAG + "V9testcreate002");
             console.info(TAG + data);
