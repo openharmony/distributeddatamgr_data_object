@@ -246,7 +246,6 @@ napi_status JSUtil::GetValue(napi_env env, napi_value in, ValuesBucket &out)
         static_cast<napi_key_filter>(napi_key_enumerable | napi_key_skip_symbols),
         napi_key_numbers_to_strings, &values);
     napi_status status = napi_get_array_length(env, values, &count);
-    LOG_INFO("array length: %{public}d", count);
     LOG_ERROR_RETURN(status == napi_ok && count > 0, "get ValuesBucket failed", napi_invalid_arg);
     napi_value key = nullptr;
     napi_value val = nullptr;
