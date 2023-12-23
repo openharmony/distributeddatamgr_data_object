@@ -131,10 +131,10 @@ uint32_t ProcessCommunicatorImpl::GetMtuSize()
 
 uint32_t ProcessCommunicatorImpl::GetMtuSize(const DeviceInfos &devInfo)
 {
-    LOG_INFO("GetMtuSize start");
+    LOG_DEBUG("GetMtuSize start");
     std::vector<DeviceInfo> devInfos = CommunicationProvider::GetInstance().GetDeviceList();
     for (auto const &entry : devInfos) {
-        LOG_INFO("GetMtuSize deviceType: %{public}s", entry.deviceType.c_str());
+        LOG_DEBUG("GetMtuSize deviceType: %{public}s", entry.deviceType.c_str());
         bool isWatch = (entry.deviceType == SMART_WATCH_TYPE || entry.deviceType == CHILDREN_WATCH_TYPE);
         if (entry.deviceId == devInfo.identifier && isWatch) {
             return MTU_SIZE_WATCH;
