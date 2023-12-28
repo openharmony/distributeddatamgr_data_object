@@ -80,8 +80,7 @@
             "test": [
                 "//foundation/distributeddatamgr/data_object/frameworks/innerkitsimpl/test/unittest:unittest",
                 "//foundation/distributeddatamgr/data_object/frameworks/jskitsimpl/test/unittest:unittest",
-                "//foundation/distributeddatamgr/data_object/frameworks/innerkitsimpl/test/fuzztest/objectstore_fuzzer:fuzztest",
-                "//foundation/distributeddatamgr/data_object/frameworks/innerkitsimpl/test/distributedtest/data_object_test:distributedtest"
+                "//foundation/distributeddatamgr/data_object/frameworks/innerkitsimpl/test/fuzztest/objectstore_fuzzer:fuzztest"
             ]
         }
     }
