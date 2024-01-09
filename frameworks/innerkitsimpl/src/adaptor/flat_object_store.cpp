@@ -373,14 +373,14 @@ uint32_t CacheManager::Save(const std::string &bundleName, const std::string &se
     const std::map<std::string, std::vector<uint8_t>> &objectData)
 {
     std::unique_lock<std::mutex> lck(mutex_);
-    ConditionLock<int32_t> conditionLock;
+    auto conditionLock = std::make_shared<ConditionLock<int32_t>>();
     int32_t status = SaveObject(bundleName, sessionId, deviceId, objectData,
-        [this, &deviceId, &conditionLock](const std::map<std::string, int32_t> &results) {
+        [&deviceId, conditionLock](const std::map<std::string, int32_t> &results) {
             LOG_INFO("CacheManager::task callback");
             if (results.count(deviceId) != 0) {
-                conditionLock.Notify(results.at(deviceId));
+                conditionLock->Notify(results.at(deviceId));
             } else {
-                conditionLock.Notify(ERR_DB_GET_FAIL);
+                conditionLock->Notify(ERR_DB_GET_FAIL);
             }
         });
     if (status != SUCCESS) {
@@ -388,7 +388,7 @@ uint32_t CacheManager::Save(const std::string &bundleName, const std::string &se
         return status;
     }
     LOG_INFO("CacheManager::start wait");
-    status = conditionLock.Wait();
+    status = conditionLock->Wait();
     LOG_INFO("CacheManager::end wait, %{public}d", status);
     return status == SUCCESS ? status : ERR_DB_GET_FAIL;
 }
