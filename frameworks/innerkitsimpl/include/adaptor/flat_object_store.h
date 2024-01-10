@@ -53,6 +53,7 @@ private:
     int32_t RevokeSaveObject(
         const std::string &bundleName, const std::string &sessionId, std::function<void(int32_t)> &callback);
     std::mutex mutex_;
+    static constexpr uint32_t WAIT_TIME = 5;
 };
 
 class FlatObjectStore {

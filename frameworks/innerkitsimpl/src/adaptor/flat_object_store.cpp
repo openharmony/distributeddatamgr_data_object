@@ -15,6 +15,8 @@
 
 #include "flat_object_store.h"
 
+#include "block_data.h"
+#include "bytes_utils.h"
 #include "client_adaptor.h"
 #include "distributed_objectstore_impl.h"
 #include "logger.h"
@@ -23,7 +25,6 @@
 #include "objectstore_errors.h"
 #include "softbus_adapter.h"
 #include "string_utils.h"
-#include "bytes_utils.h"
 
 namespace OHOS::ObjectStore {
 FlatObjectStore::FlatObjectStore(const std::string &bundleName)
@@ -373,14 +374,14 @@ uint32_t CacheManager::Save(const std::string &bundleName, const std::string &se
     const std::map<std::string, std::vector<uint8_t>> &objectData)
 {
     std::unique_lock<std::mutex> lck(mutex_);
-    auto conditionLock = std::make_shared<ConditionLock<int32_t>>();
+    auto block = std::make_shared<BlockData<std::tuple<bool, int32_t>>>(WAIT_TIME, std::tuple{ true, SUCCESS });
     int32_t status = SaveObject(bundleName, sessionId, deviceId, objectData,
-        [&deviceId, conditionLock](const std::map<std::string, int32_t> &results) {
+        [&deviceId, block](const std::map<std::string, int32_t> &results) {
             LOG_INFO("CacheManager::task callback");
             if (results.count(deviceId) != 0) {
-                conditionLock->Notify(results.at(deviceId));
+                block->SetValue({ false, results.at(deviceId) });
             } else {
-                conditionLock->Notify(ERR_DB_GET_FAIL);
+                block->SetValue({ false, ERR_DB_GET_FAIL });
             }
         });
     if (status != SUCCESS) {
@@ -388,9 +389,9 @@ uint32_t CacheManager::Save(const std::string &bundleName, const std::string &se
         return status;
     }
     LOG_INFO("CacheManager::start wait");
-    status = conditionLock->Wait();
-    LOG_INFO("CacheManager::end wait, %{public}d", status);
-    return status == SUCCESS ? status : ERR_DB_GET_FAIL;
+    auto [timeout, res] = block->GetValue();
+    LOG_INFO("CacheManager::end wait, %{public}d, %{public}d", timeout, res);
+    return (!timeout && res == SUCCESS) ? SUCCESS : ERR_DB_GET_FAIL;
 }
 
 uint32_t CacheManager::RevokeSave(const std::string &bundleName, const std::string &sessionId)
