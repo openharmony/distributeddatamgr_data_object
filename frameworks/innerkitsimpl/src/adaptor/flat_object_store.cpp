@@ -436,7 +436,7 @@ int32_t CacheManager::SaveObject(const std::string &bundleName, const std::strin
 }
 
 int32_t CacheManager::RevokeSaveObject(
-    const std::string &bundleName, const std::string &sessionId, std::function<void(int32_t)> &callback)
+    const std::string &bundleName, const std::string &sessionId, const std::function<void(int32_t)> &callback)
 {
     sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
     if (proxy == nullptr) {
