@@ -374,7 +374,7 @@ uint32_t CacheManager::Save(const std::string &bundleName, const std::string &se
     const std::map<std::string, std::vector<uint8_t>> &objectData)
 {
     std::unique_lock<std::mutex> lck(mutex_);
-    auto block = std::make_shared<BlockData<std::tuple<bool, int32_t>>>(WAIT_TIME, std::tuple{ true, SUCCESS });
+    auto block = std::make_shared<BlockData<std::tuple<bool, int32_t>>>(WAIT_TIME, std::tuple{ true, ERR_DB_GET_FAIL });
     int32_t status = SaveObject(bundleName, sessionId, deviceId, objectData,
         [&deviceId, block](const std::map<std::string, int32_t> &results) {
             LOG_INFO("CacheManager::task callback");
@@ -391,7 +391,7 @@ uint32_t CacheManager::Save(const std::string &bundleName, const std::string &se
     LOG_INFO("CacheManager::start wait");
     auto [timeout, res] = block->GetValue();
     LOG_INFO("CacheManager::end wait, %{public}d, %{public}d", timeout, res);
-    return (!timeout && res == SUCCESS) ? SUCCESS : ERR_DB_GET_FAIL;
+    return res;
 }
 
 uint32_t CacheManager::RevokeSave(const std::string &bundleName, const std::string &sessionId)
