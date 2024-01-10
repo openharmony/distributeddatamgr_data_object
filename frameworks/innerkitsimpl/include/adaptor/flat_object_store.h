@@ -21,7 +21,6 @@
 
 #include "bytes.h"
 #include "flat_object_storage_engine.h"
-#include "condition_lock.h"
 #include "distributed_object.h"
 #include "object_types.h"
 
@@ -51,7 +50,7 @@ private:
         const std::string &deviceId, const std::map<std::string, std::vector<uint8_t>> &objectData,
         const std::function<void(const std::map<std::string, int32_t> &)> &callback);
     int32_t RevokeSaveObject(
-        const std::string &bundleName, const std::string &sessionId, std::function<void(int32_t)> &callback);
+        const std::string &bundleName, const std::string &sessionId, const std::function<void(int32_t)> &callback);
     std::mutex mutex_;
     static constexpr uint32_t WAIT_TIME = 5;
 };

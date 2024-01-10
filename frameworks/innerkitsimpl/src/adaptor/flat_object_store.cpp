@@ -397,20 +397,19 @@ uint32_t CacheManager::Save(const std::string &bundleName, const std::string &se
 uint32_t CacheManager::RevokeSave(const std::string &bundleName, const std::string &sessionId)
 {
     std::unique_lock<std::mutex> lck(mutex_);
-    ConditionLock<int32_t> conditionLock;
-    std::function<void(int32_t)> callback = [this, &conditionLock](int32_t result) {
+    auto block = std::make_shared<BlockData<std::tuple<bool, int32_t>>>(WAIT_TIME, std::tuple{ true, ERR_DB_GET_FAIL });
+    int32_t status = RevokeSaveObject(bundleName, sessionId, [block](int32_t result) {
         LOG_INFO("CacheManager::task callback");
-        conditionLock.Notify(result);
-    };
-    int32_t status = RevokeSaveObject(bundleName, sessionId, callback);
+        block->SetValue({ false, result });
+    });
     if (status != SUCCESS) {
         LOG_ERROR("RevokeSaveObject failed");
         return status;
     }
     LOG_INFO("CacheManager::start wait");
-    status = conditionLock.Wait();
-    LOG_INFO("CacheManager::end wait, %{public}d", status);
-    return status == SUCCESS ? status : ERR_DB_GET_FAIL;
+    auto [timeout, res] = block->GetValue();
+    LOG_INFO("CacheManager::end wait, %{public}d, %{public}d", timeout, res);
+    return res;
 }
 
 int32_t CacheManager::SaveObject(const std::string &bundleName, const std::string &sessionId,

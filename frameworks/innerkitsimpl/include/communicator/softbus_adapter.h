@@ -25,7 +25,6 @@
 #include "app_device_status_change_listener.h"
 #include "app_types.h"
 #include "concurrent_map.h"
-#include "condition_lock.h"
 #include "session.h"
 #include "softbus_bus_center.h"
 #include "task_scheduler.h"
