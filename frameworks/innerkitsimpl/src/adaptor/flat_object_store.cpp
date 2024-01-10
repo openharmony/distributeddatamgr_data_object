@@ -390,7 +390,7 @@ uint32_t CacheManager::Save(const std::string &bundleName, const std::string &se
     }
     LOG_INFO("CacheManager::start wait");
     auto [timeout, res] = block->GetValue();
-    LOG_INFO("CacheManager::end wait, %{public}d, %{public}d", timeout, res);
+    LOG_INFO("CacheManager::end wait, timeout: %{public}d, result: %{public}d", timeout, res);
     return res;
 }
 
@@ -408,7 +408,7 @@ uint32_t CacheManager::RevokeSave(const std::string &bundleName, const std::stri
     }
     LOG_INFO("CacheManager::start wait");
     auto [timeout, res] = block->GetValue();
-    LOG_INFO("CacheManager::end wait, %{public}d, %{public}d", timeout, res);
+    LOG_INFO("CacheManager::end wait, timeout: %{public}d, result: %{public}d", timeout, res);
     return res;
 }
 
