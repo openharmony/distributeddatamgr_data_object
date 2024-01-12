@@ -164,7 +164,7 @@ std::vector<DeviceInfo> SoftBusAdapter::GetDeviceList() const
         LOG_ERROR("GetAllNodeDeviceInfo error");
         return dis;
     }
-    LOG_INFO("GetAllNodeDeviceInfo success infoNum=%{public}d", infoNum);
+    LOG_DEBUG("GetAllNodeDeviceInfo success infoNum=%{public}d", infoNum);
 
     for (int i = 0; i < infoNum; i++) {
         std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(std::string(info[i].networkId));
@@ -731,7 +731,6 @@ void AppDataListenerWrap::OnMessageReceived(int sessionId, const void *data, uns
 
 void AppDataListenerWrap::OnBytesReceived(int sessionId, const void *data, unsigned int dataLen)
 {
-    LOG_INFO("begin");
     if (sessionId == INVALID_SESSION_ID) {
         return;
     }
