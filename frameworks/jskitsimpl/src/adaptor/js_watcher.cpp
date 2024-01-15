@@ -27,8 +27,6 @@ namespace OHOS::ObjectStore {
 JSWatcher::JSWatcher(const napi_env env, DistributedObjectStore *objectStore, DistributedObject *object)
     : UvQueue(env), env_(env)
 {
-    changeEventListener_ = new ChangeEventListener(this, objectStore, object);
-    statusEventListener_ = new StatusEventListener(this, object->GetSessionId());
 }
 
 JSWatcher::~JSWatcher()
@@ -193,6 +191,11 @@ bool JSWatcher::IsEmpty()
     return false;
 }
 
+void JSWatcher::SetListener(ChangeEventListener *changeEventListener, StatusEventListener *statusEventListener){
+    changeEventListener_ = changeEventListener;
+    statusEventListener_ = statusEventListener;
+}
+
 EventHandler *EventListener::Find(napi_env env, napi_value handler)
 {
     EventHandler *result = nullptr;
@@ -277,17 +280,17 @@ bool EventListener::Add(napi_env env, napi_value handler)
 
 void WatcherImpl::OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData)
 {
-    if (watcher_ == nullptr) {
-        LOG_ERROR("watcher_ is null");
-        return;
+    if (auto lockedWatcher = watcher_.lock()) {
+        lockedWatcher->Emit(Constants::CHANGE, sessionid, changedData);
+    } else {
+        LOG_ERROR("watcher_ is expired");
     }
-    watcher_->Emit(Constants::CHANGE, sessionid, changedData);
 }
 
 WatcherImpl::~WatcherImpl()
 {
     LOG_ERROR("destroy");
-    watcher_ = nullptr;
+    // watcher_ = nullptr;
 }
 
 bool ChangeEventListener::Add(napi_env env, napi_value handler)
@@ -335,7 +338,7 @@ void ChangeEventListener::Clear(napi_env env)
 }
 
 ChangeEventListener::ChangeEventListener(
-    JSWatcher *watcher, DistributedObjectStore *objectStore, DistributedObject *object)
+    std::weak_ptr<JSWatcher> watcher, DistributedObjectStore *objectStore, DistributedObject *object)
     : objectStore_(objectStore), object_(object), watcher_(watcher)
 {
 }
@@ -363,7 +366,7 @@ void StatusEventListener::Clear(napi_env env)
     EventListener::Clear(env);
 }
 
-StatusEventListener::StatusEventListener(JSWatcher *watcher, const std::string &sessionId)
+StatusEventListener::StatusEventListener(std::weak_ptr<JSWatcher> watcher, const std::string &sessionId)
     : watcher_(watcher), sessionId_(sessionId)
 {
 }
