@@ -424,16 +424,21 @@ void FlatObjectStorageEngine::NotifyStatus(const std::string &sessionId, const s
     statusWatcher_->OnChanged(sessionId, deviceId, status);
 }
 
-void FlatObjectStorageEngine::NotifyChange(const std::string &sessionId,
-                                           const std::map<std::string, std::vector<uint8_t>> &changedData)
+
+void FlatObjectStorageEngine::NotifyChange(
+    const std::string &sessionId, const std::map<std::string, std::vector<uint8_t>> &changedData)
 {
     std::lock_guard<std::mutex> lock(operationMutex_);
     if (observerMap_.count(sessionId) == 0) {
         return;
     }
-    std::vector<std::string> data {};
+    std::vector<std::string> data{};
     for (const auto &item : changedData) {
-        data.push_back(item.first);
+        std::string key = item.first;
+        if (key.compare(0, FIELDS_PREFIX_LEN, FIELDS_PREFIX) == 0) {
+            key = key.substr(FIELDS_PREFIX_LEN);
+        }
+        data.push_back(key);
     }
     observerMap_[sessionId]->OnChanged(sessionId, data);
 }
