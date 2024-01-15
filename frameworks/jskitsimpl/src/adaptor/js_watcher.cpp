@@ -290,7 +290,6 @@ void WatcherImpl::OnChanged(const std::string &sessionid, const std::vector<std:
 WatcherImpl::~WatcherImpl()
 {
     LOG_ERROR("destroy");
-    // watcher_ = nullptr;
 }
 
 bool ChangeEventListener::Add(napi_env env, napi_value handler)
