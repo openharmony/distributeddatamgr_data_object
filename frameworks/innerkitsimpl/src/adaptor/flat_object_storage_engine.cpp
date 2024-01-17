@@ -424,7 +424,6 @@ void FlatObjectStorageEngine::NotifyStatus(const std::string &sessionId, const s
     statusWatcher_->OnChanged(sessionId, deviceId, status);
 }
 
-
 void FlatObjectStorageEngine::NotifyChange(const std::string &sessionId,
                                            const std::map<std::string, std::vector<uint8_t>> &changedData)
 {
