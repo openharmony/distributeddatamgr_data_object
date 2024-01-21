@@ -191,7 +191,8 @@ bool JSWatcher::IsEmpty()
     return false;
 }
 
-void JSWatcher::SetListener(ChangeEventListener *changeEventListener, StatusEventListener *statusEventListener){
+void JSWatcher::SetListener(ChangeEventListener *changeEventListener, StatusEventListener *statusEventListener)
+{
     changeEventListener_ = changeEventListener;
     statusEventListener_ = statusEventListener;
 }

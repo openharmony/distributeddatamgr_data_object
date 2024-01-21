@@ -56,7 +56,8 @@ public:
 
 class ChangeEventListener : public EventListener {
 public:
-    ChangeEventListener(std::weak_ptr<JSWatcher> watcher, DistributedObjectStore *objectStore, DistributedObject *object);
+    ChangeEventListener(
+        std::weak_ptr<JSWatcher> watcher, DistributedObjectStore *objectStore, DistributedObject *object);
 
     bool Add(napi_env env, napi_value handler) override;
 

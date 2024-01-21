@@ -62,8 +62,8 @@ void NotifierImpl::OnChanged(
         std::shared_ptr<JSWatcher> lockedWatcher = watchers_.at(sessionId).lock();
         if (lockedWatcher) {
             lockedWatcher->Emit("status", sessionId, networkId, onlineStatus);
-            LOG_INFO(
-            "end emit %{public}s %{public}s %{public}s", sessionId.c_str(), networkId.c_str(), onlineStatus.c_str());
+            LOG_INFO("end emit %{public}s %{public}s %{public}s", sessionId.c_str(), networkId.c_str(),
+                onlineStatus.c_str());
         } else {
             LOG_ERROR("watcher expired");
         }
