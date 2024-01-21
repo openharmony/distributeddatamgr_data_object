@@ -280,10 +280,11 @@ bool EventListener::Add(napi_env env, napi_value handler)
 
 void WatcherImpl::OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData)
 {
-    if (auto lockedWatcher = watcher_.lock()) {
+    std::shared_ptr<JSWatcher> lockedWatcher = watcher_.lock();
+    if (lockedWatcher) {
         lockedWatcher->Emit(Constants::CHANGE, sessionid, changedData);
     } else {
-        LOG_ERROR("watcher_ is expired");
+        LOG_ERROR("watcher expired");
     }
 }
 

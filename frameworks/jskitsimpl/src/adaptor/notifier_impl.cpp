@@ -59,14 +59,14 @@ void NotifierImpl::OnChanged(
     if (watchers_.count(sessionId) != 0) {
         LOG_INFO(
             "start emit %{public}s %{public}s %{public}s", sessionId.c_str(), networkId.c_str(), onlineStatus.c_str());
-        std::shared_ptr<JSWatcher> sharedWatcher = watchers_.at(sessionId).lock();
-        if (sharedWatcher) {
-            sharedWatcher->Emit("status", sessionId, networkId, onlineStatus);
-        } else {
-            std::cout << "Weak pointer has expired." << std::endl;
-        }
-        LOG_INFO(
+        std::shared_ptr<JSWatcher> lockedWatcher = watchers_.at(sessionId).lock();
+        if (lockedWatcher) {
+            lockedWatcher->Emit("status", sessionId, networkId, onlineStatus);
+            LOG_INFO(
             "end emit %{public}s %{public}s %{public}s", sessionId.c_str(), networkId.c_str(), onlineStatus.c_str());
+        } else {
+            LOG_ERROR("watcher expired");
+        }
     }
 }
 NotifierImpl::~NotifierImpl()
