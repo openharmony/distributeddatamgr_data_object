@@ -42,6 +42,10 @@ bool JSObjectWrapper::AddWatch(napi_env env, const char *type, napi_value handle
     std::unique_lock<std::shared_mutex> cacheLock(watchMutex_);
     if (watcher_ == nullptr) {
         watcher_ = std::make_shared<JSWatcher>(env, objectStore_, object_);
+        std::weak_ptr<JSWatcher> watcher = watcher_;
+        auto changeEventListener = new ChangeEventListener(watcher, objectStore_, object_);
+        auto statusEventListener = new StatusEventListener(watcher, object_->GetSessionId());
+        watcher_->SetListener(changeEventListener, statusEventListener);
     }
     return watcher_->On(type, handler);
 }

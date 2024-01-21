@@ -38,7 +38,7 @@ std::shared_ptr<NotifierImpl> NotifierImpl::GetInstance()
     return instance;
 }
 
-void NotifierImpl::AddWatcher(std::string &sessionId, JSWatcher *watcher)
+void NotifierImpl::AddWatcher(std::string &sessionId, std::weak_ptr<JSWatcher> watcher)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     watchers_.insert_or_assign(sessionId, watcher);
@@ -59,9 +59,14 @@ void NotifierImpl::OnChanged(
     if (watchers_.count(sessionId) != 0) {
         LOG_INFO(
             "start emit %{public}s %{public}s %{public}s", sessionId.c_str(), networkId.c_str(), onlineStatus.c_str());
-        watchers_.at(sessionId)->Emit("status", sessionId, networkId, onlineStatus);
-        LOG_INFO(
-            "end emit %{public}s %{public}s %{public}s", sessionId.c_str(), networkId.c_str(), onlineStatus.c_str());
+        std::shared_ptr<JSWatcher> lockedWatcher = watchers_.at(sessionId).lock();
+        if (lockedWatcher) {
+            lockedWatcher->Emit("status", sessionId, networkId, onlineStatus);
+            LOG_INFO("end emit %{public}s %{public}s %{public}s", sessionId.c_str(), networkId.c_str(),
+                onlineStatus.c_str());
+        } else {
+            LOG_ERROR("watcher expired");
+        }
     }
 }
 NotifierImpl::~NotifierImpl()

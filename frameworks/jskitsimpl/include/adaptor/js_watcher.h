@@ -56,7 +56,8 @@ public:
 
 class ChangeEventListener : public EventListener {
 public:
-    ChangeEventListener(JSWatcher *watcher, DistributedObjectStore *objectStore, DistributedObject *object);
+    ChangeEventListener(
+        std::weak_ptr<JSWatcher> watcher, DistributedObjectStore *objectStore, DistributedObject *object);
 
     bool Add(napi_env env, napi_value handler) override;
 
@@ -67,19 +68,19 @@ private:
     bool isWatched_ = false;
     DistributedObjectStore *objectStore_;
     DistributedObject *object_;
-    JSWatcher *watcher_;
+    std::weak_ptr<JSWatcher> watcher_;
 };
 
 class StatusEventListener : public EventListener {
 public:
-    StatusEventListener(JSWatcher *watcher, const std::string &sessionId);
+    StatusEventListener(std::weak_ptr<JSWatcher> watcher, const std::string &sessionId);
     bool Add(napi_env env, napi_value handler) override;
 
     bool Del(napi_env env, napi_value handler) override;
 
     void Clear(napi_env env) override;
 private:
-    JSWatcher *watcher_;
+    std::weak_ptr<JSWatcher> watcher_;
     std::string sessionId_;
 };
 
@@ -98,6 +99,8 @@ public:
     void Emit(const char *type, const std::string &sessionId, const std::string &networkId, const std::string &status);
     
     bool IsEmpty();
+
+    void SetListener(ChangeEventListener *changeEventListener, StatusEventListener *statusEventListener);
 private:
     struct ChangeArgs {
         ChangeArgs(const napi_ref callback, const std::string &sessionId, const std::vector<std::string> &changeData);
@@ -123,7 +126,7 @@ private:
 
 class WatcherImpl : public ObjectWatcher {
 public:
-    WatcherImpl(JSWatcher *watcher) : watcher_(watcher)
+    WatcherImpl(std::weak_ptr<JSWatcher> watcher) : watcher_(watcher)
     {
     }
 
@@ -132,7 +135,7 @@ public:
     void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override;
 
 private:
-    JSWatcher *watcher_ = nullptr;
+    std::weak_ptr<JSWatcher> watcher_;
 };
 } // namespace OHOS::ObjectStore
 

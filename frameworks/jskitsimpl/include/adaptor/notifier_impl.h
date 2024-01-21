@@ -25,14 +25,14 @@ class NotifierImpl : public StatusNotifier {
 public:
     static std::shared_ptr<NotifierImpl> GetInstance();
     virtual ~NotifierImpl();
-    void AddWatcher(std::string &sessionId, JSWatcher *watcher);
+    void AddWatcher(std::string &sessionId, std::weak_ptr<JSWatcher> watcher);
     void DelWatcher(std::string &sessionId);
     void OnChanged(
         const std::string &sessionId, const std::string &networkId, const std::string &onlineStatus) override;
 
 private:
     std::mutex mutex_;
-    std::map<std::string, JSWatcher *> watchers_;
+    std::map<std::string, std::weak_ptr<JSWatcher>> watchers_;
 };
 } // namespace OHOS::ObjectStore
 #endif // JS_NOTIFIER_IMPL_H
