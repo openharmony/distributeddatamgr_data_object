@@ -24,7 +24,8 @@ public:
     MockFlatObjectWatcher(const std::string &sessionId) : FlatObjectWatcher(sessionId)
     {
     }
-    void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override
+    void OnChanged(
+        const std::string &sessionid, const std::vector<std::string> &changedData, bool enableTransfer) override
     {
     }
 };

@@ -47,12 +47,14 @@ constexpr HiLogLabel LABEL = { LOG_CORE, 0, "DistributedTest" };
 class TableWatcherImpl : public TableWatcher {
 public:
     explicit TableWatcherImpl(const std::string &sessionId) : TableWatcher(sessionId) {}
-    void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override;
+    void OnChanged(
+        const std::string &sessionid, const std::vector<std::string> &changedData, bool enableTransfer) override;
     virtual ~TableWatcherImpl();
 };
 
 TableWatcherImpl::~TableWatcherImpl() {}
-void TableWatcherImpl::OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) {}
+void TableWatcherImpl::OnChanged(
+    const std::string &sessionid, const std::vector<std::string> &changedData, bool enableTransfer) {}
 
 class StatusNotifierImpl : public StatusWatcher {
 public:

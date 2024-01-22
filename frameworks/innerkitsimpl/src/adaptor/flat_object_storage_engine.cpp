@@ -433,9 +433,13 @@ void FlatObjectStorageEngine::NotifyChange(const std::string &sessionId,
     }
     std::vector<std::string> data {};
     for (const auto &item : changedData) {
-        data.push_back(item.first);
+        std::string key = item.first;
+        if (key.compare(0, FIELDS_PREFIX_LEN, FIELDS_PREFIX) == 0) {
+            key = key.substr(FIELDS_PREFIX_LEN);
+        }
+        data.push_back(key);
     }
-    observerMap_[sessionId]->OnChanged(sessionId, data);
+    observerMap_[sessionId]->OnChanged(sessionId, data, false);
 }
     
 void Watcher::OnChange(const DistributedDB::KvStoreChangedData &data)
@@ -458,7 +462,7 @@ void Watcher::OnChange(const DistributedDB::KvStoreChangedData &data)
             changedData.push_back(tmp.substr(FIELDS_PREFIX_LEN));
         }
     }
-    this->OnChanged(sessionId_, changedData);
+    this->OnChanged(sessionId_, changedData, true);
 }
 
 Watcher::Watcher(const std::string &sessionId) : sessionId_(sessionId)

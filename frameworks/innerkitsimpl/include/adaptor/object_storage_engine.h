@@ -33,7 +33,8 @@ public:
     TableWatcher(const std::string &sessionId) : Watcher(sessionId)
     {
     }
-    virtual void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) = 0;
+    virtual void OnChanged(
+        const std::string &sessionId, const std::vector<std::string> &changedData, bool enableTransfer) = 0;
 };
 
 class StatusWatcher {
