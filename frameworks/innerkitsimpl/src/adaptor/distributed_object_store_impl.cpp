@@ -208,7 +208,8 @@ WatcherProxy::WatcherProxy(const std::shared_ptr<ObjectWatcher> objectWatcher, c
 {
 }
 
-void WatcherProxy::OnChanged(const std::string &sessionId, const std::vector<std::string> &changedData, bool enableTransfer)
+void WatcherProxy::OnChanged(
+    const std::string &sessionId, const std::vector<std::string> &changedData, bool enableTransfer)
 {
     std::unordered_set<std::string> transferKeys;
     std::vector<std::string> otherKeys;
