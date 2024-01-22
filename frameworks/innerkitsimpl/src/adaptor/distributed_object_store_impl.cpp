@@ -208,27 +208,27 @@ WatcherProxy::WatcherProxy(const std::shared_ptr<ObjectWatcher> objectWatcher, c
 {
 }
 
-void WatcherProxy::OnChanged(const std::string &sessionId, const std::vector<std::string> &changedData)
+void WatcherProxy::OnChanged(const std::string &sessionId, const std::vector<std::string> &changedData, bool enableTransfer)
 {
-    std::unordered_set<std::string> assetKeys;
+    std::unordered_set<std::string> transferKeys;
     std::vector<std::string> otherKeys;
     for (const auto &str : changedData) {
-        if (str.find(ASSET_DOT) == std::string::npos) {
+        if (!enableTransfer || str.find(ASSET_DOT) == std::string::npos) {
             if (str != DEVICEID_KEY) {
                 otherKeys.push_back(str);
             }
         } else {
             std::string assetKey;
             if (FindChangedAssetKey(str, assetKey)) {
-                assetKeys.insert(assetKey);
+                transferKeys.insert(assetKey);
             }
         }
     }
     if (!otherKeys.empty()) {
         objectWatcher_->OnChanged(sessionId, otherKeys);
     }
-    if (assetChangeCallback_ != nullptr && !assetKeys.empty()) {
-        for (auto &assetKey : assetKeys) {
+    if (assetChangeCallback_ != nullptr && !transferKeys.empty()) {
+        for (auto &assetKey : transferKeys) {
             assetChangeCallback_(sessionId, assetKey, objectWatcher_);
         }
     }

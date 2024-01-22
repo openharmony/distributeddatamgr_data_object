@@ -26,8 +26,8 @@ class Watcher : public DistributedDB::KvStoreObserver {
 public:
     Watcher(const std::string &sessionId);
     virtual ~Watcher() = default;
-    virtual void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) = 0;
-
+    virtual void OnChanged(
+        const std::string &sessionId, const std::vector<std::string> &changedData, bool enableTransfer) = 0;
     void OnChange(const DistributedDB::KvStoreChangedData &data) override;
 
 private:
