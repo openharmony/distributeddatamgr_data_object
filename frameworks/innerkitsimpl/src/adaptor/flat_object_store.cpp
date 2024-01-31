@@ -376,7 +376,7 @@ uint32_t CacheManager::Save(const std::string &bundleName, const std::string &se
     std::unique_lock<std::mutex> lck(mutex_);
     auto block = std::make_shared<BlockData<std::tuple<bool, int32_t>>>(WAIT_TIME, std::tuple{ true, ERR_DB_GET_FAIL });
     int32_t status = SaveObject(bundleName, sessionId, deviceId, objectData,
-        [&deviceId, block](const std::map<std::string, int32_t> &results) {
+        [deviceId, block](const std::map<std::string, int32_t> &results) {
             LOG_INFO("CacheManager::task callback");
             if (results.count(deviceId) != 0) {
                 block->SetValue({ false, results.at(deviceId) });
