@@ -71,6 +71,7 @@ uint32_t FlatObjectStore::CreateObject(const std::string &sessionId)
                     }
                 }
                 auto result = storageEngine_->UpdateItems(sessionId, data);
+                storageEngine_->NotifyStatus(sessionId, "local", "restored");
                 if (result != SUCCESS) {
                     LOG_ERROR("UpdateItems failed, status = %{public}d", result);
                 }
