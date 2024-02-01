@@ -64,7 +64,6 @@ uint32_t FlatObjectStore::CreateObject(const std::string &sessionId)
             const std::map<std::string, std::vector<uint8_t>> &data) {
             if (data.size() > 0) {
                 LOG_INFO("objectstore, retrieve success");
-                storageEngine_->NotifyStatus(sessionId, "local", "restored");
                 {
                     std::lock_guard<std::mutex> lck(mutex_);
                     if (find(retrievedCache_.begin(), retrievedCache_.end(), sessionId) == retrievedCache_.end()) {
@@ -72,6 +71,7 @@ uint32_t FlatObjectStore::CreateObject(const std::string &sessionId)
                     }
                 }
                 auto result = storageEngine_->UpdateItems(sessionId, data);
+                storageEngine_->NotifyStatus(sessionId, "local", "restored");
                 if (result != SUCCESS) {
                     LOG_ERROR("UpdateItems failed, status = %{public}d", result);
                 }
