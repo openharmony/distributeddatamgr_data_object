@@ -17,20 +17,24 @@
 
 #include <thread>
 
-#include "logger.h"
 #include "iservice_registry.h"
 #include "itypes_util.h"
+#include "logger.h"
 #include "objectstore_errors.h"
 
 namespace OHOS::ObjectStore {
 std::shared_ptr<ObjectStoreDataServiceProxy> ClientAdaptor::distributedDataMgr_ = nullptr;
+std::mutex ClientAdaptor::mutex_;
 
 using KvStoreCode = OHOS::DistributedObject::ObjectStoreService::KvStoreServiceInterfaceCode;
 
 sptr<OHOS::DistributedObject::IObjectService> ClientAdaptor::GetObjectService()
 {
     if (distributedDataMgr_ == nullptr) {
-        distributedDataMgr_ = GetDistributedDataManager();
+        std::lock_guard<decltype(mutex_)> lockGuard(mutex_);
+        if (distributedDataMgr_ == nullptr) {
+            distributedDataMgr_ = GetDistributedDataManager();
+        }
     }
     if (distributedDataMgr_ == nullptr) {
         LOG_ERROR("get distributed data manager failed");
@@ -66,11 +70,34 @@ std::shared_ptr<ObjectStoreDataServiceProxy> ClientAdaptor::GetDistributedDataMa
             LOG_ERROR("new ObjectStoreDataServiceProxy fail.");
             return nullptr;
         }
+        auto deathRecipientPtr = new (std::nothrow)ServiceDeathRecipient();
+        if (deathRecipientPtr == nullptr) {
+            LOG_ERROR("new deathRecipientPtr fail!");
+            return nullptr;
+        }
+        if (!remoteObject->AddDeathRecipient(deathRecipientPtr)) {
+            LOG_ERROR("Add death recipient fail!");
+        }
         return std::shared_ptr<ObjectStoreDataServiceProxy>(proxy.GetRefPtr(), [holder = proxy](const auto *) {});
     }
 
     LOG_ERROR("get distributed data manager failed");
     return nullptr;
+}
+
+ClientAdaptor::ServiceDeathRecipient::ServiceDeathRecipient()
+{
+}
+
+ClientAdaptor::ServiceDeathRecipient::~ServiceDeathRecipient()
+{
+}
+
+void ClientAdaptor::ServiceDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
+{
+    LOG_WARN("DistributedDataService die!");
+    std::lock_guard<decltype(mutex_)> lockGuard(mutex_);
+    distributedDataMgr_ = nullptr;
 }
 
 uint32_t ClientAdaptor::RegisterClientDeathListener(const std::string &appId, sptr<IRemoteObject> remoteObject)
