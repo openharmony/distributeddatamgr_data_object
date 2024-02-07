@@ -30,11 +30,9 @@ using KvStoreCode = OHOS::DistributedObject::ObjectStoreService::KvStoreServiceI
 
 sptr<OHOS::DistributedObject::IObjectService> ClientAdaptor::GetObjectService()
 {
+    std::lock_guard<decltype(mutex_)> lockGuard(mutex_);
     if (distributedDataMgr_ == nullptr) {
-        std::lock_guard<decltype(mutex_)> lockGuard(mutex_);
-        if (distributedDataMgr_ == nullptr) {
-            distributedDataMgr_ = GetDistributedDataManager();
-        }
+        distributedDataMgr_ = GetDistributedDataManager();
     }
     if (distributedDataMgr_ == nullptr) {
         LOG_ERROR("get distributed data manager failed");
@@ -70,7 +68,7 @@ std::shared_ptr<ObjectStoreDataServiceProxy> ClientAdaptor::GetDistributedDataMa
             LOG_ERROR("new ObjectStoreDataServiceProxy fail.");
             return nullptr;
         }
-        auto deathRecipientPtr = new (std::nothrow)ServiceDeathRecipient();
+        sptr<ClientAdaptor::ServiceDeathRecipient> deathRecipientPtr = new (std::nothrow)ServiceDeathRecipient();
         if (deathRecipientPtr == nullptr) {
             LOG_ERROR("new deathRecipientPtr fail!");
             return nullptr;
@@ -102,6 +100,7 @@ void ClientAdaptor::ServiceDeathRecipient::OnRemoteDied(const wptr<IRemoteObject
 
 uint32_t ClientAdaptor::RegisterClientDeathListener(const std::string &appId, sptr<IRemoteObject> remoteObject)
 {
+    std::lock_guard<decltype(mutex_)> lockGuard(mutex_);
     if (distributedDataMgr_ == nullptr) {
         distributedDataMgr_ = GetDistributedDataManager();
     }
