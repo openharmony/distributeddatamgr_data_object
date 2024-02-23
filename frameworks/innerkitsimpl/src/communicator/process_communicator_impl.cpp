@@ -14,8 +14,8 @@
  */
 
 #include "process_communicator_impl.h"
-
 #include <logger.h>
+#include "softbus_adapter.h"
 
 namespace OHOS {
 namespace ObjectStore {
@@ -131,14 +131,8 @@ uint32_t ProcessCommunicatorImpl::GetMtuSize()
 
 uint32_t ProcessCommunicatorImpl::GetMtuSize(const DeviceInfos &devInfo)
 {
-    std::vector<DeviceInfo> devInfos = CommunicationProvider::GetInstance().GetDeviceList();
-    for (auto const &entry : devInfos) {
-        bool isWatch = (entry.deviceType == SMART_WATCH_TYPE || entry.deviceType == CHILDREN_WATCH_TYPE);
-        if (entry.deviceId == devInfo.identifier && isWatch) {
-            return MTU_SIZE_WATCH;
-        }
-    }
-    return MTU_SIZE;
+    auto mtu = SoftBusAdapter::GetInstance()->GetMtuSize();
+    return mtu > MTU_SIZE ? MTU_SIZE : mtu;
 }
 
 DeviceInfos ProcessCommunicatorImpl::GetLocalDeviceInfos()
