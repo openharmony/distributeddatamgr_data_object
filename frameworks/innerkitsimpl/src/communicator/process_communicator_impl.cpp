@@ -14,8 +14,8 @@
  */
 
 #include "process_communicator_impl.h"
+
 #include <logger.h>
-#include "softbus_adapter.h"
 
 namespace OHOS {
 namespace ObjectStore {
@@ -131,8 +131,7 @@ uint32_t ProcessCommunicatorImpl::GetMtuSize()
 
 uint32_t ProcessCommunicatorImpl::GetMtuSize(const DeviceInfos &devInfo)
 {
-    auto mtu = SoftBusAdapter::GetInstance()->GetMtuSize();
-    return mtu > MTU_SIZE ? MTU_SIZE : mtu;
+    return MTU_SIZE;
 }
 
 DeviceInfos ProcessCommunicatorImpl::GetLocalDeviceInfos()

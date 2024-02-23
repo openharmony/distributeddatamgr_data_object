@@ -427,23 +427,6 @@ uint32_t SoftBusAdapter::GetSize(const std::string &deviceId)
     return dataSize;
 }
 
-uint32_t SoftBusAdapter::GetMtuSize()
-{
-    uint32_t result = UINT32_MAX;
-    lock_guard<decltype(deviceSessionLock_)> lock(deviceSessionLock_);
-    for (auto it = sessionIds_.begin(); it != sessionIds_.end(); it++) {
-        uint32_t mtu = 0;
-        auto ret = GetSessionOption(it->second, SESSION_OPTION_MAX_SENDBYTES_SIZE, &mtu, sizeof(mtu));
-        if (ret != SOFTBUS_OK) {
-            continue;
-        }
-        if (mtu != 0 && mtu < result) {
-            result = mtu;
-        }
-    }
-    return result;
-}
-
 RouteType SoftBusAdapter::GetRouteType(int sessionId)
 {
     RouteType routeType = RouteType::INVALID_ROUTE_TYPE;

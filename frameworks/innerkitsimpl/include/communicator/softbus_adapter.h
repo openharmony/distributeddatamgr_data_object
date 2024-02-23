@@ -82,8 +82,6 @@ public:
 
     void OnSessionClose(int32_t sessionId);
 
-    uint32_t GetMtuSize();
-
 private:
     struct BytesMsg {
         uint8_t *ptr;
