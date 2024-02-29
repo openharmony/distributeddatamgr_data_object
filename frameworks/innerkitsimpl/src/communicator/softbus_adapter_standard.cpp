@@ -633,7 +633,7 @@ void AppDataListenerWrap::SetDataHandler(SoftBusAdapter *handler)
 
 int AppDataListenerWrap::OnSessionOpened(int sessionId, int result)
 {
-    LOG_INFO("[SessionOpen] sessionId:%{public}d, result:%{public}d", sessionId, result);
+    LOG_DEBUG("[SessionOpen] sessionId:%{public}d, result:%{public}d", sessionId, result);
     char mySessionName[SESSION_NAME_SIZE_MAX] = "";
     char peerSessionName[SESSION_NAME_SIZE_MAX] = "";
     char peerDevId[DEVICE_ID_SIZE_MAX] = "";
