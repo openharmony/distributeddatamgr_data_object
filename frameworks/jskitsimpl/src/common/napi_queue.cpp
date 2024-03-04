@@ -112,7 +112,10 @@ napi_value NapiQueue::AsyncWork(napi_env env, std::shared_ptr<ContextBase> ctxt,
     ctxt->execute = std::move(execute);
     ctxt->complete = std::move(complete);
     ctxt->hold = ctxt; // save crossing-thread ctxt.
-    napi_queue_async_work(ctxt->env, ctxt->work);
+    auto status = napi_queue_async_work_with_qos(ctxt->env, ctxt->work, napi_qos_user_initiated);
+    if (status != napi_ok) {
+        napi_get_undefined(ctxt->env, &promise);
+    }
     return promise;
 }
 
