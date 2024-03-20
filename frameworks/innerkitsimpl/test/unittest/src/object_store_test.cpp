@@ -1120,8 +1120,9 @@ HWTEST_F(NativeObjectStoreTest, FlatObjectStore_SyncAllData_001, TestSize.Level1
     EXPECT_EQ(SUCCESS, ret);
     auto onComplete = [sessionId](const std::map<std::string, DistributedDB::DBStatus> &devices) {
         for (auto item : devices) {
-            HiLog::Info(LABEL, "%{public}s pull data result %{public}d in device %{public}s", sessionId.c_str(),
-                item.second, (item.first).c_str());
+            (void)HILOG_IMPL(LABEL.type, LOG_INFO, LABEL.domain, LABEL.tag,
+                             "%{public}s pull data result %{public}d in device %{public}s",
+                             sessionId.c_str(), item.second, (item.first).c_str());
         }
     };
     ret = flatObjectStore->SyncAllData(sessionId, onComplete);
