@@ -214,7 +214,7 @@ void WatcherProxy::OnChanged(
     std::unordered_set<std::string> transferKeys;
     std::vector<std::string> otherKeys;
     for (const auto &str : changedData) {
-        if (!enableTransfer || str.find(ASSET_DOT) == std::string::npos) {
+        if (str.find(ASSET_DOT) == std::string::npos) {
             if (str != DEVICEID_KEY) {
                 otherKeys.push_back(str);
             }
@@ -225,13 +225,15 @@ void WatcherProxy::OnChanged(
             }
         }
     }
-    if (!otherKeys.empty()) {
-        objectWatcher_->OnChanged(sessionId, otherKeys);
-    }
-    if (assetChangeCallback_ != nullptr && !transferKeys.empty()) {
+    if (!enableTransfer) {
+        otherKeys.insert(otherKeys.end(), transferKeys.begin(), transferKeys.end());
+    } else if (assetChangeCallback_ != nullptr && !transferKeys.empty()) {
         for (auto &assetKey : transferKeys) {
             assetChangeCallback_(sessionId, assetKey, objectWatcher_);
         }
+    }
+    if (!otherKeys.empty()) {
+        objectWatcher_->OnChanged(sessionId, otherKeys);
     }
 }
 
