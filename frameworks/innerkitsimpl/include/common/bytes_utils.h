@@ -37,7 +37,7 @@ public:
 
         for (uint32_t i = 0; i < valLen; i++) {
             // 8 bit = 1 byte
-            data[offset + i] = *(static_cast<uint64_t *>(val)) >> ((valLen - i - 1) * 8);
+            data[offset + i] = *(static_cast<uint8_t *>(val) + valLen - i - 1);
         }
     }
 
