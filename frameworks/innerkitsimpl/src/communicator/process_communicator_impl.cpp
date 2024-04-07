@@ -14,7 +14,8 @@
  */
 
 #include "process_communicator_impl.h"
-
+#include "dms_handler.h"
+#include "dev_manager.h"
 #include <logger.h>
 
 namespace OHOS {
@@ -144,13 +145,17 @@ DeviceInfos ProcessCommunicatorImpl::GetLocalDeviceInfos()
 
 std::vector<DeviceInfos> ProcessCommunicatorImpl::GetRemoteOnlineDeviceInfosList()
 {
-    std::vector<DeviceInfos> remoteDevInfos;
-    std::vector<DeviceInfo> devInfoVec = CommunicationProvider::GetInstance().GetDeviceList();
-    for (auto const &entry : devInfoVec) {
-        DeviceInfos remoteDev;
-        remoteDev.identifier = entry.deviceId;
-        remoteDevInfos.push_back(remoteDev);
+    DistributedSchedule::ContinueInfo continueInfo;
+    int32_t result = DistributedSchedule::DmsHandler::GetInstance().GetContinueInfo(continueInfo);
+    if (result != 0) {
+        LOG_ERROR("GetContinueInfo failed");
+        return {};
     }
+    std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(continueInfo.dstNetworkId_);
+    DeviceInfos remoteDev;
+    remoteDev.identifier = uuid;
+    std::vector<DeviceInfos> remoteDevInfos;
+    remoteDevInfos.push_back(remoteDev);
     return remoteDevInfos;
 }
 
@@ -181,8 +186,15 @@ void ProcessCommunicatorImpl::OnDeviceChanged(const DeviceInfo &info, const Devi
         LOG_ERROR("onDeviceChangeHandler_ invalid.");
         return;
     }
+    DistributedSchedule::ContinueInfo continueInfo;
+    int32_t result = DistributedSchedule::DmsHandler::GetInstance().GetContinueInfo(continueInfo);
+    if (result != 0) {
+        LOG_ERROR("GetContinueInfo failed");
+        return {};
+    }
+    std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(continueInfo.dstNetworkId_);
     DeviceInfos devInfo;
-    devInfo.identifier = info.deviceId;
+    devInfo.identifier = uuid;
     onDeviceChangeHandler_(devInfo, (type == DeviceChangeType::DEVICE_ONLINE));
 }
 } // namespace ObjectStore

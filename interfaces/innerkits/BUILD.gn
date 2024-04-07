@@ -64,6 +64,7 @@ object_deps_config = [
 object_external_deps_config = [
   "c_utils:utils",
   "device_manager:devicemanagersdk",
+  "dmsfwk:distributed_sdk",
   "dsoftbus:softbus_client",
   "hitrace:hitrace_meter",
   "hitrace:libhitracechain",
