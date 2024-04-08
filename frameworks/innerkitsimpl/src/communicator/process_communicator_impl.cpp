@@ -145,16 +145,20 @@ DeviceInfos ProcessCommunicatorImpl::GetLocalDeviceInfos()
 
 std::vector<DeviceInfos> ProcessCommunicatorImpl::GetRemoteOnlineDeviceInfosList()
 {
+    std::vector<DeviceInfos> remoteDevInfos;
     DistributedSchedule::ContinueInfo continueInfo;
     int32_t result = DistributedSchedule::DmsHandler::GetInstance().GetContinueInfo(continueInfo);
     if (result != 0) {
         LOG_ERROR("GetContinueInfo failed");
         return {};
     }
+    if (continueInfo.dstNetworkId_.empty()) {
+        LOG_INFO("GetContinueInfo empty");
+        return {};
+    }
     std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(continueInfo.dstNetworkId_);
     DeviceInfos remoteDev;
     remoteDev.identifier = uuid;
-    std::vector<DeviceInfos> remoteDevInfos;
     remoteDevInfos.push_back(remoteDev);
     return remoteDevInfos;
 }
@@ -190,7 +194,11 @@ void ProcessCommunicatorImpl::OnDeviceChanged(const DeviceInfo &info, const Devi
     int32_t result = DistributedSchedule::DmsHandler::GetInstance().GetContinueInfo(continueInfo);
     if (result != 0) {
         LOG_ERROR("GetContinueInfo failed");
-        return {};
+        return;
+    }
+    if (continueInfo.dstNetworkId_.empty()) {
+        LOG_INFO("GetContinueInfo empty");
+        return;
     }
     std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(continueInfo.dstNetworkId_);
     DeviceInfos devInfo;
