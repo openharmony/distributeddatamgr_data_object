@@ -15,7 +15,6 @@
 
 #include "process_communicator_impl.h"
 #include "dms_handler.h"
-#include "dev_manager.h"
 #include <logger.h>
 
 namespace OHOS {
