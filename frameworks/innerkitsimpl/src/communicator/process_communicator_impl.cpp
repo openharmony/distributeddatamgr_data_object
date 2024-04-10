@@ -14,8 +14,7 @@
  */
 
 #include "process_communicator_impl.h"
-#include "dev_manager.h"
-#include "dms_handler.h"
+
 #include <logger.h>
 
 namespace OHOS {
@@ -145,10 +144,6 @@ DeviceInfos ProcessCommunicatorImpl::GetLocalDeviceInfos()
 
 std::vector<DeviceInfos> ProcessCommunicatorImpl::GetRemoteOnlineDeviceInfosList()
 {
-    if (IsContinue()) {
-        LOG_INFO("Local device is continue device");
-        return {};
-    }
     std::vector<DeviceInfos> remoteDevInfos;
     std::vector<DeviceInfo> devInfoVec = CommunicationProvider::GetInstance().GetDeviceList();
     for (auto const &entry : devInfoVec) {
@@ -186,33 +181,13 @@ void ProcessCommunicatorImpl::OnDeviceChanged(const DeviceInfo &info, const Devi
         LOG_ERROR("onDeviceChangeHandler_ invalid.");
         return;
     }
-    if (IsContinue()) {
-        LOG_INFO("Local device is continue device");
+    std::vector<DeviceInfo> devInfoVec = CommunicationProvider::GetInstance().GetDeviceList();
+    if (devInfoVec.empty()) {
         return;
     }
     DeviceInfos devInfo;
     devInfo.identifier = info.deviceId;
     onDeviceChangeHandler_(devInfo, (type == DeviceChangeType::DEVICE_ONLINE));
-}
-
-bool ProcessCommunicatorImpl::IsContinue()
-{
-    DistributedSchedule::ContinueInfo continueInfo;
-    int32_t result = DistributedSchedule::DmsHandler::GetInstance().GetContinueInfo(continueInfo);
-    if (result != 0) {
-        LOG_ERROR("GetContinueInfo failed");
-        return false;
-    }
-    if (continueInfo.srcNetworkId_.empty() && continueInfo.dstNetworkId_.empty()) {
-        LOG_INFO("Is not continuing");
-        return false;
-    }
-    DevManager::DetailInfo localDevice = DevManager::GetInstance()->GetLocalDevice();
-    if (localDevice.networkId != continueInfo.srcNetworkId_ && localDevice.networkId != continueInfo.dstNetworkId_) {
-        LOG_INFO("Local device is not continue device");
-        return false;
-    }
-    return true;
 }
 } // namespace ObjectStore
 } // namespace OHOS

@@ -19,6 +19,7 @@
 #include <thread>
 
 #include "dev_manager.h"
+#include "dms_handler.h"
 #include "kv_store_delegate_manager.h"
 #include "process_communicator_impl.h"
 #include "securec.h"
@@ -154,6 +155,22 @@ void SoftBusAdapter::NotifyAll(const DeviceInfo &deviceInfo, const DeviceChangeT
 
 std::vector<DeviceInfo> SoftBusAdapter::GetDeviceList() const
 {
+    DistributedSchedule::ContinueInfo continueInfo;
+    int32_t result = DistributedSchedule::DmsHandler::GetInstance().GetContinueInfo(continueInfo);
+    if (result != 0) {
+        LOG_ERROR("GetContinueInfo failed");
+    }
+    if (!continueInfo.srcNetworkId_.empty() && !continueInfo.dstNetworkId_.empty()) {
+        LOG_INFO("Is continuing");
+        DevManager::DetailInfo localDevice = DevManager::GetInstance()->GetLocalDevice();
+        if (localDevice.networkId == continueInfo.srcNetworkId_
+            || localDevice.networkId == continueInfo.dstNetworkId_) {
+            LOG_INFO("Local device is continue device");
+            return {};
+        }
+        LOG_INFO("Local device is NOT continue device");
+    }
+    LOG_INFO("Is NOT continuing");
     std::vector<DeviceInfo> dis;
     NodeBasicInfo *info = nullptr;
     int32_t infoNum = 0;
