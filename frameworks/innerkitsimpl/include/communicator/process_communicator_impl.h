@@ -53,6 +53,7 @@ public:
 private:
     void OnMessage(const DeviceInfo &info, const uint8_t *ptr, const int size, const PipeInfo &pipeInfo) const override;
     void OnDeviceChanged(const DeviceInfo &info, const DeviceChangeType &type) const override;
+    static bool IsContinue();
 
     std::string thisProcessLabel_;
     OnDeviceChange onDeviceChangeHandler_;
