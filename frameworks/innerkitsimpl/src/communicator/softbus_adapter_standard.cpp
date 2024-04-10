@@ -163,8 +163,8 @@ std::vector<DeviceInfo> SoftBusAdapter::GetDeviceList() const
     if (!continueInfo.srcNetworkId_.empty() && !continueInfo.dstNetworkId_.empty()) {
         DevManager::DetailInfo localDevice = DevManager::GetInstance()->GetLocalDevice();
         LOG_DEBUG("LocalNetworkId: %{public}s. srcNetworkId: %{public}s. dstNetworkId: %{public}s.",
-            ToBeAnonymous(localDevice.networkId).c_str, ToBeAnonymous(continueInfo.srcNetworkId_).c_str,
-            ToBeAnonymous(continueInfo.dstNetworkId_).c_str);
+            ToBeAnonymous(localDevice.networkId).c_str(), ToBeAnonymous(continueInfo.srcNetworkId_).c_str(),
+            ToBeAnonymous(continueInfo.dstNetworkId_).c_str());
         if (localDevice.networkId == continueInfo.srcNetworkId_
             || localDevice.networkId == continueInfo.dstNetworkId_) {
             LOG_INFO("Local device is continuing.");
