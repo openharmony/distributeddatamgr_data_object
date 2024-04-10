@@ -152,14 +152,18 @@ std::vector<DeviceInfos> ProcessCommunicatorImpl::GetRemoteOnlineDeviceInfosList
         LOG_ERROR("GetContinueInfo failed");
         return {};
     }
-    if (continueInfo.dstNetworkId_.empty()) {
-        LOG_INFO("GetContinueInfo empty");
-        return {};
+    std::string srcDeviceId = DevManager::GetInstance()->GetUuidByNodeId(continueInfo.srcNetworkId_);
+    std::string dstDeviceId = DevManager::GetInstance()->GetUuidByNodeId(continueInfo.dstNetworkId_);
+    DeviceInfos localDevice = GetLocalDeviceInfos;
+    if (localDevice.identifier == srcDeviceId) {
+        DeviceInfos remoteDev;
+        remoteDev.identifier = dstDeviceId;
+        remoteDevInfos.push_back(remoteDev);
+    } else if (localDevice.identifier == dstDeviceId) {
+        DeviceInfos remoteDev;
+        remoteDev.identifier = srcDeviceId;
+        remoteDevInfos.push_back(remoteDev);
     }
-    std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(continueInfo.dstNetworkId_);
-    DeviceInfos remoteDev;
-    remoteDev.identifier = uuid;
-    remoteDevInfos.push_back(remoteDev);
     return remoteDevInfos;
 }
 
@@ -190,19 +194,22 @@ void ProcessCommunicatorImpl::OnDeviceChanged(const DeviceInfo &info, const Devi
         LOG_ERROR("onDeviceChangeHandler_ invalid.");
         return;
     }
-    DistributedSchedule::ContinueInfo continueInfo;
-    int32_t result = DistributedSchedule::DmsHandler::GetInstance().GetContinueInfo(continueInfo);
-    if (result != 0) {
-        LOG_ERROR("GetContinueInfo failed");
-        return;
-    }
-    if (continueInfo.dstNetworkId_.empty()) {
-        LOG_INFO("GetContinueInfo empty");
-        return;
-    }
-    std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(continueInfo.dstNetworkId_);
     DeviceInfos devInfo;
-    devInfo.identifier = uuid;
+    devInfo.identifier = info.deviceId;
+    if (type == DeviceChangeType::DEVICE_ONLINE) {
+        DistributedSchedule::ContinueInfo continueInfo;
+        int32_t result = DistributedSchedule::DmsHandler::GetInstance().GetContinueInfo(continueInfo);
+        if (result != 0) {
+            LOG_ERROR("GetContinueInfo failed");
+            return;
+        }
+        std::string srcDeviceId = DevManager::GetInstance()->GetUuidByNodeId(continueInfo.srcNetworkId_);
+        std::string dstDeviceId = DevManager::GetInstance()->GetUuidByNodeId(continueInfo.dstNetworkId_);
+        if (info.deviceId != srcDeviceId && info.deviceId != dstDeviceId) {
+            LOG_INFO("Not continue device");
+            return;
+        }
+    }
     onDeviceChangeHandler_(devInfo, (type == DeviceChangeType::DEVICE_ONLINE));
 }
 } // namespace ObjectStore
