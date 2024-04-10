@@ -161,16 +161,16 @@ std::vector<DeviceInfo> SoftBusAdapter::GetDeviceList() const
         LOG_ERROR("GetContinueInfo failed");
     }
     if (!continueInfo.srcNetworkId_.empty() && !continueInfo.dstNetworkId_.empty()) {
-        LOG_INFO("Is continuing");
         DevManager::DetailInfo localDevice = DevManager::GetInstance()->GetLocalDevice();
+        LOG_DEBUG("LocalNetworkId: %{public}s. srcNetworkId: %{public}s. dstNetworkId: %{public}s.",
+            ToBeAnonymous(localDevice.networkId).c_str, ToBeAnonymous(continueInfo.srcNetworkId_).c_str,
+            ToBeAnonymous(continueInfo.dstNetworkId_).c_str);
         if (localDevice.networkId == continueInfo.srcNetworkId_
             || localDevice.networkId == continueInfo.dstNetworkId_) {
-            LOG_INFO("Local device is continue device");
+            LOG_INFO("Local device is continuing.");
             return {};
         }
-        LOG_INFO("Local device is NOT continue device");
     }
-    LOG_INFO("Is NOT continuing");
     std::vector<DeviceInfo> dis;
     NodeBasicInfo *info = nullptr;
     int32_t infoNum = 0;
