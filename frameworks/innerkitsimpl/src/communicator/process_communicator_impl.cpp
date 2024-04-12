@@ -181,6 +181,11 @@ void ProcessCommunicatorImpl::OnDeviceChanged(const DeviceInfo &info, const Devi
         LOG_ERROR("onDeviceChangeHandler_ invalid.");
         return;
     }
+    std::vector<DeviceInfo> canHandleDev = CommunicationProvider::GetInstance().GetDeviceList();
+    if (canHandleDev.empty()) {
+        LOG_WARN("Can handle device is empty");
+        return;
+    }
     DeviceInfos devInfo;
     devInfo.identifier = info.deviceId;
     onDeviceChangeHandler_(devInfo, (type == DeviceChangeType::DEVICE_ONLINE));
