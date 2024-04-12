@@ -158,7 +158,7 @@ std::vector<DeviceInfo> SoftBusAdapter::GetDeviceList() const
     DistributedSchedule::ContinueInfo continueInfo;
     int32_t result = DistributedSchedule::DmsHandler::GetInstance().GetContinueInfo(continueInfo);
     if (result != 0) {
-        LOG_ERROR("GetContinueInfo failed");
+        LOG_ERROR("GetContinueInfo failed, error code: %{public}d", result);
     }
     if (!continueInfo.srcNetworkId_.empty() && !continueInfo.dstNetworkId_.empty()) {
         DevManager::DetailInfo localDevice = DevManager::GetInstance()->GetLocalDevice();
