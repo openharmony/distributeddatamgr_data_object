@@ -183,6 +183,7 @@ void ProcessCommunicatorImpl::OnDeviceChanged(const DeviceInfo &info, const Devi
     }
     std::vector<DeviceInfo> canHandleDev = CommunicationProvider::GetInstance().GetDeviceList();
     if (canHandleDev.empty()) {
+        LOG_WARN("Continuing, do not handler.");
         return;
     }
     DeviceInfos devInfo;
