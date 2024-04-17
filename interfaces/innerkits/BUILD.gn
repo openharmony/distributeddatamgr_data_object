@@ -99,7 +99,6 @@ ohos_static_library("distributeddataobject_static") {
     cfi = true
     cfi_cross_dso = true
     debug = false
-    blocklist = "./cfi_blocklist.txt"
   }
   part_name = "data_object"
   sources = object_source_config
