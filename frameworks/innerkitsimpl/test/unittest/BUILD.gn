@@ -40,6 +40,12 @@ config("module_private_config") {
 }
 
 ohos_unittest("NativeObjectStoreTest") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   module_out_path = module_output_path
 
   sources = [
