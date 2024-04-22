@@ -119,6 +119,7 @@ private:
     std::mutex deviceDataLock_;
     std::map<std::string, std::vector<BytesMsg>> dataCaches_;
     std::shared_ptr<TaskScheduler> taskQueue_;
+    std::mutex localDeviceLock_{};
 };
 
 class AppDataListenerWrap {
