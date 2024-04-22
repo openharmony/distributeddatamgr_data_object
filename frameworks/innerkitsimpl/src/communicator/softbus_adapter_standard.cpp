@@ -196,6 +196,7 @@ std::vector<DeviceInfo> SoftBusAdapter::GetDeviceList() const
 
 DeviceInfo SoftBusAdapter::GetLocalDevice()
 {
+    std::lock_guard<std::mutex> lock(localDeviceLock_);
     if (!localInfo_.deviceId.empty()) {
         return localInfo_;
     }
