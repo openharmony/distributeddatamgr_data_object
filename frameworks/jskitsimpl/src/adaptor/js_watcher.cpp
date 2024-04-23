@@ -25,7 +25,7 @@
 
 namespace OHOS::ObjectStore {
 JSWatcher::JSWatcher(const napi_env env, DistributedObjectStore *objectStore, DistributedObject *object)
-    : UvQueue(env), env_(env)
+    : UvQueue(env), env_(env), changeEventListener_(nullptr), statusEventListener_(nullptr)
 {
 }
 

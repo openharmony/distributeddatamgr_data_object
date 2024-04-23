@@ -104,12 +104,12 @@ uint32_t AssetChangeTimer::HandleAssetChanges(const std::string &sessionId, cons
         LOG_ERROR("proxy is nullptr.");
         return ERR_NULL_PTR;
     }
-    status = proxy->OnAssetChanged(flatObjectStore_->GetBundleName(), sessionId, deviceId, assetValue);
-    if (status != SUCCESS) {
+    int32_t res = proxy->OnAssetChanged(flatObjectStore_->GetBundleName(), sessionId, deviceId, assetValue);
+    if (res != SUCCESS) {
         LOG_ERROR("OnAssetChanged failed status: %{public}d, sessionId: %{public}s, assetKey: %{public}s", status,
             sessionId.c_str(), assetKey.c_str());
     }
-    return status;
+    return res;
 }
 
 bool AssetChangeTimer::GetAssetValue(const std::string &sessionId, const std::string &assetKey, Asset &assetValue)
