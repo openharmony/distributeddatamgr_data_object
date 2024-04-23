@@ -119,14 +119,14 @@ bool AssetChangeTimer::GetAssetValue(const std::string &sessionId, const std::st
         assetValue.status = static_cast<uint32_t>(doubleStatus);
     }
     bool isComplete = true;
-    isComplete &= (flatObjectStore_->GetString(sessionId, assetKey + NAME_SUFFIX, assetValue.name) == SUCCESS);
-    isComplete &= (flatObjectStore_->GetString(sessionId, assetKey + URI_SUFFIX, assetValue.uri) == SUCCESS);
-    isComplete &= (flatObjectStore_->GetString(sessionId, assetKey + PATH_SUFFIX, assetValue.path) == SUCCESS);
-    isComplete &=
+    isComplete = isComplete && (flatObjectStore_->GetString(sessionId, assetKey + NAME_SUFFIX, assetValue.name) == SUCCESS);
+    isComplete = isComplete && (flatObjectStore_->GetString(sessionId, assetKey + URI_SUFFIX, assetValue.uri) == SUCCESS);
+    isComplete = isComplete && (flatObjectStore_->GetString(sessionId, assetKey + PATH_SUFFIX, assetValue.path) == SUCCESS);
+    isComplete = isComplete &&
         (flatObjectStore_->GetString(sessionId, assetKey + CREATE_TIME_SUFFIX, assetValue.createTime) == SUCCESS);
-    isComplete &=
+    isComplete = isComplete &&
         (flatObjectStore_->GetString(sessionId, assetKey + MODIFY_TIME_SUFFIX, assetValue.modifyTime) == SUCCESS);
-    isComplete &= (flatObjectStore_->GetString(sessionId, assetKey + SIZE_SUFFIX, assetValue.size) == SUCCESS);
+    isComplete = isComplete && (flatObjectStore_->GetString(sessionId, assetKey + SIZE_SUFFIX, assetValue.size) == SUCCESS);
     if (isComplete) {
         assetValue.name = assetValue.name.substr(STRING_PREFIX_LEN);
         assetValue.uri = assetValue.uri.substr(STRING_PREFIX_LEN);

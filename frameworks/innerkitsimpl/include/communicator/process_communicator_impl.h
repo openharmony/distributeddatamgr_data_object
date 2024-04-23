@@ -24,9 +24,9 @@
 namespace OHOS {
 namespace ObjectStore {
 class ProcessCommunicatorImpl
-    : public DistributedDB::IProcessCommunicator
-    , private AppDataChangeListener
-    , private AppDeviceStatusChangeListener {
+    : public DistributedDB::IProcessCommunicator,
+    private AppDataChangeListener,
+    private AppDeviceStatusChangeListener {
 public:
     using DBStatus = DistributedDB::DBStatus;
     using OnDeviceChange = DistributedDB::OnDeviceChange;
