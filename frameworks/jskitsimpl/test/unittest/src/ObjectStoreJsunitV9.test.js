@@ -947,7 +947,7 @@ describe('objectStoreTest', function () {
         });
         
         expect(g_object == undefined).assertEqual(false);
-        g_object.setSessionId("sessionBA2");
+        g_object.setSessionId("sessionBA3");
         let bindInfo  = {
             storeName:"name1",
             tableName: null,
