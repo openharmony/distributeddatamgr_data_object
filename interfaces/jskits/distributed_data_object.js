@@ -170,15 +170,15 @@ function isAsset(obj) {
   if (Object.prototype.toString.call(obj) !== '[object Object]') {
     return false;
   }
-  let length = obj.hasOwnProperty(ASSET_KEYS[STATUS_INDEX]) ? ASSET_KEYS.length : ASSET_KEYS.length - 1;
+  let length = Object.prototype.hasOwnProperty.call(obj, ASSET_KEYS[STATUS_INDEX]) ? ASSET_KEYS.length : ASSET_KEYS.length - 1;
   if (Object.keys(obj).length !== length) {
     return false;
   }
-  if (obj.hasOwnProperty(ASSET_KEYS[STATUS_INDEX]) && typeof obj[ASSET_KEYS[STATUS_INDEX]] !== 'number') {
+  if (Object.prototype.hasOwnProperty.call(obj, ASSET_KEYS[STATUS_INDEX]) && typeof obj[ASSET_KEYS[STATUS_INDEX]] !== 'number') {
     return false;
   }
   for (const key of ASSET_KEYS.slice(1)) {
-    if (!obj.hasOwnProperty(key) || typeof obj[key] !== 'string') {
+    if (!Object.prototype.hasOwnProperty.call(obj, key) || typeof obj[key] !== 'string') {
       return false;
     }
   }
