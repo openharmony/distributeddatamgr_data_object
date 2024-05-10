@@ -174,20 +174,23 @@ function isAsset(obj) {
   if (Object.keys(obj).length !== length) {
     return false;
   }
-  if (Object.prototype.hasOwnProperty.call(obj, ASSET_KEYS[STATUS_INDEX]) && typeof obj[ASSET_KEYS[STATUS_INDEX]] !== 'number') {
+  if (Object.prototype.hasOwnProperty.call(obj, ASSET_KEYS[STATUS_INDEX])
+    && typeof obj[ASSET_KEYS[STATUS_INDEX]] !== 'number' && typeof obj[ASSET_KEYS[STATUS_INDEX]] !== 'undefined') {
     return false;
   }
   for (const key of ASSET_KEYS.slice(1)) {
-    if (!Object.prototype.hasOwnProperty.call(obj, key) || typeof obj[key] !== 'string') {
+    if (!Object.prototype.hasOwnProperty.call(obj, key)
+      || (typeof obj[key] !== 'string' && typeof obj[key] !== 'undefined')) {
       return false;
     }
   }
   return true;
 }
 
-function getAssetValue(object, key, obj) {
-  Object.keys(obj).forEach(subKey => {
-    Object.defineProperty(obj, subKey, {
+function getAssetValue(object, key) {
+  let asset = {};
+  ASSET_KEYS.forEach(subKey => {
+    Object.defineProperty(asset, subKey, {
       enumerable: true,
       configurable: true,
       get: function () {
@@ -198,7 +201,7 @@ function getAssetValue(object, key, obj) {
       }
     });
   });
-  return obj;
+  return asset;
 }
 
 function setAssetValue(object, key, newValue) {
@@ -208,7 +211,7 @@ function setAssetValue(object, key, newValue) {
       message: 'cannot set ' + key + ' by non Asset type data'
     };
   }
-  Object.values(ASSET_KEYS).forEach(subKey => {
+  Object.values(newValue).forEach(subKey => {
     setObjectValue(object, key + ASSET_KEY_SEPARATOR + subKey, newValue[subKey]);
   });
 }
@@ -238,10 +241,16 @@ function joinSession(version, obj, objectId, sessionId, context) {
         enumerable: true,
         configurable: true,
         get: function () {
-          return getAssetValue(object, key, obj[key]);
+          return getAssetValue(object, key);
         },
         set: function (newValue) {
           setAssetValue(object, key, newValue);
+        }
+      });
+      let asset = object[key];
+      Object.keys(obj[key]).forEach(subKey => {
+        if (obj[key][subKey] !== undefined) {
+          asset[subKey] = obj[key][subKey];
         }
       });
     } else {
@@ -255,9 +264,9 @@ function joinSession(version, obj, objectId, sessionId, context) {
           setObjectValue(object, key, newValue);
         }
       });
-    }
-    if (obj[key] !== undefined) {
-      object[key] = obj[key];
+      if (obj[key] !== undefined) {
+        object[key] = obj[key];
+      }
     }
   });
 
