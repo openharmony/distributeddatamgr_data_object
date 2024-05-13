@@ -23,6 +23,7 @@
 #include "softbus_adapter.h"
 #include "string_utils.h"
 #include "asset_change_timer.h"
+#include "object_radar_reporter.h"
 
 namespace OHOS::ObjectStore {
 DistributedObjectStoreImpl::DistributedObjectStoreImpl(FlatObjectStore *flatObjectStore)
@@ -255,6 +256,7 @@ void WatcherProxy::SetAssetChangeCallBack(const AssetChangeCallback &assetChange
 
 DistributedObjectStore *DistributedObjectStore::GetInstance(const std::string &bundleName)
 {
+    RADAR_REPORT(CREATE, INIT_STORE, IDLE, BIZ_STATE, START);
     static std::mutex instLock_;
     static DistributedObjectStore *instPtr = nullptr;
     if (instPtr == nullptr) {
@@ -264,6 +266,7 @@ DistributedObjectStore *DistributedObjectStore::GetInstance(const std::string &b
             FlatObjectStore *flatObjectStore = new (std::nothrow) FlatObjectStore(bundleName);
             if (flatObjectStore == nullptr) {
                 LOG_ERROR("no memory for FlatObjectStore malloc!");
+                RADAR_REPORT(CREATE, INIT_STORE, RADAR_FAILED, ERROR_CODE, NO_MEMORY, BIZ_STATE, FINISHED);
                 return nullptr;
             }
             // Use instMemory to make sure this singleton not free before other object.
@@ -272,10 +275,12 @@ DistributedObjectStore *DistributedObjectStore::GetInstance(const std::string &b
             if (instPtr == nullptr) {
                 delete flatObjectStore;
                 LOG_ERROR("no memory for DistributedObjectStoreImpl malloc!");
+                RADAR_REPORT(CREATE, INIT_STORE, RADAR_FAILED, ERROR_CODE, NO_MEMORY, BIZ_STATE, FINISHED);
                 return nullptr;
             }
         }
     }
+    RADAR_REPORT(CREATE, INIT_STORE, RADAR_SUCCESS);
     return instPtr;
 }
 

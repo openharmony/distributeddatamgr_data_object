@@ -21,6 +21,7 @@
 #include "softbus_adapter.h"
 #include "string_utils.h"
 #include "types_export.h"
+#include "object_radar_reporter.h"
 
 namespace OHOS::ObjectStore {
 FlatObjectStorageEngine::~FlatObjectStorageEngine()
@@ -84,20 +85,22 @@ void FlatObjectStorageEngine::OnComplete(const std::string &key,
 
 uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
 {
+    RADAR_REPORT(CREATE, CREATE_TABLE, IDLE);
     if (!isOpened_) {
+        RADAR_REPORT(CREATE, CREATE_TABLE, RADAR_FAILED, ERROR_CODE, DB_NOT_INIT, BIZ_STATE, FINISHED);
         return ERR_DB_NOT_INIT;
     }
     {
         std::lock_guard<std::mutex> lock(operationMutex_);
         if (delegates_.count(key) != 0) {
             LOG_ERROR("FlatObjectStorageEngine::CreateTable %{public}s already created", key.c_str());
+            RADAR_REPORT(CREATE, CREATE_TABLE, RADAR_FAILED, ERROR_CODE, DUPLICATE_CREATE, BIZ_STATE, FINISHED);
             return ERR_EXIST;
         }
     }
     DistributedDB::KvStoreNbDelegate *kvStore = nullptr;
     DistributedDB::DBStatus status;
-    DistributedDB::KvStoreNbDelegate::Option option = { true, true,
-        false }; // createIfNecessary, isMemoryDb, isEncryptedDb
+    DistributedDB::KvStoreNbDelegate::Option option = { true, true, false };
     LOG_INFO("start create table");
     storeManager_->GetKvStore(key, option,
         [&status, &kvStore](DistributedDB::DBStatus dbStatus, DistributedDB::KvStoreNbDelegate *kvStoreNbDelegate) {
@@ -107,6 +110,7 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
         });
     if (status != DistributedDB::DBStatus::OK || kvStore == nullptr) {
         LOG_ERROR("FlatObjectStorageEngine::CreateTable %{public}s getkvstore fail[%{public}d]", key.c_str(), status);
+        RADAR_REPORT(CREATE, CREATE_TABLE, RADAR_FAILED, ERROR_CODE, status, BIZ_STATE, FINISHED);
         return ERR_DB_GETKV_FAIL;
     }
     bool autoSync = true;
@@ -115,6 +119,7 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
     status = kvStore->Pragma(DistributedDB::AUTO_SYNC, data);
     if (status != DistributedDB::DBStatus::OK) {
         LOG_ERROR("FlatObjectStorageEngine::CreateTable %{public}s Pragma fail[%{public}d]", key.c_str(), status);
+        RADAR_REPORT(CREATE, CREATE_TABLE, RADAR_FAILED, ERROR_CODE, status, BIZ_STATE, FINISHED);
         return ERR_DB_GETKV_FAIL;
     }
     LOG_INFO("create table %{public}s success", key.c_str());
@@ -122,7 +127,6 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
         std::lock_guard<std::mutex> lock(operationMutex_);
         delegates_.insert_or_assign(key, kvStore);
     }
-
     auto onComplete = [key, this](const std::map<std::string, DistributedDB::DBStatus> &devices) {
         OnComplete(key, devices, statusWatcher_);
     };
@@ -132,6 +136,7 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
         deviceIds.push_back(item.deviceId);
     }
     SyncAllData(key, deviceIds, onComplete);
+    RADAR_REPORT(CREATE, CREATE_TABLE, RADAR_SUCCESS);
     return SUCCESS;
 }
 
