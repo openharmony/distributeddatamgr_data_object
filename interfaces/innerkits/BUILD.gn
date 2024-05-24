@@ -23,7 +23,6 @@ config("objectstore_config") {
     "../../frameworks/innerkitsimpl/include/communicator",
     "../../frameworks/innerkitsimpl/include",
     "../../interfaces/innerkits",
-    "${kvstore_path}/common",
     "${relational_store_path}/interfaces/inner_api/common_type/include",
   ]
 
@@ -57,11 +56,9 @@ object_source_config = [
   "../../frameworks/innerkitsimpl/src/object_service_proxy.cpp",
   "../../frameworks/innerkitsimpl/src/object_types_util.cpp",
 ]
-object_deps_config = [
-  "//third_party/bounds_checking_function:libsec_shared",
-  "//third_party/libuv:uv",
-]
+object_deps_config = []
 object_external_deps_config = [
+  "bounds_checking_function:libsec_shared",
   "c_utils:utils",
   "device_manager:devicemanagersdk",
   "dmsfwk:distributed_sdk",
@@ -72,6 +69,7 @@ object_external_deps_config = [
   "ipc:ipc_core",
   "kv_store:distributeddata_inner",
   "kv_store:distributeddb",
+  "libuv:uv",
   "samgr:samgr_proxy",
 ]
 ohos_shared_library("distributeddataobject_impl") {
