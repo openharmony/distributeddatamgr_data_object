@@ -47,6 +47,7 @@
                 "ability_runtime",
                 "hitrace",
                 "dsoftbus",
+                "bounds_checking_function",
                 "napi",
                 "samgr",
                 "ipc",
