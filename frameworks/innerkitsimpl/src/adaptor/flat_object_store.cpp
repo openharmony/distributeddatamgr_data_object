@@ -21,6 +21,7 @@
 #include "distributed_objectstore_impl.h"
 #include "logger.h"
 #include "object_callback_impl.h"
+#include "object_radar_reporter.h"
 #include "object_service_proxy.h"
 #include "objectstore_errors.h"
 #include "softbus_adapter.h"
@@ -193,6 +194,7 @@ uint32_t FlatObjectStore::Save(const std::string &sessionId, const std::string &
     uint32_t status = storageEngine_->GetItems(sessionId, objectData);
     if (status != SUCCESS) {
         LOG_ERROR("FlatObjectStore::GetItems fail");
+        RADAR_REPORT(SAVE, SAVE_TO_SERVICE, RADAR_FAILED, ERROR_CODE, status, BIZ_STATE, FINISHED);
         return status;
     }
     return cacheManager_->Save(bundleName_, sessionId, deviceId, objectData);
@@ -392,6 +394,9 @@ uint32_t CacheManager::Save(const std::string &bundleName, const std::string &se
     LOG_INFO("CacheManager::start wait");
     auto [timeout, res] = block->GetValue();
     LOG_INFO("CacheManager::end wait, timeout: %{public}d, result: %{public}d", timeout, res);
+    if (timeout) {
+        RADAR_REPORT(SAVE, SAVE_TO_SERVICE, RADAR_FAILED, ERROR_CODE, TIMEOUT, BIZ_STATE, FINISHED);
+    }
     return res;
 }
 
@@ -420,19 +425,25 @@ int32_t CacheManager::SaveObject(const std::string &bundleName, const std::strin
     sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
     if (proxy == nullptr) {
         LOG_ERROR("proxy is nullptr.");
+        RADAR_REPORT(SAVE, SAVE_TO_SERVICE, RADAR_FAILED, ERROR_CODE, SA_DIED, BIZ_STATE, FINISHED);
         return ERR_PROCESSING;
     }
     sptr<ObjectSaveCallbackBroker> objectSaveCallback = new (std::nothrow) ObjectSaveCallback(callback);
     if (objectSaveCallback == nullptr) {
         LOG_ERROR("CacheManager::SaveObject no memory for ObjectSaveCallback malloc!");
+        RADAR_REPORT(SAVE, SAVE_TO_SERVICE, RADAR_FAILED, ERROR_CODE, NO_MEMORY, BIZ_STATE, FINISHED);
         return ERR_NULL_PTR;
     }
     int32_t status = proxy->ObjectStoreSave(
         bundleName, sessionId, deviceId, objectData, objectSaveCallback->AsObject().GetRefPtr());
     if (status != SUCCESS) {
         LOG_ERROR("object save failed code=%d.", static_cast<int>(status));
+        if (status == ERR_IPC) {
+            RADAR_REPORT(SAVE, SAVE_TO_SERVICE, RADAR_FAILED, ERROR_CODE, IPC_ERROR, BIZ_STATE, FINISHED);
+        }
     }
     LOG_INFO("object save successful");
+    RADAR_REPORT(SAVE, SAVE_TO_SERVICE, RADAR_SUCCESS);
     return status;
 }
 
@@ -462,20 +473,24 @@ int32_t CacheManager::RevokeSaveObject(
 int32_t CacheManager::ResumeObject(const std::string &bundleName, const std::string &sessionId,
     std::function<void(const std::map<std::string, std::vector<uint8_t>> &data)> &callback)
 {
+    RADAR_REPORT(CREATE, RESTORE, IDLE);
     sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
     if (proxy == nullptr) {
         LOG_ERROR("proxy is nullptr.");
+        RADAR_REPORT(CREATE, RESTORE, RADAR_FAILED, ERROR_CODE, SA_DIED, BIZ_STATE, FINISHED);
         return ERR_NULL_PTR;
     }
     sptr<ObjectRetrieveCallbackBroker> objectRetrieveCallback = new (std::nothrow) ObjectRetrieveCallback(callback);
     if (objectRetrieveCallback == nullptr) {
         LOG_ERROR("CacheManager::ResumeObject no memory for ObjectRetrieveCallback malloc!");
+        RADAR_REPORT(CREATE, RESTORE, RADAR_FAILED, ERROR_CODE, NO_MEMORY, BIZ_STATE, FINISHED);
         return ERR_NULL_PTR;
     }
     int32_t status = proxy->ObjectStoreRetrieve(
         bundleName, sessionId, objectRetrieveCallback->AsObject().GetRefPtr());
     if (status != SUCCESS) {
         LOG_ERROR("object resume failed code=%d.", static_cast<int>(status));
+        RADAR_REPORT(CREATE, RESTORE, RADAR_FAILED, ERROR_CODE, IPC_ERROR, BIZ_STATE, FINISHED);
     }
     LOG_INFO("object resume successful");
     return status;

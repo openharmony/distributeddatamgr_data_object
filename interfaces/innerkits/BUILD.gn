@@ -66,6 +66,7 @@ object_external_deps_config = [
   "device_manager:devicemanagersdk",
   "dmsfwk:distributed_sdk",
   "dsoftbus:softbus_client",
+  "hisysevent:libhisysevent",
   "hitrace:hitrace_meter",
   "hitrace:libhitracechain",
   "hilog:libhilog",

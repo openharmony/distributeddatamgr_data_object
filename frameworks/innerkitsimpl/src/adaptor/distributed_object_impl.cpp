@@ -20,6 +20,7 @@
 #include "string_utils.h"
 #include "dev_manager.h"
 #include "bytes_utils.h"
+#include "object_radar_reporter.h"
 
 namespace OHOS::ObjectStore {
 DistributedObjectImpl::~DistributedObjectImpl()
@@ -90,6 +91,7 @@ uint32_t DistributedObjectImpl::GetComplex(const std::string &key, std::vector<u
 
 uint32_t DistributedObjectImpl::Save(const std::string &deviceId)
 {
+    RADAR_REPORT(SAVE, SAVE_TO_SERVICE, IDLE, BIZ_STATE, START);
     uint32_t status = flatObjectStore_->Save(sessionId_, deviceId);
     if (status != SUCCESS) {
         LOG_ERROR("DistributedObjectImpl:Save failed. status = %{public}d", status);
