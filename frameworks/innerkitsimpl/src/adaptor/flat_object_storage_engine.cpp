@@ -350,8 +350,9 @@ uint32_t FlatObjectStorageEngine::SetStatusNotifier(std::shared_ptr<StatusWatche
         if (onlineStatus) {
             auto onComplete = [this, storeId](const std::map<std::string, DistributedDB::DBStatus> &devices) {
                 for (auto item : devices) {
-                    LOG_INFO("%{public}s pull data result %{public}d in device %{public}s", storeId.c_str(),
-                        item.second, SoftBusAdapter::GetInstance()->ToNodeID(item.first).c_str());
+                    LOG_INFO("%{public}s pull data result %{public}d in device %{public}s",
+                        SoftBusAdapter::ToBeAnonymous(storeId).c_str(), item.second,
+                        SoftBusAdapter::ToBeAnonymous(SoftBusAdapter::GetInstance()->ToNodeID(item.first)).c_str());
                 }
                 if (statusWatcher_ != nullptr) {
                     for (auto item : devices) {
