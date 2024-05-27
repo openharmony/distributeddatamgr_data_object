@@ -17,6 +17,7 @@
 
 #include <cstring>
 
+#include "anonymous.h"
 #include "js_common.h"
 #include "js_util.h"
 #include "logger.h"
@@ -143,10 +144,10 @@ void JSWatcher::ProcessStatus(napi_env env, std::list<void *> &args)
         status = JSUtil::SetValue(env, statusArgs->status_, param[2]);
         NOT_MATCH_GOTO_ERROR(status == napi_ok);
         LOG_INFO("start %{public}s, %{public}s, %{public}s", statusArgs->sessionId_.c_str(),
-            statusArgs->networkId_.c_str(), statusArgs->status_.c_str());
+            Anonymous::Change(statusArgs->networkId_).c_str(), statusArgs->status_.c_str());
         status = napi_call_function(env, global, callback, ARGV_SIZE, param, &result);
         LOG_INFO("end %{public}s, %{public}s, %{public}s", statusArgs->sessionId_.c_str(),
-            statusArgs->networkId_.c_str(), statusArgs->status_.c_str());
+            Anonymous::Change(statusArgs->networkId_).c_str(), statusArgs->status_.c_str());
         NOT_MATCH_GOTO_ERROR(status == napi_ok);
     }
 ERROR:
@@ -162,10 +163,10 @@ void JSWatcher::Emit(
     const char *type, const std::string &sessionId, const std::string &networkId, const std::string &status)
 {
     if (sessionId.empty() || networkId.empty()) {
-        LOG_ERROR("empty %{public}s  %{public}s", sessionId.c_str(), networkId.c_str());
+        LOG_ERROR("empty %{public}s  %{public}s", sessionId.c_str(), Anonymous::Change(networkId).c_str());
         return;
     }
-    LOG_ERROR("status change %{public}s  %{public}s", sessionId.c_str(), networkId.c_str());
+    LOG_INFO("status change %{public}s  %{public}s", sessionId.c_str(), Anonymous::Change(networkId).c_str());
     EventListener *listener = Find(type);
     if (listener == nullptr) {
         LOG_ERROR("error type %{public}s", type);

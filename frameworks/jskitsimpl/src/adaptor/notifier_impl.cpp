@@ -15,6 +15,7 @@
 
 #include "notifier_impl.h"
 
+#include "anonymous.h"
 #include "logger.h"
 #include "objectstore_errors.h"
 
@@ -53,17 +54,17 @@ void NotifierImpl::DelWatcher(std::string &sessionId)
 void NotifierImpl::OnChanged(
     const std::string &sessionId, const std::string &networkId, const std::string &onlineStatus)
 {
-    LOG_INFO(
-        "status changed %{public}s %{public}s %{public}s", sessionId.c_str(), networkId.c_str(), onlineStatus.c_str());
+    LOG_INFO("status changed %{public}s %{public}s %{public}s", sessionId.c_str(), Anonymous::Change(networkId).c_str(),
+        onlineStatus.c_str());
     std::lock_guard<std::mutex> lock(mutex_);
     if (watchers_.count(sessionId) != 0) {
-        LOG_INFO(
-            "start emit %{public}s %{public}s %{public}s", sessionId.c_str(), networkId.c_str(), onlineStatus.c_str());
+        LOG_INFO("start emit %{public}s %{public}s %{public}s", sessionId.c_str(), Anonymous::Change(networkId).c_str(),
+            onlineStatus.c_str());
         std::shared_ptr<JSWatcher> lockedWatcher = watchers_.at(sessionId).lock();
         if (lockedWatcher) {
             lockedWatcher->Emit("status", sessionId, networkId, onlineStatus);
-            LOG_INFO("end emit %{public}s %{public}s %{public}s", sessionId.c_str(), networkId.c_str(),
-                onlineStatus.c_str());
+            LOG_INFO("end emit %{public}s %{public}s %{public}s", sessionId.c_str(),
+                Anonymous::Change(networkId).c_str(), onlineStatus.c_str());
         } else {
             LOG_ERROR("watcher expired");
         }
