@@ -174,17 +174,36 @@ function isAsset(obj) {
   if (Object.keys(obj).length !== length) {
     return false;
   }
-  if (Object.prototype.hasOwnProperty.call(obj, ASSET_KEYS[STATUS_INDEX])
-    && typeof obj[ASSET_KEYS[STATUS_INDEX]] !== 'number' && typeof obj[ASSET_KEYS[STATUS_INDEX]] !== 'undefined') {
+  if (Object.prototype.hasOwnProperty.call(obj, ASSET_KEYS[STATUS_INDEX]) &&
+    typeof obj[ASSET_KEYS[STATUS_INDEX]] !== 'number' && typeof obj[ASSET_KEYS[STATUS_INDEX]] !== 'undefined') {
     return false;
   }
   for (const key of ASSET_KEYS.slice(1)) {
-    if (!Object.prototype.hasOwnProperty.call(obj, key)
-      || (typeof obj[key] !== 'string' && typeof obj[key] !== 'undefined')) {
+    if (!Object.prototype.hasOwnProperty.call(obj, key) ||
+      (typeof obj[key] !== 'string' && typeof obj[key] !== 'undefined')) {
       return false;
     }
   }
   return true;
+}
+
+function defineAsset(object, key, data) {
+  Object.defineProperty(object, key, {
+    enumerable: true,
+    configurable: true,
+    get: function () {
+      return getAssetValue(object, key);
+    },
+    set: function (newValue) {
+      setAssetValue(object, key, newValue);
+    }
+  });
+  let asset = object[key];
+  Object.keys(data).forEach(subKey => {
+    if (data[subKey] !== undefined) {
+      asset[subKey] = data[subKey];
+    }
+  });
 }
 
 function getAssetValue(object, key) {
@@ -237,22 +256,7 @@ function joinSession(version, obj, objectId, sessionId, context) {
   Object.keys(obj).forEach(key => {
     console.info('start define ' + key);
     if (isAsset(obj[key])) {
-      Object.defineProperty(object, key, {
-        enumerable: true,
-        configurable: true,
-        get: function () {
-          return getAssetValue(object, key);
-        },
-        set: function (newValue) {
-          setAssetValue(object, key, newValue);
-        }
-      });
-      let asset = object[key];
-      Object.keys(obj[key]).forEach(subKey => {
-        if (obj[key][subKey] !== undefined) {
-          asset[subKey] = obj[key][subKey];
-        }
-      });
+      defineAsset(object, key, obj[key]);
     } else {
       Object.defineProperty(object, key, {
         enumerable: true,
