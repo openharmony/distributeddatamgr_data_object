@@ -47,6 +47,7 @@
                 "ability_runtime",
                 "hitrace",
                 "dsoftbus",
+                "bounds_checking_function",
                 "napi",
                 "samgr",
                 "ipc",
@@ -55,6 +56,7 @@
                 "c_utils",
                 "device_manager",
                 "kv_store",
+                "libuv",
                 "common_event_service",
                 "dmsfwk",
                 "hisysevent"
