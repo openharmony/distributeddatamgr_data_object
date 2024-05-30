@@ -101,18 +101,18 @@ ohos_shared_library("distributeddataobject") {
     ":distributed_data_object_abc",
     ":distributed_data_object_js",
     "//foundation/distributeddatamgr/data_object/interfaces/innerkits:distributeddataobject_impl",
-    "//third_party/bounds_checking_function:libsec_shared",
-    "//third_party/libuv:uv",
   ]
   external_deps = [
     "ability_runtime:abilitykit_native",
     "ability_runtime:app_context",
     "ability_runtime:napi_base_context",
     "access_token:libaccesstoken_sdk",
+    "bounds_checking_function:libsec_shared",
     "common_event_service:cesfwk_innerkits",
     "hilog:libhilog",
     "kv_store:distributeddata_inner",
     "kv_store:distributeddb",
+    "libuv:uv",
     "napi:ace_napi",
   ]
 
