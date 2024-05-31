@@ -23,7 +23,6 @@ config("objectstore_config") {
     "../../frameworks/innerkitsimpl/include/communicator",
     "../../frameworks/innerkitsimpl/include",
     "../../interfaces/innerkits",
-    "${relational_store_path}/interfaces/inner_api/common_type/include",
   ]
 
   ldflags = [ "-Wl,--exclude-libs,ALL" ]

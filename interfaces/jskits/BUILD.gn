@@ -42,7 +42,6 @@ config("objectstore_config") {
     "../../frameworks/innerkitsimpl/include",
     "../../frameworks/innerkitsimpl/include/communicator",
     "../../interfaces/innerkits",
-    "${relational_store_path}/interfaces/inner_api/common_type/include",
   ]
 }
 

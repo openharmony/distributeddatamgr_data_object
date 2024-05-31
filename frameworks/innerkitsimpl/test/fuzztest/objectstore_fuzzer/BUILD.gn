@@ -22,7 +22,6 @@ config("module_private_config") {
     "../../../../../frameworks/innerkitsimpl/include/adaptor",
     "../../../../../frameworks/innerkitsimpl/include/common",
     "${data_object_base_path}/frameworks/innerkitsimpl/include",
-    "${relational_store_path}/interfaces/inner_api/common_type/include",
   ]
 }
 
