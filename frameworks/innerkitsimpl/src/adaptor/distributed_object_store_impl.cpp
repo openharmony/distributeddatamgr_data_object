@@ -125,6 +125,7 @@ uint32_t DistributedObjectStoreImpl::DeleteObject(const std::string &sessionId)
 
 uint32_t DistributedObjectStoreImpl::Get(const std::string &sessionId, DistributedObject **object)
 {
+    std::unique_lock<std::shared_mutex> cacheLock(dataMutex_);
     auto iter = objects_.begin();
     while (iter != objects_.end()) {
         if ((*iter)->GetSessionId() == sessionId) {
