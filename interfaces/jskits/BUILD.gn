@@ -107,6 +107,7 @@ ohos_shared_library("distributeddataobject") {
   external_deps = [
     "ability_runtime:abilitykit_native",
     "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
     "ability_runtime:napi_base_context",
     "access_token:libaccesstoken_sdk",
     "bounds_checking_function:libsec_shared",
