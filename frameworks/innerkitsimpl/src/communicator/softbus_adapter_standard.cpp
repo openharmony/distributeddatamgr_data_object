@@ -20,6 +20,7 @@
 
 #include "dev_manager.h"
 #include "dms_handler.h"
+#include "anonymous.h"
 #include "kv_store_delegate_manager.h"
 #include "process_communicator_impl.h"
 #include "securec.h"
@@ -155,43 +156,33 @@ void SoftBusAdapter::NotifyAll(const DeviceInfo &deviceInfo, const DeviceChangeT
 
 std::vector<DeviceInfo> SoftBusAdapter::GetDeviceList() const
 {
-    DistributedSchedule::ContinueInfo continueInfo;
-    int32_t result = DistributedSchedule::DmsHandler::GetInstance().GetContinueInfo(continueInfo);
-    if (result != 0) {
-        LOG_ERROR("GetContinueInfo failed, error code: %{public}d", result);
+    std::vector<DistributedSchedule::EventNotify> events;
+    int32_t res = DistributedSchedule::DmsHandler::GetInstance().GetDSchedEventInfo(
+        DistributedSchedule::DMS_COLLABORATION, events);
+    if (res != ERR_OK) {
+        LOG_ERROR("Get collaboration events failed, error code = %{public}d", res);
+        return {};
     }
-    if (!continueInfo.srcNetworkId_.empty() && !continueInfo.dstNetworkId_.empty()) {
-        DevManager::DetailInfo localDevice = DevManager::GetInstance()->GetLocalDevice();
-        LOG_DEBUG("LocalNetworkId: %{public}s. srcNetworkId: %{public}s. dstNetworkId: %{public}s.",
-            ToBeAnonymous(localDevice.networkId).c_str(), ToBeAnonymous(continueInfo.srcNetworkId_).c_str(),
-            ToBeAnonymous(continueInfo.dstNetworkId_).c_str());
-        if (localDevice.networkId == continueInfo.srcNetworkId_
-            || localDevice.networkId == continueInfo.dstNetworkId_) {
-            LOG_INFO("Local device is continuing.");
-            return {};
+    DevManager::DetailInfo localDevice = DevManager::GetInstance()->GetLocalDevice();
+    std::set<std::string> remoteDevices;
+    for (const auto &event : events) {
+        if (localDevice.networkId == event.srcNetworkId_) {
+            std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(event.dstNetworkId_);
+            remoteDevices.insert(uuid);
+        } else if (localDevice.networkId == event.dstNetworkId_) {
+            std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(event.srcNetworkId_);
+            remoteDevices.insert(uuid);
         }
+        LOG_DEBUG("Collaboration evnet, srcNetworkId: %{public}s, dstNetworkId: %{public}s",
+            Anonymous::Change(event.srcNetworkId_).c_str(), Anonymous::Change(event.dstNetworkId_).c_str());
     }
-    std::vector<DeviceInfo> dis;
-    NodeBasicInfo *info = nullptr;
-    int32_t infoNum = 0;
-    dis.clear();
-
-    int32_t ret = GetAllNodeDeviceInfo("ohos.objectstore", &info, &infoNum);
-    if (ret != SOFTBUS_OK) {
-        LOG_ERROR("GetAllNodeDeviceInfo error");
-        return dis;
+    std::vector<DeviceInfo> deviceInfos;
+    for (const auto &deviceId : remoteDevices) {
+        DeviceInfo deviceInfo{ deviceId };
+        deviceInfos.push_back(deviceInfo);
     }
-    LOG_DEBUG("GetAllNodeDeviceInfo success infoNum=%{public}d", infoNum);
-
-    for (int i = 0; i < infoNum; i++) {
-        std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(std::string(info[i].networkId));
-        DeviceInfo deviceInfo = { uuid, std::string(info[i].deviceName), std::to_string(info[i].deviceTypeId) };
-        dis.push_back(deviceInfo);
-    }
-    if (info != nullptr) {
-        FreeNodeInfo(info);
-    }
-    return dis;
+    LOG_INFO("Collaboration deivces size:%{public}zu", deviceInfos.size());
+    return deviceInfos;
 }
 
 DeviceInfo SoftBusAdapter::GetLocalDevice()

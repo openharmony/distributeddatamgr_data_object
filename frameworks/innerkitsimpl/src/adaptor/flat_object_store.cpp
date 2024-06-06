@@ -169,21 +169,6 @@ uint32_t FlatObjectStore::SetStatusNotifier(std::shared_ptr<StatusWatcher> notif
     return storageEngine_->SetStatusNotifier(notifier);
 }
 
-uint32_t FlatObjectStore::SyncAllData(const std::string &sessionId,
-    const std::function<void(const std::map<std::string, DistributedDB::DBStatus> &)> &onComplete)
-{
-    if (!storageEngine_->isOpened_ && storageEngine_->Open(bundleName_) != SUCCESS) {
-        LOG_ERROR("FlatObjectStore::DB has not inited");
-        return ERR_DB_NOT_INIT;
-    }
-    std::vector<DeviceInfo> devices = SoftBusAdapter::GetInstance()->GetDeviceList();
-    std::vector<std::string> deviceIds;
-    for (auto item : devices) {
-        deviceIds.push_back(item.deviceId);
-    }
-    return storageEngine_->SyncAllData(sessionId, deviceIds, onComplete);
-}
-
 uint32_t FlatObjectStore::Save(const std::string &sessionId, const std::string &deviceId)
 {
     if (cacheManager_ == nullptr) {

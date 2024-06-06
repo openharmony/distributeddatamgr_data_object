@@ -17,6 +17,8 @@
 
 #include <logger.h>
 
+#include "anonymous.h"
+
 namespace OHOS {
 namespace ObjectStore {
 using namespace DistributedDB;
@@ -181,14 +183,15 @@ void ProcessCommunicatorImpl::OnDeviceChanged(const DeviceInfo &info, const Devi
         LOG_ERROR("onDeviceChangeHandler_ invalid.");
         return;
     }
-    std::vector<DeviceInfo> canHandleDev = CommunicationProvider::GetInstance().GetDeviceList();
-    if (canHandleDev.empty()) {
-        LOG_WARN("Can handle device is empty");
-        return;
+    std::vector<DeviceInfo> devices = CommunicationProvider::GetInstance().GetDeviceList();
+    for (const auto &device : devices) {
+        if (info.deviceId == device.deviceId) {
+            DeviceInfos devInfo{ info.deviceId };
+            onDeviceChangeHandler_(devInfo, (type == DeviceChangeType::DEVICE_ONLINE));
+            return;
+        }
     }
-    DeviceInfos devInfo;
-    devInfo.identifier = info.deviceId;
-    onDeviceChangeHandler_(devInfo, (type == DeviceChangeType::DEVICE_ONLINE));
+    LOG_WARN("Not a collaboration device, uuid: %{public}s.", Anonymous::Change(info.deviceId).c_str());
 }
 } // namespace ObjectStore
 } // namespace OHOS

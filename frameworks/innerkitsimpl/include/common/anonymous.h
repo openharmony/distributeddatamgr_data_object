@@ -22,7 +22,23 @@ namespace OHOS {
 namespace ObjectStore {
 class Anonymous {
 public:
-    static std::string Change(const std::string &data);
+    static std::string Change(const std::string &data)
+    {
+        if (data.size() <= HEAD_SIZE) {
+            return DEFAULT_ANONYMOUS;
+        }
+        if (data.size() < MIN_SIZE) {
+            return (data.substr(0, HEAD_SIZE) + REPLACE_CHAIN);
+        }
+        return (data.substr(0, HEAD_SIZE) + REPLACE_CHAIN + data.substr(data.size() - END_SIZE, END_SIZE));
+    }
+
+private:
+    static constexpr size_t HEAD_SIZE = 3;
+    static constexpr size_t END_SIZE = 3;
+    static constexpr size_t MIN_SIZE = HEAD_SIZE + END_SIZE + 3;
+    static constexpr const char *REPLACE_CHAIN = "***";
+    static constexpr const char *DEFAULT_ANONYMOUS = "******";
 };
 } // namespace ObjectStore
 } // namespace OHOS

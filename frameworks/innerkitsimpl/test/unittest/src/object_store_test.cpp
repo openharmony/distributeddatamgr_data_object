@@ -26,7 +26,6 @@
 #include "distributed_objectstore_impl.h"
 #include "flat_object_storage_engine.h"
 #include "flat_object_store.h"
-#include "hilog/log.h"
 #include "ipc_skeleton.h"
 #include "kv_store_delegate_manager.h"
 #include "mock_flat_object_watcher.h"
@@ -40,10 +39,8 @@
 using namespace testing::ext;
 using namespace OHOS::ObjectStore;
 using namespace OHOS::Security::AccessToken;
-using namespace OHOS::HiviewDFX;
 namespace {
 constexpr static double SALARY = 100.5;
-constexpr HiLogLabel LABEL = { LOG_CORE, 0, "DistributedTest" };
 class TableWatcherImpl : public TableWatcher {
 public:
     explicit TableWatcherImpl(const std::string &sessionId) : TableWatcher(sessionId) {}
@@ -1102,33 +1099,6 @@ HWTEST_F(NativeObjectStoreTest, FlatObjectStore_CheckRetrieveCache_001, TestSize
     uint32_t ret = flatObjectStore->CreateObject(sessionId);
     EXPECT_EQ(SUCCESS, ret);
     flatObjectStore->CheckRetrieveCache(sessionId);
-    ret = flatObjectStore->Delete(sessionId);
-    EXPECT_EQ(SUCCESS, ret);
-}
-
-/**
- * @tc.name: FlatObjectStore_SyncAllData_001
- * @tc.desc: test FlatObjectStore SyncAllData.
- * @tc.type: FUNC
- */
-HWTEST_F(NativeObjectStoreTest, FlatObjectStore_SyncAllData_001, TestSize.Level1)
-{
-    std::string sessionId = "session258";
-    std::string bundleName = "default07";
-    std::shared_ptr<FlatObjectStore> flatObjectStore = std::make_shared<FlatObjectStore>(bundleName);
-    uint32_t ret = flatObjectStore->CreateObject(sessionId);
-    EXPECT_EQ(SUCCESS, ret);
-    auto onComplete = [sessionId](const std::map<std::string, DistributedDB::DBStatus> &devices) {
-        for (auto item : devices) {
-            (void)HILOG_IMPL(LABEL.type, LOG_INFO, LABEL.domain, LABEL.tag,
-                             "%{public}s pull data result %{public}d in device %{public}s",
-                             sessionId.c_str(), item.second, (item.first).c_str());
-        }
-    };
-    ret = flatObjectStore->SyncAllData(sessionId, onComplete);
-    EXPECT_EQ(SUCCESS, ret);
-    ret = flatObjectStore->SyncAllData("", onComplete);
-    EXPECT_EQ(ERR_DB_NOT_EXIST, ret);
     ret = flatObjectStore->Delete(sessionId);
     EXPECT_EQ(SUCCESS, ret);
 }
