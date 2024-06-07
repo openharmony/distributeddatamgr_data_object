@@ -38,12 +38,12 @@ public:
 
 class IObjectRetrieveCallback {
 public:
-    virtual void Completed(const std::map<std::string, std::vector<uint8_t>> &results) = 0;
+    virtual void Completed(const std::map<std::string, std::vector<uint8_t>> &results, bool allReady) = 0;
 };
 
 class IObjectChangeCallback {
 public:
-    virtual void Completed(const std::map<std::string, std::vector<uint8_t>> &results) = 0;
+    virtual void Completed(const std::map<std::string, std::vector<uint8_t>> &results, bool allReady) = 0;
 };
 } // namespace DistributedObject
 } // namespace OHOS

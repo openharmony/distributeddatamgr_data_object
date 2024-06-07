@@ -34,24 +34,24 @@ ObjectRevokeSaveCallback::ObjectRevokeSaveCallback(const std::function<void(int3
 {
 }
 
-void ObjectRetrieveCallback::Completed(const std::map<std::string, std::vector<uint8_t>> &results)
+void ObjectRetrieveCallback::Completed(const std::map<std::string, std::vector<uint8_t>> &results, bool allReady)
 {
-    callback_(results);
+    callback_(results, allReady);
 }
 
 ObjectRetrieveCallback::ObjectRetrieveCallback(
-    const std::function<void(const std::map<std::string, std::vector<uint8_t>> &)> &callback)
+    const std::function<void(const std::map<std::string, std::vector<uint8_t>> &, bool)> &callback)
     : callback_(callback)
 {
 }
 
-void ObjectChangeCallback::Completed(const std::map<std::string, std::vector<uint8_t>> &results)
+void ObjectChangeCallback::Completed(const std::map<std::string, std::vector<uint8_t>> &results, bool allReady)
 {
-    callback_(results);
+    callback_(results, allReady);
 }
 
 ObjectChangeCallback::ObjectChangeCallback(
-    const std::function<void(const std::map<std::string, std::vector<uint8_t>> &)> &callback)
+    const std::function<void(const std::map<std::string, std::vector<uint8_t>> &, bool)> &callback)
     : callback_(callback)
 {
 }

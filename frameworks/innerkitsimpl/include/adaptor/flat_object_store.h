@@ -41,9 +41,9 @@ public:
         const std::map<std::string, std::vector<uint8_t>> &objectData);
     uint32_t RevokeSave(const std::string &bundleName, const std::string &sessionId);
     int32_t ResumeObject(const std::string &bundleName, const std::string &sessionId,
-                         std::function<void(const std::map<std::string, std::vector<uint8_t>> &data)> &callback);
+        std::function<void(const std::map<std::string, std::vector<uint8_t>> &data, bool allReady)> &callback);
     int32_t SubscribeDataChange(const std::string &bundleName, const std::string &sessionId,
-                                std::function<void(const std::map<std::string, std::vector<uint8_t>> &data)> &callback);
+        std::function<void(const std::map<std::string, std::vector<uint8_t>> &data, bool allReady)> &callback);
     int32_t UnregisterDataChange(const std::string &bundleName, const std::string &sessionId);
     int32_t DeleteSnapshot(const std::string &bundleName, const std::string &sessionId);
 private:
@@ -62,6 +62,8 @@ public:
     ~FlatObjectStore();
     std::string GetBundleName();
     uint32_t CreateObject(const std::string &sessionId);
+    void ResumeObject(const std::string &sessionId);
+    void SubscribeDataChange(const std::string &sessionId);
     uint32_t Delete(const std::string &objectId);
     uint32_t Watch(const std::string &objectId, std::shared_ptr<FlatObjectWatcher> watcher);
     uint32_t UnWatch(const std::string &objectId);

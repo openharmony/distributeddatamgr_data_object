@@ -1280,8 +1280,8 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_ResumeObject_001, TestSize.Level1)
     std::string bundleName = "";
     std::string sessionId = "";
     CacheManager cacheManager;
-    std::function<void(const std::map<std::string, std::vector<uint8_t>> &data)> callback =
-        [](const std::map<std::string, std::vector<uint8_t>> &data) {};
+    std::function<void(const std::map<std::string, std::vector<uint8_t>> &data, bool allReady)> callback =
+        [](const std::map<std::string, std::vector<uint8_t>> &data, bool allReady) {};
     auto ret = cacheManager.ResumeObject(bundleName, sessionId, callback);
     EXPECT_EQ(DistributedDB::DBStatus::INVALID_ARGS, ret);
 }
@@ -1296,8 +1296,8 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_SubscribeDataChange_001, TestSize.L
     std::string bundleName = "";
     std::string sessionId = "";
     CacheManager cacheManager;
-    std::function<void(const std::map<std::string, std::vector<uint8_t>> &data)> callback =
-        [](const std::map<std::string, std::vector<uint8_t>> &data) {};
+    std::function<void(const std::map<std::string, std::vector<uint8_t>> &data, bool allReady)> callback =
+        [](const std::map<std::string, std::vector<uint8_t>> &data, bool allReady) {};
     auto ret = cacheManager.SubscribeDataChange(bundleName, sessionId, callback);
     EXPECT_EQ(DistributedDB::DBStatus::INVALID_ARGS, ret);
 }

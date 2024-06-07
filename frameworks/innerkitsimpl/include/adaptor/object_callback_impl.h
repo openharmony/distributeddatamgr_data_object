@@ -41,20 +41,22 @@ private:
 
 class ObjectRetrieveCallback : public ObjectRetrieveCallbackStub {
 public:
-    ObjectRetrieveCallback(const std::function<void(const std::map<std::string, std::vector<uint8_t>> &)> &callback);
-    void Completed(const std::map<std::string, std::vector<uint8_t>> &results) override;
+    ObjectRetrieveCallback(
+        const std::function<void(const std::map<std::string, std::vector<uint8_t>> &, bool)> &callback);
+    void Completed(const std::map<std::string, std::vector<uint8_t>> &results, bool allReady) override;
 
 private:
-    const std::function<void(const std::map<std::string, std::vector<uint8_t>> &)> callback_;
+    const std::function<void(const std::map<std::string, std::vector<uint8_t>> &, bool)> callback_;
 };
 
 class ObjectChangeCallback : public ObjectChangeCallbackStub {
 public:
-    ObjectChangeCallback(const std::function<void(const std::map<std::string, std::vector<uint8_t>> &)> &callback);
-    void Completed(const std::map<std::string, std::vector<uint8_t>> &results) override;
+    ObjectChangeCallback(
+        const std::function<void(const std::map<std::string, std::vector<uint8_t>> &, bool)> &callback);
+    void Completed(const std::map<std::string, std::vector<uint8_t>> &results, bool allReady) override;
 
 private:
-    const std::function<void(const std::map<std::string, std::vector<uint8_t>> &)> callback_;
+    const std::function<void(const std::map<std::string, std::vector<uint8_t>> &, bool)> callback_;
 };
 } // namespace ObjectStore
 } // namespace OHOS
