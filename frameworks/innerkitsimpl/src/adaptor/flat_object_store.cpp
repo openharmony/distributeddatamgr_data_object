@@ -60,44 +60,55 @@ uint32_t FlatObjectStore::CreateObject(const std::string &sessionId)
         LOG_ERROR("FlatObjectStore::CreateObject createTable err %{public}d", status);
         return status;
     }
-    std::function<void(const std::map<std::string, std::vector<uint8_t>> &data)> callback =
-        [sessionId, this](
-            const std::map<std::string, std::vector<uint8_t>> &data) {
-            if (data.size() > 0) {
-                LOG_INFO("objectstore, retrieve success");
-                {
-                    std::lock_guard<std::mutex> lck(mutex_);
-                    if (find(retrievedCache_.begin(), retrievedCache_.end(), sessionId) == retrievedCache_.end()) {
-                        retrievedCache_.push_back(sessionId);
-                    }
+    ResumeObject(sessionId);
+    SubscribeDataChange(sessionId);
+    return SUCCESS;
+}
+
+void FlatObjectStore::ResumeObject(const std::string &sessionId)
+{
+    std::function<void(const std::map<std::string, std::vector<uint8_t>> &data, bool allReady)> callback =
+    [sessionId, this](
+        const std::map<std::string, std::vector<uint8_t>> &data, bool allReady) {
+        if (data.size() == 0) {
+            LOG_INFO("retrieve empty");
+            return;
+        }
+        LOG_INFO("retrieve success, data.size:%{public}zu, allReady:%{public}d", data.size(), allReady);
+        auto result = storageEngine_->UpdateItems(sessionId, data);
+        if (result != SUCCESS) {
+            LOG_ERROR("UpdateItems failed, status = %{public}d", result);
+        }
+        if (allReady) {
+            std::lock_guard<std::mutex> lck(mutex_);
+            if (find(retrievedCache_.begin(), retrievedCache_.end(), sessionId) == retrievedCache_.end()) {
+                retrievedCache_.push_back(sessionId);
+            }
+            storageEngine_->NotifyStatus(sessionId, "local", "restored");
+        }
+    };
+    cacheManager_->ResumeObject(bundleName_, sessionId, callback);
+}
+
+void FlatObjectStore::SubscribeDataChange(const std::string &sessionId)
+{
+    std::function<void(const std::map<std::string, std::vector<uint8_t>> &data, bool allReady)> remoteResumeCallback =
+        [sessionId, this](const std::map<std::string, std::vector<uint8_t>> &data, bool allReady) {
+            LOG_INFO("DataChange callback. data.size:%{public}zu, allReady:%{public}d", data.size(), allReady);
+            std::map<std::string, std::vector<uint8_t>> filteredData = data;
+            FilterData(sessionId, filteredData);
+            if (!filteredData.empty()) {
+                auto status = storageEngine_->UpdateItems(sessionId, filteredData);
+                if (status != SUCCESS) {
+                    LOG_ERROR("UpdateItems failed, status = %{public}d", status);
                 }
-                auto result = storageEngine_->UpdateItems(sessionId, data);
+                storageEngine_->NotifyChange(sessionId, filteredData);
+            }
+            if (allReady) {
                 storageEngine_->NotifyStatus(sessionId, "local", "restored");
-                if (result != SUCCESS) {
-                    LOG_ERROR("UpdateItems failed, status = %{public}d", result);
-                }
-            } else {
-                LOG_INFO("objectstore, retrieve empty");
             }
         };
-    std::function<void(const std::map<std::string, std::vector<uint8_t>> &data)> remoteResumeCallback =
-            [sessionId, this](
-                    const std::map<std::string, std::vector<uint8_t>> &data) {
-                LOG_INFO("SubscribeDataChange callback success.");
-                std::map<std::string, std::vector<uint8_t>> filteredData = data;
-                FilterData(sessionId, filteredData);
-                if (!filteredData.empty()) {
-                    auto status = storageEngine_->UpdateItems(sessionId, filteredData);
-                    if (status != SUCCESS) {
-                        LOG_ERROR("UpdateItems failed, status = %{public}d", status);
-                    }
-                    storageEngine_->NotifyChange(sessionId, filteredData);
-                }
-                storageEngine_->NotifyStatus(sessionId, "local", "restored");
-            };
-    cacheManager_->ResumeObject(bundleName_, sessionId, callback);
     cacheManager_->SubscribeDataChange(bundleName_, sessionId, remoteResumeCallback);
-    return SUCCESS;
 }
 
 uint32_t FlatObjectStore::Delete(const std::string &sessionId)
@@ -456,7 +467,7 @@ int32_t CacheManager::RevokeSaveObject(
 }
 
 int32_t CacheManager::ResumeObject(const std::string &bundleName, const std::string &sessionId,
-    std::function<void(const std::map<std::string, std::vector<uint8_t>> &data)> &callback)
+    std::function<void(const std::map<std::string, std::vector<uint8_t>> &data, bool allReady)> &callback)
 {
     RADAR_REPORT(CREATE, RESTORE, IDLE);
     sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
@@ -482,7 +493,7 @@ int32_t CacheManager::ResumeObject(const std::string &bundleName, const std::str
 }
 
 int32_t CacheManager::SubscribeDataChange(const std::string &bundleName, const std::string &sessionId,
-    std::function<void(const std::map<std::string, std::vector<uint8_t>> &data)> &callback)
+    std::function<void(const std::map<std::string, std::vector<uint8_t>> &data, bool allReady)> &callback)
 {
     sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
     if (proxy == nullptr) {

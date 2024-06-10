@@ -78,11 +78,12 @@ int ObjectRetrieveCallbackStub::OnRemoteRequest(
     }
     if (code == COMPLETED) {
         std::map<std::string, std::vector<uint8_t>> results;
-        if (!ITypesUtil::Unmarshal(data, results)) {
+        bool allReady;
+        if (!ITypesUtil::Unmarshal(data, results, allReady)) {
             ZLOGE("write descriptor failed");
             return -1;
         }
-        Completed(results);
+        Completed(results, allReady);
         return 0;
     }
     return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -100,11 +101,12 @@ int ObjectChangeCallbackStub::OnRemoteRequest(
     }
     if (code == COMPLETED) {
         std::map<std::string, std::vector<uint8_t>> results;
-        if (!ITypesUtil::Unmarshal(data, results)) {
+        bool allReady;
+        if (!ITypesUtil::Unmarshal(data, results, allReady)) {
             ZLOGE("write descriptor failed");
             return -1;
         }
-        Completed(results);
+        Completed(results, allReady);
         return 0;
     }
     return IPCObjectStub::OnRemoteRequest(code, data, reply, option);

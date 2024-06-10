@@ -32,6 +32,7 @@ enum CreateStage {
 enum SaveStage {
     SAVE_TO_SERVICE = 1,
     SAVE_TO_STORE = 2,
+    PUSH_ASSETS = 3,
 };
 enum StageRes {
     IDLE = 0,
