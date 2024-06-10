@@ -89,7 +89,6 @@ ohos_shared_library("distributeddataobject") {
     "../../frameworks/jskitsimpl/src/adaptor/js_object_wrapper.cpp",
     "../../frameworks/jskitsimpl/src/adaptor/js_watcher.cpp",
     "../../frameworks/jskitsimpl/src/adaptor/notifier_impl.cpp",
-    "../../frameworks/jskitsimpl/src/common/anonymous.cpp",
     "../../frameworks/jskitsimpl/src/common/js_ability.cpp",
     "../../frameworks/jskitsimpl/src/common/js_util.cpp",
     "../../frameworks/jskitsimpl/src/common/napi_queue.cpp",

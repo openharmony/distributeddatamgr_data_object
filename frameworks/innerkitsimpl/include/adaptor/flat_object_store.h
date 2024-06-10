@@ -66,8 +66,6 @@ public:
     uint32_t Watch(const std::string &objectId, std::shared_ptr<FlatObjectWatcher> watcher);
     uint32_t UnWatch(const std::string &objectId);
     uint32_t SetStatusNotifier(std::shared_ptr<StatusWatcher> sharedPtr);
-    uint32_t SyncAllData(const std::string &sessionId,
-        const std::function<void(const std::map<std::string, DistributedDB::DBStatus> &)> &onComplete);
     uint32_t Save(const std::string &sessionId, const std::string &deviceId);
     uint32_t RevokeSave(const std::string &sessionId);
     void CheckRetrieveCache(const std::string &sessionId);

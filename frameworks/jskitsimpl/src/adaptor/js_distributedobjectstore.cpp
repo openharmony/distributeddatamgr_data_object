@@ -169,9 +169,6 @@ napi_value JSDistributedObjectStore::JSCreateObjectSync(napi_env env, napi_callb
         std::make_shared<ParametersNum>("1 or 2"));
     NAPI_ASSERT_ERRCODE_V9(env, !IsSandBox(), version, innerError);
     LOG_INFO("start JSCreateObjectSync");
-    NAPI_ASSERT_ERRCODE_V9(env, JSDistributedObjectStore::CheckSyncPermission(), version,
-        std::make_shared<PermissionError>());
-
     status = JSUtil::GetValue(env, argv[1], sessionId);
     NAPI_ASSERT_ERRCODE_V9(env, status == napi_ok, version,
         std::make_shared<ParametersType>("sessionId", "string"));
@@ -491,18 +488,6 @@ napi_value JSDistributedObjectStore::JSEquenceNum(napi_env env, napi_callback_in
     napi_status status = napi_create_string_utf8(env, str.c_str(), str.size(), &result);
     NOT_MATCH_RETURN_NULL(status == napi_ok);
     return result;
-}
-
-bool JSDistributedObjectStore::CheckSyncPermission()
-{
-    int32_t ret = Security::AccessToken::AccessTokenKit::VerifyAccessToken(
-        AbilityRuntime::Context::GetApplicationContext()->GetApplicationInfo()->accessTokenId, DISTRIBUTED_DATASYNC);
-    if (ret == Security::AccessToken::PermissionState::PERMISSION_DENIED) {
-        LOG_ERROR("VerifyPermission %{public}d: PERMISSION_DENIED",
-            AbilityRuntime::Context::GetApplicationContext()->GetApplicationInfo()->accessTokenId);
-        return false;
-    }
-    return true;
 }
 
 // don't create distributed data object while this application is sandbox
