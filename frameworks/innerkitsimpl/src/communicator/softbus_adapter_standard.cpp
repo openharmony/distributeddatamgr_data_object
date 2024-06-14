@@ -14,7 +14,6 @@
  */
 
 #include <logger.h>
-
 #include <mutex>
 #include <thread>
 
@@ -36,13 +35,8 @@ constexpr int32_t MIN_SIZE = HEAD_SIZE + END_SIZE + 3;
 constexpr const char *REPLACE_CHAIN = "***";
 constexpr const char *DEFAULT_ANONYMOUS = "******";
 constexpr int32_t SOFTBUS_OK = 0;
-constexpr int32_t SOFTBUS_ERR = 1;
-constexpr int32_t INVALID_SESSION_ID = -1;
-constexpr int32_t SESSION_NAME_SIZE_MAX = 65;
-constexpr int32_t DEVICE_ID_SIZE_MAX = 65;
+constexpr int32_t INVALID_SOCKET_ID = 0;
 constexpr size_t TASK_CAPACITY_MAX = 15;
-constexpr int32_t SELF_SIDE = 1;
-
 using namespace std;
 SoftBusAdapter *AppDataListenerWrap::softBusAdapter_;
 std::shared_ptr<SoftBusAdapter> SoftBusAdapter::instance_;
@@ -53,10 +47,14 @@ SoftBusAdapter::SoftBusAdapter()
     taskQueue_ = std::make_shared<TaskScheduler>(TASK_CAPACITY_MAX, "data_object");
     AppDataListenerWrap::SetDataHandler(this);
 
-    sessionListener_.OnSessionOpened = AppDataListenerWrap::OnSessionOpened;
-    sessionListener_.OnSessionClosed = AppDataListenerWrap::OnSessionClosed;
-    sessionListener_.OnBytesReceived = AppDataListenerWrap::OnBytesReceived;
-    sessionListener_.OnMessageReceived = AppDataListenerWrap::OnMessageReceived;
+    clientListener_.OnShutdown = AppDataListenerWrap::OnClientShutdown;
+    clientListener_.OnBytes = AppDataListenerWrap::OnClientBytesReceived;
+    clientListener_.OnMessage = AppDataListenerWrap::OnClientBytesReceived;
+
+    serverListener_.OnBind = AppDataListenerWrap::OnServerBind;
+    serverListener_.OnShutdown = AppDataListenerWrap::OnServerShutdown;
+    serverListener_.OnBytes = AppDataListenerWrap::OnServerBytesReceived;
+    serverListener_.OnMessage = AppDataListenerWrap::OnServerBytesReceived;
 }
 
 SoftBusAdapter::~SoftBusAdapter()
@@ -66,7 +64,7 @@ SoftBusAdapter::~SoftBusAdapter()
         taskQueue_ = nullptr;
     }
     dataCaches_.clear();
-    sessionIds_.clear();
+    sockets_.clear();
 }
 
 Status SoftBusAdapter::StartWatchDeviceChange(
@@ -283,8 +281,6 @@ std::string SoftBusAdapter::ToNodeID(const std::string &nodeId) const
             }
         }
     }
-
-    LOG_WARN("get the network id from devices.");
     std::vector<DeviceInfo> devices;
     NodeBasicInfo *info = nullptr;
     int32_t infoNum = 0;
@@ -358,42 +354,20 @@ Status SoftBusAdapter::StopWatchDataChange(
     return Status::ERROR;
 }
 
-RecOperate SoftBusAdapter::CalcRecOperate(uint32_t dataSize, RouteType currentRouteType, bool &isP2P) const
+Status SoftBusAdapter::SendData(const PipeInfo &pipeInfo, const DeviceId &deviceId, const DataInfo &dataInfo,
+    uint32_t totalLength, const MessageInfo &info)
 {
-    if (currentRouteType == RouteType::WIFI_STA) {
-        return KEEP;
+    lock_guard<mutex> lock(sendDataMutex_);
+    auto result = CacheData(deviceId.deviceId, dataInfo);
+    if (result != Status::SUCCESS) {
+        return result;
     }
-    if (currentRouteType == RouteType::INVALID_ROUTE_TYPE || currentRouteType == BT_BR || currentRouteType == BT_BLE) {
-        if (dataSize > P2P_SIZE_THRESHOLD) {
-            isP2P = true;
-            return CHANGE_TO_P2P;
-        }
+    int clientSocket = GetSocket(pipeInfo, deviceId);
+    if (clientSocket == INVALID_SOCKET_ID) {
+        return Status::ERROR;
     }
-    if (currentRouteType == WIFI_P2P) {
-        if (dataSize < P2P_SIZE_THRESHOLD * SWITCH_DELAY_FACTOR) {
-            return CHANGE_TO_BLUETOOTH;
-        }
-        isP2P = true;
-    }
-    return KEEP;
-}
-
-SessionAttribute SoftBusAdapter::GetSessionAttribute(bool isP2P)
-{
-    SessionAttribute attr;
-    attr.dataType = TYPE_BYTES;
-    // If the dataType is BYTES, the default strategy is wifi_5G > wifi_2.4G > BR, without P2P;
-    if (!isP2P) {
-        return attr;
-    }
-
-    int index = 0;
-    attr.linkType[index++] = LINK_TYPE_WIFI_WLAN_5G;
-    attr.linkType[index++] = LINK_TYPE_WIFI_WLAN_2G;
-    attr.linkType[index++] = LINK_TYPE_WIFI_P2P;
-    attr.linkType[index++] = LINK_TYPE_BR;
-    attr.linkTypeNum = index;
-    return attr;
+    DoSend();
+    return Status::SUCCESS;
 }
 
 Status SoftBusAdapter::CacheData(const std::string &deviceId, const DataInfo &dataInfo)
@@ -422,69 +396,53 @@ Status SoftBusAdapter::CacheData(const std::string &deviceId, const DataInfo &da
     return Status::SUCCESS;
 }
 
-uint32_t SoftBusAdapter::GetSize(const std::string &deviceId)
+int SoftBusAdapter::GetSocket(const PipeInfo &pipeInfo, const DeviceId &deviceId)
 {
-    uint32_t dataSize = 0;
-    lock_guard<mutex> lock(deviceDataLock_);
-    auto it = dataCaches_.find(deviceId);
-    if (it == dataCaches_.end() || it->second.empty()) {
-        return dataSize;
+    lock_guard<mutex> lock(socketLock_);
+    auto it = sockets_.find(deviceId.deviceId);
+    if (it != sockets_.end()) {
+        return it->second;
     }
-    for (const auto &msg : it->second) {
-        dataSize += msg.size;
+    int socketId = CreateClientSocket(pipeInfo, deviceId);
+    if (socketId == INVALID_SOCKET_ID) {
+        return INVALID_SOCKET_ID;
     }
-    return dataSize;
+    sockets_[deviceId.deviceId] = socketId;
+    return socketId;
 }
 
-RouteType SoftBusAdapter::GetRouteType(int sessionId)
+int SoftBusAdapter::CreateClientSocket(const PipeInfo &pipeInfo, const DeviceId &deviceId)
 {
-    RouteType routeType = RouteType::INVALID_ROUTE_TYPE;
-    int ret = GetSessionOption(sessionId, SESSION_OPTION_LINK_TYPE, &routeType, sizeof(routeType));
-    if (ret != SOFTBUS_OK) {
-        LOG_ERROR("getSessionOption failed, ret is %{public}d.", ret);
-    }
-    return routeType;
-}
-
-Status SoftBusAdapter::SendData(const PipeInfo &pipeInfo, const DeviceId &deviceId, const DataInfo &dataInfo,
-    uint32_t totalLength, const MessageInfo &info)
-{
-    lock_guard<mutex> lock(sendDataMutex_);
-    auto result = CacheData(deviceId.deviceId, dataInfo);
-    if (result != Status::SUCCESS) {
-        return result;
-    }
-    uint32_t dataSize = GetSize(deviceId.deviceId) + totalLength;
-    int sessionId = GetSessionId(deviceId.deviceId);
-    bool isP2P = false;
-    RouteType currentRouteType = GetRouteType(sessionId);
-    RecOperate recOperate = CalcRecOperate(dataSize, currentRouteType, isP2P);
-    if (recOperate != KEEP && sessionId != INVALID_SESSION_ID) {
-        LOG_INFO("close session : %{public}d, currentRouteType : %{public}d, recOperate : %{public}d", sessionId,
-            currentRouteType, recOperate);
-        CloseSession(sessionId);
-    }
-    SessionAttribute attr = GetSessionAttribute(isP2P);
-    OpenSession(pipeInfo.pipeId.c_str(), pipeInfo.pipeId.c_str(), ToNodeID(deviceId.deviceId).c_str(),
-        "GROUP_ID", &attr);
-    return Status::SUCCESS;
-}
-
-void SoftBusAdapter::CacheSession(int32_t sessionId)
-{
-    std::string deviceId;
-    if (GetDeviceId(sessionId, deviceId) == SOFTBUS_OK) {
-        lock_guard<mutex> lock(deviceSessionLock_);
-        sessionIds_[deviceId] = sessionId;
-    }
+        SocketInfo socketInfo;
+        socketInfo.name = const_cast<char *>(pipeInfo.pipeId.c_str());
+        socketInfo.peerName = const_cast<char *>(pipeInfo.pipeId.c_str());
+        std::string networkId = ToNodeID(deviceId.deviceId);
+        socketInfo.peerNetworkId = const_cast<char *>(networkId.c_str());
+        
+        std::string pkgName = "ohos.objectstore";
+        socketInfo.pkgName = pkgName.data();
+        socketInfo.dataType = DATA_TYPE_BYTES;
+        int socketId = Socket(socketInfo);
+        if (socketId <= 0) {
+            LOG_ERROR("Create socket failed, error code: %{public}d, name:%{public}s", socketId, socketInfo.name);
+            return INVALID_SOCKET_ID;
+        }
+        int32_t res = Bind(socketId, Qos, QOS_COUNT, &clientListener_);
+        if (res != 0) {
+            LOG_ERROR("Bind failed, error code: %{public}d, peerName: %{public}s, peerNetworkId: %{public}s",
+                res, socketInfo.peerName, Anonymous::Change(networkId).c_str());
+            Shutdown(socketId);
+            return INVALID_SOCKET_ID;
+        }
+        return socketId;
 }
 
 void SoftBusAdapter::DoSend()
 {
     auto task([this]() {
-        lock_guard<mutex> lockSession(deviceSessionLock_);
-        for (auto &it : sessionIds_) {
-            if (it.second == INVALID_SESSION_ID) {
+        lock_guard<mutex> lock(socketLock_);
+        for (auto &it : sockets_) {
+            if (it.second <= INVALID_SOCKET_ID) {
                 continue;
             }
             lock_guard<mutex> lock(deviceDataLock_);
@@ -507,121 +465,54 @@ void SoftBusAdapter::DoSend()
     taskQueue_->Execute(std::move(task));
 }
 
-int SoftBusAdapter::GetDeviceId(int sessionId, std::string &deviceId)
+void SoftBusAdapter::OnClientShutdown(int32_t socket)
 {
-    char peerDevId[DEVICE_ID_SIZE_MAX] = "";
-    int ret = GetPeerDeviceId(sessionId, peerDevId, sizeof(peerDevId));
-    if (ret != SOFTBUS_OK) {
-        LOG_ERROR("get peerDeviceId failed, sessionId :%{public}d", sessionId);
-        return ret;
-    }
-    lock_guard<mutex> lock(networkMutex_);
-    auto it = networkId2Uuid_.find(std::string(peerDevId));
-    if (it != networkId2Uuid_.end()) {
-        deviceId = it->second;
-    }
-    return ret;
-}
-
-int SoftBusAdapter::GetSessionId(const std::string &deviceId)
-{
-    lock_guard<mutex> lock(deviceSessionLock_);
-    auto it = sessionIds_.find(deviceId);
-    if (it != sessionIds_.end()) {
-        return it->second;
-    }
-    return INVALID_SESSION_ID;
-}
-
-void SoftBusAdapter::OnSessionOpen(int32_t sessionId, int32_t status)
-{
-    if (status != SOFTBUS_OK) {
-        LOG_DEBUG("[OnSessionOpen] OpenSession failed");
-        return;
-    }
-    if (GetSessionSide(sessionId) != SELF_SIDE) {
-        return;
-    }
-    CacheSession(sessionId);
-    DoSend();
-}
-
-void SoftBusAdapter::OnSessionClose(int32_t sessionId)
-{
-    std::string deviceId;
-    if (GetSessionSide(sessionId) != SELF_SIDE) {
-        return;
-    }
-    if (GetDeviceId(sessionId, deviceId) == SOFTBUS_OK) {
-        lock_guard<mutex> lock(deviceSessionLock_);
-        if (sessionIds_.find(deviceId) != sessionIds_.end()) {
-            sessionIds_.erase(deviceId);
+    lock_guard<mutex> lock(socketLock_);
+    for (auto iter = sockets_.begin(); iter != sockets_.end();) {
+        if (iter->second == socket) {
+            iter = sockets_.erase(iter);
+        } else {
+            iter++;
         }
     }
-    DoSend();
 }
 
 bool SoftBusAdapter::IsSameStartedOnPeer(
     const struct PipeInfo &pipeInfo, __attribute__((unused)) const struct DeviceId &peer)
 {
-    LOG_INFO(
-        "pipeInfo:%{public}s peer.deviceId:%{public}s", pipeInfo.pipeId.c_str(), ToBeAnonymous(peer.deviceId).c_str());
-    {
-        lock_guard<mutex> lock(busSessionMutex_);
-        if (busSessionMap_.find(pipeInfo.pipeId + peer.deviceId) != busSessionMap_.end()) {
-            LOG_INFO("Found session in map. Return true.");
-            return true;
-        }
-    }
-    SessionAttribute attr;
-    attr.dataType = TYPE_BYTES;
-    int sessionId = OpenSession(
-        pipeInfo.pipeId.c_str(), pipeInfo.pipeId.c_str(), ToNodeID(peer.deviceId).c_str(), "GROUP_ID", &attr);
-    LOG_INFO("[IsSameStartedOnPeer] sessionId=%{public}d", sessionId);
-    if (sessionId == INVALID_SESSION_ID) {
-        LOG_ERROR("OpenSession return null, pipeInfo:%{public}s. Return false.", pipeInfo.pipeId.c_str());
-        return false;
-    }
-    LOG_INFO("session started, pipeInfo:%{public}s. sessionId:%{public}d Return "
-             "true. ",
-        pipeInfo.pipeId.c_str(), sessionId);
-    return true;
-}
-
-void SoftBusAdapter::SetMessageTransFlag(const PipeInfo &pipeInfo, bool flag)
-{
-    LOG_INFO("pipeInfo: %{public}s flag: %{public}d", pipeInfo.pipeId.c_str(), static_cast<bool>(flag));
-    flag_ = flag;
+    int socket = GetSocket(pipeInfo, peer);
+    return socket != INVALID_SOCKET_ID;
 }
 
 int SoftBusAdapter::CreateSessionServerAdapter(const std::string &sessionName)
 {
-    LOG_DEBUG("begin");
-    return CreateSessionServer("ohos.objectstore", sessionName.c_str(), &sessionListener_);
+    SocketInfo socketInfo;
+    socketInfo.name = const_cast<char *>(sessionName.c_str());
+    std::string pkgName = "ohos.objectstore";
+    socketInfo.pkgName = pkgName.data();
+    socketServer_ = Socket(socketInfo);
+    if (socketServer_ <= 0) {
+        LOG_ERROR("Create socket failed, error code: %{public}d, name:%{public}s", socketServer_, socketInfo.name);
+        return static_cast<int>(Status::ERROR);
+    }
+    int res = Listen(socketServer_, Qos, QOS_COUNT, &serverListener_);
+    if (res != SOFTBUS_OK) {
+        LOG_ERROR("Listen socket failed, error code: %{public}d, socket:%{public}d", res, socketServer_);
+        return static_cast<int>(Status::ERROR);
+    }
+    return SOFTBUS_OK;
 }
 
 int SoftBusAdapter::RemoveSessionServerAdapter(const std::string &sessionName) const
 {
-    LOG_DEBUG("begin");
-    return RemoveSessionServer("ohos.objectstore", sessionName.c_str());
-}
-
-void SoftBusAdapter::InsertSession(const std::string &sessionName)
-{
-    lock_guard<mutex> lock(busSessionMutex_);
-    busSessionMap_.insert({ sessionName, true });
-}
-
-void SoftBusAdapter::DeleteSession(const std::string &sessionName)
-{
-    lock_guard<mutex> lock(busSessionMutex_);
-    busSessionMap_.erase(sessionName);
+    Shutdown(socketServer_);
+    LOG_INFO("Shutdown server socket: %{public}d", socketServer_);
+    return 0;
 }
 
 void SoftBusAdapter::NotifyDataListeners(
     const uint8_t *ptr, const int size, const std::string &deviceId, const PipeInfo &pipeInfo)
 {
-    LOG_DEBUG("begin");
     lock_guard<mutex> lock(dataChangeMutex_);
     auto it = dataChangeListeners_.find(pipeInfo.pipeId);
     if (it != dataChangeListeners_.end()) {
@@ -634,138 +525,69 @@ void SoftBusAdapter::NotifyDataListeners(
     LOG_WARN("no listener %{public}s.", pipeInfo.pipeId.c_str());
 }
 
+bool SoftBusAdapter::GetPeerSocketInfo(int32_t socket, PeerSocketInfo &info)
+{
+    auto it = peerSocketInfos_.Find(socket);
+    if (it.first) {
+        info = it.second;
+        return true;
+    }
+    return false;
+}
+
+void SoftBusAdapter::OnBind(int32_t socket, PeerSocketInfo info)
+{
+    peerSocketInfos_.Insert(socket, info);
+}
+
+void SoftBusAdapter::OnServerShutdown(int32_t socket)
+{
+    peerSocketInfos_.Erase(socket);
+}
+
 void AppDataListenerWrap::SetDataHandler(SoftBusAdapter *handler)
 {
-    LOG_INFO("begin");
     softBusAdapter_ = handler;
 }
 
-int AppDataListenerWrap::OnSessionOpened(int sessionId, int result)
+void AppDataListenerWrap::OnClientShutdown(int32_t socket, ShutdownReason reason)
 {
-    LOG_DEBUG("[SessionOpen] sessionId:%{public}d, result:%{public}d", sessionId, result);
-    char mySessionName[SESSION_NAME_SIZE_MAX] = "";
-    char peerSessionName[SESSION_NAME_SIZE_MAX] = "";
-    char peerDevId[DEVICE_ID_SIZE_MAX] = "";
-    softBusAdapter_->OnSessionOpen(sessionId, result);
-    if (result != SOFTBUS_OK) {
-        LOG_WARN("session %{public}d open failed, result:%{public}d.", sessionId, result);
-        return result;
-    }
-    int ret = GetMySessionName(sessionId, mySessionName, sizeof(mySessionName));
-    if (ret != SOFTBUS_OK) {
-        LOG_WARN("get my session name failed, session id is %{public}d.", sessionId);
-        return SOFTBUS_ERR;
-    }
-    ret = GetPeerSessionName(sessionId, peerSessionName, sizeof(peerSessionName));
-    if (ret != SOFTBUS_OK) {
-        LOG_WARN("get my peer session name failed, session id is %{public}d.", sessionId);
-        return SOFTBUS_ERR;
-    }
-    ret = GetPeerDeviceId(sessionId, peerDevId, sizeof(peerDevId));
-    if (ret != SOFTBUS_OK) {
-        LOG_WARN("get my peer device id failed, session id is %{public}d.", sessionId);
-        return SOFTBUS_ERR;
-    }
-    std::string peerUuid = DevManager::GetInstance()->GetUuidByNodeId(std::string(peerDevId));
-    LOG_DEBUG("[SessionOpen] mySessionName:%{public}s, "
-              "peerSessionName:%{public}s, peerDevId:%{public}s",
-        mySessionName, peerSessionName, SoftBusAdapter::ToBeAnonymous(peerUuid).c_str());
-
-    if (strlen(peerSessionName) < 1) {
-        softBusAdapter_->InsertSession(std::string(mySessionName) + peerUuid);
-    } else {
-        softBusAdapter_->InsertSession(std::string(peerSessionName) + peerUuid);
-    }
-    return 0;
+    softBusAdapter_->OnClientShutdown(socket);
+    LOG_INFO("Client socket shutdown, socket: %{public}d, reason: %{public}d", socket, reason);
 }
 
-void AppDataListenerWrap::OnSessionClosed(int sessionId)
-{
-    LOG_INFO("[SessionClosed] sessionId:%{public}d", sessionId);
-    char mySessionName[SESSION_NAME_SIZE_MAX] = "";
-    char peerSessionName[SESSION_NAME_SIZE_MAX] = "";
-    char peerDevId[DEVICE_ID_SIZE_MAX] = "";
+void AppDataListenerWrap::OnClientBytesReceived(int32_t socket, const void *data, uint32_t dataLen) {}
 
-    softBusAdapter_->OnSessionClose(sessionId);
-    int ret = GetMySessionName(sessionId, mySessionName, sizeof(mySessionName));
-    if (ret != SOFTBUS_OK) {
-        LOG_WARN("get my session name failed, session id is %{public}d.", sessionId);
-        return;
-    }
-    ret = GetPeerSessionName(sessionId, peerSessionName, sizeof(peerSessionName));
-    if (ret != SOFTBUS_OK) {
-        LOG_WARN("get my peer session name failed, session id is %{public}d.", sessionId);
-        return;
-    }
-    ret = GetPeerDeviceId(sessionId, peerDevId, sizeof(peerDevId));
-    if (ret != SOFTBUS_OK) {
-        LOG_WARN("get my peer device id failed, session id is %{public}d.", sessionId);
-        return;
-    }
-    std::string peerUuid = DevManager::GetInstance()->GetUuidByNodeId(std::string(peerDevId));
-    LOG_DEBUG("[SessionClosed] mySessionName:%{public}s, "
-              "peerSessionName:%{public}s, peerDevId:%{public}s",
-        mySessionName, peerSessionName, SoftBusAdapter::ToBeAnonymous(peerUuid).c_str());
-    if (strlen(peerSessionName) < 1) {
-        softBusAdapter_->DeleteSession(std::string(mySessionName) + peerUuid);
-    } else {
-        softBusAdapter_->DeleteSession(std::string(peerSessionName) + peerUuid);
-    }
+void AppDataListenerWrap::OnServerBind(int32_t socket, PeerSocketInfo info)
+{
+    softBusAdapter_->OnBind(socket, info);
+    LOG_INFO("Server on bind, socket: %{public}d, peer networkId: %{public}s", socket,
+        SoftBusAdapter::ToBeAnonymous(info.networkId).c_str());
 }
 
-void AppDataListenerWrap::OnMessageReceived(int sessionId, const void *data, unsigned int dataLen)
+void AppDataListenerWrap::OnServerShutdown(int32_t socket, ShutdownReason reason)
 {
-    LOG_INFO("begin");
-    if (sessionId == INVALID_SESSION_ID) {
-        return;
-    }
-    char peerSessionName[SESSION_NAME_SIZE_MAX] = "";
-    char peerDevId[DEVICE_ID_SIZE_MAX] = "";
-    int ret = GetPeerSessionName(sessionId, peerSessionName, sizeof(peerSessionName));
-    if (ret != SOFTBUS_OK) {
-        LOG_WARN("get my peer session name failed, session id is %{public}d.", sessionId);
-        return;
-    }
-    ret = GetPeerDeviceId(sessionId, peerDevId, sizeof(peerDevId));
-    if (ret != SOFTBUS_OK) {
-        LOG_WARN("get my peer device id failed, session id is %{public}d.", sessionId);
-        return;
-    }
-    std::string peerUuid = DevManager::GetInstance()->GetUuidByNodeId(std::string(peerDevId));
-    LOG_DEBUG("[MessageReceived] session id:%{public}d, "
-              "peerSessionName:%{public}s, peerDevId:%{public}s",
-        sessionId, peerSessionName, SoftBusAdapter::ToBeAnonymous(peerUuid).c_str());
-    NotifyDataListeners(reinterpret_cast<const uint8_t *>(data), dataLen, peerUuid, { std::string(peerSessionName) });
+    softBusAdapter_->OnServerShutdown(socket);
+    LOG_INFO("Server socket shutdown, socket: %{public}d, reason: %{public}d", socket, reason);
 }
 
-void AppDataListenerWrap::OnBytesReceived(int sessionId, const void *data, unsigned int dataLen)
+void AppDataListenerWrap::OnServerBytesReceived(int32_t socket, const void *data, uint32_t dataLen)
 {
-    if (sessionId == INVALID_SESSION_ID) {
+    PeerSocketInfo info;
+    if (!softBusAdapter_->GetPeerSocketInfo(socket, info)) {
+        LOG_ERROR("Get peer socket info failed, socket: %{public}d", socket);
         return;
-    }
-    char peerSessionName[SESSION_NAME_SIZE_MAX] = "";
-    char peerDevId[DEVICE_ID_SIZE_MAX] = "";
-    int ret = GetPeerSessionName(sessionId, peerSessionName, sizeof(peerSessionName));
-    if (ret != SOFTBUS_OK) {
-        LOG_WARN("get my peer session name failed, session id is %{public}d.", sessionId);
-        return;
-    }
-    ret = GetPeerDeviceId(sessionId, peerDevId, sizeof(peerDevId));
-    if (ret != SOFTBUS_OK) {
-        LOG_WARN("get my peer device id failed, session id is %{public}d.", sessionId);
-        return;
-    }
-    std::string peerUuid = DevManager::GetInstance()->GetUuidByNodeId(std::string(peerDevId));
-    LOG_DEBUG("[BytesReceived] session id:%{public}d, peerSessionName:%{public}s, "
-              "peerDevId:%{public}s",
-        sessionId, peerSessionName, SoftBusAdapter::ToBeAnonymous(peerUuid).c_str());
-    NotifyDataListeners(reinterpret_cast<const uint8_t *>(data), dataLen, peerUuid, { std::string(peerSessionName) });
+    };
+    LOG_DEBUG("Server receive bytes, socket: %{public}d, networkId: %{public}s, dataLen: %{public}u", socket,
+        Anonymous::Change(info.networkId).c_str(), dataLen);
+    std::string peerDevUuid = DevManager::GetInstance()->GetUuidByNodeId(std::string(info.networkId));
+    NotifyDataListeners(reinterpret_cast<const uint8_t *>(data), dataLen, peerDevUuid, { info.name });
 }
 
-void AppDataListenerWrap::NotifyDataListeners(
-    const uint8_t *ptr, const int size, const std::string &deviceId, const PipeInfo &pipeInfo)
+void AppDataListenerWrap::NotifyDataListeners(const uint8_t *ptr, const int size, const std::string &deviceId,
+    const PipeInfo &pipeInfo)
 {
-    return softBusAdapter_->NotifyDataListeners(ptr, size, deviceId, pipeInfo);
+    softBusAdapter_->NotifyDataListeners(ptr, size, deviceId, pipeInfo);
 }
 } // namespace ObjectStore
 } // namespace OHOS

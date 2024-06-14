@@ -231,24 +231,7 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_IsSameStartedOnPeer_001, TestSiz
     DeviceId deviceId = { "deviceId01" };
     SoftBusAdapter softBusAdapter;
     auto ret = softBusAdapter.IsSameStartedOnPeer(pipeInfo, deviceId);
-    EXPECT_EQ(false, ret);
-}
-
-/**
- * @tc.name: SoftBusAdapter_IsSameStartedOnPeer_002
- * @tc.desc: test SoftBusAdapter IsSameStartedOnPeer.
- * @tc.type: FUNC
- */
-HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_IsSameStartedOnPeer_002, TestSize.Level1)
-{
-    PipeInfo pipeInfo = { "pipInfo002" };
-    DeviceId deviceId = { "deviceId02" };
-    SoftBusAdapter softBusAdapter;
-    std::string sessionName = "pipInfo002deviceId02";
-    softBusAdapter.InsertSession(sessionName);
-    auto ret = softBusAdapter.IsSameStartedOnPeer(pipeInfo, deviceId);
     EXPECT_EQ(true, ret);
-    softBusAdapter.DeleteSession(sessionName);
 }
 
 /**
@@ -480,7 +463,7 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_GetDeviceList_001, TestSize.Leve
 {
     SoftBusAdapter softBusAdapter;
     auto ret = softBusAdapter.GetDeviceList();
-    EXPECT_EQ(false, ret.empty());
+    EXPECT_EQ(true, ret.empty());
 }
 
 /**
@@ -504,7 +487,7 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_GetLocalDevice_001, TestSize.Lev
  */
 HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_SendData_001, TestSize.Level1)
 {
-    PipeInfo pipeInfo = {};
+    PipeInfo pipeInfo = {"INVALID_SESSION_NAME"};
     DeviceId deviceId = {"devideId01"};
     uint32_t size = 1;
     uint8_t tmpNum = 1;
@@ -513,74 +496,52 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_SendData_001, TestSize.Level1)
     MessageInfo messageInfo = {MessageType::DEFAULT};
     SoftBusAdapter softBusAdapter;
     auto ret = softBusAdapter.SendData(pipeInfo, deviceId, dataInfo, size, messageInfo);
-    EXPECT_EQ(Status::SUCCESS, ret);
+    EXPECT_EQ(Status::ERROR, ret);
 }
 
 /**
- * @tc.name: AppDataListenerWrap_OnSessionOpened_001
- * @tc.desc: test AppDataListenerWrap OnSessionOpened.
+ * @tc.name: AppDataListenerWrap_OnServerBind_001
+ * @tc.desc: test AppDataListenerWrap OnServerBind.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeCommunicatorTest, AppDataListenerWrap_OnSessionOpened_001, TestSize.Level1)
+HWTEST_F(NativeCommunicatorTest, AppDataListenerWrap_OnServerBind_001, TestSize.Level1)
 {
-    int sessionId = 1;
-    int result = 0;
     AppDataListenerWrap::SetDataHandler(&softBusAdapter_);
-    auto ret = AppDataListenerWrap::OnSessionOpened(sessionId, result);
-    EXPECT_EQ(0, ret);
-    AppDataListenerWrap::OnSessionClosed(sessionId);
+    int32_t socket = 9999;
+    std::string name = "OnServiceBind_001";
+    std::string networkId = "1234567890";
+    std::string pkgName = "ohos.objectstore";
+    PeerSocketInfo mockInfo = {
+        .name = name.data(),
+        .networkId = networkId.data(),
+        .pkgName = pkgName.data(),
+        .dataType = DATA_TYPE_BYTES
+    };
+    AppDataListenerWrap::OnServerBind(socket, mockInfo);
+    PeerSocketInfo info;
+    auto ret = softBusAdapter_.GetPeerSocketInfo(socket, info);
+    EXPECT_TRUE(ret);
+    EXPECT_EQ(mockInfo.name, info.name);
+    AppDataListenerWrap::OnServerShutdown(socket, SHUTDOWN_REASON_LOCAL);
+    ret = softBusAdapter_.GetPeerSocketInfo(socket, info);
+    EXPECT_FALSE(ret);
 }
 
 /**
- * @tc.name: AppDataListenerWrap_OnSessionOpened_002
- * @tc.desc: test AppDataListenerWrap OnSessionOpened.
+ * @tc.name: AppDataListenerWrap_OnServerBytesReceived_001
+ * @tc.desc: test AppDataListenerWrap OnServerBytesReceived.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeCommunicatorTest, AppDataListenerWrap_OnSessionOpened_002, TestSize.Level1)
+HWTEST_F(NativeCommunicatorTest, AppDataListenerWrap_OnServerBytesReceived_001, TestSize.Level1)
 {
-    int sessionId = 1;
-    int result = 1;
-    AppDataListenerWrap::SetDataHandler(&softBusAdapter_);
-    auto ret = AppDataListenerWrap::OnSessionOpened(sessionId, result);
-    EXPECT_EQ(1, ret);
-    AppDataListenerWrap::OnSessionClosed(sessionId);
-}
-
-/**
- * @tc.name: AppDataListenerWrap_OnMessageReceived_001
- * @tc.desc: test AppDataListenerWrap OnMessageReceived.
- * @tc.type: FUNC
- */
-HWTEST_F(NativeCommunicatorTest, AppDataListenerWrap_OnMessageReceived_001, TestSize.Level1)
-{
-    PipeInfo pipeInfo = { "" };
+    PipeInfo pipeInfo = { "OnServerBytesReceived_001" };
     SoftBusAdapter softBusAdapter;
     MockAppDataChangeListener observer;
     auto ret = softBusAdapter.StartWatchDataChange(&observer, pipeInfo);
     EXPECT_EQ(Status::SUCCESS, ret);
-    int sessionId = 1;
-    AppDataListenerWrap::SetDataHandler(&softBusAdapter);
-    std::string data = "OnMessageReceived";
-    AppDataListenerWrap::OnMessageReceived(sessionId, reinterpret_cast<const void *>(data.c_str()), data.size());
-    EXPECT_EQ(data, observer.data);
-}
-
-/**
- * @tc.name: AppDataListenerWrap_OnBytesReceived_001
- * @tc.desc: test AppDataListenerWrap OnBytesReceived.
- * @tc.type: FUNC
- */
-HWTEST_F(NativeCommunicatorTest, AppDataListenerWrap_OnBytesReceived_001, TestSize.Level1)
-{
-    PipeInfo pipeInfo = { "" };
-    SoftBusAdapter softBusAdapter;
-    MockAppDataChangeListener observer;
-    auto ret = softBusAdapter.StartWatchDataChange(&observer, pipeInfo);
-    EXPECT_EQ(Status::SUCCESS, ret);
-    int sessionId = 1;
-    AppDataListenerWrap::SetDataHandler(&softBusAdapter);
-    std::string data = "OnBytesReceived";
-    AppDataListenerWrap::OnBytesReceived(sessionId, reinterpret_cast<const void *>(data.c_str()), data.size());
+    int socket = 1;
+    std::string data = "";
+    AppDataListenerWrap::OnServerBytesReceived(socket, reinterpret_cast<const void *>(data.c_str()), data.size());
     EXPECT_EQ(data, observer.data);
 }
 

@@ -26,6 +26,7 @@
 #include "app_types.h"
 #include "concurrent_map.h"
 #include "session.h"
+#include "socket.h"
 #include "softbus_bus_center.h"
 #include "task_scheduler.h"
 
@@ -62,43 +63,39 @@ public:
 
     bool IsSameStartedOnPeer(const struct PipeInfo &pipeInfo, const struct DeviceId &peer);
 
-    void SetMessageTransFlag(const PipeInfo &pipeInfo, bool flag);
-
     int CreateSessionServerAdapter(const std::string &sessionName);
 
     int RemoveSessionServerAdapter(const std::string &sessionName) const;
 
     void UpdateRelationship(const std::string &networkid, const DeviceChangeType &type);
 
-    void InsertSession(const std::string &sessionName);
-
-    void DeleteSession(const std::string &sessionName);
-
     void NotifyDataListeners(const uint8_t *ptr, const int size, const std::string &deviceId, const PipeInfo &pipeInfo);
 
+    void OnClientShutdown(int32_t socket);
+
+    void OnBind(int32_t socket, PeerSocketInfo info);
+
+    void OnServerShutdown(int32_t socket);
+
+    bool GetPeerSocketInfo(int32_t socket, PeerSocketInfo &info);
+
     std::string ToNodeID(const std::string &nodeId) const;
-
-    void OnSessionOpen(int32_t sessionId, int32_t status);
-
-    void OnSessionClose(int32_t sessionId);
 
 private:
     struct BytesMsg {
         uint8_t *ptr;
         uint32_t size;
     };
-    static constexpr uint32_t P2P_SIZE_THRESHOLD = 0x10000u;    // 64KB
     static constexpr uint32_t VECTOR_SIZE_THRESHOLD = 100;
-    static constexpr float SWITCH_DELAY_FACTOR = 0.6f;
+    static constexpr uint32_t QOS_COUNT = 3;
+    static constexpr QosTV Qos[QOS_COUNT] = {
+        { .qos = QOS_TYPE_MIN_BW, .value = 90 * 1024 * 1024 },
+        { .qos = QOS_TYPE_MAX_LATENCY, .value = 10000 },
+        { .qos = QOS_TYPE_MIN_LATENCY, .value = 2000 } };
     Status CacheData(const std::string &deviceId, const DataInfo &dataInfo);
-    uint32_t GetSize(const std::string &deviceId);
-    RouteType GetRouteType(int sessionId);
-    RecOperate CalcRecOperate(uint32_t dataSize, RouteType currentRouteType, bool &isP2P) const;
-    void CacheSession(int32_t sessionId);
     void DoSend();
-    int GetDeviceId(int sessionId, std::string &deviceId);
-    int GetSessionId(const std::string &deviceId);
-    SessionAttribute GetSessionAttribute(bool isP2P);
+    int GetSocket(const PipeInfo &pipeInfo, const DeviceId &deviceId);
+    int CreateClientSocket(const PipeInfo &pipeInfo, const DeviceId &deviceId);
     mutable std::mutex networkMutex_{};
     mutable std::map<std::string, std::string> networkId2Uuid_{};
     DeviceInfo localInfo_{};
@@ -107,28 +104,28 @@ private:
     std::set<const AppDeviceStatusChangeListener *> listeners_{};
     std::mutex dataChangeMutex_{};
     std::map<std::string, const AppDataChangeListener *> dataChangeListeners_{};
-    std::mutex busSessionMutex_{};
-    std::map<std::string, bool> busSessionMap_{};
-    bool flag_ = true; // only for br flag
-    ISessionListener sessionListener_{};
-    std::mutex statusMutex_{};
     std::mutex sendDataMutex_{};
-    std::mutex mapLock_;
-    std::mutex deviceSessionLock_;
-    std::map<std::string, int> sessionIds_;
+    std::mutex socketLock_;
     std::mutex deviceDataLock_;
     std::map<std::string, std::vector<BytesMsg>> dataCaches_;
     std::shared_ptr<TaskScheduler> taskQueue_;
     std::mutex localDeviceLock_{};
+    std::map<std::string, int> sockets_;
+    int32_t socketServer_;
+    ConcurrentMap<int32_t, PeerSocketInfo> peerSocketInfos_;
+    ISocketListener clientListener_{};
+    ISocketListener serverListener_{};
 };
 
 class AppDataListenerWrap {
 public:
     static void SetDataHandler(SoftBusAdapter *handler);
-    static int OnSessionOpened(int sessionId, int result);
-    static void OnSessionClosed(int sessionId);
-    static void OnMessageReceived(int sessionId, const void *data, unsigned int dataLen);
-    static void OnBytesReceived(int sessionId, const void *data, unsigned int dataLen);
+    static void OnClientShutdown(int32_t socket, ShutdownReason reason);
+    static void OnClientBytesReceived(int32_t socket, const void *data, uint32_t dataLen);
+
+    static void OnServerBind(int32_t socket, PeerSocketInfo info);
+    static void OnServerShutdown(int32_t socket, ShutdownReason reason);
+    static void OnServerBytesReceived(int32_t socket, const void *data, uint32_t dataLen);
 
 public:
     // notifiy all listeners when received message
