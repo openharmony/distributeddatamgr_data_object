@@ -243,7 +243,7 @@ HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_Stop_002, TestSize.Level1)
     auto ret = appPipeMgr->Start(pipeInfo);
     EXPECT_EQ(Status::SUCCESS, ret);
     ret = appPipeMgr->Stop(pipeInfo);
-    EXPECT_EQ(Status::ERROR, ret);
+    EXPECT_EQ(Status::SUCCESS, ret);
 }
 
 /**
@@ -369,6 +369,6 @@ HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_IsSameStartedOnPeer_003, Tes
     AppPipeMgr appPipeMgr;
     appPipeMgr.Start(pipeInfo);
     auto ret = appPipeMgr.IsSameStartedOnPeer(pipeInfo, deviceId);
-    EXPECT_EQ(false, ret);
+    EXPECT_EQ(true, ret);
 }
 } // namespace

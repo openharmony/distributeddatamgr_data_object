@@ -18,6 +18,7 @@
 #include <session.h>
 #include <string>
 
+#include "socket.h"
 #include "softbus_bus_center.h"
 
 static std::map<std::string, std::map<std::string, const ISessionListener *>> sessionListeners;
@@ -86,6 +87,31 @@ int CreateSessionServer(const char *pkgName, const char *sessionName, const ISes
 {
     const char *invalidSessionName = "INVALID_SESSION_NAME";
     if (!strcmp(sessionName, invalidSessionName)) {
+        return -1;
+    }
+    return 0;
+}
+
+int Socket(SocketInfo info)
+{
+    const char *invalidSessionName = "INVALID_SESSION_NAME";
+    if (!strcmp(info.name, invalidSessionName)) {
+        return 0;
+    }
+    return 1;
+}
+
+int Listen(int32_t socket, const QosTV *qos, uint32_t qosCount, const ISocketListener *listener)
+{
+    if (socket <= 0) {
+        return -1;
+    }
+    return 0;
+}
+
+int Bind(int32_t socket, const QosTV *qos, uint32_t qosCount, const ISocketListener *listener)
+{
+    if (socket <= 0) {
         return -1;
     }
     return 0;
