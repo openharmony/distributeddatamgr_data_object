@@ -111,7 +111,7 @@ private:
     std::shared_ptr<TaskScheduler> taskQueue_;
     std::mutex localDeviceLock_{};
     std::map<std::string, int> sockets_;
-    int32_t socketServer_;
+    int32_t socketServer_{0};
     ConcurrentMap<int32_t, PeerSocketInfo> peerSocketInfos_;
     ISocketListener clientListener_{};
     ISocketListener serverListener_{};
