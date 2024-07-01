@@ -179,8 +179,7 @@ function isAsset(obj) {
     return false;
   }
   for (const key of ASSET_KEYS.slice(1)) {
-    if (!Object.prototype.hasOwnProperty.call(obj, key) ||
-      (typeof obj[key] !== 'string' && typeof obj[key] !== 'undefined')) {
+    if (!Object.prototype.hasOwnProperty.call(obj, key) || typeof obj[key] !== 'string') {
       return false;
     }
   }
@@ -200,7 +199,7 @@ function defineAsset(object, key, data) {
   });
   let asset = object[key];
   Object.keys(data).forEach(subKey => {
-    if (data[subKey] !== undefined) {
+    if (data[subKey] !== '') {
       asset[subKey] = data[subKey];
     }
   });
