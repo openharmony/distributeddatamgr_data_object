@@ -25,6 +25,8 @@ const ASSET_KEY_SEPARATOR = '.';
 const JS_ERROR = 1;
 const SDK_VERSION_8 = 8;
 const SDK_VERSION_9 = 9;
+const SESSION_ID_REGEX = /^\w+$/;
+const SESSION_ID_MAX_LENGTH = 128;
 
 class Distributed {
   constructor(obj) {
@@ -374,6 +376,12 @@ class DistributedV9 {
       }
     }
     leaveSession(this.__sdkVersion, this.__proxy);
+    if (sessionId.length > SESSION_ID_MAX_LENGTH || !SESSION_ID_REGEX.test(sessionId)) {
+      throw {
+        code: 401,
+        message: 'The sessionId allows only letters, digits, and underscores(_), and cannot exceed 128 in length.'
+      };
+    }
     let object = joinSession(this.__sdkVersion, this.__proxy, this.__objectId, sessionId, this.__context);
     if (object != null) {
       this.__proxy = object;
