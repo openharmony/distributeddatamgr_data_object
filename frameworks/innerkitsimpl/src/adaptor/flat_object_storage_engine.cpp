@@ -14,6 +14,8 @@
  */
 #include "flat_object_storage_engine.h"
 
+#include "accesstoken_kit.h"
+#include "ipc_skeleton.h"
 #include "logger.h"
 #include "objectstore_errors.h"
 #include "process_communicator_impl.h"
@@ -39,18 +41,21 @@ uint32_t FlatObjectStorageEngine::Open(const std::string &bundleName)
         LOG_INFO("FlatObjectDatabase: No need to reopen it");
         return SUCCESS;
     }
-    auto status = DistributedDB::KvStoreDelegateManager::SetProcessLabel("objectstoreDB", bundleName);
-    if (status != DistributedDB::DBStatus::OK) {
-        LOG_ERROR("delegate SetProcessLabel failed: %{public}d.", static_cast<int>(status));
-    }
-
-    auto communicator = std::make_shared<ProcessCommunicatorImpl>();
-    auto commStatus = DistributedDB::KvStoreDelegateManager::SetProcessCommunicator(communicator);
-    if (commStatus != DistributedDB::DBStatus::OK) {
-        LOG_ERROR("set distributed db communicator failed.");
+    auto tokenId = IPCSkeleton::GetSelfTokenID();
+    int32_t ret = Security::AccessToken::AccessTokenKit::VerifyAccessToken(tokenId, DISTRIBUTED_DATASYNC);
+    LOG_INFO("bundleName:%{public}s, permission :%{public}d", bundleName.c_str(), ret);
+    if (ret == Security::AccessToken::PermissionState::PERMISSION_GRANTED) {
+        auto status = DistributedDB::KvStoreDelegateManager::SetProcessLabel("objectstoreDB", bundleName);
+        if (status != DistributedDB::DBStatus::OK) {
+            LOG_ERROR("delegate SetProcessLabel failed: %{public}d.", static_cast<int>(status));
+        }
+        status = DistributedDB::KvStoreDelegateManager::SetProcessCommunicator(
+            std::make_shared<ProcessCommunicatorImpl>());
+        if (status != DistributedDB::DBStatus::OK) {
+            LOG_ERROR("set distributed db communicator failed: %{public}d.", static_cast<int>(status));
+        }
     }
     storeManager_ = std::make_shared<DistributedDB::KvStoreDelegateManager>(bundleName, "default");
-
     DistributedDB::KvStoreConfig config;
     config.dataDir = "/data/log";
     storeManager_->SetKvStoreConfig(config);

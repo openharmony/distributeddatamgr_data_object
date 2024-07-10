@@ -67,7 +67,7 @@ public:
 
     int RemoveSessionServerAdapter(const std::string &sessionName) const;
 
-    void UpdateRelationship(const std::string &networkid, const DeviceChangeType &type);
+    void UpdateRelationship(const std::string &networkId, const DeviceChangeType &type);
 
     void NotifyDataListeners(const uint8_t *ptr, const int size, const std::string &deviceId, const PipeInfo &pipeInfo);
 
