@@ -60,8 +60,8 @@ uint32_t FlatObjectStore::CreateObject(const std::string &sessionId)
         LOG_ERROR("FlatObjectStore::CreateObject createTable err %{public}d", status);
         return status;
     }
-    ResumeObject(sessionId);
     SubscribeDataChange(sessionId);
+    ResumeObject(sessionId);
     return SUCCESS;
 }
 

@@ -57,6 +57,7 @@ object_source_config = [
 ]
 object_deps_config = []
 object_external_deps_config = [
+  "access_token:libaccesstoken_sdk",
   "bounds_checking_function:libsec_shared",
   "c_utils:utils",
   "device_manager:devicemanagersdk",
