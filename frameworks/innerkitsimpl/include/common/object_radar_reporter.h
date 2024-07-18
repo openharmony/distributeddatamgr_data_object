@@ -22,6 +22,7 @@ namespace OHOS::ObjectStore {
 enum BizScene {
     CREATE = 1,
     SAVE = 2,
+    DATA_RESTORE = 3,
 };
 enum CreateStage {
     INIT_STORE = 1,
@@ -33,6 +34,11 @@ enum SaveStage {
     SAVE_TO_SERVICE = 1,
     SAVE_TO_STORE = 2,
     PUSH_ASSETS = 3,
+};
+enum DataRestoreStage {
+    DATA_RECV = 1,
+    ASSETS_RECV = 2,
+    NOTIFY = 3,
 };
 enum StageRes {
     IDLE = 0,
@@ -55,12 +61,12 @@ enum ErrorCode {
     GETKV_FAILED = OFFSET + 6,
     DB_NOT_INIT = OFFSET + 7,
 };
-static constexpr char DOMAIN[] = "DISTDATAMGR";
-const std::string EVENT_NAME = "DISTRIBUTED_DATA_OBJECT_BEHAVIOR";
-static constexpr HiviewDFX::HiSysEvent::EventType TYPE = HiviewDFX::HiSysEvent::EventType::BEHAVIOR;
-const std::string ORG_PKG = "distributeddata";
-const std::string ERROR_CODE = "ERROR_CODE";
-const std::string BIZ_STATE = "BIZ_STATE";
+constexpr char DOMAIN[] = "DISTDATAMGR";
+constexpr char EVENT_NAME[] = "DISTRIBUTED_DATA_OBJECT_BEHAVIOR";
+constexpr HiviewDFX::HiSysEvent::EventType TYPE = HiviewDFX::HiSysEvent::EventType::BEHAVIOR;
+constexpr char ORG_PKG[] = "distributeddata";
+constexpr char ERROR_CODE[] = "ERROR_CODE";
+constexpr char BIZ_STATE[] = "BIZ_STATE";
 
 #define RADAR_REPORT(bizScene, bizStage, stageRes, ...)                                            \
 ({                                                                                                 \

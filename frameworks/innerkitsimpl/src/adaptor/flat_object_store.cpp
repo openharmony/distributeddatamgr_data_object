@@ -80,6 +80,7 @@ void FlatObjectStore::ResumeObject(const std::string &sessionId)
             LOG_ERROR("UpdateItems failed, status = %{public}d", result);
         }
         if (allReady) {
+            RADAR_REPORT(DATA_RESTORE, NOTIFY, RADAR_SUCCESS, BIZ_STATE, FINISHED);
             std::lock_guard<std::mutex> lck(mutex_);
             if (find(retrievedCache_.begin(), retrievedCache_.end(), sessionId) == retrievedCache_.end()) {
                 retrievedCache_.push_back(sessionId);
@@ -105,6 +106,7 @@ void FlatObjectStore::SubscribeDataChange(const std::string &sessionId)
                 storageEngine_->NotifyChange(sessionId, filteredData);
             }
             if (allReady) {
+                RADAR_REPORT(DATA_RESTORE, NOTIFY, RADAR_SUCCESS, BIZ_STATE, FINISHED);
                 storageEngine_->NotifyStatus(sessionId, "local", "restored");
             }
         };
