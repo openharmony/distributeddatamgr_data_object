@@ -30,9 +30,9 @@ public:
     DistributedObject *GetObject();
     bool AddWatch(napi_env env, const char *type, napi_value handler);
     void DeleteWatch(napi_env env, const char *type, napi_value handler = nullptr);
-    bool isUndefined(char *value);
-    void AddUndefined(char *value);
-    void DeleteUndefined(char *value);
+    bool IsUndefined(const char *value);
+    void AddUndefined(const char *value);
+    void DeleteUndefined(const char *value);
     void DestroyObject();
     void SetObjectId(const std::string &objectId);
     std::string GetObjectId();

@@ -58,7 +58,7 @@ napi_value JSDistributedObject::JSGet(napi_env env, napi_callback_info info)
     status = napi_unwrap(env, thisVar, (void **)&wrapper);
     NOT_MATCH_RETURN_NULL(status == napi_ok && wrapper != nullptr && wrapper->GetObject() != nullptr);
     napi_value result = nullptr;
-    if (wrapper->isUndefined(key)) {
+    if (wrapper->IsUndefined(key)) {
         napi_get_undefined(env, &result);
         return result;
     }
