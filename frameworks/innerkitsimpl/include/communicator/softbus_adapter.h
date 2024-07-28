@@ -45,6 +45,7 @@ public:
     void NotifyAll(const DeviceInfo &deviceInfo, const DeviceChangeType &type);
     DeviceInfo GetLocalDevice();
     std::vector<DeviceInfo> GetDeviceList() const;
+    static bool IsContinue();
     // get local device node information;
     DeviceInfo GetLocalBasicInfo() const;
     // get all remote connected device's node information;

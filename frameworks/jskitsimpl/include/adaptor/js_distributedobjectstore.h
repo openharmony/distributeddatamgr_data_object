@@ -41,6 +41,7 @@ private:
         const std::string &objectId, napi_value callback);
     static bool DelCallback(napi_env env, ConcurrentMap<std::string, std::list<napi_ref>> &callbacks,
         const std::string &sessionId, napi_value callback = nullptr);
+    static bool CheckSyncPermission();
     static void RestoreWatchers(napi_env env, JSObjectWrapper *wrapper, const std::string &objectId);
     static bool GetBundleNameWithContext(napi_env env, napi_value argv, std::string &bundleName);
     static std::string GetBundleName(napi_env env);
