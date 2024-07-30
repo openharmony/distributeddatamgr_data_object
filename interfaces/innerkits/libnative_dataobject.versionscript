@@ -16,7 +16,6 @@
       *DistributedObjectStore*;
       *DistributedObjectImpl*;
       *DistributedObjectStoreImpl*;
-      *IsContinue*;
 
   local:
     *;

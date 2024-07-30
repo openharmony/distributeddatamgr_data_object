@@ -183,25 +183,6 @@ std::vector<DeviceInfo> SoftBusAdapter::GetDeviceList() const
     return deviceInfos;
 }
 
-bool SoftBusAdapter::IsContinue()
-{
-    std::vector<DistributedSchedule::EventNotify> events;
-    int32_t res =
-        DistributedSchedule::DmsHandler::GetInstance().GetDSchedEventInfo(DistributedSchedule::DMS_CONTINUE, events);
-    if (res != ERR_OK) {
-        LOG_ERROR("Get continue events failed, error code: %{public}d", res);
-        return false;
-    }
-    DevManager::DetailInfo localDevice = DevManager::GetInstance()->GetLocalDevice();
-    for (const auto &event : events) {
-        if (localDevice.networkId == event.srcNetworkId_ || localDevice.networkId == event.dstNetworkId_) {
-            LOG_INFO("Local is continue");
-            return true;
-        }
-    }
-    return false;
-}
-
 DeviceInfo SoftBusAdapter::GetLocalDevice()
 {
     std::lock_guard<std::mutex> lock(localDeviceLock_);
