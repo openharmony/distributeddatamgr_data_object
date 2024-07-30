@@ -20,6 +20,7 @@
 
 #include "ability_context.h"
 #include "accesstoken_kit.h"
+#include "anonymous.h"
 #include "application_context.h"
 #include "distributed_objectstore.h"
 #include "js_ability.h"
@@ -498,11 +499,10 @@ bool JSDistributedObjectStore::CheckSyncPermission()
     if (SoftBusAdapter::IsContinue()) {
         return true;
     }
-    int32_t ret = Security::AccessToken::AccessTokenKit::VerifyAccessToken(
-        AbilityRuntime::Context::GetApplicationContext()->GetApplicationInfo()->accessTokenId, DISTRIBUTED_DATASYNC);
+    auto tokenId = AbilityRuntime::Context::GetApplicationContext()->GetApplicationInfo()->accessTokenId;
+    int32_t ret = Security::AccessToken::AccessTokenKit::VerifyAccessToken(tokenId, DISTRIBUTED_DATASYNC);
     if (ret == Security::AccessToken::PermissionState::PERMISSION_DENIED) {
-        LOG_ERROR("VerifyPermission %{public}d: PERMISSION_DENIED",
-            AbilityRuntime::Context::GetApplicationContext()->GetApplicationInfo()->accessTokenId);
+        LOG_ERROR("VerifyPermission %{public}s: PERMISSION_DENIED", Anonymous::Change(std::to_string(tokenId)).c_str());
         return false;
     }
     return true;
