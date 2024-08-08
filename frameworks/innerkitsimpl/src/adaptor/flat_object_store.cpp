@@ -80,12 +80,11 @@ void FlatObjectStore::ResumeObject(const std::string &sessionId)
             LOG_ERROR("UpdateItems failed, status = %{public}d", result);
         }
         if (allReady) {
-            RADAR_REPORT(DATA_RESTORE, NOTIFY, RADAR_SUCCESS, BIZ_STATE, FINISHED);
             std::lock_guard<std::mutex> lck(mutex_);
             if (find(retrievedCache_.begin(), retrievedCache_.end(), sessionId) == retrievedCache_.end()) {
                 retrievedCache_.push_back(sessionId);
+                storageEngine_->NotifyStatus(sessionId, "local", "restored");
             }
-            storageEngine_->NotifyStatus(sessionId, "local", "restored");
         }
     };
     cacheManager_->ResumeObject(bundleName_, sessionId, callback);
@@ -106,8 +105,11 @@ void FlatObjectStore::SubscribeDataChange(const std::string &sessionId)
                 storageEngine_->NotifyChange(sessionId, filteredData);
             }
             if (allReady) {
-                RADAR_REPORT(DATA_RESTORE, NOTIFY, RADAR_SUCCESS, BIZ_STATE, FINISHED);
-                storageEngine_->NotifyStatus(sessionId, "local", "restored");
+                std::lock_guard<std::mutex> lck(mutex_);
+                if (find(retrievedCache_.begin(), retrievedCache_.end(), sessionId) == retrievedCache_.end()) {
+                    retrievedCache_.push_back(sessionId);
+                    storageEngine_->NotifyStatus(sessionId, "local", "restored");
+                }
             }
         };
     cacheManager_->SubscribeDataChange(bundleName_, sessionId, remoteResumeCallback);
@@ -392,9 +394,6 @@ uint32_t CacheManager::Save(const std::string &bundleName, const std::string &se
     LOG_INFO("CacheManager::start wait");
     auto [timeout, res] = block->GetValue();
     LOG_INFO("CacheManager::end wait, timeout: %{public}d, result: %{public}d", timeout, res);
-    if (timeout) {
-        RADAR_REPORT(SAVE, SAVE_TO_SERVICE, RADAR_FAILED, ERROR_CODE, TIMEOUT, BIZ_STATE, FINISHED);
-    }
     return res;
 }
 
@@ -436,12 +435,10 @@ int32_t CacheManager::SaveObject(const std::string &bundleName, const std::strin
         bundleName, sessionId, deviceId, objectData, objectSaveCallback->AsObject().GetRefPtr());
     if (status != SUCCESS) {
         LOG_ERROR("object save failed code=%d.", static_cast<int>(status));
-        if (status == ERR_IPC) {
-            RADAR_REPORT(SAVE, SAVE_TO_SERVICE, RADAR_FAILED, ERROR_CODE, IPC_ERROR, BIZ_STATE, FINISHED);
-        }
+        RADAR_REPORT(SAVE, SAVE_TO_SERVICE, RADAR_FAILED, ERROR_CODE, IPC_ERROR, BIZ_STATE, FINISHED);
+    } else {
+        RADAR_REPORT(SAVE, SAVE_TO_SERVICE, RADAR_SUCCESS);
     }
-    LOG_INFO("object save successful");
-    RADAR_REPORT(SAVE, SAVE_TO_SERVICE, RADAR_SUCCESS);
     return status;
 }
 
@@ -471,24 +468,20 @@ int32_t CacheManager::RevokeSaveObject(
 int32_t CacheManager::ResumeObject(const std::string &bundleName, const std::string &sessionId,
     std::function<void(const std::map<std::string, std::vector<uint8_t>> &data, bool allReady)> &callback)
 {
-    RADAR_REPORT(CREATE, RESTORE, IDLE);
     sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
     if (proxy == nullptr) {
         LOG_ERROR("proxy is nullptr.");
-        RADAR_REPORT(CREATE, RESTORE, RADAR_FAILED, ERROR_CODE, SA_DIED, BIZ_STATE, FINISHED);
         return ERR_NULL_PTR;
     }
     sptr<ObjectRetrieveCallbackBroker> objectRetrieveCallback = new (std::nothrow) ObjectRetrieveCallback(callback);
     if (objectRetrieveCallback == nullptr) {
         LOG_ERROR("CacheManager::ResumeObject no memory for ObjectRetrieveCallback malloc!");
-        RADAR_REPORT(CREATE, RESTORE, RADAR_FAILED, ERROR_CODE, NO_MEMORY, BIZ_STATE, FINISHED);
         return ERR_NULL_PTR;
     }
     int32_t status = proxy->ObjectStoreRetrieve(
         bundleName, sessionId, objectRetrieveCallback->AsObject().GetRefPtr());
     if (status != SUCCESS) {
         LOG_ERROR("object resume failed code=%d.", static_cast<int>(status));
-        RADAR_REPORT(CREATE, RESTORE, RADAR_FAILED, ERROR_CODE, IPC_ERROR, BIZ_STATE, FINISHED);
     }
     LOG_INFO("object resume successful");
     return status;

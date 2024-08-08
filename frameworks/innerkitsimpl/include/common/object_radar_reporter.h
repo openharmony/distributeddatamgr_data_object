@@ -34,6 +34,7 @@ enum SaveStage {
     SAVE_TO_SERVICE = 1,
     SAVE_TO_STORE = 2,
     PUSH_ASSETS = 3,
+    SYNC_DATA = 4,
 };
 enum DataRestoreStage {
     DATA_RECV = 1,
