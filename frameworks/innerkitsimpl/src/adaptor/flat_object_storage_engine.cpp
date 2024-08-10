@@ -141,7 +141,7 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
         deviceIds.push_back(item.deviceId);
     }
     SyncAllData(key, deviceIds, onComplete);
-    RADAR_REPORT(CREATE, CREATE_TABLE, RADAR_SUCCESS);
+    RADAR_REPORT(CREATE, CREATE_TABLE, RADAR_SUCCESS, BIZ_STATE, FINISHED);
     return SUCCESS;
 }
 
