@@ -227,7 +227,7 @@ function setAssetValue(object, key, newValue) {
       message: 'cannot set ' + key + ' by non Asset type data'
     };
   }
-  Object.values(newValue).forEach(subKey => {
+  Object.keys(newValue).forEach(subKey => {
     setObjectValue(object, key + ASSET_KEY_SEPARATOR + subKey, newValue[subKey]);
   });
 }
