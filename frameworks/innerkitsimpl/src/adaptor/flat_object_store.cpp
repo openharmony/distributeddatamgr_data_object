@@ -186,6 +186,7 @@ uint32_t FlatObjectStore::SetStatusNotifier(std::shared_ptr<StatusWatcher> notif
 
 uint32_t FlatObjectStore::Save(const std::string &sessionId, const std::string &deviceId)
 {
+    RADAR_REPORT(SAVE, SAVE_TO_SERVICE, IDLE, BIZ_STATE, START, APP_CALLER, bundleName_);
     if (cacheManager_ == nullptr) {
         LOG_ERROR("FlatObjectStore::cacheManager_ is null");
         return ERR_NULL_PTR;
