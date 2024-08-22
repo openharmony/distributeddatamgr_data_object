@@ -257,12 +257,12 @@ void WatcherProxy::SetAssetChangeCallBack(const AssetChangeCallback &assetChange
 
 DistributedObjectStore *DistributedObjectStore::GetInstance(const std::string &bundleName)
 {
-    RADAR_REPORT(CREATE, INIT_STORE, IDLE, BIZ_STATE, START);
     static std::mutex instLock_;
     static DistributedObjectStore *instPtr = nullptr;
     if (instPtr == nullptr) {
         std::lock_guard<std::mutex> lock(instLock_);
         if (instPtr == nullptr && !bundleName.empty()) {
+            RADAR_REPORT(CREATE, INIT_STORE, IDLE, BIZ_STATE, START, APP_CALLER, bundleName);
             LOG_INFO("new objectstore %{public}s", bundleName.c_str());
             FlatObjectStore *flatObjectStore = new (std::nothrow) FlatObjectStore(bundleName);
             if (flatObjectStore == nullptr) {
@@ -279,9 +279,9 @@ DistributedObjectStore *DistributedObjectStore::GetInstance(const std::string &b
                 RADAR_REPORT(CREATE, INIT_STORE, RADAR_FAILED, ERROR_CODE, NO_MEMORY, BIZ_STATE, FINISHED);
                 return nullptr;
             }
+            RADAR_REPORT(CREATE, INIT_STORE, RADAR_SUCCESS);
         }
     }
-    RADAR_REPORT(CREATE, INIT_STORE, RADAR_SUCCESS);
     return instPtr;
 }
 
