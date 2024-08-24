@@ -60,7 +60,7 @@ static inline OHOS::HiviewDFX::HiLogLabel LogLabel()
         }                                                                                   \
     } while (0)
 
-#define LOG_FATAL(fmt, ...)                                                                           \
+#define LOG_FATAL(fmt, ...)                                                                 \
     do {                                                                                    \
         auto lable = LogLabel();                                                            \
         if (HiLogIsLoggable(lable.domain, lable.tag, LogLevel::LOG_FATAL)) {                \
@@ -75,12 +75,12 @@ static inline OHOS::HiviewDFX::HiLogLabel LogLabel()
 #include <stdlib.h>
 
 #define LOG_DEBUG(fmt, ...) \
-    printf("[D][ObjectStore]%s:%d %s: " fmt "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__)
+    printf("[D][ObjectStore]%s:%d %s: " fmt "\n", __FILE_NAME__, __LINE__, __FUNCTION__, ##__VA_ARGS__)
 #define LOG_ERROR(fmt, ...) \
-    printf("[E][ObjectStore]%s:%d %s: " fmt "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__)
+    printf("[E][ObjectStore]%s:%d %s: " fmt "\n", __FILE_NAME__, __LINE__, __FUNCTION__, ##__VA_ARGS__)
 #define LOG_INFO(fmt, ...) \
-    printf("[I][ObjectStore]%s:%d %s: " fmt "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__)
+    printf("[I][ObjectStore]%s:%d %s: " fmt "\n", __FILE_NAME__, __LINE__, __FUNCTION__, ##__VA_ARGS__)
 #define LOG_WARN(fmt, ...) \
-    printf("[W][ObjectStore]%s:%d %s: " fmt "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__)
+    printf("[W][ObjectStore]%s:%d %s: " fmt "\n", __FILE_NAME__, __LINE__, __FUNCTION__, ##__VA_ARGS__)
 #endif // #ifdef HILOG_ENABLE
 #endif // OBJECT_STORE_LOGGER_H
