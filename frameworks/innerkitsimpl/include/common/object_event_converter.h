@@ -142,13 +142,12 @@ static HiSysEventParamAssigner g_dataAssigners[] = {
 #define OBJECT_ASSIGNER(type, fieldName, field)                                                                \
     static inline bool ObjectAssigner##fieldName(                                                              \
         const char *eventName, HiSysEventParamType paramType, DataEventForm *form, HiSysEventParam *param)     \
-    {                                                                                                         \
-        if (Assigner##type(form->objectExtra->field, &param) &&                                                \
-            CopyString(param->name, eventName, MAX_LENGTH_OF_PARAM_NAME)) {                                   \
-            param->t = paramType;                                                                             \
-            return true;                                                                                      \
-        }                                                                                                     \
-        return false;                                                                                         \
+    {                                                                                                          \
+        if (Assigner##type(form->objectExtra->field, &param) && CopyString(param->name, eventName, MAX_LENGTH_OF_PARAM_NAME)) { \
+            param->t = paramType;                                                                                  \
+            return true;                                                                                           \
+        }                                                                                                          \
+        return false;                                                                                              \
     }
 
 
