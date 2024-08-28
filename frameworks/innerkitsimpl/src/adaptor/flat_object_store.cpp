@@ -21,7 +21,7 @@
 #include "distributed_objectstore_impl.h"
 #include "logger.h"
 #include "object_callback_impl.h"
-#include "object_event.h"
+#include "object_radar_reporter.h"
 #include "object_service_proxy.h"
 #include "objectstore_errors.h"
 #include "softbus_adapter.h"
@@ -186,10 +186,7 @@ uint32_t FlatObjectStore::SetStatusNotifier(std::shared_ptr<StatusWatcher> notif
 
 uint32_t FlatObjectStore::Save(const std::string &sessionId, const std::string &deviceId)
 {
-    ObjectEventExtra extra;
-    extra.stageRes = IDLE;
-    extra.state = START;
-    extra.appCaller = bundleName_.c_str();
+    RadarReporter::ReportStateStart(std::string(__FUNCTION__), SAVE, SAVE_TO_SERVICE, IDLE, START, bundleName_);
     if (cacheManager_ == nullptr) {
         LOG_ERROR("FlatObjectStore::cacheManager_ is null");
         return ERR_NULL_PTR;
@@ -198,10 +195,8 @@ uint32_t FlatObjectStore::Save(const std::string &sessionId, const std::string &
     uint32_t status = storageEngine_->GetItems(sessionId, objectData);
     if (status != SUCCESS) {
         LOG_ERROR("FlatObjectStore::GetItems fail");
-        extra.stageRes = RADAR_FAILED;
-        extra.errCode = status;
-        extra.state = FINISHED;
-        OBJECT_EVENT(SAVE, SAVE_TO_SERVICE, &extra);
+        RadarReporter::ReportStateError(std::string(__FUNCTION__), SAVE, SAVE_TO_SERVICE,
+            RADAR_FAILED, status, FINISHED);
         return status;
     }
     return cacheManager_->Save(bundleName_, sessionId, deviceId, objectData);
@@ -426,35 +421,28 @@ int32_t CacheManager::SaveObject(const std::string &bundleName, const std::strin
     const std::string &deviceId, const std::map<std::string, std::vector<uint8_t>> &objectData,
     const std::function<void(const std::map<std::string, int32_t> &)> &callback)
 {
-    ObjectEventExtra extra;
     sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
     if (proxy == nullptr) {
         LOG_ERROR("proxy is nullptr.");
-        extra.stageRes = RADAR_FAILED;
-        extra.errCode = SA_DIED;
-        extra.state = FINISHED;
-        OBJECT_EVENT(SAVE, SAVE_TO_SERVICE, &extra);
+        RadarReporter::ReportStateError(std::string(__FUNCTION__), SAVE, SAVE_TO_SERVICE,
+            RADAR_FAILED, SA_DIED, FINISHED);
+        return ERR_PROCESSING;
     }
     sptr<ObjectSaveCallbackBroker> objectSaveCallback = new (std::nothrow) ObjectSaveCallback(callback);
     if (objectSaveCallback == nullptr) {
         LOG_ERROR("CacheManager::SaveObject no memory for ObjectSaveCallback malloc!");
-        extra.stageRes = RADAR_FAILED;
-        extra.errCode = NO_MEMORY;
-        extra.state = FINISHED;
-        OBJECT_EVENT(SAVE, SAVE_TO_SERVICE, &extra);
+        RadarReporter::ReportStateError(std::string(__FUNCTION__), SAVE, SAVE_TO_SERVICE,
+            RADAR_FAILED, NO_MEMORY, FINISHED);
         return ERR_NULL_PTR;
     }
     int32_t status = proxy->ObjectStoreSave(
         bundleName, sessionId, deviceId, objectData, objectSaveCallback->AsObject().GetRefPtr());
     if (status != SUCCESS) {
         LOG_ERROR("object save failed code=%d.", static_cast<int>(status));
-        extra.stageRes = RADAR_FAILED;
-        extra.errCode = IPC_ERROR;
-        extra.state = FINISHED;
-        OBJECT_EVENT(SAVE, SAVE_TO_SERVICE, &extra);
+        RadarReporter::ReportStateError(std::string(__FUNCTION__), SAVE, SAVE_TO_SERVICE,
+            RADAR_FAILED, IPC_ERROR, FINISHED);
     } else {
-        extra.stageRes = RADAR_SUCCESS;
-        OBJECT_EVENT(SAVE, SAVE_TO_SERVICE, &extra);
+        RadarReporter::ReportStage(std::string(__FUNCTION__), SAVE, SAVE_TO_SERVICE, RADAR_SUCCESS);
     }
     return status;
 }

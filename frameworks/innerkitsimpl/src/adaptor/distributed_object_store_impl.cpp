@@ -23,7 +23,7 @@
 #include "softbus_adapter.h"
 #include "string_utils.h"
 #include "asset_change_timer.h"
-#include "object_event.h"
+#include "object_radar_reporter.h"
 
 namespace OHOS::ObjectStore {
 DistributedObjectStoreImpl::DistributedObjectStoreImpl(FlatObjectStore *flatObjectStore)
@@ -259,22 +259,16 @@ DistributedObjectStore *DistributedObjectStore::GetInstance(const std::string &b
 {
     static std::mutex instLock_;
     static DistributedObjectStore *instPtr = nullptr;
-    ObjectEventExtra extra;
     if (instPtr == nullptr) {
         std::lock_guard<std::mutex> lock(instLock_);
         if (instPtr == nullptr && !bundleName.empty()) {
-            extra.state = START;
-            extra.appCaller = bundleName.c_str();
-            extra.stageRes = IDLE;
-            OBJECT_EVENT(CREATE, INIT_STORE, &extra);
+            RadarReporter::ReportStateStart(std::string(__FUNCTION__), CREATE, INIT_STORE, IDLE, START, bundleName);
             LOG_INFO("new objectstore %{public}s", bundleName.c_str());
             FlatObjectStore *flatObjectStore = new (std::nothrow) FlatObjectStore(bundleName);
             if (flatObjectStore == nullptr) {
                 LOG_ERROR("no memory for FlatObjectStore malloc!");
-                extra.stageRes = RADAR_FAILED;
-                extra.errCode = NO_MEMORY;
-                extra.state = FINISHED;
-                OBJECT_EVENT(CREATE, INIT_STORE, &extra);
+                RadarReporter::ReportStateError(std::string(__FUNCTION__), CREATE, INIT_STORE,
+                    RADAR_FAILED, NO_MEMORY, FINISHED);
                 return nullptr;
             }
             // Use instMemory to make sure this singleton not free before other object.
@@ -283,14 +277,11 @@ DistributedObjectStore *DistributedObjectStore::GetInstance(const std::string &b
             if (instPtr == nullptr) {
                 delete flatObjectStore;
                 LOG_ERROR("no memory for DistributedObjectStoreImpl malloc!");
-                extra.stageRes = RADAR_FAILED;
-                extra.state = FINISHED;
-                extra.errCode = NO_MEMORY;
-                OBJECT_EVENT(CREATE, INIT_STORE, &extra);
+                RadarReporter::ReportStateError(std::string(__FUNCTION__), CREATE, INIT_STORE,
+                    RADAR_FAILED, NO_MEMORY, FINISHED);
                 return nullptr;
             }
-            extra.stageRes = RADAR_SUCCESS;
-            OBJECT_EVENT(CREATE, INIT_STORE, &extra);
+            RadarReporter::ReportStage(std::string(__FUNCTION__), CREATE, INIT_STORE, RADAR_SUCCESS);
         }
     }
     return instPtr;

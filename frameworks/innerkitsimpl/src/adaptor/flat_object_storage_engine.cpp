@@ -23,7 +23,7 @@
 #include "softbus_adapter.h"
 #include "string_utils.h"
 #include "types_export.h"
-#include "object_event.h"
+#include "object_radar_reporter.h"
 
 namespace OHOS::ObjectStore {
 FlatObjectStorageEngine::~FlatObjectStorageEngine()
@@ -90,24 +90,18 @@ void FlatObjectStorageEngine::OnComplete(const std::string &key,
 
 uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
 {
-    ObjectEventExtra extra;
-    extra.stageRes = IDLE;
-    OBJECT_EVENT(CREATE, CREATE_TABLE, &extra);
+    RadarReporter::ReportStage(std::string(__FUNCTION__), CREATE, CREATE_TABLE, IDLE);
     if (!isOpened_) {
-        extra.stageRes = RADAR_FAILED;
-        extra.errCode = DB_NOT_INIT;
-        extra.state = FINISHED;
-        OBJECT_EVENT(CREATE, CREATE_TABLE, &extra);
+        RadarReporter::ReportStateError(std::string(__FUNCTION__), CREATE, CREATE_TABLE,
+            RADAR_FAILED, DB_NOT_INIT, FINISHED);
         return ERR_DB_NOT_INIT;
     }
     {
         std::lock_guard<std::mutex> lock(operationMutex_);
         if (delegates_.count(key) != 0) {
             LOG_ERROR("FlatObjectStorageEngine::CreateTable %{public}s already created", key.c_str());
-            extra.stageRes = RADAR_FAILED;
-            extra.errCode = DUPLICATE_CREATE;
-            extra.state = FINISHED;
-            OBJECT_EVENT(CREATE, CREATE_TABLE, &extra);
+            RadarReporter::ReportStateError(std::string(__FUNCTION__), CREATE, CREATE_TABLE, RADAR_FAILED,
+                DUPLICATE_CREATE, FINISHED);
             return ERR_EXIST;
         }
     }
@@ -123,10 +117,8 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
         });
     if (status != DistributedDB::DBStatus::OK || kvStore == nullptr) {
         LOG_ERROR("FlatObjectStorageEngine::CreateTable %{public}s getkvstore fail[%{public}d]", key.c_str(), status);
-        extra.stageRes = RADAR_FAILED;
-        extra.errCode = status;
-        extra.state = FINISHED;
-        OBJECT_EVENT(CREATE, CREATE_TABLE, &extra);
+        RadarReporter::ReportStateError(std::string(__FUNCTION__), CREATE, CREATE_TABLE,
+            RADAR_FAILED, status, FINISHED);
         return ERR_DB_GETKV_FAIL;
     }
     bool autoSync = true;
@@ -135,10 +127,8 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
     status = kvStore->Pragma(DistributedDB::AUTO_SYNC, data);
     if (status != DistributedDB::DBStatus::OK) {
         LOG_ERROR("FlatObjectStorageEngine::CreateTable %{public}s Pragma fail[%{public}d]", key.c_str(), status);
-        extra.stageRes = RADAR_FAILED;
-        extra.errCode = status;
-        extra.state = FINISHED;
-        OBJECT_EVENT(CREATE, CREATE_TABLE, &extra);
+        RadarReporter::ReportStateError(std::string(__FUNCTION__), CREATE, CREATE_TABLE,
+            RADAR_FAILED, status, FINISHED);
         return ERR_DB_GETKV_FAIL;
     }
     LOG_INFO("create table %{public}s success", key.c_str());
@@ -155,9 +145,7 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
         deviceIds.push_back(item.deviceId);
     }
     SyncAllData(key, deviceIds, onComplete);
-    extra.stageRes = RADAR_SUCCESS;
-    extra.state = FINISHED;
-    OBJECT_EVENT(CREATE, CREATE_TABLE, &extra);
+    RadarReporter::ReportStateFinished(std::string(__FUNCTION__), CREATE, CREATE_TABLE, RADAR_SUCCESS, FINISHED);
     return SUCCESS;
 }
 
