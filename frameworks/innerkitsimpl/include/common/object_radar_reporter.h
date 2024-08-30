@@ -68,6 +68,7 @@ constexpr HiviewDFX::HiSysEvent::EventType TYPE = HiviewDFX::HiSysEvent::EventTy
 constexpr char ORG_PKG[] = "distributeddata";
 constexpr char ERROR_CODE[] = "ERROR_CODE";
 constexpr char BIZ_STATE[] = "BIZ_STATE";
+constexpr char APP_CALLER[] = "APP_CALLER";
 
 #define RADAR_REPORT(bizScene, bizStage, stageRes, ...)                                            \
 ({                                                                                                 \
