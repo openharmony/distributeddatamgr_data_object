@@ -16,7 +16,9 @@
 #ifndef OBJECT_RADAR_REPORTER_H
 #define OBJECT_RADAR_REPORTER_H
 
-#include "hisysevent.h"
+#include "hisysevent_c.h"
+#include <string>
+#include "visibility.h"
 
 namespace OHOS::ObjectStore {
 enum BizScene {
@@ -64,17 +66,19 @@ enum ErrorCode {
 };
 constexpr char DOMAIN[] = "DISTDATAMGR";
 constexpr char EVENT_NAME[] = "DISTRIBUTED_DATA_OBJECT_BEHAVIOR";
-constexpr HiviewDFX::HiSysEvent::EventType TYPE = HiviewDFX::HiSysEvent::EventType::BEHAVIOR;
 constexpr char ORG_PKG[] = "distributeddata";
-constexpr char ERROR_CODE[] = "ERROR_CODE";
-constexpr char BIZ_STATE[] = "BIZ_STATE";
-constexpr char APP_CALLER[] = "APP_CALLER";
 
-#define RADAR_REPORT(bizScene, bizStage, stageRes, ...)                                            \
-({                                                                                                 \
-    HiSysEventWrite(ObjectStore::DOMAIN, ObjectStore::EVENT_NAME, ObjectStore::TYPE,               \
-        "ORG_PKG", ObjectStore::ORG_PKG, "FUNC", __FUNCTION__,                                     \
-        "BIZ_SCENE", bizScene, "BIZ_STAGE", bizStage, "STAGE_RES", stageRes, ##__VA_ARGS__);       \
-})
+class API_EXPORT RadarReporter {
+public:
+    static void ReportStateStart(std::string func, int32_t scene, int32_t stage, int32_t stageRes,
+        int32_t state, std::string appCaller);
+    static void ReportStateFinished(std::string func, int32_t scene, int32_t stage,
+        int32_t stageRes, int32_t state);
+    static void ReportStateError(std::string func, int32_t scene, int32_t stage, int32_t stageRes,
+        int32_t errCode, int32_t state);
+    static void ReportStage(std::string func, int32_t scene, int32_t stage, int32_t stageRes);
+    static void ReportStageError(std::string func, int32_t scene, int32_t stage,
+        int32_t stageRes, int32_t errCode);
+};
 } // namespace OHOS::ObjectStore
 #endif // OBJECT_RADAR_REPORTER_H
