@@ -61,10 +61,7 @@
                 "dmsfwk",
                 "hisysevent"
             ],
-            "third_party": [
-                "libuv",
-                "bounds_checking_function"
-            ]
+            "third_party": []
         },
         "build": {
             "sub_component": [
