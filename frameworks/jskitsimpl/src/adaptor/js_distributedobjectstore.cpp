@@ -20,7 +20,6 @@
 
 #include "ability_context.h"
 #include "accesstoken_kit.h"
-#include "anonymous.h"
 #include "application_context.h"
 #include "distributed_objectstore.h"
 #include "js_ability.h"
