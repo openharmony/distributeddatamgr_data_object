@@ -79,6 +79,7 @@ uint32_t FlatObjectStorageEngine::Close()
 void FlatObjectStorageEngine::OnComplete(const std::string &key,
     const std::map<std::string, DistributedDB::DBStatus> &devices, std::shared_ptr<StatusWatcher> statusWatcher)
 {
+    std::lock_guard<std::mutex> lock(watcherMutex_);
     LOG_INFO("complete");
     if (statusWatcher != nullptr) {
         for (auto item : devices) {
@@ -351,6 +352,7 @@ uint32_t FlatObjectStorageEngine::SetStatusNotifier(std::shared_ptr<StatusWatche
     }
     auto databaseStatusNotifyCallback = [this](std::string userId, std::string appId, std::string storeId,
                                             const std::string deviceId, bool onlineStatus) -> void {
+        std::lock_guard<std::mutex> lock(watcherMutex_);
         LOG_INFO("complete");
         if (statusWatcher_ == nullptr) {
             LOG_INFO("FlatObjectStorageEngine::statusWatcher_ null");
@@ -377,6 +379,7 @@ uint32_t FlatObjectStorageEngine::SetStatusNotifier(std::shared_ptr<StatusWatche
     };
     storeManager_->SetStoreStatusNotifier(databaseStatusNotifyCallback);
     LOG_INFO("FlatObjectStorageEngine::SetStatusNotifier success");
+    std::lock_guard<std::mutex> lock(watcherMutex_);
     statusWatcher_ = watcher;
     return SUCCESS;
 }
@@ -433,6 +436,7 @@ uint32_t FlatObjectStorageEngine::GetItems(const std::string &key, std::map<std:
 void FlatObjectStorageEngine::NotifyStatus(const std::string &sessionId, const std::string &deviceId,
                                            const std::string &status)
 {
+    std::lock_guard<std::mutex> lock(watcherMutex_);
     if (statusWatcher_ == nullptr) {
         return;
     }

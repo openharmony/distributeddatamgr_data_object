@@ -51,6 +51,7 @@ public:
 private:
     constexpr static const char *DISTRIBUTED_DATASYNC = "ohos.permission.DISTRIBUTED_DATASYNC";
     std::mutex operationMutex_{};
+    std::mutex watcherMutex_{};
     std::shared_ptr<DistributedDB::KvStoreDelegateManager> storeManager_;
     std::map<std::string, DistributedDB::KvStoreNbDelegate *> delegates_;
     std::map<std::string, std::shared_ptr<TableWatcher>> observerMap_;
