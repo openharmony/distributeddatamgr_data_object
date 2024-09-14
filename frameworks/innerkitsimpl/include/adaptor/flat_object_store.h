@@ -46,6 +46,7 @@ public:
         std::function<void(const std::map<std::string, std::vector<uint8_t>> &data, bool allReady)> &callback);
     int32_t UnregisterDataChange(const std::string &bundleName, const std::string &sessionId);
     int32_t DeleteSnapshot(const std::string &bundleName, const std::string &sessionId);
+    bool IsContinue();
 private:
     int32_t SaveObject(const std::string &bundleName, const std::string &sessionId,
         const std::string &deviceId, const std::map<std::string, std::vector<uint8_t>> &objectData,
@@ -87,6 +88,7 @@ private:
     uint32_t Put(const std::string &sessionId, const std::string &key, std::vector<uint8_t> value);
     uint32_t Get(const std::string &sessionId, const std::string &key, Bytes &value);
 
+    static constexpr const char* DISTRIBUTED_DATASYNC = "ohos.permission.DISTRIBUTED_DATASYNC";
     std::shared_ptr<FlatObjectStorageEngine> storageEngine_;
     CacheManager *cacheManager_;
     std::mutex mutex_;

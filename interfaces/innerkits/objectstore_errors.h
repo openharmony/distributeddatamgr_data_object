@@ -135,6 +135,11 @@ constexpr uint32_t ERR_INVALID_ARGS = BASE_ERR_OFFSET + 21;
  * @brief Ipc error.
  */
 constexpr uint32_t ERR_IPC = BASE_ERR_OFFSET + 22;
+
+/**
+ * @brief No DATA_SYNC permission.
+ */
+constexpr uint32_t ERR_NO_PERMISSION = BASE_ERR_OFFSET + 23;
 } // namespace OHOS::ObjectStore
 
 #endif

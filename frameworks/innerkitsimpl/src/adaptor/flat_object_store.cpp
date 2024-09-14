@@ -15,10 +15,12 @@
 
 #include "flat_object_store.h"
 
+#include "accesstoken_kit.h"
 #include "block_data.h"
 #include "bytes_utils.h"
 #include "client_adaptor.h"
 #include "distributed_objectstore_impl.h"
+#include "ipc_skeleton.h"
 #include "logger.h"
 #include "object_callback_impl.h"
 #include "object_radar_reporter.h"
@@ -51,6 +53,13 @@ FlatObjectStore::~FlatObjectStore()
 
 uint32_t FlatObjectStore::CreateObject(const std::string &sessionId)
 {
+    if (!cacheManager_->IsContinue()) { // NOT IN CONTINUE, CHECK PERMISSION
+        auto tokenId = IPCSkeleton::GetSelfTokenID();
+        int32_t ret = Security::AccessToken::AccessTokenKit::VerifyAccessToken(tokenId, DISTRIBUTED_DATASYNC);
+        if (ret != Security::AccessToken::PermissionState::PERMISSION_GRANTED) {
+            return ERR_NO_PERMISSION;
+        }
+    }
     if (!storageEngine_->isOpened_ && storageEngine_->Open(bundleName_) != SUCCESS) {
         LOG_ERROR("FlatObjectStore::DB has not inited");
         return ERR_DB_NOT_INIT;
@@ -543,5 +552,20 @@ int32_t CacheManager::DeleteSnapshot(const std::string &bundleName, const std::s
     }
     LOG_INFO("object delete snapshot successful");
     return status;
+}
+
+bool CacheManager::IsContinue()
+{
+    sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
+    if (proxy == nullptr) {
+        LOG_ERROR("Object service proxy is nullptr");
+        return false;
+    }
+    bool isContinue = false;
+    int32_t status = proxy->IsContinue(isContinue);
+    if (status != SUCCESS) {
+        LOG_ERROR("Get continue state failed, status: %{public}d, isContinue: %{public}d", status, isContinue);
+    }
+    return isContinue;
 }
 } // namespace OHOS::ObjectStore

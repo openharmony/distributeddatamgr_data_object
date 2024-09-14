@@ -1287,6 +1287,18 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_UnregisterDataChange_001, TestSize.
 }
 
 /**
+ * @tc.name: CacheManager_IsContinue_001
+ * @tc.desc: test CacheManager IsContinue.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, CacheManager_IsContinue_001, TestSize.Level1)
+{
+    auto cacheManager = std::make_shared<CacheManager>();
+    auto result = cacheManager->IsContinue();
+    EXPECT_FALSE(result);
+}
+
+/**
  * @tc.name: DistributedObject_NotifyCachedStatus_001
  * @tc.desc: test DistributedObjectStore NotifyCachedStatus.
  * @tc.type: FUNC
