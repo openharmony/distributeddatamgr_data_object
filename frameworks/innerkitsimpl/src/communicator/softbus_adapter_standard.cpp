@@ -13,19 +13,18 @@
  * limitations under the License.
  */
 
-#include <logger.h>
-#include <mutex>
-#include <thread>
+#include "softbus_adapter.h"
 
+#include "anonymous.h"
+#include "bundle_mgr_interface.h"
 #include "dev_manager.h"
 #include "dms_handler.h"
-#include "anonymous.h"
-#include "kv_store_delegate_manager.h"
-#include "process_communicator_impl.h"
+#include "iservice_registry.h"
+#include "logger.h"
 #include "securec.h"
 #include "session.h"
-#include "softbus_adapter.h"
 #include "softbus_bus_center.h"
+#include "system_ability_definition.h"
 
 namespace OHOS {
 namespace ObjectStore {
@@ -37,7 +36,7 @@ constexpr const char *DEFAULT_ANONYMOUS = "******";
 constexpr int32_t SOFTBUS_OK = 0;
 constexpr int32_t INVALID_SOCKET_ID = 0;
 constexpr size_t TASK_CAPACITY_MAX = 15;
-using namespace std;
+constexpr const char *PKG_NAME = "ohos.objectstore";
 SoftBusAdapter *AppDataListenerWrap::softBusAdapter_;
 std::shared_ptr<SoftBusAdapter> SoftBusAdapter::instance_;
 
@@ -191,7 +190,7 @@ DeviceInfo SoftBusAdapter::GetLocalDevice()
     }
 
     NodeBasicInfo info;
-    int32_t ret = GetLocalNodeDeviceInfo("ohos.objectstore", &info);
+    int32_t ret = GetLocalNodeDeviceInfo(PKG_NAME, &info);
     if (ret != SOFTBUS_OK) {
         LOG_ERROR("GetLocalNodeDeviceInfo error");
         return DeviceInfo();
@@ -207,7 +206,7 @@ DeviceInfo SoftBusAdapter::GetLocalBasicInfo() const
 {
     LOG_DEBUG("begin");
     NodeBasicInfo info;
-    int32_t ret = GetLocalNodeDeviceInfo("ohos.objectstore", &info);
+    int32_t ret = GetLocalNodeDeviceInfo(PKG_NAME, &info);
     if (ret != SOFTBUS_OK) {
         LOG_ERROR("GetLocalNodeDeviceInfo error");
         return DeviceInfo();
@@ -228,7 +227,7 @@ std::vector<DeviceInfo> SoftBusAdapter::GetRemoteNodesBasicInfo() const
     int32_t infoNum = 0;
     dis.clear();
 
-    int32_t ret = GetAllNodeDeviceInfo("ohos.objectstore", &info, &infoNum);
+    int32_t ret = GetAllNodeDeviceInfo(PKG_NAME, &info, &infoNum);
     if (ret != SOFTBUS_OK) {
         LOG_ERROR("GetAllNodeDeviceInfo error");
         return dis;
@@ -248,7 +247,7 @@ std::vector<DeviceInfo> SoftBusAdapter::GetRemoteNodesBasicInfo() const
 void SoftBusAdapter::UpdateRelationship(const std::string &networkId, const DeviceChangeType &type)
 {
     auto uuid = DevManager::GetInstance()->GetUuidByNodeId(networkId);
-    lock_guard<mutex> lock(networkMutex_);
+    std::lock_guard<std::mutex> lock(networkMutex_);
     switch (type) {
         case DeviceChangeType::DEVICE_OFFLINE: {
             auto size = this->networkId2Uuid_.erase(networkId);
@@ -274,7 +273,7 @@ void SoftBusAdapter::UpdateRelationship(const std::string &networkId, const Devi
 std::string SoftBusAdapter::ToNodeID(const std::string &nodeId) const
 {
     {
-        lock_guard<mutex> lock(networkMutex_);
+        std::lock_guard<std::mutex> lock(networkMutex_);
         for (auto const &e : networkId2Uuid_) {
             if (nodeId == e.second) { // id is uuid
                 return e.first;
@@ -285,9 +284,9 @@ std::string SoftBusAdapter::ToNodeID(const std::string &nodeId) const
     NodeBasicInfo *info = nullptr;
     int32_t infoNum = 0;
     std::string networkId;
-    int32_t ret = GetAllNodeDeviceInfo("ohos.objectstore", &info, &infoNum);
+    int32_t ret = GetAllNodeDeviceInfo(PKG_NAME, &info, &infoNum);
     if (ret == SOFTBUS_OK) {
-        lock_guard<mutex> lock(networkMutex_);
+        std::lock_guard<std::mutex> lock(networkMutex_);
         for (int i = 0; i < infoNum; i++) {
             if (networkId2Uuid_.find(info[i].networkId) != networkId2Uuid_.end()) {
                 continue;
@@ -331,7 +330,7 @@ Status SoftBusAdapter::StartWatchDataChange(const AppDataChangeListener *observe
     if (observer == nullptr) {
         return Status::INVALID_ARGUMENT;
     }
-    lock_guard<mutex> lock(dataChangeMutex_);
+    std::lock_guard<std::mutex> lock(dataChangeMutex_);
     auto it = dataChangeListeners_.find(pipeInfo.pipeId);
     if (it != dataChangeListeners_.end()) {
         LOG_WARN("Add listener error or repeated adding.");
@@ -346,7 +345,7 @@ Status SoftBusAdapter::StopWatchDataChange(
     __attribute__((unused)) const AppDataChangeListener *observer, const PipeInfo &pipeInfo)
 {
     LOG_DEBUG("begin");
-    lock_guard<mutex> lock(dataChangeMutex_);
+    std::lock_guard<std::mutex> lock(dataChangeMutex_);
     if (dataChangeListeners_.erase(pipeInfo.pipeId)) {
         return Status::SUCCESS;
     }
@@ -357,7 +356,7 @@ Status SoftBusAdapter::StopWatchDataChange(
 Status SoftBusAdapter::SendData(const PipeInfo &pipeInfo, const DeviceId &deviceId, const DataInfo &dataInfo,
     uint32_t totalLength, const MessageInfo &info)
 {
-    lock_guard<mutex> lock(sendDataMutex_);
+    std::lock_guard<std::mutex> lock(sendDataMutex_);
     auto result = CacheData(deviceId.deviceId, dataInfo);
     if (result != Status::SUCCESS) {
         return result;
@@ -383,7 +382,7 @@ Status SoftBusAdapter::CacheData(const std::string &deviceId, const DataInfo &da
         return Status::INVALID_ARGUMENT;
     }
     BytesMsg bytesMsg = { data, dataInfo.length };
-    lock_guard<mutex> lock(deviceDataLock_);
+    std::lock_guard<std::mutex> lock(deviceDataLock_);
     auto deviceIdData = dataCaches_.find(deviceId);
     if (deviceIdData == dataCaches_.end()) {
         dataCaches_[deviceId] = { bytesMsg };
@@ -398,7 +397,7 @@ Status SoftBusAdapter::CacheData(const std::string &deviceId, const DataInfo &da
 
 int SoftBusAdapter::GetSocket(const PipeInfo &pipeInfo, const DeviceId &deviceId)
 {
-    lock_guard<mutex> lock(socketLock_);
+    std::lock_guard<std::mutex> lock(socketLock_);
     auto it = sockets_.find(deviceId.deviceId);
     if (it != sockets_.end()) {
         return it->second;
@@ -411,41 +410,69 @@ int SoftBusAdapter::GetSocket(const PipeInfo &pipeInfo, const DeviceId &deviceId
     return socketId;
 }
 
+static std::string GetSelfAppId()
+{
+    sptr<ISystemAbilityManager> saManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (saManager == nullptr) {
+        LOG_ERROR("Get system ability manager failed");
+        return "";
+    }
+    sptr<IRemoteObject> remoteObject = saManager->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
+    if (remoteObject == nullptr) {
+        LOG_ERROR("Get system ability failed");
+        return "";
+    }
+    sptr<AppExecFwk::IBundleMgr> bundleManager = iface_cast<AppExecFwk::IBundleMgr>(remoteObject);
+    if (bundleManager == nullptr) {
+        LOG_ERROR("Get bundle manager failed");
+        return "";
+    }
+    AppExecFwk::BundleInfo bundleInfo;
+    auto status = bundleManager->GetBundleInfoForSelf(
+        static_cast<int32_t>(AppExecFwk::GetBundleInfoFlag::GET_BUNDLE_INFO_WITH_SIGNATURE_INFO), bundleInfo);
+    if (status != 0) {
+        LOG_ERROR("Get bundle info failed, status: %{public}d", status);
+        return "";
+    }
+    return bundleInfo.appId;
+}
+
 int SoftBusAdapter::CreateClientSocket(const PipeInfo &pipeInfo, const DeviceId &deviceId)
 {
-        SocketInfo socketInfo;
-        socketInfo.name = const_cast<char *>(pipeInfo.pipeId.c_str());
-        socketInfo.peerName = const_cast<char *>(pipeInfo.pipeId.c_str());
-        std::string networkId = ToNodeID(deviceId.deviceId);
-        socketInfo.peerNetworkId = const_cast<char *>(networkId.c_str());
-        
-        std::string pkgName = "ohos.objectstore";
-        socketInfo.pkgName = pkgName.data();
-        socketInfo.dataType = DATA_TYPE_BYTES;
-        int socketId = Socket(socketInfo);
-        if (socketId <= 0) {
-            LOG_ERROR("Create socket failed, error code: %{public}d, name:%{public}s", socketId, socketInfo.name);
-            return INVALID_SOCKET_ID;
-        }
-        int32_t res = Bind(socketId, Qos, QOS_COUNT, &clientListener_);
-        if (res != 0) {
-            LOG_ERROR("Bind failed, error code: %{public}d, peerName: %{public}s, peerNetworkId: %{public}s",
-                res, socketInfo.peerName, Anonymous::Change(networkId).c_str());
-            Shutdown(socketId);
-            return INVALID_SOCKET_ID;
-        }
-        return socketId;
+    SocketInfo socketInfo;
+    // AppId is used only for socket verification. The created socket name does not contain appId.
+    std::string socketNameAndAppId = pipeInfo.pipeId + '-' + GetSelfAppId();
+    socketInfo.name = socketNameAndAppId.data();
+    socketInfo.peerName = const_cast<char *>(pipeInfo.pipeId.c_str());
+    std::string networkId = ToNodeID(deviceId.deviceId);
+    socketInfo.peerNetworkId = networkId.data();
+    socketInfo.pkgName = const_cast<char *>(PKG_NAME);
+    socketInfo.dataType = DATA_TYPE_BYTES;
+    int socketId = Socket(socketInfo);
+    if (socketId <= 0) {
+        LOG_ERROR("Create socket failed, error code: %{public}d, name: %{public}s, networkId: %{public}s", socketId,
+            Anonymous::Change(socketNameAndAppId).c_str(), Anonymous::Change(networkId).c_str());
+        return INVALID_SOCKET_ID;
+    }
+    int32_t res = Bind(socketId, Qos, QOS_COUNT, &clientListener_);
+    if (res != 0) {
+        LOG_ERROR("Bind failed, error code: %{public}d, socket: %{public}d, name: %{public}s, networkId: %{public}s",
+            res, socketId, Anonymous::Change(socketNameAndAppId).c_str(), Anonymous::Change(networkId).c_str());
+        Shutdown(socketId);
+        return INVALID_SOCKET_ID;
+    }
+    return socketId;
 }
 
 void SoftBusAdapter::DoSend()
 {
     auto task([this]() {
-        lock_guard<mutex> lock(socketLock_);
+        std::lock_guard<std::mutex> lock(socketLock_);
         for (auto &it : sockets_) {
             if (it.second <= INVALID_SOCKET_ID) {
                 continue;
             }
-            lock_guard<mutex> lock(deviceDataLock_);
+            std::lock_guard<std::mutex> lock(deviceDataLock_);
             auto dataCache = dataCaches_.find(it.first);
             if (dataCache == dataCaches_.end()) {
                 continue;
@@ -467,7 +494,7 @@ void SoftBusAdapter::DoSend()
 
 void SoftBusAdapter::OnClientShutdown(int32_t socket)
 {
-    lock_guard<mutex> lock(socketLock_);
+    std::lock_guard<std::mutex> lock(socketLock_);
     for (auto iter = sockets_.begin(); iter != sockets_.end();) {
         if (iter->second == socket) {
             iter = sockets_.erase(iter);
@@ -487,17 +514,20 @@ bool SoftBusAdapter::IsSameStartedOnPeer(
 int SoftBusAdapter::CreateSessionServerAdapter(const std::string &sessionName)
 {
     SocketInfo socketInfo;
-    socketInfo.name = const_cast<char *>(sessionName.c_str());
-    std::string pkgName = "ohos.objectstore";
-    socketInfo.pkgName = pkgName.data();
+    // AppId is used only for socket verification. The created socket name does not contain appId.
+    std::string socketNameAndAppId = sessionName + '-' + GetSelfAppId();
+    socketInfo.name = socketNameAndAppId.data();
+    socketInfo.pkgName = const_cast<char *>(PKG_NAME);
     socketServer_ = Socket(socketInfo);
     if (socketServer_ <= 0) {
-        LOG_ERROR("Create socket failed, error code: %{public}d, name:%{public}s", socketServer_, socketInfo.name);
+        LOG_ERROR("Create socket failed, error code: %{public}d, name: %{public}s", socketServer_,
+            Anonymous::Change(socketNameAndAppId).c_str());
         return static_cast<int>(Status::ERROR);
     }
     int res = Listen(socketServer_, Qos, QOS_COUNT, &serverListener_);
     if (res != SOFTBUS_OK) {
-        LOG_ERROR("Listen socket failed, error code: %{public}d, socket:%{public}d", res, socketServer_);
+        LOG_ERROR("Listen socket failed, error code: %{public}d, socket: %{public}d, name: %{public}s", res,
+            socketServer_, Anonymous::Change(socketNameAndAppId).c_str());
         return static_cast<int>(Status::ERROR);
     }
     return SOFTBUS_OK;
@@ -513,7 +543,7 @@ int SoftBusAdapter::RemoveSessionServerAdapter(const std::string &sessionName) c
 void SoftBusAdapter::NotifyDataListeners(
     const uint8_t *ptr, const int size, const std::string &deviceId, const PipeInfo &pipeInfo)
 {
-    lock_guard<mutex> lock(dataChangeMutex_);
+    std::lock_guard<std::mutex> lock(dataChangeMutex_);
     auto it = dataChangeListeners_.find(pipeInfo.pipeId);
     if (it != dataChangeListeners_.end()) {
         LOG_DEBUG("ready to notify, pipeName:%{public}s, deviceId:%{public}s.", pipeInfo.pipeId.c_str(),
