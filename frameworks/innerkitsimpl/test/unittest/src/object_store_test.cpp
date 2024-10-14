@@ -14,32 +14,34 @@
  */
 
 #include <gtest/gtest.h>
-
-#include <string>
 #include <thread>
 
 #include "accesstoken_kit.h"
-#include "auto_launch_export.h"
 #include "distributed_object.h"
 #include "distributed_object_impl.h"
 #include "distributed_objectstore.h"
 #include "distributed_objectstore_impl.h"
 #include "flat_object_storage_engine.h"
 #include "flat_object_store.h"
-#include "ipc_skeleton.h"
-#include "kv_store_delegate_manager.h"
 #include "mock_flat_object_watcher.h"
 #include "mock_object_watcher.h"
 #include "nativetoken_kit.h"
 #include "object_storage_engine.h"
 #include "objectstore_errors.h"
-#include "store_observer.h"
 #include "token_setproc.h"
 
 using namespace testing::ext;
 using namespace OHOS::ObjectStore;
 using namespace OHOS::Security::AccessToken;
 namespace {
+// object service error code
+enum Status : int32_t {
+    OBJECT_SUCCESS,
+    OBJECT_DBSTATUS_ERROR,
+    OBJECT_INNER_ERROR,
+    OBJECT_PERMISSION_DENIED,
+    OBJECT_STORE_NOT_FOUND
+};
 constexpr static double SALARY = 100.5;
 class TableWatcherImpl : public TableWatcher {
 public:
@@ -1223,7 +1225,7 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_Save_001, TestSize.Level1)
     std::map<std::string, std::vector<uint8_t>> objectData;
     CacheManager cacheManager;
     auto ret = cacheManager.Save(bundleName, sessionId, deviceId, objectData);
-    EXPECT_EQ(DistributedDB::DBStatus::INVALID_ARGS, ret);
+    EXPECT_EQ(OBJECT_PERMISSION_DENIED, ret);
 }
 
 /**
@@ -1237,7 +1239,7 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_RevokeSave_001, TestSize.Level1)
     std::string sessionId = "";
     CacheManager cacheManager;
     auto ret = cacheManager.RevokeSave(bundleName, sessionId);
-    EXPECT_EQ(DistributedDB::DBStatus::INVALID_ARGS, ret);
+    EXPECT_EQ(OBJECT_PERMISSION_DENIED, ret);
 }
 
 /**
@@ -1253,7 +1255,7 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_ResumeObject_001, TestSize.Level1)
     std::function<void(const std::map<std::string, std::vector<uint8_t>> &data, bool allReady)> callback =
         [](const std::map<std::string, std::vector<uint8_t>> &data, bool allReady) {};
     auto ret = cacheManager.ResumeObject(bundleName, sessionId, callback);
-    EXPECT_EQ(DistributedDB::DBStatus::INVALID_ARGS, ret);
+    EXPECT_EQ(OBJECT_PERMISSION_DENIED, ret);
 }
 
 /**
@@ -1269,7 +1271,7 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_SubscribeDataChange_001, TestSize.L
     std::function<void(const std::map<std::string, std::vector<uint8_t>> &data, bool allReady)> callback =
         [](const std::map<std::string, std::vector<uint8_t>> &data, bool allReady) {};
     auto ret = cacheManager.SubscribeDataChange(bundleName, sessionId, callback);
-    EXPECT_EQ(DistributedDB::DBStatus::INVALID_ARGS, ret);
+    EXPECT_EQ(OBJECT_PERMISSION_DENIED, ret);
 }
 
 /**
@@ -1283,7 +1285,19 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_UnregisterDataChange_001, TestSize.
     std::string sessionId = "";
     CacheManager cacheManager;
     auto ret = cacheManager.UnregisterDataChange(bundleName, sessionId);
-    EXPECT_EQ(DistributedDB::DBStatus::INVALID_ARGS, ret);
+    EXPECT_EQ(OBJECT_PERMISSION_DENIED, ret);
+}
+
+/**
+ * @tc.name: CacheManager_IsContinue_001
+ * @tc.desc: test CacheManager IsContinue.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, CacheManager_IsContinue_001, TestSize.Level1)
+{
+    auto cacheManager = std::make_shared<CacheManager>();
+    auto result = cacheManager->IsContinue();
+    EXPECT_FALSE(result);
 }
 
 /**
