@@ -268,4 +268,34 @@ int32_t ObjectServiceProxy::DeleteSnapshot(const std::string &bundleName, const 
     }
     return reply.ReadInt32();
 }
+
+int32_t ObjectServiceProxy::IsContinue(bool &result)
+{
+    sptr<IRemoteObject> remote = Remote();
+    if (remote == nullptr) {
+        LOG_ERROR("Remote object is nullptr.");
+        return ERR_IPC;
+    }
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption mo { MessageOption::TF_SYNC };
+    if (!data.WriteInterfaceToken(ObjectServiceProxy::GetDescriptor())) {
+        ZLOGE("Write descriptor failed");
+        return ERR_IPC;
+    }
+    if (!ITypesUtil::Marshal(data, result)) {
+        ZLOGE("Marshall result failed, result: %{public}d", result);
+        return ERR_IPC;
+    }
+    int32_t status = remote->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_IS_CONTINUE), data, reply, mo);
+    if (status != SUCCESS) {
+        ZLOGE("Send request failed, status: %{public}d", status);
+        return status;
+    }
+    if (!ITypesUtil::Unmarshal(reply, result)) {
+        ZLOGE("Unmarshal result failed, result: %{public}d", result);
+        return ERR_IPC;
+    }
+    return SUCCESS;
+}
 } // namespace OHOS::DistributedObject

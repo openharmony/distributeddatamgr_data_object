@@ -95,7 +95,7 @@ int CreateSessionServer(const char *pkgName, const char *sessionName, const ISes
 int Socket(SocketInfo info)
 {
     const char *invalidSessionName = "INVALID_SESSION_NAME";
-    if (!strcmp(info.name, invalidSessionName)) {
+    if (strstr(info.name, invalidSessionName) != nullptr) {
         return 0;
     }
     return 1;

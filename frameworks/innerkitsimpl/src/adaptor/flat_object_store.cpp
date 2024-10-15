@@ -15,10 +15,12 @@
 
 #include "flat_object_store.h"
 
+#include "accesstoken_kit.h"
 #include "block_data.h"
 #include "bytes_utils.h"
 #include "client_adaptor.h"
 #include "distributed_objectstore_impl.h"
+#include "ipc_skeleton.h"
 #include "logger.h"
 #include "object_callback_impl.h"
 #include "object_radar_reporter.h"
@@ -51,6 +53,13 @@ FlatObjectStore::~FlatObjectStore()
 
 uint32_t FlatObjectStore::CreateObject(const std::string &sessionId)
 {
+    if (!cacheManager_->IsContinue()) { // NOT IN CONTINUE, CHECK PERMISSION
+        auto tokenId = IPCSkeleton::GetSelfTokenID();
+        int32_t ret = Security::AccessToken::AccessTokenKit::VerifyAccessToken(tokenId, DISTRIBUTED_DATASYNC);
+        if (ret != Security::AccessToken::PermissionState::PERMISSION_GRANTED) {
+            return ERR_NO_PERMISSION;
+        }
+    }
     if (!storageEngine_->isOpened_ && storageEngine_->Open(bundleName_) != SUCCESS) {
         LOG_ERROR("FlatObjectStore::DB has not inited");
         return ERR_DB_NOT_INIT;
@@ -186,7 +195,7 @@ uint32_t FlatObjectStore::SetStatusNotifier(std::shared_ptr<StatusWatcher> notif
 
 uint32_t FlatObjectStore::Save(const std::string &sessionId, const std::string &deviceId)
 {
-    RADAR_REPORT(SAVE, SAVE_TO_SERVICE, IDLE, BIZ_STATE, START, APP_CALLER, bundleName_);
+    RadarReporter::ReportStateStart(std::string(__FUNCTION__), SAVE, SAVE_TO_SERVICE, IDLE, START, bundleName_);
     if (cacheManager_ == nullptr) {
         LOG_ERROR("FlatObjectStore::cacheManager_ is null");
         return ERR_NULL_PTR;
@@ -195,7 +204,8 @@ uint32_t FlatObjectStore::Save(const std::string &sessionId, const std::string &
     uint32_t status = storageEngine_->GetItems(sessionId, objectData);
     if (status != SUCCESS) {
         LOG_ERROR("FlatObjectStore::GetItems fail");
-        RADAR_REPORT(SAVE, SAVE_TO_SERVICE, RADAR_FAILED, ERROR_CODE, status, BIZ_STATE, FINISHED);
+        RadarReporter::ReportStateError(std::string(__FUNCTION__), SAVE, SAVE_TO_SERVICE,
+            RADAR_FAILED, status, FINISHED);
         return status;
     }
     return cacheManager_->Save(bundleName_, sessionId, deviceId, objectData);
@@ -423,22 +433,25 @@ int32_t CacheManager::SaveObject(const std::string &bundleName, const std::strin
     sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
     if (proxy == nullptr) {
         LOG_ERROR("proxy is nullptr.");
-        RADAR_REPORT(SAVE, SAVE_TO_SERVICE, RADAR_FAILED, ERROR_CODE, SA_DIED, BIZ_STATE, FINISHED);
+        RadarReporter::ReportStateError(std::string(__FUNCTION__), SAVE, SAVE_TO_SERVICE,
+            RADAR_FAILED, SA_DIED, FINISHED);
         return ERR_PROCESSING;
     }
     sptr<ObjectSaveCallbackBroker> objectSaveCallback = new (std::nothrow) ObjectSaveCallback(callback);
     if (objectSaveCallback == nullptr) {
         LOG_ERROR("CacheManager::SaveObject no memory for ObjectSaveCallback malloc!");
-        RADAR_REPORT(SAVE, SAVE_TO_SERVICE, RADAR_FAILED, ERROR_CODE, NO_MEMORY, BIZ_STATE, FINISHED);
+        RadarReporter::ReportStateError(std::string(__FUNCTION__), SAVE, SAVE_TO_SERVICE,
+            RADAR_FAILED, NO_MEMORY, FINISHED);
         return ERR_NULL_PTR;
     }
     int32_t status = proxy->ObjectStoreSave(
         bundleName, sessionId, deviceId, objectData, objectSaveCallback->AsObject().GetRefPtr());
     if (status != SUCCESS) {
         LOG_ERROR("object save failed code=%d.", static_cast<int>(status));
-        RADAR_REPORT(SAVE, SAVE_TO_SERVICE, RADAR_FAILED, ERROR_CODE, IPC_ERROR, BIZ_STATE, FINISHED);
+        RadarReporter::ReportStateError(std::string(__FUNCTION__), SAVE, SAVE_TO_SERVICE,
+            RADAR_FAILED, IPC_ERROR, FINISHED);
     } else {
-        RADAR_REPORT(SAVE, SAVE_TO_SERVICE, RADAR_SUCCESS);
+        RadarReporter::ReportStage(std::string(__FUNCTION__), SAVE, SAVE_TO_SERVICE, RADAR_SUCCESS);
     }
     return status;
 }
@@ -539,5 +552,20 @@ int32_t CacheManager::DeleteSnapshot(const std::string &bundleName, const std::s
     }
     LOG_INFO("object delete snapshot successful");
     return status;
+}
+
+bool CacheManager::IsContinue()
+{
+    sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
+    if (proxy == nullptr) {
+        LOG_ERROR("Object service proxy is nullptr");
+        return false;
+    }
+    bool isContinue = false;
+    int32_t status = proxy->IsContinue(isContinue);
+    if (status != SUCCESS) {
+        LOG_ERROR("Get continue state failed, status: %{public}d, isContinue: %{public}d", status, isContinue);
+    }
+    return isContinue;
 }
 } // namespace OHOS::ObjectStore

@@ -187,6 +187,7 @@ napi_value JSDistributedObjectStore::JSCreateObjectSync(napi_env env, napi_callb
     uint32_t result = 0;
     DistributedObject *object = objectInfo->CreateObject(sessionId, result);
     NAPI_ASSERT_ERRCODE_V9(env, result != ERR_EXIST, version, std::make_shared<DatabaseError>());
+    NAPI_ASSERT_ERRCODE_V9(env, result != ERR_NO_PERMISSION, version, std::make_shared<PermissionError>());
     NAPI_ASSERT_ERRCODE_V9(env, result == SUCCESS && object != nullptr, version, innerError);
     return NewDistributedObject(env, objectInfo, object, objectId);
 }

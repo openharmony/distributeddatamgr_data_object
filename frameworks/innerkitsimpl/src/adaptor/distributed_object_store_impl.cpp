@@ -262,12 +262,13 @@ DistributedObjectStore *DistributedObjectStore::GetInstance(const std::string &b
     if (instPtr == nullptr) {
         std::lock_guard<std::mutex> lock(instLock_);
         if (instPtr == nullptr && !bundleName.empty()) {
-            RADAR_REPORT(CREATE, INIT_STORE, IDLE, BIZ_STATE, START, APP_CALLER, bundleName);
+            RadarReporter::ReportStateStart(std::string(__FUNCTION__), CREATE, INIT_STORE, IDLE, START, bundleName);
             LOG_INFO("new objectstore %{public}s", bundleName.c_str());
             FlatObjectStore *flatObjectStore = new (std::nothrow) FlatObjectStore(bundleName);
             if (flatObjectStore == nullptr) {
                 LOG_ERROR("no memory for FlatObjectStore malloc!");
-                RADAR_REPORT(CREATE, INIT_STORE, RADAR_FAILED, ERROR_CODE, NO_MEMORY, BIZ_STATE, FINISHED);
+                RadarReporter::ReportStateError(std::string(__FUNCTION__), CREATE, INIT_STORE,
+                    RADAR_FAILED, NO_MEMORY, FINISHED);
                 return nullptr;
             }
             // Use instMemory to make sure this singleton not free before other object.
@@ -276,10 +277,11 @@ DistributedObjectStore *DistributedObjectStore::GetInstance(const std::string &b
             if (instPtr == nullptr) {
                 delete flatObjectStore;
                 LOG_ERROR("no memory for DistributedObjectStoreImpl malloc!");
-                RADAR_REPORT(CREATE, INIT_STORE, RADAR_FAILED, ERROR_CODE, NO_MEMORY, BIZ_STATE, FINISHED);
+                RadarReporter::ReportStateError(std::string(__FUNCTION__), CREATE, INIT_STORE,
+                    RADAR_FAILED, NO_MEMORY, FINISHED);
                 return nullptr;
             }
-            RADAR_REPORT(CREATE, INIT_STORE, RADAR_SUCCESS);
+            RadarReporter::ReportStage(std::string(__FUNCTION__), CREATE, INIT_STORE, RADAR_SUCCESS);
         }
     }
     return instPtr;

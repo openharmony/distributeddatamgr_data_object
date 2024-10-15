@@ -40,6 +40,7 @@ public:
     virtual int32_t BindAssetStore(const std::string &bundleName, const std::string &sessionId,
         ObjectStore::Asset &asset, ObjectStore::AssetBindInfo &bindInfo) = 0;
     virtual int32_t DeleteSnapshot(const std::string &bundleName, const std::string &sessionId) = 0;
+    virtual int32_t IsContinue(bool &result) = 0;
 };
 } // namespace OHOS::DistributedObject
 #endif

@@ -149,22 +149,18 @@ function getObjectValue(object, key) {
 }
 
 function setObjectValue(object, key, newValue) {
-  console.info('start set ' + key + ' ' + newValue);
+  console.info('start set ' + key);
   if (typeof newValue === 'object') {
     let value = COMPLEX_TYPE + JSON.stringify(newValue);
     object.put(key, value);
-    console.info('set ' + key + ' ' + value);
   } else if (typeof newValue === 'string') {
     let value = STRING_TYPE + newValue;
     object.put(key, value);
-    console.info('set ' + key + ' ' + value);
   } else if (newValue == null) {
     let value = NULL_TYPE;
     object.put(key, value);
-    console.info('set ' + key + ' ' + value);
   } else {
     object.put(key, newValue);
-    console.info('set ' + key + ' ' + newValue);
   }
 }
 
@@ -231,7 +227,7 @@ function setAssetValue(object, key, newValue) {
       message: 'cannot set ' + key + ' by non Asset type data'
     };
   }
-  Object.values(newValue).forEach(subKey => {
+  Object.keys(newValue).forEach(subKey => {
     setObjectValue(object, key + ASSET_KEY_SEPARATOR + subKey, newValue[subKey]);
   });
 }
