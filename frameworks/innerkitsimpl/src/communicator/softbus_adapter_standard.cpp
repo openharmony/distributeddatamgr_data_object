@@ -410,38 +410,56 @@ int SoftBusAdapter::GetSocket(const PipeInfo &pipeInfo, const DeviceId &deviceId
     return socketId;
 }
 
-static std::string GetSelfAppId()
+// AppId is used only for socket verification. The created socket name does not contain appId.
+std::string SoftBusAdapter::GetSocketName(const std::string &socketName)
 {
+    std::lock_guard<std::mutex> lock(bundleInfoMutex_);
+    if (isSystemApp_) {
+        return socketName;
+    }
+    if (!appId_.empty()) {
+        return socketName + '-' + appId_;
+    }
     sptr<ISystemAbilityManager> saManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (saManager == nullptr) {
         LOG_ERROR("Get system ability manager failed");
-        return "";
+        return socketName;
     }
     sptr<IRemoteObject> remoteObject = saManager->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
     if (remoteObject == nullptr) {
         LOG_ERROR("Get system ability failed");
-        return "";
+        return socketName;
     }
     sptr<AppExecFwk::IBundleMgr> bundleManager = iface_cast<AppExecFwk::IBundleMgr>(remoteObject);
     if (bundleManager == nullptr) {
         LOG_ERROR("Get bundle manager failed");
-        return "";
+        return socketName;
     }
     AppExecFwk::BundleInfo bundleInfo;
     auto status = bundleManager->GetBundleInfoForSelf(
+        static_cast<int32_t>(AppExecFwk::GetBundleInfoFlag::GET_BUNDLE_INFO_WITH_APPLICATION) |
         static_cast<int32_t>(AppExecFwk::GetBundleInfoFlag::GET_BUNDLE_INFO_WITH_SIGNATURE_INFO), bundleInfo);
     if (status != 0) {
         LOG_ERROR("Get bundle info failed, status: %{public}d", status);
-        return "";
+        return socketName;
     }
-    return bundleInfo.appId;
+    if (bundleInfo.applicationInfo.isSystemApp) {
+        isSystemApp_ = true;
+        LOG_INFO("System app does not require appId, bundleName: %{public}s", bundleInfo.name.c_str());
+        return socketName;
+    }
+    if (bundleInfo.appId.empty()) {
+        LOG_ERROR("Get appId empty, bundleName: %{public}s", bundleInfo.name.c_str());
+        return socketName;
+    }
+    appId_ = bundleInfo.appId;
+    return socketName + '-' + appId_;
 }
 
 int SoftBusAdapter::CreateClientSocket(const PipeInfo &pipeInfo, const DeviceId &deviceId)
 {
     SocketInfo socketInfo;
-    // AppId is used only for socket verification. The created socket name does not contain appId.
-    std::string socketNameAndAppId = pipeInfo.pipeId + '-' + GetSelfAppId();
+    std::string socketNameAndAppId = GetSocketName(pipeInfo.pipeId);
     socketInfo.name = socketNameAndAppId.data();
     socketInfo.peerName = const_cast<char *>(pipeInfo.pipeId.c_str());
     std::string networkId = ToNodeID(deviceId.deviceId);
@@ -514,8 +532,7 @@ bool SoftBusAdapter::IsSameStartedOnPeer(
 int SoftBusAdapter::CreateSessionServerAdapter(const std::string &sessionName)
 {
     SocketInfo socketInfo;
-    // AppId is used only for socket verification. The created socket name does not contain appId.
-    std::string socketNameAndAppId = sessionName + '-' + GetSelfAppId();
+    std::string socketNameAndAppId = GetSocketName(sessionName);
     socketInfo.name = socketNameAndAppId.data();
     socketInfo.pkgName = const_cast<char *>(PKG_NAME);
     socketServer_ = Socket(socketInfo);
