@@ -54,7 +54,6 @@ struct ContextBase {
 
 private:
     napi_deferred deferred = nullptr;
-    napi_async_work work = nullptr;
     napi_ref callbackRef = nullptr;
     napi_ref selfRef = nullptr;
 
@@ -87,7 +86,7 @@ private:
 
 class NapiQueue {
 public:
-    static napi_value AsyncWork(napi_env env, std::shared_ptr<ContextBase> ctxt, const std::string &name,
+    static napi_value AsyncWork(napi_env env, std::shared_ptr<ContextBase> contextBase, const std::string &name,
         NapiAsyncExecute execute = NapiAsyncExecute(), NapiAsyncComplete complete = NapiAsyncComplete());
     static void SetBusinessError(napi_env env, napi_value *businessError, std::shared_ptr<Error> error);
 
@@ -97,6 +96,13 @@ private:
         RESULT_ERROR = 0,
         RESULT_DATA = 1,
         RESULT_ALL = 2
+    };
+    struct AsyncContext {
+        std::shared_ptr<ContextBase> ctxt;
+        NapiAsyncExecute execute = nullptr;
+        NapiAsyncComplete complete = nullptr;
+        napi_deferred deferred = nullptr;
+        napi_async_work work = nullptr;
     };
     static void GenerateOutput(ContextBase *ctxt);
 };
