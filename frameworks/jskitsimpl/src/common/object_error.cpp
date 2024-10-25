@@ -50,7 +50,7 @@ int DatabaseError::GetCode()
 
 std::string DatabaseError::GetMessage()
 {
-    return "create table failed";
+    return "Failed to create the in-memory database.";
 }
 
 int PermissionError::GetCode()
