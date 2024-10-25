@@ -96,6 +96,7 @@ private:
     void DoSend();
     int GetSocket(const PipeInfo &pipeInfo, const DeviceId &deviceId);
     int CreateClientSocket(const PipeInfo &pipeInfo, const DeviceId &deviceId);
+    std::string GetSocketName(const std::string &socketName);
     mutable std::mutex networkMutex_{};
     mutable std::map<std::string, std::string> networkId2Uuid_{};
     DeviceInfo localInfo_{};
@@ -115,6 +116,9 @@ private:
     ConcurrentMap<int32_t, PeerSocketInfo> peerSocketInfos_;
     ISocketListener clientListener_{};
     ISocketListener serverListener_{};
+    std::string appId_;
+    bool isSystemApp_ = false;
+    std::mutex bundleInfoMutex_{};
 };
 
 class AppDataListenerWrap {
