@@ -23,12 +23,6 @@ ContextBase::~ContextBase()
 {
     LOG_DEBUG("no memory leak after callback or promise[resolved/rejected]");
     if (env != nullptr) {
-        if (work != nullptr) {
-            napi_delete_async_work(env, work);
-        }
-        if (callbackRef != nullptr) {
-            napi_delete_reference(env, callbackRef);
-        }
         napi_delete_reference(env, selfRef);
         env = nullptr;
     }
@@ -71,50 +65,48 @@ void ContextBase::GetCbInfo(napi_env envi, napi_callback_info info, NapiCbInfoPa
     }
 }
 
-napi_value NapiQueue::AsyncWork(napi_env env, std::shared_ptr<ContextBase> ctxt, const std::string& name,
+napi_value NapiQueue::AsyncWork(napi_env env, std::shared_ptr<ContextBase> contextBase, const std::string &name,
     NapiAsyncExecute execute, NapiAsyncComplete complete)
 {
-    LOG_DEBUG("name=%{public}s", name.c_str());
-
+    AsyncContext *aCtx = new AsyncContext;
+    aCtx->ctxt = std::move(contextBase);
+    aCtx->execute = std::move(execute);
+    aCtx->complete = std::move(complete);
+    auto ctxt = aCtx->ctxt;
     napi_value promise = nullptr;
     if (ctxt->callbackRef == nullptr) {
         napi_create_promise(ctxt->env, &ctxt->deferred, &promise);
-        LOG_DEBUG("create deferred promise");
     } else {
         napi_get_undefined(ctxt->env, &promise);
     }
-
     napi_value resource = nullptr;
     napi_create_string_utf8(ctxt->env, name.c_str(), NAPI_AUTO_LENGTH, &resource);
-    napi_create_async_work(
-        ctxt->env, nullptr, resource,
-        [](napi_env env, void* data) {
+    napi_create_async_work(ctxt->env, nullptr, resource,
+        [](napi_env env, void *data) {
             NOT_MATCH_RETURN_VOID(data != nullptr);
-            auto ctxt = reinterpret_cast<ContextBase*>(data);
-            LOG_DEBUG("napi_async_execute_callback ctxt->status=%{public}d", ctxt->status);
-            if (ctxt->execute && ctxt->status == napi_ok) {
-                ctxt->execute();
+            auto actxt = reinterpret_cast<AsyncContext *>(data);
+            if (actxt->execute && actxt->ctxt->status == napi_ok) {
+                actxt->execute();
             }
         },
-        [](napi_env env, napi_status status, void* data) {
+        [](napi_env env, napi_status status, void *data) {
             NOT_MATCH_RETURN_VOID(data != nullptr);
-            auto ctxt = reinterpret_cast<ContextBase*>(data);
-            LOG_DEBUG("napi_async_complete_callback status=%{public}d, ctxt->status=%{public}d", status, ctxt->status);
-            if ((status != napi_ok) && (ctxt->status == napi_ok)) {
-                ctxt->status = status;
+            auto actxt = reinterpret_cast<AsyncContext *>(data);
+            if ((status != napi_ok) && (actxt->ctxt->status == napi_ok)) {
+                actxt->ctxt->status = status;
             }
-            if ((ctxt->complete) && (status == napi_ok) && (ctxt->status == napi_ok)) {
-                ctxt->complete(ctxt->output);
+            if ((actxt->complete) && (status == napi_ok) && (actxt->ctxt->status == napi_ok)) {
+                actxt->complete(actxt->ctxt->output);
             }
-            GenerateOutput(ctxt);
-        },
-        reinterpret_cast<void*>(ctxt.get()), &ctxt->work);
-    ctxt->execute = std::move(execute);
-    ctxt->complete = std::move(complete);
-    ctxt->hold = ctxt; // save crossing-thread ctxt.
-    auto status = napi_queue_async_work_with_qos(ctxt->env, ctxt->work, napi_qos_user_initiated);
+            GenerateOutput(actxt->ctxt.get());
+            napi_delete_reference(env, actxt->ctxt->callbackRef);
+            napi_delete_async_work(env, actxt->work);
+            delete actxt;
+        }, reinterpret_cast<void *>(aCtx), &aCtx->work);
+    auto status = napi_queue_async_work(ctxt->env, aCtx->work);
     if (status != napi_ok) {
-        napi_get_undefined(ctxt->env, &promise);
+        napi_get_undefined(env, &promise);
+        delete aCtx;
     }
     return promise;
 }
