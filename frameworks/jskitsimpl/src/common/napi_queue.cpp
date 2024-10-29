@@ -68,7 +68,11 @@ void ContextBase::GetCbInfo(napi_env envi, napi_callback_info info, NapiCbInfoPa
 napi_value NapiQueue::AsyncWork(napi_env env, std::shared_ptr<ContextBase> contextBase, const std::string &name,
     NapiAsyncExecute execute, NapiAsyncComplete complete)
 {
-    AsyncContext *aCtx = new AsyncContext;
+    AsyncContext *aCtx = new (std::nothrow) AsyncContext;
+    if (aCtx == nullptr) {
+        LOG_ERROR("create aysnc context failed");
+        return nullptr;
+    }
     aCtx->ctxt = std::move(contextBase);
     aCtx->execute = std::move(execute);
     aCtx->complete = std::move(complete);
