@@ -119,4 +119,30 @@ HWTEST_F(ObjectTypesUtilTest, Marshalling_002, TestSize.Level1)
     bool ret = ITypesUtil::Marshalling(input, data);
     EXPECT_TRUE(ret);
 }
+
+/**
+ * @tc.name: Unmarshalling_002
+ * @tc.desc: Normal test for Unmarshalling
+ * @tc.type: FUNC
+ */
+HWTEST_F(ObjectTypesUtilTest, Unmarshalling_002, TestSize.Level1)
+{
+    Asset input = {
+            .version = 0,
+            .status = 0,
+            .id = "id",
+            .name = "1.txt",
+            .uri = "file://com.example.myapp/data/dir/1.txt",
+            .createTime = "2024/10/26 19:48:00",
+            .modifyTime = "2024/10/26 20:10:00",
+            .size = "1",
+            .hash = "hash",
+            .path = "/dir/1.txt",
+    };
+    MessageParcel data;
+    ITypesUtil::Marshalling(input, data);
+    Asset output;
+    bool ret = ITypesUtil::Unmarshalling(output, data);
+    EXPECT_TRUE(ret);
+}
 }
