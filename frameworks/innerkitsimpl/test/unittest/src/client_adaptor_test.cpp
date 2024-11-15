@@ -106,5 +106,6 @@ HWTEST_F(ClientAdaptorTest, RegisterClientDeathListener_002, TestSize.Level1)
     sptr<IRemoteObject> remoteObject = new IPCObjectStub();
     uint32_t ret = clientAdaptor.RegisterClientDeathListener(appId, remoteObject);
     EXPECT_EQ(ret, SUCCESS);
+    delete remoteObject;
 }
 }

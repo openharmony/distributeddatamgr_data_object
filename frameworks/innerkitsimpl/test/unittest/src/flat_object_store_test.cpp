@@ -104,4 +104,19 @@ HWTEST_F(FlatObjectStoreTest, BindAssetStore_001, TestSize.Level1)
     uint32_t ret = flatObjectStore.BindAssetStore(sessionId, bindInfo, assetValue);
     EXPECT_NE(ret, SUCCESS);
 }
+
+/**
+ * @tc.name: GetBundleName_001
+ * @tc.desc: Normal test for GetBundleName
+ * @tc.type: FUNC
+ */
+
+HWTEST_F(FlatObjectStoreTest, GetBundleName_001, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    FlatObjectStore flatObjectStore = FlatObjectStore(bundleName);
+    flatObjectStore.bundleName_ = bundleName;
+    std::string ret = flatObjectStore.GetBundleName();
+    EXPECT_EQ(ret, bundleName);
+}
 }
