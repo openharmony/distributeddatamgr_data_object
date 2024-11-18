@@ -84,5 +84,6 @@ HWTEST_F(DistributedObjectImplTest, BindAssetStore_001, TestSize.Level1)
     DistributedObjectImpl distributedObjectImpl(bundleName, flatObjectStore);
     uint32_t ret = distributedObjectImpl.BindAssetStore(assetKey, bindInfo);
     EXPECT_NE(ret, SUCCESS);
+    delete flatObjectStore;
 }
 }
