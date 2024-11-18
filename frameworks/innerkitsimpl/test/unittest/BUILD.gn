@@ -98,8 +98,8 @@ ohos_unittest("ObjectTypesUtilTest") {
   ]
 
   configs = [ ":module_private_config" ]
-
   external_deps = common_external_deps
+  deps = [ "${data_object_base_path}/interfaces/innerkits:distributeddataobject_static" ]
 }
 
 ohos_unittest("ObjectServiceProxyTest") {
@@ -112,8 +112,8 @@ ohos_unittest("ObjectServiceProxyTest") {
   ]
 
   configs = [ ":module_private_config" ]
-
   external_deps = common_external_deps
+  deps = [ "${data_object_base_path}/interfaces/innerkits:distributeddataobject_static" ]
 }
 
 ohos_unittest("ObjectCallbackStubTest") {
@@ -137,6 +137,7 @@ ohos_unittest("ObjectCallbackStubTest") {
     "private = public",
     "protected = public",
   ]
+  deps = [ "${data_object_base_path}/interfaces/innerkits:distributeddataobject_static" ]
 }
 
 ohos_unittest("AssetChangeTimerTest") {
@@ -150,6 +151,7 @@ ohos_unittest("AssetChangeTimerTest") {
     "${data_object_base_path}/frameworks/innerkitsimpl/src/object_types_util.cpp",
     "${data_object_base_path}/frameworks/innerkitsimpl/test/unittest/src/asset_change_timer_test.cpp",
     "${data_object_base_path}/frameworks/jskitsimpl/src/adaptor/js_watcher.cpp",
+    "${data_object_base_path}/frameworks/jskitsimpl/src/adaptor/notifier_impl.cpp",
     "${data_object_base_path}/frameworks/jskitsimpl/src/common/js_util.cpp",
     "${data_object_base_path}/frameworks/jskitsimpl/src/common/uv_queue.cpp",
   ]
@@ -187,6 +189,7 @@ ohos_unittest("ClientAdaptorTest") {
     "private = public",
     "protected = public",
   ]
+  deps = [ "${data_object_base_path}/interfaces/innerkits:distributeddataobject_static" ]
 }
 
 ohos_unittest("DistributedObjectStoreImplTest") {
