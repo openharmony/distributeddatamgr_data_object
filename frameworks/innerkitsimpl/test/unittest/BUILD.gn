@@ -43,6 +43,7 @@ common_external_deps = [
   "bundle_framework:appexecfwk_core",
   "c_utils:utils",
   "device_manager:devicemanagersdk",
+  "dmsfwk:distributed_sdk",
   "dsoftbus:softbus_client",
   "ffmpeg:libohosffmpeg",
   "hilog:libhilog",
@@ -196,8 +197,26 @@ ohos_unittest("DistributedObjectStoreImplTest") {
   module_out_path = module_output_path
 
   sources = [
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/adaptor/asset_change_timer.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/adaptor/client_adaptor.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/adaptor/distributed_object_impl.cpp",
     "${data_object_base_path}/frameworks/innerkitsimpl/src/adaptor/distributed_object_store_impl.cpp",
     "${data_object_base_path}/frameworks/innerkitsimpl/src/adaptor/flat_object_storage_engine.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/adaptor/flat_object_store.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/adaptor/object_callback_impl.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/communicator/app_device_handler.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/communicator/app_pipe_handler.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/communicator/app_pipe_mgr.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/communicator/ark_communication_provider.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/communicator/communication_provider.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/communicator/communication_provider_impl.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/communicator/dev_manager.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/communicator/process_communicator_impl.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/communicator/softbus_adapter_standard.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/object_callback_stub.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/object_radar_reporter.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/object_service_proxy.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/object_types_util.cpp",
     "${data_object_base_path}/frameworks/innerkitsimpl/test/unittest/src/distributed_object_store_impl_test.cpp",
   ]
 
