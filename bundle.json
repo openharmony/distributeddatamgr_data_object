@@ -79,6 +79,23 @@
                         ],
                         "header_base": "//foundation/distributeddatamgr/data_object/interfaces/innerkits"
                     }
+                },
+                {
+                    "name": "//foundation/distributeddatamgr/data_object/interfaces/innerkits:data_object_inner",
+                    "visibility": [ "datamgr_service" ],
+                    "header": {
+                        "header_files": [
+                            "object_types.h",
+                            "iobject_service.h",
+                            "object_callback.h",
+                            "object_radar_reporter.h"
+                        ],
+                        "header_base": [
+                            "//foundation/distributeddatamgr/data_object/interfaces/innerkits",
+                            "//foundation/distributeddatamgr/data_object/frameworks/innerkitsimpl/include",
+                            "//foundation/distributeddatamgr/data_object/frameworks/innerkitsimpl/include/common"
+                        ]
+                    }
                 }
             ],
             "test": [
