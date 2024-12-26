@@ -162,7 +162,7 @@ describe('objectStoreTest', function () {
             console.info(TAG + "setSessionId test");
         }).catch((error) => {
             expect(error.code == 15400001).assertEqual(true);
-            expect(error.message == "create table failed").assertEqual(true);
+            expect(error.message == "Failed to create the in-memory database.").assertEqual(true);
         });
         console.log(TAG + "************* V9testsetSessionId002 end *************");
         g_object.setSessionId((error, data) => {
