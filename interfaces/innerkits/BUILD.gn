@@ -113,3 +113,37 @@ ohos_static_library("distributeddataobject_static") {
   public_configs = [ ":objectstore_public_config" ]
   subsystem_name = "distributeddatamgr"
 }
+
+config("object_public_config") {
+  visibility = [
+    ":*",
+    "${datamgr_service_path}/services/distributeddataservice/service/object:*",
+  ]
+
+  include_dirs = [
+    ".",
+    "../../frameworks/innerkitsimpl/include",
+    "../../frameworks/innerkitsimpl/include/common",
+    "../../frameworks/innerkitsimpl/include/communicator",
+  ]
+}
+
+ohos_static_library("data_object_inner") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    ubsan = true
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
+  public_configs = [ ":object_public_config" ]
+
+  sources = [ "../../frameworks/innerkitsimpl/src/object_radar_reporter.cpp" ]
+
+  external_deps = [ "hisysevent:libhisysevent" ]
+
+  part_name = "data_object"
+  subsystem_name = "distributeddatamgr"
+}

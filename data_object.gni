@@ -16,3 +16,5 @@ kvstore_path = "//foundation/distributeddatamgr/kv_store/frameworks"
 data_object_base_path = "//foundation/distributeddatamgr/data_object"
 
 relational_store_path = "//foundation/distributeddatamgr/relational_store"
+
+datamgr_service_path = "//foundation/distributeddatamgr/datamgr_service"
