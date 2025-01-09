@@ -12,20 +12,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#define LOG_TAG "NapiErrorUtils"
 
-#include "napi_error_utils.h"
+#define LOG_TAG "DBStore"
+
+#include "db_store.h"
+
+#include "log_print.h"
+#include "rd_utils.h"
 
 namespace OHOS::CollaborationEdit {
-
-void ThrowNapiError(napi_env env, int32_t status, const std::string &errMessage)
+DBStore::DBStore(GRD_DB *db, std::string name) : db_(db), name_(name)
 {
-    if (status == Status::SUCCESS) {
-        return;
+    int ret = RdUtils::RdRegisterEquipId(db, reinterpret_cast<GrdEquipIdGetFuncT>(DBStore::GetEquipId));
+    if (ret != GRD_OK) {
+        LOG_ERROR("register equip id go wrong. err: %{public}d", ret);
     }
-    LOG_ERROR("ThrowNapiError message: %{public}s", errMessage.c_str());
-    std::string jsCode = std::to_string(status);
-    napi_throw_error(env, jsCode.c_str(), errMessage.c_str());
 }
 
+DBStore::~DBStore()
+{}
+
+const char *DBStore::GetEquipId(void)
+{
+    std::string *str = new std::string("A");
+    return (*str).c_str();
+}
+
+GRD_DB *DBStore::GetDB()
+{
+    return db_;
+}
 } // namespace OHOS::CollaborationEdit

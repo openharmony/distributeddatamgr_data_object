@@ -28,41 +28,33 @@ namespace OHOS::CollaborationEdit {
 #define RETVAL_NOTHING
 
 /* check condition, return and logging if condition not true. */
-inline bool ASSERT(bool condition, const std::string message)
-{
-    if (!(condition)) {
-        LOG_ERROR("test (" #condition ") go wrong: " + message);
-        return false;
-    }
-    return true;
-}
+#define ASSERT(condition, message, retVal)                     \
+    do {                                                       \
+        if (!(condition)) {                                    \
+            LOG_ERROR("test (" #condition ") go wrong: " message); \
+            return retVal;                                     \
+        }                                                      \
+    } while (0)
 
-inline void ASSERT_VOID(bool condition, const std::string message)
-{
-    if (!(condition)) {
-        std::string conditionStr = (condition? "true" : "false");
-        LOG_ERROR("test (" + conditionStr + ") go: " + message);
-        return;
-    }
-}
+#define ASSERT_VOID(condition, message)                        \
+    do {                                                       \
+        if (!(condition)) {                                    \
+            LOG_ERROR("test (" #condition ") go wrong: " message); \
+            return;                                            \
+        }                                                      \
+    } while (0)
 
-inline void ASSERT_THROW_BASE(napi_env env, bool condition, int32_t errCode, const std::string &message, void *retVal)
-{
-    if (!(condition)) {
-        ThrowNapiError(env, errCode, message);
-        return retVal;
-    }
-}
+#define ASSERT_THROW_BASE(env, condition, errCode, message, retVal)  \
+    do {                                                       \
+        if (!(condition)) {                                    \
+            ThrowNapiError(env, errCode, message);             \
+            return retVal;                                     \
+        }                                                      \
+    } while (0)
 
-inline void ASSERT_THROW(napi_env env, bool condition, int32_t errCode, const std::string &message)
-{
-    ASSERT_THROW_BASE(env, condition, errCode, message, nullptr);
-}
-
-inline void ASSERT_THROW_VOID(napi_env env, bool condition, int32_t errCode, const std::string &message)
-{
-    ASSERT_THROW_BASE(env, condition, errCode, message, RETVAL_NOTHING);
-}
+#define ASSERT_THROW(env, condition, errCode, message) ASSERT_THROW_BASE(env, condition, errCode, message, nullptr)
+#define ASSERT_THROW_VOID(env, condition, errCode, message)  \
+    ASSERT_THROW_BASE(env, condition, errCode, message, RETVAL_NOTHING)
 
 void ThrowNapiError(napi_env env, int32_t errCode, const std::string &errMessage);
 

@@ -12,20 +12,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#define LOG_TAG "NapiErrorUtils"
 
-#include "napi_error_utils.h"
+#ifndef COLLABORATION_EDIT_DB_STORE_H
+#define COLLABORATION_EDIT_DB_STORE_H
+
+#include "db_store_config.h"
+#include "grd_type_export.h"
 
 namespace OHOS::CollaborationEdit {
+class DBStore {
+public:
+    DBStore(GRD_DB *db, std::string name);
+    ~DBStore();
+    static const char *GetEquipId(void);
+    GRD_DB *GetDB();
 
-void ThrowNapiError(napi_env env, int32_t status, const std::string &errMessage)
-{
-    if (status == Status::SUCCESS) {
-        return;
-    }
-    LOG_ERROR("ThrowNapiError message: %{public}s", errMessage.c_str());
-    std::string jsCode = std::to_string(status);
-    napi_throw_error(env, jsCode.c_str(), errMessage.c_str());
-}
-
+private:
+    GRD_DB *db_;
+    std::string name_;
+};
 } // namespace OHOS::CollaborationEdit
+#endif // COLLABORATION_EDIT_DB_STORE_H

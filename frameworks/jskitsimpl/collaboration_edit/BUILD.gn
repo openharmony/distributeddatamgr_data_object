@@ -1,0 +1,75 @@
+# Copyright (c) 2024 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+import("//build/ohos.gni")
+import("//build/ohos/ace/ace.gni")
+
+config("collaboration_edit_config") {
+  visibility = [ ":*" ]
+
+  cflags = [ "-DHILOG_ENABLE" ]
+
+  include_dirs = [
+    "include",
+    "../../innerkitsimpl/collaboration_edit/include",
+  ]
+}
+
+ohos_shared_library("collaborationeditobject") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    ubsan = true
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
+  sources = [
+    "../../innerkitsimpl/collaboration_edit/src/db_common.cpp",
+    "../../innerkitsimpl/collaboration_edit/src/db_store.cpp",
+    "../../innerkitsimpl/collaboration_edit/src/db_store_config.cpp",
+    "../../innerkitsimpl/collaboration_edit/src/db_store_manager.cpp",
+    "../../innerkitsimpl/collaboration_edit/src/grd_api_manager.cpp",
+    "../../innerkitsimpl/collaboration_edit/src/rd_adapter.cpp",
+    "../../innerkitsimpl/collaboration_edit/src/rd_utils.cpp",
+    "src/entry_point.cpp",
+    "src/napi_abstract_type.cpp",
+    "src/napi_collaboration_edit_object.cpp",
+    "src/napi_edit_unit.cpp",
+    "src/napi_error_utils.cpp",
+    "src/napi_node.cpp",
+    "src/napi_parser.cpp",
+    "src/napi_text.cpp",
+    "src/napi_undo_manager.cpp",
+    "src/napi_utils.cpp",
+  ]
+
+  configs = [ ":collaboration_edit_config" ]
+
+  deps = []
+
+  external_deps = [
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:app_context",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:napi_base_context",
+    "hilog:libhilog",
+    "kv_store:database_utils",
+    "kv_store:distributeddata_inner",
+    "napi:ace_napi",
+  ]
+
+  subsystem_name = "distributeddatamgr"
+  part_name = "data_object"
+  relative_install_dir = "module/data"
+}
