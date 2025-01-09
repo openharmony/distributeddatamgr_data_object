@@ -65,7 +65,8 @@
         },
         "build": {
             "sub_component": [
-                "//foundation/distributeddatamgr/data_object/interfaces/jskits:build_module"
+                "//foundation/distributeddatamgr/data_object/interfaces/jskits:build_module",
+                "//foundation/distributeddatamgr/data_object/frameworks/jskitsimpl/collaboration_edit:collaborationeditobject"
             ],
             "inner_kits": [
                 {

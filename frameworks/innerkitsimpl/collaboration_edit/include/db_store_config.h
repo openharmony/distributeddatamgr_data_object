@@ -12,20 +12,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#define LOG_TAG "NapiErrorUtils"
 
-#include "napi_error_utils.h"
+#ifndef COLLABORATION_EDIT_DB_STORE_CONFIG_H
+#define COLLABORATION_EDIT_DB_STORE_CONFIG_H
+
+#include <string>
 
 namespace OHOS::CollaborationEdit {
-
-void ThrowNapiError(napi_env env, int32_t status, const std::string &errMessage)
-{
-    if (status == Status::SUCCESS) {
-        return;
-    }
-    LOG_ERROR("ThrowNapiError message: %{public}s", errMessage.c_str());
-    std::string jsCode = std::to_string(status);
-    napi_throw_error(env, jsCode.c_str(), errMessage.c_str());
-}
-
+class DBStoreConfig {
+public:
+    DBStoreConfig(std::string path, std::string name);
+    ~DBStoreConfig();
+    std::string GetName() const;
+    std::string GetPath() const;
+private:
+    std::string path_;
+    std::string name_;
+};
 } // namespace OHOS::CollaborationEdit
+#endif // COLLABORATION_EDIT_DB_STORE_CONFIG_H

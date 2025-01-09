@@ -12,20 +12,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#define LOG_TAG "NapiErrorUtils"
 
-#include "napi_error_utils.h"
+#ifndef COLLABORATION_EDIT_NAPI_ERRNO
+#define COLLABORATION_EDIT_NAPI_ERRNO
 
 namespace OHOS::CollaborationEdit {
+constexpr const int OK = 0;  // used for internal method
+constexpr const int ERR = -1;
+static constexpr const int EDIT_ERROR_OFFSET = 15410000;
 
-void ThrowNapiError(napi_env env, int32_t status, const std::string &errMessage)
-{
-    if (status == Status::SUCCESS) {
-        return;
-    }
-    LOG_ERROR("ThrowNapiError message: %{public}s", errMessage.c_str());
-    std::string jsCode = std::to_string(status);
-    napi_throw_error(env, jsCode.c_str(), errMessage.c_str());
-}
-
+enum Status : int32_t {
+    SUCCESS = 0,
+    INVALID_ARGUMENT = 401,
+    INTERNAL_ERROR = EDIT_ERROR_OFFSET,
+    UNSUPPORTED_OPERATION = EDIT_ERROR_OFFSET + 1, // 15410001
+    INDEX_OUT_OF_RANGE, // 15410002
+    DB_ERROR, // 15410003
+};
 } // namespace OHOS::CollaborationEdit
+#endif // COLLABORATION_EDIT_NAPI_ERRNO
