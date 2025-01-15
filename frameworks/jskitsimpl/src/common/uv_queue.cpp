@@ -27,9 +27,8 @@ UvQueue::~UvQueue()
     LOG_DEBUG("no memory leak for queue-callback");
 }
 
-void UvQueue::ExecUvWork(uv_work_t *work, int uvstatus)
+void UvQueue::ExecUvWork(UvEntry *entry)
 {
-    UvEntry *entry = static_cast<UvEntry *>(work->data);
     auto queue = entry->uvQueue_.lock();
     if (queue != nullptr) {
         std::unique_lock<std::shared_mutex> cacheLock(queue->mutex_);
@@ -39,9 +38,7 @@ void UvQueue::ExecUvWork(uv_work_t *work, int uvstatus)
         queue->args_.clear();
     }
     delete entry;
-    work->data = nullptr;
-    delete work;
-    work = nullptr;
+    entry = nullptr;
 }
 
 void UvQueue::CallFunction(Process process, void *argv)
@@ -50,17 +47,7 @@ void UvQueue::CallFunction(Process process, void *argv)
         LOG_ERROR("nullptr");
         return;
     }
-    uv_work_t *work = new (std::nothrow) uv_work_t;
-    if (work == nullptr) {
-        LOG_ERROR("no memory for uv_work_t");
-        return;
-    }
-    work->data = new (std::nothrow)UvEntry { weak_from_this() };
-    if (work->data == nullptr) {
-        delete work;
-        LOG_ERROR("no memory for UvEntry");
-        return;
-    }
+    auto *uvEntry = new (std::nothrow)UvEntry { weak_from_this() };
     {
         std::unique_lock<std::shared_mutex> cacheLock(mutex_);
         if (args_.count(process) != 0) {
@@ -74,17 +61,13 @@ void UvQueue::CallFunction(Process process, void *argv)
         }
     }
 
-    int ret = uv_queue_work(
-        loop_, work, [](uv_work_t *work) {}, UvQueue::ExecUvWork);
-    if (ret != 0) {
-        if (work->data != nullptr) {
-            UvEntry *uvEntry = static_cast<UvEntry *>(work->data);
+    auto task = [uvEntry]() {
+        UvQueue::ExecUvWork(uvEntry);
+    };
+    if (napi_send_event(env_, task, napi_eprio_high) != 0) {
+        if (uvEntry != nullptr) {
             delete uvEntry;
             uvEntry = nullptr;
-        }
-        if (work != nullptr) {
-            delete work;
-            work = nullptr;
         }
     }
 }

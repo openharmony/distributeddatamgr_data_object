@@ -67,6 +67,7 @@ void JSObjectWrapper::DeleteWatch(napi_env env, const char *type, napi_value han
 
 bool JSObjectWrapper::IsUndefined(const char *value)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     std::string tmpStr = value;
     auto it = std::find(undefinedProperties.begin(), undefinedProperties.end(), tmpStr);
     if (it == undefinedProperties.end()) {
@@ -77,6 +78,7 @@ bool JSObjectWrapper::IsUndefined(const char *value)
 
 void JSObjectWrapper::AddUndefined(const char *value)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     std::string tmpStr = value;
     if (std::find(undefinedProperties.begin(), undefinedProperties.end(), tmpStr) == undefinedProperties.end()) {
         undefinedProperties.push_back(tmpStr);
@@ -85,6 +87,7 @@ void JSObjectWrapper::AddUndefined(const char *value)
 
 void JSObjectWrapper::DeleteUndefined(const char *value)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     std::string tmpStr = value;
     auto it = std::find(undefinedProperties.begin(), undefinedProperties.end(), tmpStr);
     if (it != undefinedProperties.end()) {
