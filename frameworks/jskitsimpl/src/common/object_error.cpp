@@ -17,6 +17,11 @@
 
 namespace OHOS {
 namespace ObjectStore {
+static const int EXCEPTION_DEVICE_NOT_SUPPORT = 801;
+static const int EXCEPTION_PARAMETER_CHECK = 401;
+static const int EXCEPTION_NO_PERMISSION = 201;
+static const int EXCEPTION_DB_EXIST = 15400001;
+
 std::string ParametersType::GetMessage()
 {
     return "Parameter error. The type of '" + name + "' must be '" + wantType + "'.";

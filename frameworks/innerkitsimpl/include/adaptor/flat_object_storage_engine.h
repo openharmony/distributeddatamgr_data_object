@@ -49,7 +49,6 @@ public:
     void NotifyStatus(const std::string &sessionId, const std::string &deviceId, const std::string &status);
     void NotifyChange(const std::string &sessionId, const std::map<std::string, std::vector<uint8_t>> &changedData);
 private:
-    constexpr static const char *DISTRIBUTED_DATASYNC = "ohos.permission.DISTRIBUTED_DATASYNC";
     std::mutex operationMutex_{};
     std::mutex watcherMutex_{};
     std::shared_ptr<DistributedDB::KvStoreDelegateManager> storeManager_;

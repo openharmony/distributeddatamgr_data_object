@@ -19,6 +19,8 @@
 #include "logger.h"
 
 namespace OHOS::ObjectStore {
+static constexpr size_t ARGC_MAX = 6;
+
 ContextBase::~ContextBase()
 {
     LOG_DEBUG("no memory leak after callback or promise[resolved/rejected]");
