@@ -39,7 +39,6 @@ class Distributed {
       return false;
     }
     if (this.__proxy[SESSION_ID] === sessionId) {
-      console.info('same session has joined ' + sessionId);
       return true;
     }
     leaveSession(this.__sdkVersion, this.__proxy);
@@ -233,7 +232,6 @@ function setAssetValue(object, key, newValue) {
 }
 
 function joinSession(version, obj, objectId, sessionId, context) {
-  console.info('start joinSession ' + sessionId);
   if (obj == null || sessionId == null || sessionId === '') {
     console.error('object is null');
     return null;
@@ -364,7 +362,6 @@ class DistributedV9 {
       }
     }
     if (this.__proxy[SESSION_ID] === sessionId) {
-      console.info('same session has joined ' + sessionId);
       if (typeof callback === 'function') {
         return callback(null, this.__proxy);
       } else {

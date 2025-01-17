@@ -37,7 +37,7 @@ private:
         std::weak_ptr<UvQueue> uvQueue_;
     };
 
-    static void ExecUvWork(uv_work_t *work, int uvstatus);
+    static void ExecUvWork(UvEntry *uvEntry);
 
     napi_env env_;
     std::shared_mutex mutex_{};
