@@ -112,8 +112,10 @@ int ParseJsonToJsText(napi_env env, json jsonObj, AbstractType *parent, napi_val
     return OK;
 }
 
-int Parser::ParseJsonStrToJsChildren(napi_env env, std::string nodeJsonStr, AbstractType *parent, napi_value &out)
+int Parser::ParseJsonStrToJsChildren(
+    napi_env env, const std::string &nodeJsonStr, AbstractType *parent, napi_value &out)
 {
+    ASSERT(!nodeJsonStr.empty() && json::accept(nodeJsonStr), "invalid json str", ERR);
     napi_status status = napi_create_array(env, &out);
     ASSERT(status == napi_ok, "create array go wrong!", ERR);
     json jsonArray = json::parse(nodeJsonStr);
@@ -142,8 +144,9 @@ int Parser::ParseJsonStrToJsChildren(napi_env env, std::string nodeJsonStr, Abst
     return OK;
 }
 
-int Parser::ParseFromAttrsJsonStr(napi_env env, std::string jsonStr, napi_value &out)
+int Parser::ParseFromAttrsJsonStr(napi_env env, const std::string &jsonStr, napi_value &out)
 {
+    ASSERT(!jsonStr.empty() && json::accept(jsonStr), "invalid json str", ERR);
     napi_status status = napi_create_object(env, &out);
     ASSERT(status == napi_ok, "create object go wrong!", ERR);
     json jsonObject = json::parse(jsonStr);

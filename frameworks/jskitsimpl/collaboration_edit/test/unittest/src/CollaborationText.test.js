@@ -45,7 +45,7 @@ describe('collaborationTextTest', () => {
       try {
         collaboration_edit.deleteCollaborationEditObject(context, DOC_CONFIG);
         console.log(TAG + "delete edit object successfully");
-      } catch (error) {
+      } catch (err) {
         console.log(TAG + "delete edit object failed. err: %s", err.message);
         expect().assertFail();
       }
@@ -54,7 +54,18 @@ describe('collaborationTextTest', () => {
     afterAll(async () => {
       console.log(TAG + "afterAll");
     })
- 
+
+    /**
+     * @tc.number CollaborationEdit_Text_0001
+     * @tc.name Normal test case of methods in Text
+     * @tc.desc 
+     *  1. construct a node and insert it into edit unit
+     *  2. construct a text and insert it into the node
+     *  3. insert strings into text
+     *  4. check result by getPlainText and getJsonResult
+     *  5. format some characters and check result by getJsonResult
+     *  6. delete some characters and check result by getPlainText and getJsonResult
+     */
     it("CollaborationEdit_Text_0001", 0, async () => {
       console.log(TAG + "*****************CollaborationEdit_Text_0001 Start*****************");
       expect(editUnit !== undefined).assertTrue();
@@ -92,28 +103,103 @@ describe('collaborationTextTest', () => {
         console.log(TAG + "CollaborationEdit_Text_0001 failed. err: %s", err);
         expect().assertFail();
       }
+      console.log(TAG + "*****************CollaborationEdit_Text_0001 End*****************");
     })
 
+    /**
+     * @tc.number CollaborationEdit_Text_0002
+     * @tc.name Invalid operation if the text is not inserted
+     * @tc.desc
+     *  1. construct a text
+     *  2. call getId/insert of the text
+     *  3. check the invalid operation error code
+     */
     it("CollaborationEdit_Text_0002", 0, async () => {
-      console.log(TAG + "*****************CollaborationEdit_Text_0001 Start*****************");
+      console.log(TAG + "*****************CollaborationEdit_Text_0002 Start*****************");
       let text = new collaboration_edit.Text();
-        let errCode = "";
-        let id = undefined;
-        try {
-          id = text.getId();
-        } catch (err) {
-          errCode = err.code;
-        }
-        expect(errCode).assertEqual("15410001");
-        expect(id).assertUndefined();
-    
-        errCode = "";
-        try {
-          text.insert(0, "abc");
-        } catch (err) {
-          errCode = err.code;
-        }
-        expect(errCode).assertEqual("15410001");
+      let errCode = "";
+      let id = undefined;
+      try {
+        id = text.getId();
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("15410001");
+      expect(id).assertUndefined();
+  
+      errCode = "";
+      try {
+        text.insert(0, "abc");
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("15410001");
       console.log(TAG + "*****************CollaborationEdit_Text_0002 End*****************");
+    })
+
+    /**
+     * @tc.number CollaborationEdit_Text_0003
+     * @tc.name Invalid index input when call insert/delete/format
+     * @tc.desc 
+     *  1. construct a node and insert it into edit unit
+     *  2. construct a text and insert it into the node
+     *  3. insert string if the index is negative
+     *  4. delete if the index is negative
+     *  5. delete if the length is negative or zero
+     *  6. format if the index is negative
+     *  7. format if the length is negative or zero
+     */
+    it("CollaborationEdit_Text_0003", 0, async () => {
+      console.log(TAG + "*****************CollaborationEdit_Text_0003 Start*****************");
+      let text = undefined;
+      try {
+        let node = new collaboration_edit.Node("p1");
+        editUnit?.insertNodes(0, [node]);
+        text = new collaboration_edit.Text();
+        node.insertTexts(0, [text]);
+      } catch (err) {
+        console.log(TAG + "CollaborationEdit_Text_0003 failed, err: %s", err);
+        expect().assertFail();
+      }
+      let errCode = "";
+      try {
+        text.insert(-1, "abc");
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("401");
+  
+      errCode = "";
+      try {
+        text.delete(-1, 1);
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("401");
+
+      errCode = "";
+      try {
+        text.delete(0, 0);
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("401");
+
+      errCode = "";
+      try {
+        text.format(-1, 1, {"color":"red"});
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("401");
+
+      errCode = "";
+      try {
+        text.format(0, 0, {"color":"red"});
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("401");
+      console.log(TAG + "*****************CollaborationEdit_Text_0003 End*****************");
     })
 })

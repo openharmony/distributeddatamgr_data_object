@@ -54,7 +54,18 @@ describe('collaborationNodeTest', () => {
     afterAll(async () => {
         console.log(TAG + "afterAll");
     })
- 
+
+    /**
+     * @tc.number CollaborationEdit_Node_0001
+     * @tc.name Normal case of attribute-related methods
+     * @tc.desc 
+     *  1. construct a node list and insert them into edit unit
+     *  2. set diffrent attributes
+     *  3. get attributes and check result
+     *  4. get json result and check result
+     *  5. remove some attributes
+     *  6. again check result by getAttributes and getJsonResult
+     */
     it("CollaborationEdit_Node_0001", 0, async () => {
       console.log(TAG + "*****************CollaborationEdit_Node_0001 Start*****************");
       expect(editUnit !== undefined).assertTrue();
@@ -83,7 +94,19 @@ describe('collaborationNodeTest', () => {
       }
       console.log(TAG + "*****************CollaborationEdit_Node_0001 End*****************");
     })
- 
+
+    /**
+     * @tc.number CollaborationEdit_Node_0002
+     * @tc.name Normal case of insertTexts and delete
+     * @tc.desc 
+     *  1. construct a node and insert it into edit unit
+     *  2. construct a text list and insert them into the node
+     *  3. check the unique id of the texts
+     *  4. getChildren and check unique id of the result list 
+     *  5. getJsonResult and check the result
+     *  6. delete the first child
+     *  7. again check result by getChildren and getJsonResult
+     */
     it("CollaborationEdit_Node_0002", 0, async () => {
       console.log(TAG + "*****************CollaborationEdit_Node_0002 Start*****************");
       expect(editUnit !== undefined).assertTrue();
@@ -123,7 +146,19 @@ describe('collaborationNodeTest', () => {
       }
       console.log(TAG + "*****************CollaborationEdit_Node_0002 End*****************");
     })
- 
+
+    /**
+     * @tc.number CollaborationEdit_Node_0003
+     * @tc.name Normal case of insertNode and delete
+     * @tc.desc 
+     *  1. construct a node p1 and insert it into edit unit
+     *  2. construct a node list and insert them into the node p1
+     *  3. check the unique id of the node list
+     *  4. getChildren and check unique id of the result list 
+     *  5. getJsonResult and check the result
+     *  6. delete the second child
+     *  7. again check result by getChildren and getJsonResult
+     */
     it("CollaborationEdit_Node_0003", 0, async () => {
       console.log(TAG + "*****************CollaborationEdit_Node_0003 Start*****************");
       expect(editUnit !== undefined).assertTrue();
@@ -164,6 +199,16 @@ describe('collaborationNodeTest', () => {
       console.log(TAG + "*****************CollaborationEdit_Node_0003 End*****************");
     })
 
+    /**
+     * @tc.number CollaborationEdit_Node_0004
+     * @tc.name test getChildren by index out of range
+     * @tc.desc 
+     *  1. construct a node list and insert them into edit unit
+     *  2. construct a text list and insert them into the node
+     *  3. check the unique id of the texts
+     *  4. getChildren if start and end are out of range
+     *  5. check error code
+     */
     it("CollaborationEdit_Node_0004", 0, async () => {
         console.log(TAG + "*****************CollaborationEdit_Node_0004 Start*****************");
         expect(editUnit !== undefined).assertTrue();
@@ -189,7 +234,15 @@ describe('collaborationNodeTest', () => {
         expect(nodeList).assertUndefined();
         console.log(TAG + "*****************CollaborationEdit_Node_0004 End*****************");
     })
-      
+
+    /**
+     * @tc.number CollaborationEdit_Node_0005
+     * @tc.name Invalid operation if node is not inserted
+     * @tc.desc 
+     *  1. construct a node
+     *  2. call getId/setAttributes of the node
+     *  3. check the invalid operation error code
+     */
     it("CollaborationEdit_Node_0005", 0, async () => {
         console.log(TAG + "*****************CollaborationEdit_Node_0005 Start*****************");
         let node = new collaboration_edit.Node("p1");
@@ -214,4 +267,76 @@ describe('collaborationNodeTest', () => {
         expect(errCode).assertEqual("15410001");
         console.log(TAG + "*****************CollaborationEdit_Node_0005 End*****************");
     })
+
+    /**
+     * @tc.number CollaborationEdit_Node_0006
+     * @tc.name Invalid index input when call insertXXXs/delete/getChildren
+     * @tc.desc 
+     *  1. insertNodes - index is negative
+     *  2. insertTexts - index is negative
+     *  3. delete - index is negative
+     *  4. delete - length is negative or zero
+     *  5. getChildren - start is negative
+     *  6. getChildren - start is greater than end
+     */
+    it("CollaborationEdit_Node_0006", 0, async () => {
+      console.log(TAG + "*****************CollaborationEdit_Node_0006 Start*****************");
+      let node = undefined;
+      try {
+        node = new collaboration_edit.Node("p1");
+        editUnit.insertNodes(0, [node]);
+      } catch (err) {
+        console.log(TAG + "CollaborationEdit_Node_0006 insertNodes failed, err: %s", err);
+        expect().assertFail();
+      }
+      expect(node !== undefined).assertTrue();
+      let errCode = "";
+      try {
+        node.insertNodes(-1, []);
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("401");
+    
+      errCode = "";
+      try {
+        node.insertTexts(-1, []);
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("401");
+
+      errCode = "";
+      try {
+        node.delete(-1, 1);
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("401");
+
+      errCode = "";
+      try {
+        node.delete(0, 0);
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("401");
+
+      errCode = "";
+      try {
+        node.getChildren(-1, 1);
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("401");
+
+      errCode = "";
+      try {
+        node.getChildren(1, 0);
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("401");
+      console.log(TAG + "*****************CollaborationEdit_Node_0006 End*****************");
+  })
 })

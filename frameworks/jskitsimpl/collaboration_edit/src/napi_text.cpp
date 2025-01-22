@@ -116,10 +116,11 @@ napi_value Text::Insert(napi_env env, napi_callback_info info)
     ASSERT_THROW(env, text->GetID().has_value(), Status::UNSUPPORTED_OPERATION, "empty id");
     int64_t index;
     napi_status status = NapiUtils::GetValue(env, argv[0], index);
-    ASSERT_THROW(env, status == napi_ok, Status::INVALID_ARGUMENT, "Param Error: unpack index go wrong");
+    ASSERT_THROW(env, status == napi_ok, Status::INVALID_ARGUMENT, "Param Error: read index go wrong");
+    ASSERT_THROW(env, index >= 0, Status::INVALID_ARGUMENT, "Param Error: Invalid index");
     std::string content;
     status = NapiUtils::GetValue(env, argv[1], content);
-    ASSERT_THROW(env, status == napi_ok, Status::INVALID_ARGUMENT, "Param Error: unpack content go wrong");
+    ASSERT_THROW(env, status == napi_ok, Status::INVALID_ARGUMENT, "Param Error: read content go wrong");
     napi_valuetype valueType;
     // argv[2] represents the third parameter
     NAPI_CALL(env, napi_typeof(env, argv[2], &valueType));
@@ -146,9 +147,13 @@ napi_value Text::Delete(napi_env env, napi_callback_info info)
     ASSERT(text != nullptr, "unwrap self go wrong.", nullptr);
     ASSERT_THROW(env, text->GetID().has_value(), Status::UNSUPPORTED_OPERATION, "empty id");
     int64_t index;
-    NapiUtils::GetValue(env, argv[0], index);
-    int64_t length;
-    NapiUtils::GetValue(env, argv[1], length);
+    napi_status status = NapiUtils::GetValue(env, argv[0], index);
+    ASSERT_THROW(env, status == napi_ok, Status::INVALID_ARGUMENT, "Param Error: read index go wrong");
+    ASSERT_THROW(env, index >= 0, Status::INVALID_ARGUMENT, "Param Error: Invalid index");
+    int64_t length = 0;
+    status = NapiUtils::GetValue(env, argv[1], length);
+    ASSERT_THROW(env, status == napi_ok, Status::INVALID_ARGUMENT, "Param Error: read length go wrong");
+    ASSERT_THROW(env, length > 0, Status::INVALID_ARGUMENT, "Param Error: Invalid length");
     int32_t retCode = text->GetAdapter()->TextDelete(index, length);
     if (retCode != SUCCESS) {
         ThrowNapiError(env, retCode, "TextDelete go wrong.");
@@ -168,10 +173,12 @@ napi_value Text::Format(napi_env env, napi_callback_info info)
     ASSERT_THROW(env, text->GetID().has_value(), Status::UNSUPPORTED_OPERATION, "empty id");
     int64_t index;
     napi_status status = NapiUtils::GetValue(env, argv[0], index);
-    ASSERT_THROW(env, status == napi_ok, Status::INVALID_ARGUMENT, "Param Error: unpack index go wrong");
-    int64_t length;
+    ASSERT_THROW(env, status == napi_ok, Status::INVALID_ARGUMENT, "Param Error: read index go wrong");
+    ASSERT_THROW(env, index >= 0, Status::INVALID_ARGUMENT, "Param Error: Invalid index");
+    int64_t length = 0;
     status = NapiUtils::GetValue(env, argv[1], length);
-    ASSERT_THROW(env, status == napi_ok, Status::INVALID_ARGUMENT, "Param Error: unpack length go wrong");
+    ASSERT_THROW(env, status == napi_ok, Status::INVALID_ARGUMENT, "Param Error: read length go wrong");
+    ASSERT_THROW(env, length > 0, Status::INVALID_ARGUMENT, "Param Error: Invalid length");
     napi_valuetype valueType;
     // argv[2] represents the third parameter
     NAPI_CALL(env, napi_typeof(env, argv[2], &valueType));

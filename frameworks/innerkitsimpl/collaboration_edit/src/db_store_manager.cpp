@@ -36,7 +36,10 @@ DBStoreManager::DBStoreManager()
 {}
 
 DBStoreManager::~DBStoreManager()
-{}
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    storeCache_.clear();
+}
 
 std::shared_ptr<DBStore> DBStoreManager::GetDBStore(const DBStoreConfig &config)
 {
@@ -139,6 +142,7 @@ int DBStoreManager::RemoveDir(const char *dir)
             }
             if (sprintf_s(dirName, PATH_MAX, "%s/%s", dir, dr->d_name) <= 0) {
                 LOG_ERROR("[RemoveDir] dirName too long.");
+                closedir(dirPtr);
                 return -1;
             }
             RemoveDir(dirName);

@@ -161,16 +161,11 @@ napi_value CollaborationEditObject::Delete(napi_env env, napi_callback_info info
     NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, &self, nullptr));
     ContextParam context;
     napi_status status = NapiUtils::GetValue(env, argv[0], context);
-    if (status != napi_ok) {
-        ThrowNapiError(env, Status::INVALID_ARGUMENT, "read context param go wrong");
-        return self;
-    }
+    ASSERT_THROW_BASE(env, status == napi_ok, Status::INVALID_ARGUMENT, "read context param go wrong", self);
     std::string docName;
     status = NapiUtils::GetNamedProperty(env, argv[1], "name", docName);
-    if (status != napi_ok) {
-        ThrowNapiError(env, Status::INVALID_ARGUMENT, "read docName param go wrong");
-        return self;
-    }
+    ASSERT_THROW_BASE(env, status == napi_ok, Status::INVALID_ARGUMENT, "read docName param go wrong", self);
+    ASSERT_THROW_BASE(env, !docName.empty(), Status::INVALID_ARGUMENT, "Param Error: invalid name", self);
     std::string dbFilePath = context.baseDir + "/" + docName;
     DBStoreConfig config(dbFilePath, docName);
     int ret = DBStoreManager::GetInstance().DeleteDBStore(config);

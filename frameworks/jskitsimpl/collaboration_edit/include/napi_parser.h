@@ -33,8 +33,9 @@ public:
     static void Stringsplit(std::string str, const char split, std::vector<std::string> &res);
     static bool ConvertToUint64(std::string str, uint64_t &out);
     static std::optional<ID> ConvertStrToID(std::string str);
-    static int ParseJsonStrToJsChildren(napi_env env, std::string nodeListStr, AbstractType *parent, napi_value &out);
-    static int ParseFromAttrsJsonStr(napi_env env, std::string jsonStr, napi_value &out);
+    static int ParseJsonStrToJsChildren(
+        napi_env env, const std::string &nodeListStr, AbstractType *parent, napi_value &out);
+    static int ParseFromAttrsJsonStr(napi_env env, const std::string &jsonStr, napi_value &out);
     static int ParseJsFormatToStr(napi_env env, napi_value jsFormat, std::string &out);
     static int ParseVariantJsValueToStr(napi_env env, napi_value input, std::string &out);
 };
