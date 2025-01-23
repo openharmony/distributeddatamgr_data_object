@@ -54,7 +54,14 @@ describe('collaborationEditUnitTest', () => {
     afterAll(async () => {
       console.log(TAG + "afterAll");
     })
- 
+
+    /**
+     * @tc.number CollaborationEdit_EditUnit_0001
+     * @tc.name getEditUnit by invalid empty name
+     * @tc.desc 
+     *  1. getEditUnit by empty input string
+     *  2. check 401 error code
+     */
     it("CollaborationEdit_EditUnit_0001", 0, async () => {
       console.log(TAG + "*****************CollaborationEdit_EditUnit_0001 Start*****************");
       let editUnit = undefined;
@@ -68,7 +75,14 @@ describe('collaborationEditUnitTest', () => {
       expect("401").assertEqual(errCode);
       console.log(TAG + "*****************CollaborationEdit_EditUnit_0001 End*****************");
     })
- 
+    
+    /**
+     * @tc.number CollaborationEdit_EditUnit_0002
+     * @tc.name EditUnit.insertNodes by null array
+     * @tc.desc 
+     *  1. check EditUnit.getName
+     *  2. insert null node array and check 401 error code
+     */
     it("CollaborationEdit_EditUnit_0002", 0, async () => {
       console.log(TAG + "*****************CollaborationEdit_EditUnit_0002 Start*****************");
       expect(editUnit !== undefined).assertTrue();
@@ -84,7 +98,16 @@ describe('collaborationEditUnitTest', () => {
       console.log(TAG + "*****************CollaborationEdit_EditUnit_0002 End*****************");
     })
  
- 
+    /**
+     * @tc.number CollaborationEdit_EditUnit_0003
+     * @tc.name Normal test case of methods in EditUnit
+     * @tc.desc 
+     *  1. construct node list
+     *  2. EditUnit.insertNodes
+     *  3. check the id of inserted nodes
+     *  4. EditUnit.getChildren and check result
+     *  5. EditUnit.getJsonResult and check result
+     */
     it("CollaborationEdit_EditUnit_0003", 0, async () => {
       console.log(TAG + "*****************CollaborationEdit_EditUnit_0003 Start*****************");
       expect(editUnit !== undefined).assertTrue();
@@ -111,5 +134,94 @@ describe('collaborationEditUnitTest', () => {
         expect().assertFail();
       }
       console.log(TAG + "*****************CollaborationEdit_EditUnit_0003 End*****************");
+    })
+
+    /**
+     * @tc.number CollaborationEdit_EditUnit_0004
+     * @tc.name EditUnit.getChildren by invalid input
+     * @tc.desc 
+     *  1. start is negative
+     *  2. end is negative
+     *  3. start is greater than end
+     */
+    it("CollaborationEdit_EditUnit_0004", 0, async () => {
+      console.log(TAG + "*****************CollaborationEdit_EditUnit_0004 Start*****************");
+      expect(editUnit !== undefined).assertTrue();
+      
+      let errCode = "";
+      try {
+        editUnit.getChildren(-1, 2);
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("401");
+
+      errCode = "";
+      try {
+        editUnit.getChildren(0, -1);
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("401");
+
+      errCode = "";
+      try {
+        editUnit.getChildren(1, 0);
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("401");
+
+      console.log(TAG + "*****************CollaborationEdit_EditUnit_0004 End*****************");
+    })
+
+    /**
+     * @tc.number CollaborationEdit_EditUnit_0005
+     * @tc.name EditUnit.delete by invalid input
+     * @tc.desc 
+     *  1. index is negative
+     *  2. length is negative or zero
+     */
+    it("CollaborationEdit_EditUnit_0005", 0, async () => {
+      console.log(TAG + "*****************CollaborationEdit_EditUnit_0005 Start*****************");
+      expect(editUnit !== undefined).assertTrue();
+      
+      let errCode = "";
+      try {
+        editUnit.delete(-1, 2);
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("401");
+
+      errCode = "";
+      try {
+        editUnit.delete(0, 0);
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("401");
+
+      console.log(TAG + "*****************CollaborationEdit_EditUnit_0005 End*****************");
+    })
+
+    /**
+     * @tc.number CollaborationEdit_EditUnit_0006
+     * @tc.name EditUnit.insertNodes by invalid index
+     * @tc.desc 
+     *  1. index is invalid and check 401 error code
+     */
+    it("CollaborationEdit_EditUnit_0006", 0, async () => {
+      console.log(TAG + "*****************CollaborationEdit_EditUnit_0006 Start*****************");
+      expect(editUnit !== undefined).assertTrue();
+      
+      let errCode = "";
+      try {
+        editUnit.insertNodes(-1, []);
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("401");
+      console.log(TAG + "*****************CollaborationEdit_EditUnit_0006 End*****************");
     })
 })

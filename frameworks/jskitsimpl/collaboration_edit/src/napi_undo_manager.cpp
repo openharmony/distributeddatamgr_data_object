@@ -41,7 +41,7 @@ napi_value UndoManager::Initialize(napi_env env, napi_callback_info info)
         ThrowNapiError(env, Status::INVALID_ARGUMENT, "read tableName go wrong");
         return self;
     }
-    int64_t captureTimeout;
+    int64_t captureTimeout = 0;
     status = NapiUtils::GetNamedProperty(env, argv[1], "captureTimeout", captureTimeout);
     if (status != napi_ok) {
         ThrowNapiError(env, Status::INVALID_ARGUMENT, "read captureTimeout param go wrong");

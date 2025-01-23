@@ -143,16 +143,11 @@ napi_value Node::InsertNodes(napi_env env, napi_callback_info info)
     ASSERT_THROW(env, thisNode->GetID().has_value(), Status::UNSUPPORTED_OPERATION, "empty id");
     int64_t index = 0;
     napi_status status = NapiUtils::GetValue(env, argv[0], index);
-    if (status != napi_ok) {
-        ThrowNapiError(env, Status::INVALID_ARGUMENT, "Param Error: Unpack index go wrong.");
-        return nullptr;
-    }
-    bool isArray;
+    ASSERT_THROW(env, status == napi_ok, Status::INVALID_ARGUMENT, "Param Error: Read index go wrong.");
+    ASSERT_THROW(env, index >= 0, Status::INVALID_ARGUMENT, "Param Error: Invalid index.");
+    bool isArray = false;
     NAPI_CALL(env, napi_is_array(env, argv[1], &isArray));
-    if (!isArray) {
-        ThrowNapiError(env, Status::INVALID_ARGUMENT, "Param Error: The nodes must be an array.");
-        return nullptr;
-    }
+    ASSERT_THROW(env, isArray, Status::INVALID_ARGUMENT, "Param Error: The nodes must be an array.");
     uint32_t length = 0;
     NAPI_CALL(env, napi_get_array_length(env, argv[1], &length));
     LOG_INFO("length = %{public}u", length);
@@ -185,16 +180,12 @@ napi_value Node::Delete(napi_env env, napi_callback_info info)
     ASSERT_THROW(env, thisNode->GetID().has_value(), Status::UNSUPPORTED_OPERATION, "empty id");
     int64_t index = 0;
     napi_status status = NapiUtils::GetValue(env, argv[0], index);
-    if (status != napi_ok) {
-        ThrowNapiError(env, Status::INVALID_ARGUMENT, "Param Error: Unpack index go wrong.");
-        return nullptr;
-    }
+    ASSERT_THROW(env, status == napi_ok, Status::INVALID_ARGUMENT, "Param Error: Read index go wrong.");
+    ASSERT_THROW(env, index >= 0, Status::INVALID_ARGUMENT, "Param Error: Invalid index.");
     int64_t length = 0;
     status = NapiUtils::GetValue(env, argv[1], length);
-    if (status != napi_ok) {
-        ThrowNapiError(env, Status::INVALID_ARGUMENT, "Param Error: Unpack length go wrong.");
-        return nullptr;
-    }
+    ASSERT_THROW(env, status == napi_ok, Status::INVALID_ARGUMENT, "Param Error: Read length go wrong.");
+    ASSERT_THROW(env, length > 0, Status::INVALID_ARGUMENT, "Param Error: Invalid length.");
 
     int32_t retCode = thisNode->GetAdapter()->DeleteChildren(index, length);
     if (retCode != SUCCESS) {
@@ -215,16 +206,13 @@ napi_value Node::GetChildren(napi_env env, napi_callback_info info)
     ASSERT_THROW(env, thisNode->GetID().has_value(), Status::UNSUPPORTED_OPERATION, "empty id");
     int64_t start = 0;
     napi_status status = NapiUtils::GetValue(env, argv[0], start);
-    if (status != napi_ok) {
-        ThrowNapiError(env, Status::INVALID_ARGUMENT, "Param Error: Unpack start go wrong.");
-        return nullptr;
-    }
+    ASSERT_THROW(env, status == napi_ok, Status::INVALID_ARGUMENT, "Param Error: Read start index go wrong.");
+    ASSERT_THROW(env, start >= 0, Status::INVALID_ARGUMENT, "Param Error: Invalid start.");
     int64_t end = 0;
     status = NapiUtils::GetValue(env, argv[1], end);
-    if (status != napi_ok) {
-        ThrowNapiError(env, Status::INVALID_ARGUMENT, "Param Error: Unpack end go wrong.");
-        return nullptr;
-    }
+    ASSERT_THROW(env, status == napi_ok, Status::INVALID_ARGUMENT, "Param Error: Read end index go wrong.");
+    ASSERT_THROW(env, end >= 0, Status::INVALID_ARGUMENT, "Param Error: Invalid end.");
+    ASSERT_THROW(env, end > start, Status::INVALID_ARGUMENT, "Param Error: end should be greater than start.");
 
     auto [retCode, result] = thisNode->GetAdapter()->GetChildren(start, end - start);
     if (retCode != SUCCESS) {
@@ -275,16 +263,11 @@ napi_value Node::InsertTexts(napi_env env, napi_callback_info info)
     ASSERT_THROW(env, thisNode->GetID().has_value(), Status::UNSUPPORTED_OPERATION, "empty id");
     int64_t index = 0;
     napi_status status = NapiUtils::GetValue(env, argv[0], index);
-    if (status != napi_ok) {
-        ThrowNapiError(env, Status::INVALID_ARGUMENT, "Param Error: Unpack index go wrong.");
-        return nullptr;
-    }
-    bool isArray;
+    ASSERT_THROW(env, status == napi_ok, Status::INVALID_ARGUMENT, "Param Error: Read index go wrong.");
+    ASSERT_THROW(env, index >= 0, Status::INVALID_ARGUMENT, "Param Error: Invalid index.");
+    bool isArray = false;
     NAPI_CALL(env, napi_is_array(env, argv[1], &isArray));
-    if (!isArray) {
-        ThrowNapiError(env, Status::INVALID_ARGUMENT, "Param Error: The nodes must be an array.");
-        return nullptr;
-    }
+    ASSERT_THROW(env, isArray, Status::INVALID_ARGUMENT, "Param Error: The nodes must be an array.");
     uint32_t length = 0;
     NAPI_CALL(env, napi_get_array_length(env, argv[1], &length));
     for (uint32_t i = 0; i < length; i++) {

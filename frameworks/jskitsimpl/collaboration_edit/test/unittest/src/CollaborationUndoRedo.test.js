@@ -58,19 +58,33 @@ describe('collaborationUndoRedoTest', () => {
     afterAll(async () => {
       console.log(TAG + "afterAll");
     })
- 
+
+    /**
+     * @tc.number CollaborationEdit_UndoRedo_0001
+     * @tc.name getUndoRedoManager when editUnitName is non-empty, captureTimeout is float
+     * @tc.desc 
+     *  1. editUnitName is any non-empty string
+     *  2. captureTimeout is float
+     */
     it("CollaborationEdit_UndoRedo_0001", 0, async () => {
       console.log(TAG + "*****************CollaborationEdit_UndoRedo_0001 Start*****************");
       expect(editUnit !== undefined).assertTrue();
       let undoManager = undefined;
       try {
-        undoManager = editObject?.getUndoRedoManager("notFound", {captureTimeout: 500});
+        // captureTimeout非整数，向下取整
+        undoManager = editObject?.getUndoRedoManager("notFound", {captureTimeout: 500.95});
       } catch (err) {
         console.log(TAG + "getUndoRedoManager failed. err: %s", err);
       }
       expect(undoManager !== undefined).assertTrue();
     })
- 
+
+    /**
+     * @tc.number CollaborationEdit_UndoRedo_0002
+     * @tc.name getUndoRedoManager when captureTimeout is negative
+     * @tc.desc 
+     *  1. captureTimeout is negative, then check 401 error code
+     */
     it("CollaborationEdit_UndoRedo_0002", 0, async () => {
       console.log(TAG + "*****************CollaborationEdit_UndoRedo_0002 Start*****************");
       expect(editUnit !== undefined).assertTrue();
@@ -85,7 +99,18 @@ describe('collaborationUndoRedoTest', () => {
       expect(undoManager).assertUndefined();
       expect(errCode).assertEqual("401");
     })
- 
+
+    /**
+     * @tc.number CollaborationEdit_UndoRedo_0003
+     * @tc.name Noraml case of undo/redo after setAttributes
+     * @tc.desc 
+     *  1. get undoRedoManager
+     *  2. construct a node and insert it into edit unit
+     *  3. wait for 500ms
+     *  4. set attributes into the node, then check attributes
+     *  5. call undo, then check attributes undefined
+     *  6. call redo, then check attributes
+     */
     it("CollaborationEdit_UndoRedo_0003", 0, async () => {
       console.log(TAG + "*****************CollaborationEdit_UndoRedo_0003 Start*****************");
       expect(editUnit !== undefined).assertTrue();
@@ -125,7 +150,18 @@ describe('collaborationUndoRedoTest', () => {
         expect().assertFail();
       }
     })
- 
+
+    /**
+     * @tc.number CollaborationEdit_UndoRedo_0004
+     * @tc.name Noraml case of undo/redo after insertTexts
+     * @tc.desc 
+     *  1. get undoRedoManager
+     *  2. construct a node and insert it into edit unit
+     *  3. wait for 500ms
+     *  4. insert texts into the node, then check clock of the text
+     *  5. call undo, then check result
+     *  6. call redo, then check clock of the texts children
+     */
     it("CollaborationEdit_UndoRedo_0004", 0, async () => {
       console.log(TAG + "*****************CollaborationEdit_UndoRedo_0004 Start*****************");
       expect(editUnit !== undefined).assertTrue();
@@ -178,7 +214,19 @@ describe('collaborationUndoRedoTest', () => {
         expect().assertFail();
       }
     })
- 
+
+    /**
+     * @tc.number CollaborationEdit_UndoRedo_0005
+     * @tc.name Noraml case of undo/redo after inserting strings into text
+     * @tc.desc 
+     *  1. get undoRedoManager
+     *  2. construct a node and insert it into edit unit
+     *  3. construct a text and insert it into the node
+     *  4. wait for 500ms
+     *  5. insert strings into texts and check result
+     *  5. call undo, then check the content of the text is empty
+     *  6. call redo, then check the content of the text
+     */
     it("CollaborationEdit_UndoRedo_0005", 0, async () => {
       console.log(TAG + "*****************CollaborationEdit_UndoRedo_0005 Start*****************");
       expect(editUnit !== undefined).assertTrue();

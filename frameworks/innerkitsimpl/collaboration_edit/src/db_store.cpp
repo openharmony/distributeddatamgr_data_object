@@ -30,7 +30,9 @@ DBStore::DBStore(GRD_DB *db, std::string name) : db_(db), name_(name)
 }
 
 DBStore::~DBStore()
-{}
+{
+    RdUtils::RdDbClose(db_, GRD_DB_CLOSE);
+}
 
 const char *DBStore::GetEquipId(void)
 {

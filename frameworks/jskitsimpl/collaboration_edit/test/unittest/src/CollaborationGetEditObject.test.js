@@ -36,7 +36,7 @@ describe('collaborationGetEditObjectTest', () => {
       try {
         collaboration_edit.deleteCollaborationEditObject(context, DOC_CONFIG);
         console.log(TAG + "delete edit object successfully");
-      } catch (error) {
+      } catch (err) {
         console.log(TAG + "delete edit object failed. err: %s", err.message);
         expect().assertFail();
       }
@@ -45,7 +45,14 @@ describe('collaborationGetEditObjectTest', () => {
     afterAll(async () => {
         console.log(TAG + "afterAll");
     })
- 
+    
+    /**
+     * @tc.number CollaborationEdit_GetEditObject_0001
+     * @tc.name Normal case of getCollaborationEditObject
+     * @tc.desc 
+     *  1. get collaboration edit object correctly
+     *  2. delete edit object by empty name, then check 401 code
+     */
     it("CollaborationEdit_GetEditObject_0001", 0, async () => {
       console.log(TAG + "*****************CollaborationEdit_GetEditObject_0001 Start*****************");
       let editObject = undefined;
@@ -56,9 +63,24 @@ describe('collaborationGetEditObjectTest', () => {
         console.log(TAG + "CollaborationEdit_GetEditObject_0001 failed.");
         expect().assertFail();
       }
+
+      let errCode = "";
+      try {
+        collaboration_edit.deleteCollaborationEditObject(context, {name: ""});
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("401");
       console.log(TAG + "*****************CollaborationEdit_GetEditObject_0001 End*****************");
     })
- 
+    
+    /**
+     * @tc.number CollaborationEdit_GetEditObject_0002
+     * @tc.name getCollaborationEditObject by null context
+     * @tc.desc 
+     *  1. get collaboration edit object by null context
+     *  2. check 401 error code
+     */
     it("CollaborationEdit_GetEditObject_0002", 0, async () => {
       console.log(TAG + "*****************CollaborationEdit_GetEditObject_0002 Start*****************");
       let editObject = undefined;
@@ -72,7 +94,14 @@ describe('collaborationGetEditObjectTest', () => {
       expect("401").assertEqual(errCode);
       console.log(TAG + "*****************CollaborationEdit_GetEditObject_0002 End*****************");
     })
- 
+    
+    /**
+     * @tc.number CollaborationEdit_GetEditObject_0003
+     * @tc.name getCollaborationEditObject by empty name
+     * @tc.desc 
+     *  1. get collaboration edit object by empty name
+     *  2. check 401 error code
+     */
     it("CollaborationEdit_GetEditObject_0003", 0, async () => {
       console.log(TAG + "*****************CollaborationEdit_GetEditObject_0003 Start*****************");
       let editObject = undefined;
