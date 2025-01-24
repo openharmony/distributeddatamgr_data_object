@@ -69,8 +69,8 @@ bool JSObjectWrapper::IsUndefined(const char *value)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     std::string tmpStr = value;
-    auto it = std::find(undefinedProperties.begin(), undefinedProperties.end(), tmpStr);
-    if (it == undefinedProperties.end()) {
+    auto it = std::find(undefinedProperties_.begin(), undefinedProperties_.end(), tmpStr);
+    if (it == undefinedProperties_.end()) {
         return false;
     }
     return true;
@@ -80,8 +80,8 @@ void JSObjectWrapper::AddUndefined(const char *value)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     std::string tmpStr = value;
-    if (std::find(undefinedProperties.begin(), undefinedProperties.end(), tmpStr) == undefinedProperties.end()) {
-        undefinedProperties.push_back(tmpStr);
+    if (std::find(undefinedProperties_.begin(), undefinedProperties_.end(), tmpStr) == undefinedProperties_.end()) {
+        undefinedProperties_.push_back(tmpStr);
     }
 }
 
@@ -89,9 +89,9 @@ void JSObjectWrapper::DeleteUndefined(const char *value)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     std::string tmpStr = value;
-    auto it = std::find(undefinedProperties.begin(), undefinedProperties.end(), tmpStr);
-    if (it != undefinedProperties.end()) {
-        undefinedProperties.erase(it);
+    auto it = std::find(undefinedProperties_.begin(), undefinedProperties_.end(), tmpStr);
+    if (it != undefinedProperties_.end()) {
+        undefinedProperties_.erase(it);
     }
 }
 

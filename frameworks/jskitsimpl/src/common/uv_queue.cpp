@@ -29,6 +29,10 @@ UvQueue::~UvQueue()
 
 void UvQueue::ExecUvWork(UvEntry *entry)
 {
+    if (entry == nullptr) {
+        LOG_ERROR("entry is nullptr");
+        return;
+    }
     auto queue = entry->uvQueue_.lock();
     if (queue != nullptr) {
         std::unique_lock<std::shared_mutex> cacheLock(queue->mutex_);
@@ -48,6 +52,10 @@ void UvQueue::CallFunction(Process process, void *argv)
         return;
     }
     auto *uvEntry = new (std::nothrow)UvEntry { weak_from_this() };
+    if (uvEntry == nullptr) {
+        LOG_ERROR("no memory for UvEntry");
+        return;
+    }
     {
         std::unique_lock<std::shared_mutex> cacheLock(mutex_);
         if (args_.count(process) != 0) {

@@ -43,7 +43,7 @@ private:
     std::shared_ptr<JSWatcher> watcher_ = nullptr;
     std::shared_mutex watchMutex_{};
     std::mutex mutex_;
-    std::vector<std::string> undefinedProperties;
+    std::vector<std::string> undefinedProperties_;
     std::string objectId_;
 };
 } // namespace OHOS::ObjectStore
