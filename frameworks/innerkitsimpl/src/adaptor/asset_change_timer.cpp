@@ -22,6 +22,8 @@
 namespace OHOS::ObjectStore {
 std::mutex AssetChangeTimer::instanceMutex;
 AssetChangeTimer *AssetChangeTimer::instance = nullptr;
+static constexpr size_t MAX_THREADS = 3;
+static constexpr size_t MIN_THREADS = 0;
 
 AssetChangeTimer *AssetChangeTimer::GetInstance(FlatObjectStore *flatObjectStore)
 {

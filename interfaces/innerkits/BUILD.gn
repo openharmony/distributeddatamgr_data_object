@@ -15,7 +15,10 @@ import("//foundation/distributeddatamgr/data_object/data_object.gni")
 config("objectstore_config") {
   visibility = [ ":*" ]
 
-  cflags = [ "-DHILOG_ENABLE" ]
+  cflags = [
+    "-DHILOG_ENABLE",
+    "-Oz",
+  ]
 
   include_dirs = [
     "../../frameworks/innerkitsimpl/include/adaptor",

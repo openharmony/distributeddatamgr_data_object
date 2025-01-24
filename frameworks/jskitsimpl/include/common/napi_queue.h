@@ -27,7 +27,7 @@ namespace OHOS::ObjectStore {
 using NapiCbInfoParser = std::function<void(size_t argc, napi_value *argv)>;
 using NapiAsyncExecute = std::function<void(void)>;
 using NapiAsyncComplete = std::function<void(napi_value &)>;
-static constexpr size_t ARGC_MAX = 6;
+
 struct ContextBase {
     virtual ~ContextBase();
     void GetCbInfo(

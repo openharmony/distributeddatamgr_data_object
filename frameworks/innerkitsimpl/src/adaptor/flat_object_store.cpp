@@ -30,6 +30,9 @@
 #include "string_utils.h"
 
 namespace OHOS::ObjectStore {
+static constexpr uint32_t WAIT_TIME = 5;
+static constexpr const char* DISTRIBUTED_DATASYNC = "ohos.permission.DISTRIBUTED_DATASYNC";
+
 FlatObjectStore::FlatObjectStore(const std::string &bundleName)
 {
     bundleName_ = bundleName;

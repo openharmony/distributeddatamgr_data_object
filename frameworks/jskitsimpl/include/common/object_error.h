@@ -20,10 +20,6 @@
 
 namespace OHOS {
 namespace ObjectStore {
-static const int EXCEPTION_DEVICE_NOT_SUPPORT = 801;
-static const int EXCEPTION_PARAMETER_CHECK = 401;
-static const int EXCEPTION_NO_PERMISSION = 201;
-static const int EXCEPTION_DB_EXIST = 15400001;
 static const int EXCEPTION_INNER = 0;
 
 class Error {

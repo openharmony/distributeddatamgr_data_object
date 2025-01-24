@@ -34,9 +34,6 @@ private:
         void OnRemoteDied(const wptr<IRemoteObject> &remote) override;
     };
 
-    static constexpr int32_t DISTRIBUTED_KV_DATA_SERVICE_ABILITY_ID = 1301;
-    static constexpr int32_t GET_SA_RETRY_TIMES = 3;
-    static constexpr int32_t RETRY_INTERVAL = 1;
     static std::shared_ptr<ObjectStoreDataServiceProxy> distributedDataMgr_;
     static std::shared_ptr<ObjectStoreDataServiceProxy> GetDistributedDataManager();
     static std::mutex mutex_;
