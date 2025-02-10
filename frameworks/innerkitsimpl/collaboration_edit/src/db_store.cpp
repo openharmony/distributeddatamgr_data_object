@@ -36,8 +36,7 @@ DBStore::~DBStore()
 
 const char *DBStore::GetEquipId(void)
 {
-    std::string *str = new std::string("A");
-    return (*str).c_str();
+    return "A";
 }
 
 GRD_DB *DBStore::GetDB()
