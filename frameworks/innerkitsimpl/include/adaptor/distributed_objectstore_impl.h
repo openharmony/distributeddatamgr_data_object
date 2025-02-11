@@ -24,7 +24,7 @@
 #include "flat_object_store.h"
 namespace OHOS::ObjectStore {
 class WatcherProxy;
-enum SyncStatus {
+enum SyncStatus : int8_t {
     SYNC_START,
     SYNCING,
     SYNC_SUCCESS,

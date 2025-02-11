@@ -20,7 +20,7 @@
 
 namespace OHOS {
 namespace ObjectStore {
-static const int EXCEPTION_INNER = 0;
+static constexpr int EXCEPTION_INNER = 0;
 
 class Error {
 public:

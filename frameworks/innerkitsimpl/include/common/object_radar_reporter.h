@@ -21,39 +21,39 @@
 #include "visibility.h"
 
 namespace OHOS::ObjectStore {
-enum BizScene {
+enum BizScene : int8_t {
     CREATE = 1,
     SAVE = 2,
     DATA_RESTORE = 3,
 };
-enum CreateStage {
+enum CreateStage : int8_t {
     INIT_STORE = 1,
     CREATE_TABLE = 2,
     RESTORE = 3,
     TRANSFER = 4,
 };
-enum SaveStage {
+enum SaveStage : int8_t {
     SAVE_TO_SERVICE = 1,
     SAVE_TO_STORE = 2,
     PUSH_ASSETS = 3,
     SYNC_DATA = 4,
 };
-enum DataRestoreStage {
+enum DataRestoreStage : int8_t {
     DATA_RECV = 1,
     ASSETS_RECV = 2,
     NOTIFY = 3,
 };
-enum StageRes {
+enum StageRes : int8_t {
     IDLE = 0,
     RADAR_SUCCESS = 1,
     RADAR_FAILED = 2,
     CANCELLED = 3,
 };
-enum BizState {
+enum BizState : int8_t {
     START = 1,
     FINISHED = 2,
 };
-enum ErrorCode {
+enum ErrorCode : int32_t {
     OFFSET = 27525120,
     DUPLICATE_CREATE = OFFSET,
     NO_MEMORY = OFFSET + 1,

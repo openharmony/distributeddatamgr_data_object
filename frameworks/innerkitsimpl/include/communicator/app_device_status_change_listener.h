@@ -20,7 +20,7 @@
 
 namespace OHOS {
 namespace ObjectStore {
-enum class ChangeLevelType {
+enum class ChangeLevelType : int8_t {
     HIGH,
     LOW,
     MIN,

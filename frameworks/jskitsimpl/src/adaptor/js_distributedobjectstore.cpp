@@ -33,7 +33,6 @@
 
 namespace OHOS::ObjectStore {
 constexpr size_t TYPE_SIZE = 10;
-const std::string DISTRIBUTED_DATASYNC = "ohos.permission.DISTRIBUTED_DATASYNC";
 static ConcurrentMap<std::string, std::list<napi_ref>> g_statusCallBacks;
 static ConcurrentMap<std::string, std::list<napi_ref>> g_changeCallBacks;
 bool JSDistributedObjectStore::AddCallback(napi_env env, ConcurrentMap<std::string, std::list<napi_ref>> &callbacks,
@@ -121,10 +120,10 @@ napi_value JSDistributedObjectStore::NewDistributedObject(
                 return;
             }
             auto objectWrapper = static_cast<JSObjectWrapper *>(data);
-            
+
             JSDistributedObjectStore::DelCallback(env, g_changeCallBacks, objectWrapper->GetObjectId());
             JSDistributedObjectStore::DelCallback(env, g_statusCallBacks, objectWrapper->GetObjectId());
-            
+
             if (objectWrapper->GetObject() == nullptr) {
                 delete objectWrapper;
                 return;
@@ -140,7 +139,7 @@ napi_value JSDistributedObjectStore::NewDistributedObject(
         delete objectWrapper;
         return nullptr;
     }
-    
+
     RestoreWatchers(env, objectWrapper, objectId);
     objectStore->NotifyCachedStatus(object->GetSessionId());
     NOT_MATCH_RETURN_NULL(status == napi_ok);
