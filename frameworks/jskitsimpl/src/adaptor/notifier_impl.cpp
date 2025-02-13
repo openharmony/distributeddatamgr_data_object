@@ -28,7 +28,12 @@ std::shared_ptr<NotifierImpl> NotifierImpl::GetInstance()
         std::lock_guard<std::mutex> lockGuard(instanceLock);
         if (instance == nullptr) {
             instance = std::make_shared<NotifierImpl>();
-            uint32_t ret = DistributedObjectStore::GetInstance()->SetStatusNotifier(instance);
+            DistributedObjectStore *storeInstance = DistributedObjectStore::GetInstance();
+            if (storeInstance == nullptr) {
+                LOG_ERROR("Get store instance nullptr");
+                return instance;
+            }
+            auto ret = storeInstance->SetStatusNotifier(instance);
             if (ret != SUCCESS) {
                 LOG_ERROR("SetStatusNotifier %{public}d error", ret);
             } else {
