@@ -100,7 +100,7 @@ describe('objectStoreTest',function () {
      * @tc.name: testOn001
      * @tc.desc: object join session and on,object can receive callback when data has been changed
      * @tc.type: FUNC
-     * @tc.require: I4H3LS
+     * @tc.require:
      */
     it('testOn001', 0, function () {
         console.log(TAG + "************* testOn001 start *************");
@@ -138,7 +138,7 @@ describe('objectStoreTest',function () {
      * @tc.name: testOn002
      * @tc.desc object join session and no on,obejct can not receive callback when data has been changed
      * @tc.type: FUNC
-     * @tc.require: I4H3LS
+     * @tc.require:
      */
     it('testOn002', 0, function () {
         console.log(TAG + "************* testOn002 start *************");
@@ -165,7 +165,7 @@ describe('objectStoreTest',function () {
      * @tc.name: testOn003
      * @tc.desc: object join session and on,then object change data twice,object can receive two callbacks when data has been changed
      * @tc.type: FUNC
-     * @tc.require: I4H3LS
+     * @tc.require:
      */
     it('testOn003', 0, function () {
         console.log(TAG + "************* testOn003 start *************");
@@ -199,7 +199,7 @@ describe('objectStoreTest',function () {
      * @tc.name: testOn004
      * @tc.desc object join session and on,then object do not change data,object can not receive callbacks
      * @tc.type: FUNC
-     * @tc.require: I4H3LS
+     * @tc.require:
      */
     it('testOn004', 0, function () {
         console.log(TAG + "************* testOn004 start *************");
@@ -218,7 +218,7 @@ describe('objectStoreTest',function () {
      * @tc.name testOff001
      * @tc.desc object join session and on&off,object can not receive callback after off
      * @tc.type: FUNC
-     * @tc.require: I4H3LS
+     * @tc.require:
      */
     it('testOff001', 0, function () {
         console.log(TAG + "************* testOff001 start *************");
@@ -260,7 +260,7 @@ describe('objectStoreTest',function () {
      * @tc.name:testOff002
      * @tc.desc object join session and off,object can not receive callback
      * @tc.type: FUNC
-     * @tc.require: I4H3LS
+     * @tc.require:
      */
     it('testOff002', 0, function () {
         console.log(TAG + "************* testOff002 start *************");
@@ -289,7 +289,7 @@ describe('objectStoreTest',function () {
      * @tc.name: testMultiObjectOn001
      * @tc.desc: two objects join session and on,then object change data,user can receive two callbacks from two objects
      * @tc.type: FUNC
-     * @tc.require: I4H3LS
+     * @tc.require:
      */
     it('testMultiObjectOn001', 0, function () {
         console.log(TAG + "************* testMultiObjectOn001 start *************");
@@ -331,7 +331,7 @@ describe('objectStoreTest',function () {
      * @tc.name: testMultiObjectOff001
      * @tc.desc: two objects join session and on&off,then two objects can not receive callbacks
      * @tc.type: FUNC
-     * @tc.require: I4H3LS
+     * @tc.require:
      */
     it('testMultiObjectOff001', 0, function () {
         console.log(TAG + "************* testMultiObjectOff001 start *************");
@@ -402,7 +402,7 @@ describe('objectStoreTest',function () {
      * @tc.name: testChangeSession001
      * @tc.desc: objects join session and on,then change sessionId
      * @tc.type: FUNC
-     * @tc.require: I4H3LS
+     * @tc.require:
      */
     it('testChangeSession001', 0, function () {
         console.log(TAG + "************* testChangeSession001 start *************");
@@ -446,7 +446,7 @@ describe('objectStoreTest',function () {
      * @tc.name: testUndefinedType001
      * @tc.desc: object use undefined type,can not join session
      * @tc.type: FUNC
-     * @tc.require: I4H3LS
+     * @tc.require:
      */
     it('testUndefinedType001', 0, function () {
         console.log(TAG + "************* testUndefinedType001 start *************");
@@ -468,7 +468,7 @@ describe('objectStoreTest',function () {
      * @tc.name: testGenSessionId001
      * @tc.desc: object generate random sessionId
      * @tc.type: FUNC
-     * @tc.require: I4H3LS
+     * @tc.require:
      */
     it('testGenSessionId001', 0, function () {
         console.log(TAG + "************* testGenSessionId001 start *************");
@@ -482,7 +482,7 @@ describe('objectStoreTest',function () {
      * @tc.name: testGenSessionId002
      * @tc.desc: object generate 2 random sessionId and not equal
      * @tc.type: FUNC
-     * @tc.require: I4H3LS
+     * @tc.require:
      */
     it('testGenSessionId002', 0, function () {
         console.log(TAG + "************* testGenSessionId002 start *************");
@@ -497,7 +497,7 @@ describe('objectStoreTest',function () {
      * @tc.name: testOnStatus001
      * @tc.desc: object set a listener to watch another object online/offline
      * @tc.type: FUNC
-     * @tc.require: I4H3M8
+     * @tc.require:
      */
     it('testOnStatus001', 0, function () {
         console.log(TAG + "************* testOnStatus001 start *************");
@@ -514,7 +514,7 @@ describe('objectStoreTest',function () {
      * @tc.name: testOnStatus002
      * @tc.desc: object set several listener and can unset specified listener
      * @tc.type: FUNC
-     * @tc.require: I4H3M8
+     * @tc.require:
      */
     it('testOnStatus002', 0, function () {
         console.log(TAG + "************* testOnStatus002 start *************");
@@ -539,7 +539,7 @@ describe('objectStoreTest',function () {
      * @tc.name: testOnStatus003
      * @tc.desc: object set several listener and can unWatch all watcher
      * @tc.type: FUNC
-     * @tc.require: I4H3M8
+     * @tc.require:
      */
     it('testOnStatus003', 0, function () {
         console.log(TAG + "************* testOnStatus003 start *************");
@@ -565,7 +565,7 @@ describe('objectStoreTest',function () {
      * @tc.name: testComplex001
      * @tc.desc: object can get/set complex data
      * @tc.type: FUNC
-     * @tc.require: I4H3M8
+     * @tc.require:
      */
     it('testComplex001', 0, function () {
         console.log(TAG + "************* testComplex001 start *************");
@@ -600,7 +600,7 @@ describe('objectStoreTest',function () {
      * @tc.name: testMaxSize001
      * @tc.desc: object can get/set data under 4MB size
      * @tc.type: FUNC
-     * @tc.require: I4H3M8
+     * @tc.require:
      */
     it('testMaxSize001', 0, function () {
         console.log(TAG + "************* testMaxSize001 start *************");
@@ -630,7 +630,7 @@ describe('objectStoreTest',function () {
      * @tc.name: testPerformance001
      * @tc.desc: performanceTest for set/get data
      * @tc.type: FUNC
-     * @tc.require: I4H3M8
+     * @tc.require:
      */
     it('testPerformance001', 0, function () {
         console.log(TAG + "************* testPerformance001 start *************");
@@ -752,7 +752,7 @@ describe('objectStoreTest',function () {
      * @tc.name: testRevokeSave001
      * @tc.desc: test save local
      * @tc.type: FUNC
-     * @tc.require: I4WDAK
+     * @tc.require:
      */
     it('testRevokeSave001', 0, async function (done) {
         console.log(TAG + "************* testRevokeSave001 start *************");
@@ -846,7 +846,7 @@ describe('objectStoreTest',function () {
      * @tc.name: OnstatusRestored
      * @tc.desc: test local device data restored
      * @tc.type: FUNC
-     * @tc.require: I5OXHH
+     * @tc.require:
      */
     it('OnstatusRestored001', 0, async function () {
         console.log(TAG + "************* OnstatusRestored001 start *************");
