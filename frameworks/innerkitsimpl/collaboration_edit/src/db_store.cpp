@@ -17,26 +17,43 @@
 
 #include "db_store.h"
 
+#include <random>
+
 #include "log_print.h"
 #include "rd_utils.h"
 
 namespace OHOS::CollaborationEdit {
 DBStore::DBStore(GRD_DB *db, std::string name) : db_(db), name_(name)
 {
-    int ret = RdUtils::RdRegisterEquipId(db, reinterpret_cast<GrdEquipIdGetFuncT>(DBStore::GetEquipId));
-    if (ret != GRD_OK) {
-        LOG_ERROR("register equip id go wrong. err: %{public}d", ret);
-    }
+    GetLocalId();
 }
 
 DBStore::~DBStore()
-{
-    RdUtils::RdDbClose(db_, GRD_DB_CLOSE);
-}
+{}
 
-const char *DBStore::GetEquipId(void)
+std::string DBStore::GetLocalId()
 {
-    return "A";
+    if (localId_) {
+        return *localId_;
+    }
+    char *retStr = nullptr;
+    int ret = RdUtils::RdGetLocalId(db_, &retStr);
+    if (ret != GRD_OK || retStr == nullptr) {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<uint64_t> dis(0, std::numeric_limits<uint64_t>::max());
+        uint64_t random_num = dis(gen);
+        localId_ = std::make_shared<std::string>(std::to_string(random_num));
+        ret = RdUtils::RdSetLocalId(db_, (*localId_).c_str());
+        if (ret != GRD_OK) {
+            LOG_ERROR("Set local id go wrong. err: %{public}d", ret);
+            return "";
+        }
+    } else {
+        localId_ = std::make_shared<std::string>(retStr);
+        (void)RdUtils::RdFreeValue(retStr);
+    }
+    return *localId_;
 }
 
 GRD_DB *DBStore::GetDB()

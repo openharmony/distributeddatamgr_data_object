@@ -24,12 +24,13 @@ class DBStore {
 public:
     DBStore(GRD_DB *db, std::string name);
     ~DBStore();
-    static const char *GetEquipId(void);
+    std::string GetLocalId();
     GRD_DB *GetDB();
 
 private:
     GRD_DB *db_;
     std::string name_;
+    std::shared_ptr<std::string> localId_;
 };
 } // namespace OHOS::CollaborationEdit
 #endif // COLLABORATION_EDIT_DB_STORE_H
