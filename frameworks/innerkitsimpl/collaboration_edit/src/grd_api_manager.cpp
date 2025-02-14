@@ -30,7 +30,8 @@ void GRD_DBApiInitEnhance(GRD_APIInfo &GRD_DBApiInfo)
     // 1. Database open/close library interface encapsulation
     GRD_DBApiInfo.DBOpenApi = (DBOpen)dlsym(g_library, "GRD_DBOpen");
     GRD_DBApiInfo.DBCloseApi = (DBClose)dlsym(g_library, "GRD_DBClose");
-    GRD_DBApiInfo.RegisterEquipIdApi = (RegisterEquipId)dlsym(g_library, "GRD_RegisterEquipId");
+    GRD_DBApiInfo.SetLocalIdApi = (SetLocalId)dlsym(g_library, "GRD_SetEquipId");
+    GRD_DBApiInfo.GetLocalIdApi = (GetLocalId)dlsym(g_library, "GRD_GetEquipId");
     // 2. Node operation interface encapsulation
     GRD_DBApiInfo.InsertElementsApi = (InsertElements)dlsym(g_library, "GRD_XmlFragmentInsert");
     GRD_DBApiInfo.DeleteElementsApi = (DeleteElements)dlsym(g_library, "GRD_XmlFragmentDelete");

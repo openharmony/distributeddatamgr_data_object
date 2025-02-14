@@ -46,15 +46,26 @@ int RdUtils::RdDbClose(GRD_DB *db, uint32_t flags)
     return GRD_ApiInfo.DBCloseApi(db, flags);
 }
 
-int RdUtils::RdRegisterEquipId(GRD_DB *db, GrdEquipIdGetFuncT func)
+int RdUtils::RdSetLocalId(GRD_DB *db, const char *equipId)
 {
-    if (GRD_ApiInfo.RegisterEquipIdApi == nullptr) {
+    if (GRD_ApiInfo.SetLocalIdApi == nullptr) {
         GRD_ApiInfo = GetApiInfoInstance();
     }
-    if (GRD_ApiInfo.RegisterEquipIdApi == nullptr) {
+    if (GRD_ApiInfo.SetLocalIdApi == nullptr) {
         return GRD_NOT_SUPPORT;
     }
-    return GRD_ApiInfo.RegisterEquipIdApi(db, func);
+    return GRD_ApiInfo.SetLocalIdApi(db, equipId);
+}
+
+int RdUtils::RdGetLocalId(GRD_DB *db, char **localId)
+{
+    if (GRD_ApiInfo.GetLocalIdApi == nullptr) {
+        GRD_ApiInfo = GetApiInfoInstance();
+    }
+    if (GRD_ApiInfo.GetLocalIdApi == nullptr) {
+        return GRD_NOT_SUPPORT;
+    }
+    return GRD_ApiInfo.GetLocalIdApi(db, localId);
 }
 
 // 2. Node operation interface encapsulation

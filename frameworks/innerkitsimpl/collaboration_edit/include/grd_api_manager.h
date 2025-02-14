@@ -22,7 +22,8 @@ namespace OHOS::CollaborationEdit {
 // 1. Database open/close library interface encapsulation
 typedef int32_t (*DBOpen)(const char *dbPath, const char *configStr, uint32_t flags, GRD_DB **db);
 typedef int32_t (*DBClose)(GRD_DB *db, uint32_t flags);
-typedef int32_t (*RegisterEquipId)(GRD_DB *db, GrdEquipIdGetFuncT func);
+typedef int32_t (*SetLocalId)(GRD_DB *db, const char *equipId);
+typedef int32_t (*GetLocalId)(GRD_DB *db, char **localId);
 // 2. Node operation interface encapsulation
 typedef int32_t (*InsertElements)(GRD_DB *db, GRD_XmlOpPositionT *elementAddr, uint32_t index,
     GRD_DocNodeInfoT *nodeInfo, GRD_ElementIdT **outElementId);
@@ -60,7 +61,8 @@ struct GRD_APIInfo {
     // 1. Database open/close library interface encapsulation
     DBOpen DBOpenApi = nullptr;
     DBClose DBCloseApi = nullptr;
-    RegisterEquipId RegisterEquipIdApi = nullptr;
+    SetLocalId SetLocalIdApi = nullptr;
+    GetLocalId GetLocalIdApi = nullptr;
     // 2. Node operation inter
     InsertElements InsertElementsApi = nullptr;
     DeleteElements DeleteElementsApi = nullptr;

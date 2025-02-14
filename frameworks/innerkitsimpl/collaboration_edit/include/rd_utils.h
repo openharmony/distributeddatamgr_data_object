@@ -25,7 +25,8 @@ public:
     // 1. Database open/close library interface encapsulation
     static int RdDbOpen(const char *dbFile, const char *configStr, uint32_t flags, GRD_DB **db);
     static int RdDbClose(GRD_DB *db, uint32_t flags);
-    static int RdRegisterEquipId(GRD_DB *db, GrdEquipIdGetFuncT func);
+    static int RdSetLocalId(GRD_DB *db, const char *equipId);
+    static int RdGetLocalId(GRD_DB *db, char **localId);
     // 2. Node operation inter
     static int RdInsertElements(GRD_DB *db, GRD_XmlOpPositionT *elementAddr, uint32_t index, GRD_DocNodeInfoT *nodeInfo,
         GRD_ElementIdT **outElementId);
