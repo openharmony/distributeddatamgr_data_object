@@ -34,14 +34,14 @@ using ValuesBucket = CommonType::ValuesBucket;
 using ValueObject = CommonType::Value;
 using Assets = std::vector<Asset>;
 
-static const std::string STATUS_SUFFIX = ".status";
-static const std::string NAME_SUFFIX = ".name";
-static const std::string URI_SUFFIX = ".uri";
-static const std::string PATH_SUFFIX = ".path";
-static const std::string CREATE_TIME_SUFFIX = ".createTime";
-static const std::string MODIFY_TIME_SUFFIX = ".modifyTime";
-static const std::string SIZE_SUFFIX = ".size";
-static const std::string ASSET_DOT = ".";
+static constexpr const char* STATUS_SUFFIX = ".status";
+static constexpr const char* NAME_SUFFIX = ".name";
+static constexpr const char* URI_SUFFIX = ".uri";
+static constexpr const char* PATH_SUFFIX = ".path";
+static constexpr const char* CREATE_TIME_SUFFIX = ".createTime";
+static constexpr const char* MODIFY_TIME_SUFFIX = ".modifyTime";
+static constexpr const char* SIZE_SUFFIX = ".size";
+static constexpr const char* ASSET_DOT = ".";
 static const std::string DEVICEID_KEY = "__deviceId";
 } // namespace ObjectStore
 } // namespace OHOS

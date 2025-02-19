@@ -36,7 +36,7 @@ struct DeviceInfo {
     std::string deviceType;
 };
 
-enum class MessageType {
+enum class MessageType : int8_t {
     DEFAULT = 0,
 };
 
@@ -44,7 +44,7 @@ struct MessageInfo {
     MessageType msgType;
 };
 
-enum class DeviceChangeType {
+enum class DeviceChangeType : int8_t {
     DEVICE_OFFLINE = 0,
     DEVICE_ONLINE = 1,
 };
@@ -53,7 +53,7 @@ struct DeviceId {
     std::string deviceId;
 };
 
-enum RouteType : int32_t {
+enum RouteType : int8_t {
     INVALID_ROUTE_TYPE = -1,
     ROUTE_TYPE_ALL = 0,
     WIFI_STA = 1,

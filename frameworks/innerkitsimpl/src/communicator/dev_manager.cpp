@@ -119,7 +119,7 @@ void DevManager::RegisterDevCallback()
     if (status == DM_OK) {
         return;
     }
-    LOG_INFO("register device callback failed, try again.");
+    LOG_INFO("register device callback failed, status: %{public}d, try again.", status);
     std::thread th = std::thread([this]() {
         pthread_setname_np(pthread_self(), "Data_Object_InitDevManager");
         constexpr int RETRY_TIMES = 300;

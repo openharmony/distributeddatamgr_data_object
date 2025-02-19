@@ -20,7 +20,7 @@
 
 namespace OHOS::DistributedObject {
 namespace ObjectStoreService {
-enum class ObjectServiceInterfaceCode {
+enum class ObjectServiceInterfaceCode : int8_t {
     OBJECTSTORE_SAVE,
     OBJECTSTORE_REVOKE_SAVE,
     OBJECTSTORE_RETRIEVE,
@@ -33,7 +33,7 @@ enum class ObjectServiceInterfaceCode {
     OBJECTSTORE_SERVICE_CMD_MAX
 };
 
-enum class KvStoreServiceInterfaceCode {
+enum class KvStoreServiceInterfaceCode : int8_t {
     GET_FEATURE_INTERFACE = 0,
     REGISTERCLIENTDEATHOBSERVER,
 };

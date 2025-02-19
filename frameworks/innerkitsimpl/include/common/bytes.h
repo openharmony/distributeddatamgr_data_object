@@ -21,10 +21,10 @@
 
 namespace OHOS::ObjectStore {
 using Bytes = std::vector<uint8_t>;
-static const char *FIELDS_PREFIX = "p_";
-static const int32_t FIELDS_PREFIX_LEN = 2;
-static const std::string STRING_PREFIX = "[STRING]";
-static const int32_t STRING_PREFIX_LEN = STRING_PREFIX.length();
+static constexpr const char *FIELDS_PREFIX = "p_";
+static constexpr int32_t FIELDS_PREFIX_LEN = 2;
+static constexpr const char STRING_PREFIX[] = "[STRING]";
+static constexpr int32_t STRING_PREFIX_LEN = sizeof(STRING_PREFIX) - 1;
 } // namespace OHOS::ObjectStore
 
 #endif // BYTES_H

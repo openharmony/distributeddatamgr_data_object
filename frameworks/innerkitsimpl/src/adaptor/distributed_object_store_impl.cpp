@@ -141,11 +141,11 @@ uint32_t DistributedObjectStoreImpl::Get(const std::string &sessionId, Distribut
 uint32_t DistributedObjectStoreImpl::Watch(DistributedObject *object, std::shared_ptr<ObjectWatcher> watcher)
 {
     if (object == nullptr) {
-        LOG_ERROR("DistributedObjectStoreImpl::Sync object err ");
+        LOG_ERROR("Watch sync object err ");
         return ERR_NULL_OBJECT;
     }
     if (flatObjectStore_ == nullptr) {
-        LOG_ERROR("DistributedObjectStoreImpl::Sync object err ");
+        LOG_ERROR("Watch sync flatObjectStore err ");
         return ERR_NULL_OBJECTSTORE;
     }
     std::lock_guard<std::mutex> lock(watchersLock_);
@@ -172,11 +172,11 @@ uint32_t DistributedObjectStoreImpl::Watch(DistributedObject *object, std::share
 uint32_t DistributedObjectStoreImpl::UnWatch(DistributedObject *object)
 {
     if (object == nullptr) {
-        LOG_ERROR("DistributedObjectStoreImpl::Sync object err ");
+        LOG_ERROR("UnWatch sync object err ");
         return ERR_NULL_OBJECT;
     }
     if (flatObjectStore_ == nullptr) {
-        LOG_ERROR("DistributedObjectStoreImpl::Sync object err ");
+        LOG_ERROR("UnWatch sync flatObjectStore err ");
         return ERR_NULL_OBJECTSTORE;
     }
     uint32_t status = flatObjectStore_->UnWatch(object->GetSessionId());
@@ -242,8 +242,8 @@ void WatcherProxy::OnChanged(
 bool WatcherProxy::FindChangedAssetKey(const std::string &changedKey, std::string &assetKey)
 {
     std::size_t dotPos = changedKey.find(ASSET_DOT);
-    if ((changedKey.size() > MODIFY_TIME_SUFFIX.length() && changedKey.substr(dotPos) == MODIFY_TIME_SUFFIX) ||
-            (changedKey.size() > SIZE_SUFFIX.length() && changedKey.substr(dotPos) == SIZE_SUFFIX)) {
+    if ((changedKey.size() > strlen(MODIFY_TIME_SUFFIX) && changedKey.substr(dotPos) == MODIFY_TIME_SUFFIX) ||
+            (changedKey.size() > strlen(SIZE_SUFFIX) && changedKey.substr(dotPos) == SIZE_SUFFIX)) {
         assetKey = changedKey.substr(0, dotPos);
         return true;
     }

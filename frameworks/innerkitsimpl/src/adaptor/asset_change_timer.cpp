@@ -24,6 +24,8 @@ std::mutex AssetChangeTimer::instanceMutex;
 AssetChangeTimer *AssetChangeTimer::instance = nullptr;
 static constexpr size_t MAX_THREADS = 3;
 static constexpr size_t MIN_THREADS = 0;
+static constexpr uint32_t WAIT_INTERVAL = 100;
+static constexpr char ASSET_SEPARATOR = '#';
 
 AssetChangeTimer *AssetChangeTimer::GetInstance(FlatObjectStore *flatObjectStore)
 {

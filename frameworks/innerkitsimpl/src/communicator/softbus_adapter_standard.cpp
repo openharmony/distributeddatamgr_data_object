@@ -114,7 +114,7 @@ void SoftBusAdapter::NotifyAll(const DeviceInfo &deviceInfo, const DeviceChangeT
         }
         LOG_DEBUG("high");
         std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(deviceInfo.deviceId);
-        LOG_DEBUG("[Notify] to DB from: %{public}s, type:%{public}d", ToBeAnonymous(uuid).c_str(), type);
+        LOG_DEBUG("[Notify] to DB from: %{public}s, type:%{public}hhd", ToBeAnonymous(uuid).c_str(), type);
         UpdateRelationship(deviceInfo.deviceId, type);
         for (const auto &device : listeners) {
             if (device == nullptr) {

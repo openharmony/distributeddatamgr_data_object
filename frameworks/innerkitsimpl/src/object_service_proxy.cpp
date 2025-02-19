@@ -159,12 +159,12 @@ int32_t ObjectServiceProxy::RegisterDataObserver(const std::string &bundleName,
         ZLOGE("write descriptor failed");
         return ERR_IPC;
     }
-    
+
     if (!ITypesUtil::Marshal(data, bundleName, sessionId, callback)) {
         ZLOGE("Marshalling failed, bundleName = %{public}s", bundleName.c_str());
         return ERR_IPC;
     }
-    
+
     MessageParcel reply;
     MessageOption mo { MessageOption::TF_SYNC };
     sptr<IRemoteObject> remoteObject = Remote();
@@ -188,12 +188,12 @@ int32_t ObjectServiceProxy::UnregisterDataChangeObserver(const std::string &bund
         ZLOGE("write descriptor failed");
         return ERR_IPC;
     }
-    
+
     if (!ITypesUtil::Marshal(data, bundleName, sessionId)) {
         ZLOGE("Marshalling failed, bundleName = %{public}s", bundleName.c_str());
         return ERR_IPC;
     }
-    
+
     MessageParcel reply;
     MessageOption mo { MessageOption::TF_SYNC };
     sptr<IRemoteObject> remoteObject = Remote();
@@ -218,7 +218,7 @@ int32_t ObjectServiceProxy::BindAssetStore(const std::string &bundleName, const 
         ZLOGE("write descriptor failed");
         return ERR_IPC;
     }
-    
+
     if (!ITypesUtil::Marshal(data, bundleName, sessionId, asset, bindInfo)) {
         ZLOGE("Marshalling failed, bundleName = %{public}s", bundleName.c_str());
         return ERR_IPC;

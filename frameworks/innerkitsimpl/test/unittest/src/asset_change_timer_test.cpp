@@ -33,6 +33,8 @@ using namespace OHOS;
 using namespace std;
 
 namespace {
+static constexpr uint32_t WAIT_INTERVAL = 100;
+static constexpr char ASSET_SEPARATOR = '#';
 class AssetChangeTimerTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
@@ -77,9 +79,9 @@ HWTEST_F(AssetChangeTimerTest, StartTimer_001, TestSize.Level1)
     FlatObjectStore *flatObjectStore = nullptr;
     AssetChangeTimer assetChangeTimer(flatObjectStore);
     assetChangeTimer.StartTimer(sessionId, assetKey, watcherImpl);
-    EXPECT_EQ(assetChangeTimer.assetChangeTasks_[sessionId + assetChangeTimer.ASSET_SEPARATOR + assetKey],
+    EXPECT_EQ(assetChangeTimer.assetChangeTasks_[sessionId + ASSET_SEPARATOR + assetKey],
         assetChangeTimer.executor_->Reset(assetChangeTimer.assetChangeTasks_[sessionId +
-        assetChangeTimer.ASSET_SEPARATOR + assetKey], std::chrono::milliseconds(assetChangeTimer.WAIT_INTERVAL)));
+        ASSET_SEPARATOR + assetKey], std::chrono::milliseconds(WAIT_INTERVAL)));
 }
 
 /**
@@ -129,9 +131,9 @@ HWTEST_F(AssetChangeTimerTest, OnAssetChanged_001, TestSize.Level1)
     FlatObjectStore *flatObjectStore = nullptr;
     AssetChangeTimer assetChangeTimer(flatObjectStore);
     assetChangeTimer.OnAssetChanged(sessionId, assetKey, watcherImpl);
-    EXPECT_EQ(assetChangeTimer.assetChangeTasks_[sessionId + assetChangeTimer.ASSET_SEPARATOR + assetKey],
+    EXPECT_EQ(assetChangeTimer.assetChangeTasks_[sessionId + ASSET_SEPARATOR + assetKey],
         assetChangeTimer.executor_->Reset(assetChangeTimer.assetChangeTasks_[sessionId +
-        assetChangeTimer.ASSET_SEPARATOR + assetKey], std::chrono::milliseconds(assetChangeTimer.WAIT_INTERVAL)));
+        ASSET_SEPARATOR + assetKey], std::chrono::milliseconds(WAIT_INTERVAL)));
 }
 
 /**

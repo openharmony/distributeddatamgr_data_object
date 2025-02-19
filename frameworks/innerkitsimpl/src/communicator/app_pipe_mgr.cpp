@@ -17,7 +17,7 @@
 
 namespace OHOS {
 namespace ObjectStore {
-static const int MAX_TRANSFER_SIZE = 1024 * 1024 * 5;
+static constexpr int MAX_TRANSFER_SIZE = 1024 * 1024 * 5;
 Status AppPipeMgr::StartWatchDataChange(const AppDataChangeListener *observer, const PipeInfo &pipeInfo)
 {
     LOG_INFO("begin");

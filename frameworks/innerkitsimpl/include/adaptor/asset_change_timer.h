@@ -47,8 +47,6 @@ private:
 
     static std::mutex instanceMutex;
     static AssetChangeTimer *instance;
-    static constexpr uint32_t WAIT_INTERVAL = 100;
-    static constexpr char ASSET_SEPARATOR = '#';
 };
 } // namespace OHOS::ObjectStore
 #endif // ASSET_CHANGE_TIMER_H
