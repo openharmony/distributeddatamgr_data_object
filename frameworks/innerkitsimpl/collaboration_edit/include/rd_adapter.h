@@ -16,20 +16,13 @@
 #ifndef COLLABORATION_EDIT_RD_ADAPTER_H
 #define COLLABORATION_EDIT_RD_ADAPTER_H
 
-#include <map>
-
 #include "db_store.h"
 #include "grd_type_export.h"
-#include "napi_errno.h"
 #include "rd_utils.h"
 
 namespace OHOS::CollaborationEdit {
 static constexpr const uint8_t NUMBER_OF_CHARS_IN_LABEL_PREFIX = 2;
 const uint8_t LABEL_FRAGMENT = 5; //  See kernel struct DmElementContentType
-static std::map<int32_t, int32_t> g_errMap = {
-    {GRD_OK, Status::SUCCESS},
-    {GRD_ARRAY_INDEX_NOT_FOUND, Status::INDEX_OUT_OF_RANGE}
-};
 
 struct ID {
     ID(const std::string deviceId, uint64_t clock)
@@ -69,10 +62,9 @@ public:
     std::pair<int32_t, std::string> ReadStringText();
 
     int32_t CreateUndoManager(uint64_t captureTimeout);
+    int32_t CloseUndoManager();
     int32_t Undo();
     int32_t Redo();
-
-    int32_t TransferToNapiErrNo(int32_t originNo);
 
 private:
     std::shared_ptr<DBStore> dbStore_;

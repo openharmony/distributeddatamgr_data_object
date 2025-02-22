@@ -14,11 +14,12 @@
  */
 
 #define LOG_TAG "DBStore"
+#include <random>
 
 #include "db_store.h"
 
-#include <random>
-
+#include "db_store_manager.h"
+#include "grd_type_export.h"
 #include "log_print.h"
 #include "rd_utils.h"
 
@@ -26,6 +27,10 @@ namespace OHOS::CollaborationEdit {
 DBStore::DBStore(GRD_DB *db, std::string name) : db_(db), name_(name)
 {
     GetLocalId();
+    int32_t ret = SetThreadPool();
+    if (ret != GRD_OK) {
+        LOG_ERROR("registry threadpool go wrong, ret: %{public}d", ret);
+    }
 }
 
 DBStore::~DBStore()
@@ -56,8 +61,81 @@ std::string DBStore::GetLocalId()
     return *localId_;
 }
 
+int32_t DBStore::SetThreadPool()
+{
+    DBStoreManager::GetInstance().InitThreadPool();
+    int32_t ret = RdUtils::RdRegistryThreadPool(db_, &DBStoreManager::threadPool_);
+    return ret;
+}
+
+int32_t DBStore::Sync(GRD_SyncModeE mode, uint64_t syncId, GRD_SyncTaskCallbackFuncT callbackFunc)
+{
+    LOG_INFO("Sync START, mode=%{public}d", static_cast<int32_t>(mode));
+    if (mode == GRD_SYNC_MODE_INVALID) {
+        LOG_ERROR("sync mode is wrong");
+        return GRD_INVALID_ARGS;
+    }
+    char equipId[] = "cloud";
+    char *g_equipIds[] = {equipId};
+    GRD_SyncConfig config = {
+        .mode = mode,
+        .equipIds = g_equipIds,
+        .size = 1,
+        .callbackFunc = callbackFunc,
+        .timeout = 1u,
+        .syncId = syncId,
+    };
+    int32_t ret = RdUtils::RdSync(db_, &config);
+    LOG_INFO("Sync END, ret=%{public}d", ret);
+    return ret;
+}
+
 GRD_DB *DBStore::GetDB()
 {
     return db_;
+}
+
+int DBStore::ApplyUpdate(std::string &applyInfo)
+{
+    char *retStr = nullptr;
+    int ret = RdUtils::RdApplyUpdate(db_, &retStr);
+    if (ret != GRD_OK || retStr == nullptr) {
+        LOG_ERROR("ApplyUpdate go wrong. err: %{public}d", ret);
+        return RdUtils::TransferToNapiErrNo(ret);
+    }
+    applyInfo = std::string(retStr);
+    (void)RdUtils::RdFreeValue(retStr);
+    return RdUtils::TransferToNapiErrNo(ret);
+}
+
+int DBStore::WriteUpdate(const char *equipId, const uint8_t *data, uint32_t size, const std::string &watermark)
+{
+    int ret = RdUtils::RdWriteUpdate(db_, equipId, data, size, watermark);
+    if (ret != GRD_OK) {
+        LOG_ERROR("WriteUpdate go wrong. err: %{public}d", ret);
+    }
+    return RdUtils::TransferToNapiErrNo(ret);
+}
+
+int DBStore::GetRelativePos(const char *tableName, const char *nodeSize, uint32_t pos, std::string &relPos)
+{
+    char *retStr = nullptr;
+    int ret = RdUtils::RdGetRelativePos(db_, tableName, nodeSize, pos, &retStr);
+    if (ret != GRD_OK || retStr == nullptr) {
+        LOG_ERROR("GetRelativePos go wrong. err: %{public}d", ret);
+        return RdUtils::TransferToNapiErrNo(ret);
+    }
+    relPos = std::string(retStr);
+    (void)RdUtils::RdFreeValue(retStr);
+    return RdUtils::TransferToNapiErrNo(ret);
+}
+
+int DBStore::GetAbsolutePos(const char *tableName, const char *relPos, const char *nodeSize, uint32_t *pos)
+{
+    int ret = RdUtils::RdGetAbsolutePos(db_, tableName, relPos, nodeSize, pos);
+    if (ret != GRD_OK) {
+        LOG_ERROR("GetAbsolutePos go wrong. err: %{public}d", ret);
+    }
+    return RdUtils::TransferToNapiErrNo(ret);
 }
 } // namespace OHOS::CollaborationEdit

@@ -50,6 +50,7 @@ napi_value Node::Constructor(napi_env env)
         DECLARE_NAPI_FUNCTION("setAttributes", SetAttributes),
         DECLARE_NAPI_FUNCTION("removeAttributes", RemoveAttributes),
         DECLARE_NAPI_FUNCTION("getAttributes", GetAttributes),
+        DECLARE_NAPI_FUNCTION("setAsset", SetAsset),
     };
     napi_value cons = nullptr;
     NAPI_CALL(env, napi_define_class(env, "Node", NAPI_AUTO_LENGTH, New, nullptr,
@@ -375,5 +376,32 @@ napi_value Node::GetAttributes(napi_env env, napi_callback_info info)
         return nullptr;
     }
     return output;
+}
+
+napi_value Node::SetAsset(napi_env env, napi_callback_info info)
+{
+    size_t argc = 2;
+    napi_value argv[2] = {nullptr};
+    napi_value self = nullptr;
+    NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, &self, nullptr));
+    Node *thisNode = nullptr;
+    NAPI_CALL(env, napi_unwrap(env, self, reinterpret_cast<void **>(&thisNode)));
+    ASSERT(thisNode != nullptr, "unwrap self go wrong.", nullptr);
+    ASSERT_THROW(env, thisNode->GetID().has_value(), Status::UNSUPPORTED_OPERATION, "empty id");
+
+    // convert input argument
+    std::string assetKey;
+    napi_status status = NapiUtils::GetValue(env, argv[0], assetKey);
+    ASSERT_THROW(env, status == napi_ok, Status::INVALID_ARGUMENT, "Param Error: get asset key go wrong.");
+
+    std::string assetValue;
+    status = NapiUtils::GetValue(env, argv[1], assetValue);
+    ASSERT_THROW(env, status == napi_ok, Status::INVALID_ARGUMENT, "Param Error: get asset value go wrong.");
+
+    int32_t retCode = thisNode->GetAdapter()->SetAttribute(assetKey, assetValue, 1);
+    if (retCode != SUCCESS) {
+        ThrowNapiError(env, retCode, "Set asset go wrong.");
+    }
+    return nullptr;
 }
 } // namespace OHOS::CollaborationEdit

@@ -17,14 +17,17 @@
 #define NAPI_COLLABORATION_EDIT_OBJECT_H
 
 #include "db_store.h"
+#include "grd_type_export.h"
 #include "napi/native_api.h"
 #include "napi/native_common.h"
 #include "napi/native_node_api.h"
+#include "napi_async_call.h"
+#include "napi_cloud_db.h"
 #include "napi_undo_manager.h"
 #include "napi_utils.h"
+#include "rd_type.h"
 
 namespace OHOS::CollaborationEdit {
-
 class CollaborationEditObject {
 public:
     CollaborationEditObject(std::string docName, ContextParam param);
@@ -33,15 +36,28 @@ public:
     static napi_value Delete(napi_env env, napi_callback_info info);
     void SetDBStore(std::shared_ptr<DBStore> dbStore);
     std::shared_ptr<DBStore> GetDBStore();
+    static napi_value SetCloudDb(napi_env env, napi_callback_info info);
 
 private:
     static napi_value Constructor(napi_env env);
     static napi_value Initialize(napi_env env, napi_callback_info info);
 
+    static napi_status CreateHandlerFunc(napi_env env, std::vector<napi_value> &cloudDbFunc, NapiCloudDb *napiCloudDb);
+    static void ReleaseHandlerFunc(NapiCloudDb *napiCloudDb);
     static napi_value GetEditUnit(napi_env env, napi_callback_info info);
     static napi_value GetUndoRedoManager(napi_env env, napi_callback_info info);
     static napi_value DeleteUndoRedoManager(napi_env env, napi_callback_info info);
     static napi_value GetName(napi_env env, napi_callback_info info);
+    static napi_value CloudSync(napi_env env, napi_callback_info info);
+    static napi_value GetLocalId(napi_env env, napi_callback_info info);
+    static napi_value ApplyUpdate(napi_env env, napi_callback_info info);
+    static napi_value WriteUpdate(napi_env env, napi_callback_info info);
+    static void SyncCallbackFunc(GRD_SyncProcessT *syncProcess);
+    static GRD_SyncModeE GetGRDSyncMode(int32_t mode);
+    static ProgressCode GetProgressCode(int32_t errCode);
+    static int ParseThis(const napi_env &env, const napi_value &self, std::shared_ptr<SyncContext> context);
+    static int ParseCloudSyncMode(const napi_env env, const napi_value arg, std::shared_ptr<SyncContext> context);
+    static InputAction GetCloudSyncInput(std::shared_ptr<SyncContext> context);
 
     std::string docName_;
     std::shared_ptr<ContextParam> param_;

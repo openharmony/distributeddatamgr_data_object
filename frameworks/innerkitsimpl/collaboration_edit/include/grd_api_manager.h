@@ -22,8 +22,14 @@ namespace OHOS::CollaborationEdit {
 // 1. Database open/close library interface encapsulation
 typedef int32_t (*DBOpen)(const char *dbPath, const char *configStr, uint32_t flags, GRD_DB **db);
 typedef int32_t (*DBClose)(GRD_DB *db, uint32_t flags);
-typedef int32_t (*SetLocalId)(GRD_DB *db, const char *equipId);
+typedef int32_t (*SetLocalId)(GRD_DB *db,  const char *equipId);
 typedef int32_t (*GetLocalId)(GRD_DB *db, char **localId);
+typedef int32_t (*ApplyUpdate)(GRD_DB *db, char *equipId, char **applyInfo);
+typedef int32_t (*WriteUpdate)(
+    GRD_DB *db, const char *equipId, const uint8_t *data, uint32_t size, const char *watermark);
+typedef int32_t (*GetRelativePos)(GRD_DB *db, const char *tableName, const char *nodeSize, uint32_t pos, char **relPos);
+typedef int32_t (*GetAbsolutePos)(
+    GRD_DB *db, const char *tableName, const char *relPos, const char *nodeSize, uint32_t *pos);
 // 2. Node operation interface encapsulation
 typedef int32_t (*InsertElements)(GRD_DB *db, GRD_XmlOpPositionT *elementAddr, uint32_t index,
     GRD_DocNodeInfoT *nodeInfo, GRD_ElementIdT **outElementId);
@@ -50,12 +56,18 @@ typedef int32_t (*TextReadInDeltaMode)(GRD_DB *db, GRD_XmlOpPositionT *opPos, co
     const char *snapshotPrev, char **delta);
 // 5. Undo/Redo operation interface encapsulation
 typedef int32_t (*DocUndoManager)(GRD_DB *db, GRD_XmlOpPositionT *elementAddr, GRD_UndoParamT *param);
+typedef int32_t (*DocCloseUndoManager)(GRD_DB *db, GRD_XmlOpPositionT *elementAddr);
 typedef int32_t (*DocUndo)(GRD_DB *db, GRD_XmlOpPositionT *elementAddr, char **modify);
 typedef int32_t (*DocRedo)(GRD_DB *db, GRD_XmlOpPositionT *elementAddr, char **modify);
 typedef int32_t (*DocStopCapturing)(GRD_DB *db, GRD_XmlOpPositionT *elementAddr);
+// 6. Sync operation interface encapsulation
+typedef int32_t (*Sync)(GRD_DB *db, GRD_SyncConfigT *config);
+typedef int32_t (*RegistryThreadPool)(GRD_DB *db, GRD_ThreadPoolT *ThreadPool);
 // Last. Memory free and others
 typedef void (*FreeElementId)(GRD_ElementIdT *outElementId);
 typedef int32_t (*FreeValue)(char *value);
+typedef int32_t (*SetCloudDb)(GRD_DB *db, GRD_ICloudDBT *iCloud);
+
 
 struct GRD_APIInfo {
     // 1. Database open/close library interface encapsulation
@@ -63,6 +75,10 @@ struct GRD_APIInfo {
     DBClose DBCloseApi = nullptr;
     SetLocalId SetLocalIdApi = nullptr;
     GetLocalId GetLocalIdApi = nullptr;
+    ApplyUpdate ApplyUpdateApi = nullptr;
+    WriteUpdate WriteUpdateApi = nullptr;
+    GetRelativePos GetRelativePosApi = nullptr;
+    GetAbsolutePos GetAbsolutePosApi = nullptr;
     // 2. Node operation inter
     InsertElements InsertElementsApi = nullptr;
     DeleteElements DeleteElementsApi = nullptr;
@@ -81,12 +97,17 @@ struct GRD_APIInfo {
     TextReadInDeltaMode TextReadInDeltaModeApi = nullptr;
     // 5. Undo/Redo operation interface encapsulation
     DocUndoManager DocUndoManagerApi = nullptr;
+    DocCloseUndoManager DocCloseUndoManagerApi = nullptr;
     DocUndo DocUndoApi = nullptr;
     DocRedo DocRedoApi = nullptr;
     DocStopCapturing DocStopCapturingApi = nullptr;
+    // 6. Sync operation interface encapsulation
+    Sync SyncApi = nullptr;
+    RegistryThreadPool RegistryThreadPoolApi = nullptr;
     // Last. Memory free and others
     FreeElementId FreeElementIdApi = nullptr;
     FreeValue FreeValueApi = nullptr;
+    SetCloudDb SetCloudDbApi = nullptr;
 };
 
 GRD_APIInfo GetApiInfoInstance();

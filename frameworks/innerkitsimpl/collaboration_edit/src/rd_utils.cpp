@@ -68,6 +68,53 @@ int RdUtils::RdGetLocalId(GRD_DB *db, char **localId)
     return GRD_ApiInfo.GetLocalIdApi(db, localId);
 }
 
+int RdUtils::RdApplyUpdate(GRD_DB *db, char **applyInfo)
+{
+    if (GRD_ApiInfo.ApplyUpdateApi == nullptr) {
+        GRD_ApiInfo = GetApiInfoInstance();
+    }
+    if (GRD_ApiInfo.ApplyUpdateApi == nullptr) {
+        return GRD_NOT_SUPPORT;
+    }
+    return GRD_ApiInfo.ApplyUpdateApi(db, nullptr, applyInfo);
+}
+
+int RdUtils::RdWriteUpdate(
+    GRD_DB *db, const char *equipId, const uint8_t *data, uint32_t size, const std::string &watermark)
+{
+    if (GRD_ApiInfo.WriteUpdateApi == nullptr) {
+        GRD_ApiInfo = GetApiInfoInstance();
+    }
+    if (GRD_ApiInfo.WriteUpdateApi == nullptr) {
+        return GRD_NOT_SUPPORT;
+    }
+    return GRD_ApiInfo.WriteUpdateApi(db, equipId, data, size, watermark.c_str());
+}
+
+int RdUtils::RdGetRelativePos(
+    GRD_DB *db, const char *tableName, const char *nodeSize, uint32_t pos, char **relPos)
+{
+    if (GRD_ApiInfo.GetRelativePosApi == nullptr) {
+        GRD_ApiInfo = GetApiInfoInstance();
+    }
+    if (GRD_ApiInfo.GetRelativePosApi == nullptr) {
+        return GRD_NOT_SUPPORT;
+    }
+    return GRD_ApiInfo.GetRelativePosApi(db, tableName, nodeSize, pos, relPos);
+}
+
+int RdUtils::RdGetAbsolutePos(
+    GRD_DB *db, const char *tableName, const char *relPos, const char *nodeSize, uint32_t *pos)
+{
+    if (GRD_ApiInfo.GetAbsolutePosApi == nullptr) {
+        GRD_ApiInfo = GetApiInfoInstance();
+    }
+    if (GRD_ApiInfo.GetAbsolutePosApi == nullptr) {
+        return GRD_NOT_SUPPORT;
+    }
+    return GRD_ApiInfo.GetAbsolutePosApi(db, tableName, relPos, nodeSize, pos);
+}
+
 // 2. Node operation interface encapsulation
 int32_t RdUtils::RdInsertElements(GRD_DB *db, GRD_XmlOpPositionT *elementAddr, uint32_t index,
     GRD_DocNodeInfoT *nodeInfo, GRD_ElementIdT **outElementId)
@@ -235,6 +282,18 @@ int32_t RdUtils::RdDocUndoManager(GRD_DB *db, GRD_XmlOpPositionT *elementAddr, G
     return GRD_ApiInfo.DocUndoManagerApi(db, elementAddr, param);
 }
 
+int32_t RdUtils::RdDocCloseUndoManager(GRD_DB *db, GRD_XmlOpPositionT *elementAddr)
+{
+    if (GRD_ApiInfo.DocCloseUndoManagerApi == nullptr) {
+        GRD_ApiInfo = GetApiInfoInstance();
+        if (GRD_ApiInfo.DocCloseUndoManagerApi == nullptr) {
+            return GRD_NOT_SUPPORT;
+        }
+    }
+
+    return GRD_ApiInfo.DocCloseUndoManagerApi(db, elementAddr);
+}
+
 int32_t RdUtils::RdDocUndo(GRD_DB *db, GRD_XmlOpPositionT *elementAddr, char **modify)
 {
     if (GRD_ApiInfo.DocUndoApi == nullptr) {
@@ -271,6 +330,29 @@ int32_t RdUtils::RdDocStopCapturing(GRD_DB *db, GRD_XmlOpPositionT *elementAddr)
     return GRD_ApiInfo.DocStopCapturingApi(db, elementAddr);
 }
 
+// 6. Sync operation interface encapsulation
+int32_t RdUtils::RdSync(GRD_DB *db, GRD_SyncConfig *config)
+{
+    if (GRD_ApiInfo.SyncApi == nullptr) {
+        GRD_ApiInfo = GetApiInfoInstance();
+    }
+    if (GRD_ApiInfo.SyncApi == nullptr) {
+        return GRD_NOT_SUPPORT;
+    }
+    return GRD_ApiInfo.SyncApi(db, config);
+}
+
+int32_t RdUtils::RdRegistryThreadPool(GRD_DB *db, GRD_ThreadPoolT *threadPool)
+{
+    if (GRD_ApiInfo.RegistryThreadPoolApi == nullptr) {
+        GRD_ApiInfo = GetApiInfoInstance();
+    }
+    if (GRD_ApiInfo.RegistryThreadPoolApi == nullptr) {
+        return GRD_NOT_SUPPORT;
+    }
+    return GRD_ApiInfo.RegistryThreadPoolApi(db, threadPool);
+}
+
 // Last. Memory free and others
 void RdUtils::RdFreeElementId(GRD_ElementIdT *outElementId)
 {
@@ -292,5 +374,25 @@ int32_t RdUtils::RdFreeValue(char *value)
         return GRD_NOT_SUPPORT;
     }
     return GRD_ApiInfo.FreeValueApi(value);
+}
+
+int32_t RdUtils::RdSetCloudDb(GRD_DB *db, GRD_ICloudDBT *iCloud)
+{
+    if (GRD_ApiInfo.SetCloudDbApi == nullptr) {
+        GRD_ApiInfo = GetApiInfoInstance();
+    }
+    if (GRD_ApiInfo.SetCloudDbApi == nullptr) {
+        return GRD_NOT_SUPPORT;
+    }
+    return GRD_ApiInfo.SetCloudDbApi(db, iCloud);
+}
+
+int32_t RdUtils::TransferToNapiErrNo(int32_t originNo)
+{
+    auto it = g_errMap.find(originNo);
+    if (it == g_errMap.end()) {
+        return Status::DB_ERROR;
+    }
+    return it->second;
 }
 } // namespace OHOS::CollaborationEdit

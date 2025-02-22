@@ -110,8 +110,111 @@ typedef struct GRD_DocNodeInfo {
     const char *content;
 } GRD_DocNodeInfoT;
 
+typedef enum GRD_SyncMode {
+    GRD_SYNC_MODE_UPLOAD = 0,
+    GRD_SYNC_MODE_DOWNLOAD,
+    GRD_SYNC_MODE_UP_DOWN,
+    GRD_SYNC_MODE_DOWNLOAD_LOG,
+    GRD_SYNC_MODE_UP_DOWN_LOG,
+    GRD_SYNC_MODE_INVALID,
+} GRD_SyncModeE;
+
+typedef enum GRD_SyncProcessStatus {
+    GRD_SYNC_PROCESS_PREPARED = 0,
+    GRD_SYNC_PROCESS_PROCESSING,
+    GRD_SYNC_PROCESS_FINISHED,
+} GRD_SyncProcessStatusE;
+
+typedef struct GRD_SyncProcess {
+    GRD_SyncProcessStatusE status;
+    int32_t errCode;
+    GRD_SyncModeE mode;
+    void *cloudDB;
+    uint64_t syncId;
+} GRD_SyncProcessT;
+
+typedef void (*GRD_SyncTaskCallbackFuncT)(GRD_SyncProcessT *syncProcess);
+
+typedef struct GRD_SyncConfig {
+    GRD_SyncModeE mode;
+    char **equipIds;
+    uint8_t size; // equipId size
+    GRD_SyncTaskCallbackFuncT callbackFunc;
+    uint64_t timeout;
+    uint64_t syncId;
+} GRD_SyncConfigT;
+
+typedef void (*GRD_ScheduleFunc)(void *func, void *param);
+
+typedef struct GRD_ThreadPool {
+    GRD_ScheduleFunc schedule;
+} GRD_ThreadPoolT;
+
 typedef const char *(*GrdEquipIdGetFuncT)(void);
 
+typedef enum GRD_QueryConditionType {
+    GRD_QUERY_CONDITION_TYPE_NOT_USE = 0,
+    GRD_QUERY_CONDITION_TYPE_EQUAL_TO,
+    GRD_QUERY_CONDITION_TYPE_NOT_EQUAL_TO,
+    GRD_QUERY_CONDITION_TYPE_GREATER_THAN,
+    GRD_QUERY_CONDITION_TYPE_LESS_THAN,
+    GRD_QUERY_CONDITION_TYPE_GREATER_THAN_OR_EQUAL_TO,
+    GRD_QUERY_CONDITION_TYPE_LESS_THAN_OR_EQUAL_TO,
+} GRD_QueryConditionTypeE;
+
+typedef enum GRD_CloudFieldType {
+    GRD_CLOUD_FIELD_TYPE_INT = 0,
+    GRD_CLOUD_FIELD_TYPE_DOUBLE,
+    GRD_CLOUD_FIELD_TYPE_STRING,
+    GRD_CLOUD_FIELD_TYPE_BOOL,
+    GRD_CLOUD_FIELD_TYPE_BYTES,
+} GRD_CloudFieldTypeE;
+
+typedef enum CloudErrorCode {
+    E_CLOUD_OK = 0,
+    E_CLOUD_ERROR,
+    E_QUERY_END,
+} CloudErrorCodeE;
+
+typedef struct GRD_CloudField {
+    GRD_CloudFieldTypeE type;           // field type
+    char *key;                          // field name
+    uint32_t valueLen;                  // value length
+    void *value;                        // value
+    GRD_QueryConditionTypeE condition;  // query condition
+} GRD_CloudFieldT;
+
+typedef struct GRD_CloudRecord {
+    GRD_CloudFieldT *fields;  // fields list
+    uint8_t fieldSize;
+} GRD_CloudRecordT;
+
+typedef struct GRD_CloudParams {
+    const char *tableName;
+    GRD_CloudRecordT *records;
+    uint32_t recordSize;
+    GRD_CloudRecordT **extends;
+    uint32_t *extendSize;
+} GRD_CloudParamsT;
+
+typedef struct AssetLoader {
+    int32_t (*downloadAsset)(void *cloudDB, const char *equipId, char *path);
+    int32_t (*uploadAsset)(void *cloudDB, char *path);
+    int32_t (*deleteAsset)(void *cloudDB, char *path);
+    int32_t (*deleteLocalAsset)(void *cloudDB, char *path);
+} AssetLoaderT;
+
+typedef struct GRD_ICloudDB {
+    void *cloudDB;
+    AssetLoaderT *assetLoader;
+    int32_t (*batchInsert)(void *cloudDB, GRD_CloudParamsT *cloudParams);
+    int32_t (*query)(void *cloudDB, GRD_CloudParamsT *cloudParams);
+    int32_t (*sendAwarenessData)(void *cloudDB, const uint8_t *data, uint32_t dataSize);
+    int32_t (*lock)(void *cloudDB, uint32_t *lockTimeMs);
+    int32_t (*unLock)(void *cloudDB);
+    int32_t (*heartBeat)(void *cloudDB);
+    int32_t (*close)(void *cloudDB);
+} GRD_ICloudDBT;
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

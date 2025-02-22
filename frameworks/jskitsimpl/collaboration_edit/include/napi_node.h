@@ -46,6 +46,7 @@ private:
     static napi_value SetAttributes(napi_env env, napi_callback_info info);
     static napi_value RemoveAttributes(napi_env env, napi_callback_info info);
     static napi_value GetAttributes(napi_env env, napi_callback_info info);
+    static napi_value SetAsset(napi_env env, napi_callback_info info);
 
     std::string name_;
 };

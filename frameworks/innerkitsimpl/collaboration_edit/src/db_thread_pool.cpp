@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,13 +13,19 @@
  * limitations under the License.
  */
 
-#ifndef COLLABORATION_EDIT_DB_ERROR_H
-#define COLLABORATION_EDIT_DB_ERROR_H
+#include "db_thread_pool.h"
 
 namespace OHOS::CollaborationEdit {
-constexpr const int E_OK = 0;
-constexpr const int E_INVALID_ARGS = 1;
-constexpr const int E_OUT_OF_MEMORY = 2;
-constexpr const int E_MEMORY_OPERATION_ERROR = 3;
-} // namespace OHOS::CollaborationEdit
-#endif // COLLABORATION_EDIT_DB_ERROR_H
+DbThreadPool::DbThreadPool(std::shared_ptr<ExecutorPool> executors) : executors_(executors)
+{}
+
+DbThreadPool::~DbThreadPool()
+{
+    executors_ = nullptr;
+}
+
+TaskId DbThreadPool::Execute(const Task &task)
+{
+    return executors_->Execute(task);
+}
+}  // namespace OHOS::CollaborationEdit

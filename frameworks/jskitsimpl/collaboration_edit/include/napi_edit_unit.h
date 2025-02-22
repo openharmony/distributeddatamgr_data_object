@@ -39,6 +39,8 @@ private:
     static napi_value GetChildren(napi_env env, napi_callback_info info);
     static napi_value GetJsonResult(napi_env env, napi_callback_info info);
     static napi_value GetName(napi_env env, napi_callback_info info);
+    static napi_value GetRelativePos(napi_env env, napi_callback_info info);
+    static napi_value GetAbsolutePos(napi_env env, napi_callback_info info);
 
     std::string name_;
 };

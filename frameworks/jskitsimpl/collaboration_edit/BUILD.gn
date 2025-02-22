@@ -16,11 +16,7 @@ import("//build/ohos/ace/ace.gni")
 config("collaboration_edit_config") {
   visibility = [ ":*" ]
 
-  cflags = [
-    "-DHILOG_ENABLE",
-    "-fvisibility=hidden",
-    "-Oz",
-  ]
+  cflags = [ "-DHILOG_ENABLE" ]
 
   include_dirs = [
     "include",
@@ -39,20 +35,27 @@ ohos_shared_library("collaborationeditobject") {
   }
 
   sources = [
+    "../../innerkitsimpl/collaboration_edit/src/cloud_db_proxy.cpp",
     "../../innerkitsimpl/collaboration_edit/src/db_common.cpp",
     "../../innerkitsimpl/collaboration_edit/src/db_store.cpp",
     "../../innerkitsimpl/collaboration_edit/src/db_store_config.cpp",
     "../../innerkitsimpl/collaboration_edit/src/db_store_manager.cpp",
+    "../../innerkitsimpl/collaboration_edit/src/db_thread_pool.cpp",
     "../../innerkitsimpl/collaboration_edit/src/grd_api_manager.cpp",
     "../../innerkitsimpl/collaboration_edit/src/rd_adapter.cpp",
     "../../innerkitsimpl/collaboration_edit/src/rd_utils.cpp",
     "src/entry_point.cpp",
+    "src/js_utils.cpp",
     "src/napi_abstract_type.cpp",
+    "src/napi_async_call.cpp",
+    "src/napi_cloud_db.cpp",
     "src/napi_collaboration_edit_object.cpp",
+    "src/napi_const_properties.cpp",
     "src/napi_edit_unit.cpp",
     "src/napi_error_utils.cpp",
     "src/napi_node.cpp",
     "src/napi_parser.cpp",
+    "src/napi_sync_service.cpp",
     "src/napi_text.cpp",
     "src/napi_undo_manager.cpp",
     "src/napi_utils.cpp",

@@ -24,8 +24,15 @@
 #include "db_common.h"
 #include "log_print.h"
 #include "rd_utils.h"
+#include "cloud_db_proxy.h"
 
 namespace OHOS::CollaborationEdit {
+GRD_ThreadPoolT DBStoreManager::threadPool_ = {reinterpret_cast<GRD_ScheduleFunc>(DBStoreManager::Schedule)};
+std::shared_ptr<ExecutorPool> DBStoreManager::executorPool_ = nullptr;
+std::shared_ptr<DBStoreMgrThreadPool> DBStoreManager::executors_ = nullptr;
+constexpr size_t MAX_THREADS_SIZE = 12;
+constexpr size_t MIN_THREADS_SIZE = 5;
+
 DBStoreManager &DBStoreManager::GetInstance()
 {
     static DBStoreManager manager;
@@ -36,10 +43,7 @@ DBStoreManager::DBStoreManager()
 {}
 
 DBStoreManager::~DBStoreManager()
-{
-    std::lock_guard<std::mutex> lock(mutex_);
-    storeCache_.clear();
-}
+{}
 
 std::shared_ptr<DBStore> DBStoreManager::GetDBStore(const DBStoreConfig &config)
 {
@@ -153,5 +157,77 @@ int DBStoreManager::RemoveDir(const char *dir)
         LOG_ERROR("[RemoveDir] unknown file type, st mode %{public}d", dirStat.st_mode);
     }
     return 0;
+}
+
+int DBStoreManager::SetCloudDb(std::shared_ptr<DBStore> dbStore, NapiCloudDb *napiCloudDb)
+{
+    AssetLoaderT *assetLoader = (AssetLoaderT *)malloc(sizeof(AssetLoaderT));
+    if (assetLoader == nullptr) {
+        LOG_ERROR("[SetCloudDb] malloc AssetLoaderT go wrong");
+        return -1;
+    }
+    assetLoader->downloadAsset = CloudDbProxy::DownloadAsset;
+    assetLoader->uploadAsset = CloudDbProxy::UploadAsset;
+    assetLoader->deleteAsset = CloudDbProxy::DeleteAsset;
+    assetLoader->deleteLocalAsset = CloudDbProxy::DeleteLocalAsset;
+
+    CloudDbProxy *cloudDbProxy = new (std::nothrow) CloudDbProxy();
+    if (cloudDbProxy == nullptr) {
+        LOG_ERROR("[SetCloudDb] create cloudDbProxy go wrong");
+        free(assetLoader);
+        return -1;
+    }
+    cloudDbProxy->SetNapiCloudDb(napiCloudDb);
+
+    GRD_ICloudDBT *cloudDB = (GRD_ICloudDBT *)malloc(sizeof(GRD_ICloudDBT));
+    if (cloudDB == nullptr) {
+        LOG_ERROR("[SetCloudDb] malloc ICloudDBT go wrong");
+        free(assetLoader);
+        delete cloudDbProxy;
+        return -1;
+    }
+    cloudDB->assetLoader = assetLoader;
+    cloudDB->cloudDB = reinterpret_cast<void *>(cloudDbProxy);
+    cloudDB->batchInsert = CloudDbProxy::BatchInsert;
+    cloudDB->query = CloudDbProxy::Query;
+    cloudDB->sendAwarenessData = CloudDbProxy::SendAwarenessData;
+    cloudDB->heartBeat = CloudDbProxy::HeartBeat;
+    cloudDB->lock = CloudDbProxy::Lock;
+    cloudDB->unLock = CloudDbProxy::UnLock;
+    cloudDB->close = CloudDbProxy::Close;
+
+    int32_t errCode = RdUtils::RdSetCloudDb(dbStore->GetDB(), cloudDB);
+    if (errCode != GRD_OK) {
+        LOG_ERROR("[SetCloudDb] RdSetCloudDb go wrong, errCode = %{public}d", errCode);
+        free(assetLoader);
+        free(cloudDB);
+        delete cloudDbProxy;
+        return -1;
+    }
+    return 0;
+}
+
+void DBStoreManager::Schedule(void *func, void *param)
+{
+    if (executors_ == nullptr) {
+        LOG_ERROR("executors_ is nullptr.");
+        return;
+    }
+    executors_->Execute([func, param]() {
+        void (*funcPtr)(void *) = reinterpret_cast<void (*)(void *)>(func);
+        funcPtr(param);
+    });
+}
+
+void DBStoreManager::InitThreadPool()
+{
+    std::lock_guard<std::mutex> lock(threadPoolMutex_);
+    if (executorPool_ == nullptr) {
+        executorPool_ = std::make_shared<ExecutorPool>(MAX_THREADS_SIZE, MIN_THREADS_SIZE);
+    }
+    if (executors_ == nullptr) {
+        executors_ = std::make_shared<DbThreadPool>(DBStoreManager::executorPool_);
+        LOG_INFO("init thread pool success");
+    }
 }
 } // namespace OHOS::CollaborationEdit

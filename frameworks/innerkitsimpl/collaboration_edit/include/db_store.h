@@ -26,7 +26,13 @@ public:
     ~DBStore();
     std::string GetLocalId();
     GRD_DB *GetDB();
+    int32_t Sync(GRD_SyncModeE mode, uint64_t syncId, GRD_SyncTaskCallbackFuncT callbackFunc);
+    int32_t SetThreadPool();
 
+    int ApplyUpdate(std::string &applyInfo);
+    int WriteUpdate(const char *equipId, const uint8_t *data, uint32_t size, const std::string &watermark);
+    int GetRelativePos(const char *tableName, const char *nodeSize, uint32_t pos, std::string &relPos);
+    int GetAbsolutePos(const char *tableName, const char *relPos, const char *nodeSize, uint32_t *pos);
 private:
     GRD_DB *db_;
     std::string name_;

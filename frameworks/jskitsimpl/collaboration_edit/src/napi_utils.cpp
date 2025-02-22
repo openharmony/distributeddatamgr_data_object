@@ -119,7 +119,7 @@ napi_status NapiUtils::GetValue(napi_env env, napi_value input, std::string &out
     ASSERT((ret == napi_ok) && (type == napi_string), "invalid type", napi_invalid_arg);
 
     size_t maxLen = STR_MAX_LENGTH;
-    ret = napi_get_value_string_utf8(env, input, NULL, 0, &maxLen);
+    ret = napi_get_value_string_utf8(env, input, nullptr, 0, &maxLen);
     if (maxLen <= 0) {
         return ret;
     }
@@ -650,6 +650,16 @@ std::pair<napi_status, napi_value> NapiUtils::GetInnerValue(
         return std::make_pair(napi_ok, nullptr);
     }
     return std::make_pair(napi_ok, inner);
+}
+
+std::string NapiUtils::RemovePrefix(std::string str, std::string prefix)
+{
+    size_t prefixLength = prefix.length();
+    size_t foundPos = str.find_first_of(prefix);
+    if (foundPos == std::string::npos) {
+        return str;
+    }
+    return str.erase(foundPos, prefixLength);
 }
 
 } // namespace OHOS::CollaborationEdit
