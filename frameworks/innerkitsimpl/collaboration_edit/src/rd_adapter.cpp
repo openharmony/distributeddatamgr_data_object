@@ -78,7 +78,7 @@ std::pair<int32_t, std::optional<ID>> RdAdapter::InsertNode(uint32_t index, std:
     int32_t errCode = RdUtils::RdInsertElements(this->dbStore_->GetDB(), &position, index, &nodeInfo, &outElementId);
     if (errCode != GRD_OK || outElementId == nullptr) {
         LOG_ERROR("InsertElements go wrong, errCode = %{public}d", errCode);
-        return std::make_pair(TransferToNapiErrNo(errCode), std::nullopt);
+        return std::make_pair(RdUtils::TransferToNapiErrNo(errCode), std::nullopt);
     }
     ID id(std::string(outElementId->equipId), outElementId->incrClock);
     RdUtils::RdFreeElementId(outElementId);
@@ -107,7 +107,7 @@ std::pair<int32_t, std::optional<ID>> RdAdapter::InsertText(uint32_t index)
     int32_t errCode = RdUtils::RdInsertElements(this->dbStore_->GetDB(), &position, index, &nodeInfo, &outElementId);
     if (errCode != GRD_OK || outElementId == nullptr) {
         LOG_ERROR("InsertElements go wrong, errCode = %{public}d", errCode);
-        return std::make_pair(TransferToNapiErrNo(errCode), std::nullopt);
+        return std::make_pair(RdUtils::TransferToNapiErrNo(errCode), std::nullopt);
     }
     ID id(std::string(outElementId->equipId), outElementId->incrClock);
     RdUtils::RdFreeElementId(outElementId);
@@ -129,7 +129,7 @@ int32_t RdAdapter::DeleteChildren(uint32_t index, uint32_t length)
     if (errCode != GRD_OK) {
         LOG_ERROR("DeleteElements go wrong, errCode = %{public}d", errCode);
     }
-    return TransferToNapiErrNo(errCode);
+    return RdUtils::TransferToNapiErrNo(errCode);
 }
 
 std::pair<int32_t, std::string> RdAdapter::GetChildren(uint32_t index, uint32_t length)
@@ -150,7 +150,7 @@ std::pair<int32_t, std::string> RdAdapter::GetChildren(uint32_t index, uint32_t 
     int32_t errCode = RdUtils::RdGetElements(this->dbStore_->GetDB(), &position, index, length, &respXml);
     if (errCode != GRD_OK) {
         LOG_ERROR("RdGetElements go wrong, errCode = %{public}d", errCode);
-        return std::make_pair(TransferToNapiErrNo(errCode), "");
+        return std::make_pair(RdUtils::TransferToNapiErrNo(errCode), "");
     }
     std::string retString(respXml == nullptr ? "" : respXml);
     (void)RdUtils::RdFreeValue(respXml);
@@ -172,7 +172,7 @@ std::pair<int32_t, std::string> RdAdapter::GetJsonString()
         &replyJson);
     if (errCode != GRD_OK) {
         LOG_ERROR("RdFragmentToString go wrong, errCode = %{public}d", errCode);
-        return std::make_pair(TransferToNapiErrNo(errCode), "");
+        return std::make_pair(RdUtils::TransferToNapiErrNo(errCode), "");
     }
     std::string retString(replyJson == nullptr ? "" : replyJson);
     (void)RdUtils::RdFreeValue(replyJson);
@@ -197,7 +197,7 @@ int32_t RdAdapter::SetAttribute(const std::string &attributeName, const std::str
     if (errCode != GRD_OK) {
         LOG_ERROR("RdElementSetAttribute go wrong, errCode = %{public}d", errCode);
     }
-    return TransferToNapiErrNo(errCode);
+    return RdUtils::TransferToNapiErrNo(errCode);
 }
 
 int32_t RdAdapter::RemoveAttrribute(const std::string &attributeName)
@@ -217,7 +217,7 @@ int32_t RdAdapter::RemoveAttrribute(const std::string &attributeName)
     if (errCode != GRD_OK) {
         LOG_ERROR("RdElementRemoveAttribute go wrong, errCode = %{public}d", errCode);
     }
-    return TransferToNapiErrNo(errCode);
+    return RdUtils::TransferToNapiErrNo(errCode);
 }
 
 std::pair<int32_t, std::string> RdAdapter::GetAttributes()
@@ -238,7 +238,7 @@ std::pair<int32_t, std::string> RdAdapter::GetAttributes()
     int32_t errCode = RdUtils::RdElementGetAttributes(this->dbStore_->GetDB(), &position, &fullAttributes);
     if (errCode != GRD_OK) {
         LOG_ERROR("RdElementGetAttributes go wrong, errCode = %{public}d", errCode);
-        return std::make_pair(TransferToNapiErrNo(errCode), "");
+        return std::make_pair(RdUtils::TransferToNapiErrNo(errCode), "");
     }
     std::string attrsString(fullAttributes == nullptr ? "" : fullAttributes);
     (void)RdUtils::RdFreeValue(fullAttributes);
@@ -263,7 +263,7 @@ int32_t RdAdapter::TextInsert(uint32_t index, const std::string &content, const 
     if (errCode != GRD_OK) {
         LOG_ERROR("RdTextInsert go wrong, errCode = %{public}d", errCode);
     }
-    return TransferToNapiErrNo(errCode);
+    return RdUtils::TransferToNapiErrNo(errCode);
 }
 
 int32_t RdAdapter::TextDelete(uint32_t index, uint32_t length)
@@ -283,7 +283,7 @@ int32_t RdAdapter::TextDelete(uint32_t index, uint32_t length)
     if (errCode != GRD_OK) {
         LOG_ERROR("RdTextDelete go wrong, errCode = %{public}d", errCode);
     }
-    return TransferToNapiErrNo(errCode);
+    return RdUtils::TransferToNapiErrNo(errCode);
 }
 
 int32_t RdAdapter::TextFormat(uint32_t index, uint32_t length, const std::string &formatStr)
@@ -304,7 +304,7 @@ int32_t RdAdapter::TextFormat(uint32_t index, uint32_t length, const std::string
     if (errCode != GRD_OK) {
         LOG_ERROR("RdTextFormat go wrong, errCode = %{public}d", errCode);
     }
-    return TransferToNapiErrNo(errCode);
+    return RdUtils::TransferToNapiErrNo(errCode);
 }
 
 std::pair<int32_t, uint32_t> RdAdapter::GetTextLength()
@@ -325,7 +325,7 @@ std::pair<int32_t, uint32_t> RdAdapter::GetTextLength()
     if (errCode != GRD_OK) {
         LOG_ERROR("RdTextGetLength go wrong, errCode = %{public}d", errCode);
     }
-    return std::make_pair(TransferToNapiErrNo(errCode), textLength);
+    return std::make_pair(RdUtils::TransferToNapiErrNo(errCode), textLength);
 }
 
 std::pair<int32_t, std::string> RdAdapter::ReadDeltaText(const std::string &snapshot, const std::string &snapshotPrev)
@@ -349,7 +349,7 @@ std::pair<int32_t, std::string> RdAdapter::ReadDeltaText(const std::string &snap
         snapshotPrevPtr, &deltaText);
     if (errCode != GRD_OK) {
         LOG_ERROR("RdTextReadInDeltaMode go wrong, errCode = %{public}d", errCode);
-        return std::make_pair(TransferToNapiErrNo(errCode), "");
+        return std::make_pair(RdUtils::TransferToNapiErrNo(errCode), "");
     }
     std::string deltaString(deltaText == nullptr ? "" : deltaText);
     (void)RdUtils::RdFreeValue(deltaText);
@@ -374,7 +374,7 @@ std::pair<int32_t, std::string> RdAdapter::ReadStringText()
     int32_t errCode = RdUtils::RdTextReadInStrMode(this->dbStore_->GetDB(), &position, &text);
     if (errCode != GRD_OK) {
         LOG_ERROR("RdTextReadInStrMode go wrong, errCode = %{public}d", errCode);
-        return std::make_pair(TransferToNapiErrNo(errCode), "");
+        return std::make_pair(RdUtils::TransferToNapiErrNo(errCode), "");
     }
     std::string str(text == nullptr ? "" : text);
     (void)RdUtils::RdFreeValue(text);
@@ -396,7 +396,21 @@ int32_t RdAdapter::CreateUndoManager(uint64_t captureTimeout)
     if (errCode != GRD_OK) {
         LOG_ERROR("RdDocUndoManager go wrong, errCode = %{public}d", errCode);
     }
-    return TransferToNapiErrNo(errCode);
+    return RdUtils::TransferToNapiErrNo(errCode);
+}
+
+int32_t RdAdapter::CloseUndoManager()
+{
+    GRD_XmlOpPositionT position = {
+        .tableName = this->tableName_.c_str(),
+        .elementId = nullptr,
+    };
+
+    int32_t errCode = RdUtils::RdDocCloseUndoManager(this->dbStore_->GetDB(), &position);
+    if (errCode != GRD_OK) {
+        LOG_ERROR("RdDocCloseUndoManager go wrong, errCode = %{public}d", errCode);
+    }
+    return RdUtils::TransferToNapiErrNo(errCode);
 }
 
 int32_t RdAdapter::Undo()
@@ -412,7 +426,7 @@ int32_t RdAdapter::Undo()
         LOG_ERROR("RdDocUndo go wrong, errCode = %{public}d", errCode);
     }
     (void)RdUtils::RdFreeValue(modify);
-    return TransferToNapiErrNo(errCode);
+    return RdUtils::TransferToNapiErrNo(errCode);
 }
 
 int32_t RdAdapter::Redo()
@@ -428,16 +442,7 @@ int32_t RdAdapter::Redo()
         LOG_ERROR("RdDocRedo go wrong, errCode = %{public}d", errCode);
     }
     (void)RdUtils::RdFreeValue(modify);
-    return TransferToNapiErrNo(errCode);
-}
-
-int32_t RdAdapter::TransferToNapiErrNo(int32_t originNo)
-{
-    auto it = g_errMap.find(originNo);
-    if (it == g_errMap.end()) {
-        return Status::DB_ERROR;
-    }
-    return it->second;
+    return RdUtils::TransferToNapiErrNo(errCode);
 }
 
 } // namespace OHOS::CollaborationEdit

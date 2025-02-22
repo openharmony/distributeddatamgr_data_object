@@ -22,6 +22,8 @@
 #include "db_error.h"
 #include "db_store.h"
 #include "db_store_config.h"
+#include "db_thread_pool.h"
+#include "napi_cloud_db.h"
 
 namespace OHOS::CollaborationEdit {
 class DBStoreManager {
@@ -31,12 +33,21 @@ public:
     ~DBStoreManager();
     std::shared_ptr<DBStore> GetDBStore(const DBStoreConfig &config);
     int DeleteDBStore(const DBStoreConfig &config);
+    int32_t SetCloudDb(std::shared_ptr<DBStore> dbStore, NapiCloudDb *napiCloudDb);
+    void InitThreadPool();
 
+    static GRD_ThreadPoolT threadPool_;
 private:
     std::shared_ptr<DBStore> OpenDBStore(const DBStoreConfig &config);
     int RemoveDir(const char *dir);
+    static void Schedule(void *func, void *param);
+
     std::mutex mutex_;
     std::map<std::string, std::shared_ptr<DBStore>> storeCache_;
+
+    std::mutex threadPoolMutex_;
+    static std::shared_ptr<ExecutorPool> executorPool_;
+    static std::shared_ptr<DBStoreMgrThreadPool> executors_;
 };
 } // namespace OHOS::CollaborationEdit
 #endif // COLLABORATION_EDIT_DB_STORE_MANAGER_H

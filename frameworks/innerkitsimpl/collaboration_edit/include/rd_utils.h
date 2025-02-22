@@ -16,17 +16,31 @@
 #ifndef COLLABORATION_EDIT_RD_UTILS_H
 #define COLLABORATION_EDIT_RD_UTILS_H
 
+#include <map>
+
+#include <string>
 #include "grd_error.h"
 #include "grd_type_export.h"
+#include "napi_errno.h"
 
 namespace OHOS::CollaborationEdit {
+static std::map<int32_t, int32_t> g_errMap = {
+    {GRD_OK, Status::SUCCESS},
+    {GRD_ARRAY_INDEX_NOT_FOUND, Status::INDEX_OUT_OF_RANGE}
+};
 class RdUtils {
 public:
     // 1. Database open/close library interface encapsulation
     static int RdDbOpen(const char *dbFile, const char *configStr, uint32_t flags, GRD_DB **db);
     static int RdDbClose(GRD_DB *db, uint32_t flags);
     static int RdSetLocalId(GRD_DB *db, const char *equipId);
-    static int RdGetLocalId(GRD_DB *db, char **localId);
+    static int RdGetLocalId(GRD_DB *db, char **equipId);
+    static int RdApplyUpdate(GRD_DB *db, char **applyInfo);
+    static int RdWriteUpdate(
+        GRD_DB *db, const char *equipId, const uint8_t *data, uint32_t size, const std::string &watermark);
+    static int RdGetRelativePos(GRD_DB *db, const char *tableName, const char *nodeSize, uint32_t pos, char **relPos);
+    static int RdGetAbsolutePos(
+        GRD_DB *db, const char *tableName, const char *relPos, const char *nodeSize, uint32_t *pos);
     // 2. Node operation inter
     static int RdInsertElements(GRD_DB *db, GRD_XmlOpPositionT *elementAddr, uint32_t index, GRD_DocNodeInfoT *nodeInfo,
         GRD_ElementIdT **outElementId);
@@ -53,12 +67,19 @@ public:
         const char *snapshotPerv, char **delta);
     // 5. Undo/Redo operation interface encapsulation
     static int RdDocUndoManager(GRD_DB *db, GRD_XmlOpPositionT *elementAddr, GRD_UndoParamT *param);
+    static int RdDocCloseUndoManager(GRD_DB *db, GRD_XmlOpPositionT *elementAddr);
     static int RdDocUndo(GRD_DB *db, GRD_XmlOpPositionT *elementAddr, char **modify);
     static int RdDocRedo(GRD_DB *db, GRD_XmlOpPositionT *elementAddr, char **modify);
     static int RdDocStopCapturing(GRD_DB *db, GRD_XmlOpPositionT *elementAddr);
+    // 6. Sync operation interface encapsulation
+    static int RdSync(GRD_DB *db, GRD_SyncConfig *config);
+    static int RdRegistryThreadPool(GRD_DB *db, GRD_ThreadPoolT *threadPool);
     // Last. Memory free and others
     static void RdFreeElementId(GRD_ElementIdT *outElementId);
     static int RdFreeValue(char *value);
+    static int RdSetCloudDb(GRD_DB *db, GRD_ICloudDBT *iCloud);
+
+    static int32_t TransferToNapiErrNo(int32_t originNo);
 };
 
 } // namepace OHOS::CollaborationEdit

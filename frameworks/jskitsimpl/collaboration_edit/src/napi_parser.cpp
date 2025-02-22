@@ -28,9 +28,17 @@
 #include "napi_utils.h"
 
 namespace OHOS::CollaborationEdit {
-using json = nlohmann::json;
 
 static constexpr const uint8_t NUMBER_OF_FIELDS_IN_ID = 2;
+
+static std::vector<std::string> g_cloudDbFields = {
+    "batchInsert",
+    "query",
+    "downloadAsset",
+    "uploadAsset",
+    "deleteAsset",
+    "deleteLocalAsset"
+};
 
 void Parser::Stringsplit(std::string str, const char split, std::vector<std::string> &res)
 {
@@ -144,6 +152,53 @@ int Parser::ParseJsonStrToJsChildren(
     return OK;
 }
 
+int Parser::ParseJsonStrToJsUpdateNode(
+    napi_env env, std::string nodeJsonStr, std::shared_ptr<DBStore> dbStore, napi_value &out)
+{
+    ASSERT(!nodeJsonStr.empty() && json::accept(nodeJsonStr), "invalid json str", ERR);
+    napi_status status = napi_create_array(env, &out);
+    ASSERT(status == napi_ok, "create array go wrong!", ERR);
+    json jsonArray = json::parse(nodeJsonStr);
+    ASSERT(jsonArray.is_array(), "result is not json array.", ERR);
+    int i = 0;
+    for (const auto &jsonObj : jsonArray) {
+        if (!jsonObj.contains("type") || !jsonObj.contains("name")) {
+            continue;
+        }
+        std::string type = jsonObj["type"];
+        std::string tableName = NapiUtils::RemovePrefix(jsonObj["name"], std::to_string(LABEL_FRAGMENT) + "_");
+        AbstractType parent;
+        parent.SetDBStore(dbStore);
+        parent.SetTableName(tableName);
+
+        napi_value jsNode;
+        if (type.compare("XML_ELEMENT") == 0) {
+            int ret = ParseJsonToJsNode(env, jsonObj, &parent, jsNode);
+            ASSERT(ret == OK, "Parse json to node go wrong.", ERR);
+        } else if (type.compare("XML_TEXT") == 0) {
+            int ret = ParseJsonToJsText(env, jsonObj, &parent, jsNode);
+            ASSERT(ret == OK, "Parse json to text go wrong.", ERR);
+        } else {
+            LOG_ERROR("Unsupported type. type = %{public}s", type.c_str());
+            continue;
+        }
+
+        napi_value jsUpdateNode = nullptr;
+        status = napi_create_object(env, &jsUpdateNode);
+        ASSERT(status == napi_ok, "create object go wrong!", ERR);
+        napi_value jstableName;
+        NapiUtils::SetValue(env, tableName, jstableName);
+        status = napi_set_named_property(env, jsUpdateNode, "editUnitName", jstableName);
+        ASSERT(status == napi_ok, "set editUnitName go wrong.", ERR);
+        status = napi_set_named_property(env, jsUpdateNode, "node", jsNode);
+        ASSERT(status == napi_ok, "set node go wrong.", ERR);
+        status = napi_set_element(env, out, i, jsUpdateNode);
+        ASSERT(status == napi_ok, "set element go wrong.", ERR);
+        i++;
+    }
+    return OK;
+}
+
 int Parser::ParseFromAttrsJsonStr(napi_env env, const std::string &jsonStr, napi_value &out)
 {
     ASSERT(!jsonStr.empty() && json::accept(jsonStr), "invalid json str", ERR);
@@ -235,6 +290,146 @@ int Parser::ParseVariantJsValueToStr(napi_env env, napi_value input, std::string
         }
     }
     return OK;
+}
+
+int Parser::CheckValueType(napi_env env, napi_value value)
+{
+    napi_valuetype valueType;
+    napi_status status = napi_typeof(env, value, &valueType);
+    if (status != napi_ok) {
+        LOG_ERROR("type of args go wrong, status = %{public}d", status);
+        return ERR;
+    }
+    if (valueType != napi_function) {
+        LOG_ERROR("value type go wrong: %{public}d", valueType);
+        return ERR;
+    }
+    return OK;
+}
+
+int Parser::ParseCloudDbFields(napi_env env, napi_value input, std::vector<napi_value> &cloudDbFuncVector)
+{
+    for (auto field : g_cloudDbFields) {
+        napi_value cloudDbFunc = nullptr;
+        napi_status status = NapiUtils::GetNamedProperty(env, input, field.c_str(), cloudDbFunc);
+        if (status != napi_ok) {
+            LOG_ERROR("get func go wrong, status = %{public}d", status);
+            return ERR;
+        }
+        int ret = CheckValueType(env, cloudDbFunc);
+        if (ret != OK) {
+            LOG_ERROR("check func type go wrong, status = %{public}d", ret);
+            return ret;
+        }
+        cloudDbFuncVector.push_back(cloudDbFunc);
+    }
+    return OK;
+}
+
+napi_value Parser::GetUniqueIdFromJsonStr(napi_env env, json &root)
+{
+    ASSERT(root.contains("client"), "parse client from json str go wrong", nullptr);
+    ASSERT(root.contains("clock"), "parse clock from json str go wrong", nullptr);
+
+    napi_value uniqueId = nullptr;
+    NAPI_CALL(env, napi_create_object(env, &uniqueId));
+    napi_value jsDeviceId = nullptr;
+    std::string client = root["client"];
+    NapiUtils::SetValue(env, client, jsDeviceId);
+    NAPI_CALL(env, napi_set_named_property(env, uniqueId, "id", jsDeviceId));
+    napi_value jsClock = nullptr;
+    int64_t clock = root["clock"];
+    NapiUtils::SetValue(env, clock, jsClock);
+    NAPI_CALL(env, napi_set_named_property(env, uniqueId, "clock", jsClock));
+
+    return uniqueId;
+}
+
+int Parser::SetRelativePosType(napi_env env, json &root, napi_value &relativePos)
+{
+    if (!root.contains("type")) {
+        return OK;
+    }
+    napi_value jsType = Parser::GetUniqueIdFromJsonStr(env, root["type"]);
+    if (jsType == nullptr) {
+        return ERR;
+    }
+    napi_status status = napi_set_named_property(env, relativePos, "parentId", jsType);
+    return status == napi_ok ? OK : ERR;
+}
+
+int Parser::SetRelativePosItem(napi_env env, json &root, napi_value &relativePos)
+{
+    if (!root.contains("item")) {
+        return OK;
+    }
+    napi_value jsItem = Parser::GetUniqueIdFromJsonStr(env, root["item"]);
+    if (jsItem == nullptr) {
+        return ERR;
+    }
+    napi_status status = napi_set_named_property(env, relativePos, "id", jsItem);
+    return status == napi_ok ? OK : ERR;
+}
+
+int Parser::SetRelativePosTname(napi_env env, json &root, napi_value &relativePos)
+{
+    if (!root.contains("tname")) {
+        return OK;
+    }
+    std::string tnameStrTmp = root["tname"];
+    auto tnameStr = NapiUtils::RemovePrefix(tnameStrTmp, std::to_string(LABEL_FRAGMENT) + "_");
+    napi_value tname = nullptr;
+    NapiUtils::SetValue(env, tnameStr, tname);
+    napi_status status = napi_set_named_property(env, relativePos, "parentName", tname);
+    return status == napi_ok ? OK : ERR;
+}
+
+int Parser::SetRelativePosAssoc(napi_env env, json &root, napi_value &relativePos)
+{
+    if (!root.contains("assoc")) {
+        return OK;
+    }
+    napi_value assoc;
+    int64_t assoc_num = root["assoc"];
+    NapiUtils::SetValue(env, assoc_num, assoc);
+    napi_status status = napi_set_named_property(env, relativePos, "pos", assoc);
+    return status == napi_ok ? OK : ERR;
+}
+
+napi_value Parser::GetRelativePosFromJsonStr(napi_env env, std::string &relPos)
+{
+    ASSERT_THROW(env, json::accept(relPos), Status::INTERNAL_ERROR, "parse relpos str go wrong");
+    json root = json::parse(relPos);
+
+    napi_value relativePos;
+    NAPI_CALL(env, napi_create_object(env, &relativePos));
+    Parser::SetRelativePosType(env, root, relativePos);
+    Parser::SetRelativePosItem(env, root, relativePos);
+    Parser::SetRelativePosTname(env, root, relativePos);
+    Parser::SetRelativePosAssoc(env, root, relativePos);
+    return relativePos;
+}
+
+void Parser::GetUniqueIdFromNapiValueToJsonStr(napi_env env, napi_value type, json &typeJson)
+{
+    std::string id;
+    int64_t clock;
+    napi_status status = NapiUtils::GetNamedProperty(env, type, "id", id);
+    ASSERT_THROW_VOID(env, status == napi_ok, Status::INVALID_ARGUMENT, "read id param from type go wrong");
+    status = NapiUtils::GetNamedProperty(env, type, "clock", clock);
+    ASSERT_THROW_VOID(env, status == napi_ok, Status::INVALID_ARGUMENT, "read clock param from type go wrong");
+    typeJson["client"] = id;
+    typeJson["clock"] = clock;
+}
+
+napi_value Parser::ParseFromAssetOpConfig(napi_env env, const AssetOpConfig &config)
+{
+    napi_value jsConfig = nullptr;
+    NAPI_CALL(env, napi_create_object(env, &jsConfig));
+    napi_value jsPath = nullptr;
+    NapiUtils::SetValue(env, config.inputPath, jsPath);
+    NAPI_CALL(env, napi_set_named_property(env, jsConfig, "path", jsPath));
+    return jsConfig;
 }
 
 } // namespace OHOS::CollaborationEdit

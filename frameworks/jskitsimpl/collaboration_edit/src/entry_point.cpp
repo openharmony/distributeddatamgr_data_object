@@ -16,6 +16,7 @@
 #define LOG_TAG "EntryPoint"
 
 #include "log_print.h"
+#include "napi_const_properties.h"
 #include "napi_collaboration_edit_object.h"
 #include "napi/native_api.h"
 #include "napi/native_common.h"
@@ -34,6 +35,7 @@ static napi_value Init(napi_env env, napi_value exports)
     NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc));
     Node::Init(env, exports);
     Text::Init(env, exports);
+    InitConstProperties(env, exports);
     return exports;
 }
 

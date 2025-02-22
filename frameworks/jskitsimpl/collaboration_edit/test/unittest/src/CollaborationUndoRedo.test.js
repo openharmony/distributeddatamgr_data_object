@@ -272,4 +272,56 @@ describe('collaborationUndoRedoTest', () => {
         expect().assertFail();
       }
     })
+
+    /**
+     * @tc.number CollaborationEdit_UndoRedo_0006
+     * @tc.name test DeleteUndoRedoManager
+     * @tc.desc 
+     *  1. get undo redo manager
+     *  2. delete undo redo manager
+     */
+    it("CollaborationEdit_UndoRedo_0006", 0, async () => {
+      console.log(TAG + "*****************CollaborationEdit_UndoRedo_0006 Start*****************");
+      expect(editUnit !== undefined).assertTrue();
+      let undoManager = undefined;
+      try {
+        undoManager = editObject?.getUndoRedoManager("top", {captureTimeout: 500});
+        expect(undoManager !== undefined).assertTrue();
+        let node1 = new collaboration_edit.Node("p1");
+        editUnit?.insertNodes(0, [node1]);
+ 
+        // sleep for 500ms then set attributes
+        await sleep(500);
+        node1.setAttributes({"align": "left"});
+        let attrs = node1.getAttributes();
+        expect(attrs["align"]).assertEqual("left");
+ 
+        // undo
+        undoManager?.undo();
+        attrs = node1.getAttributes();
+        expect(attrs["align"]).assertUndefined();
+ 
+        // redo
+        undoManager?.redo();
+        attrs = node1.getAttributes();
+        expect(attrs["align"]).assertEqual("left");
+      } catch (err) {
+        console.log(TAG + "undo redo failed. err: %s", err);
+      }
+
+      try {
+        editObject?.deleteUndoRedoManager("top");
+      } catch (err) {
+        console.log(TAG + "deleteUndoRedoManager failed. err: %s", err);
+        expect().assertFail();
+      }
+
+      let errCode = "";
+      try {
+        undoManager?.undo();
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect("15410003").assertEqual(errCode);
+    })
 })

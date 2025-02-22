@@ -338,5 +338,98 @@ describe('collaborationNodeTest', () => {
       }
       expect(errCode).assertEqual("401");
       console.log(TAG + "*****************CollaborationEdit_Node_0006 End*****************");
-  })
+    })
+
+    it("CollaborationEdit_Node_0007", 0, async () => {
+      console.log(TAG + "*****************CollaborationEdit_Node_0007 Start*****************");
+      expect(editUnit !== undefined).assertTrue();
+      try {
+        let node1 = new collaboration_edit.Node("p1");
+        editUnit?.insertNodes(0, [node1]);
+
+        // insert Texts
+        let text1 = new collaboration_edit.Text();
+        node1.insertTexts(0, [text1]);
+        text1.insert(0,'你好');
+        expect(text1.getId() !== undefined).assertTrue();
+        expect(text1.getId().clock).assertEqual(1);
+        let relPos = editUnit?.getRelativePos(2);
+        expect(relPos !== undefined).assertTrue();
+        if (relPos !== undefined) {
+          expect(relPos.parentId != null).assertTrue();
+          if (relPos.parentId != null) {
+            expect(relPos.parentId.clock === 1).assertTrue();
+          }
+          expect(relPos.id != null).assertTrue();
+          if (relPos.id != null) {
+            expect(relPos.id.clock === 3).assertTrue();
+          }
+          expect(relPos.pos === 0).assertTrue();
+        }
+      } catch (err) {
+        console.log(TAG + "CollaborationEdit_Node_0007 failed. err: %s", err);
+        expect().assertFail();
+      }
+      console.log(TAG + "*****************CollaborationEdit_Node_0007 End*****************");
+    })
+
+    it("CollaborationEdit_Node_0008", 0, async () => {
+      console.log(TAG + "*****************CollaborationEdit_Node_0008 Start*****************");
+      expect(editUnit !== undefined).assertTrue();
+      try {
+        let node1 = new collaboration_edit.Node("p1");
+        editUnit?.insertNodes(0, [node1]);
+
+        let relPos = editUnit?.getRelativePos(2);
+        expect(relPos !== undefined).assertTrue();
+        if (relPos !== undefined) {
+          expect(relPos.parentName != null).assertTrue();
+          if (relPos.parentName != null) {
+            expect(relPos.parentName === "top").assertTrue();
+          }
+          expect(relPos.pos === 0).assertTrue();
+        }
+      } catch (err) {
+        console.log(TAG + "CollaborationEdit_Node_0008 failed. err: %s", err);
+        expect().assertFail();
+      }
+      console.log(TAG + "*****************CollaborationEdit_Node_0008 End*****************");
+    })
+
+    it("CollaborationEdit_Node_0009", 0, async () => {
+      console.log(TAG + "*****************CollaborationEdit_Node_0009 Start*****************");
+      expect(editUnit !== undefined).assertTrue();
+      try {
+        let node1 = new collaboration_edit.Node("p1");
+        editUnit?.insertNodes(0, [node1]);
+
+        // insert Texts
+        let text1 = new collaboration_edit.Text();
+        node1.insertTexts(0, [text1]);
+        text1.insert(0,'followRedone');
+        expect(text1.getId() !== undefined).assertTrue();
+        expect(text1.getId().clock).assertEqual(1);
+
+        let node2 = new collaboration_edit.Node("p2");
+        editUnit?.insertNodes(1, [node2]);
+
+        let pos = editUnit?.getAbsolutePos({parentId: null, parentName: "top", id: null, pos: 0});
+        expect(pos === 16).assertTrue();
+
+        let localId = editObject?.getLocalId();
+        expect(localId !== undefined).assertTrue();
+        console.log("localId :" + localId);
+        if (localId !== undefined) {
+          pos = editUnit?.getAbsolutePos({parentId: {id: localId, clock: 1}, parentName: null, id: {id: localId, clock: 4}, pos: 0});
+          expect(pos === 3).assertTrue();
+
+          pos = editUnit?.getAbsolutePos({parentId: {id: localId, clock: 14}, parentName: null, id: null, pos: 0});
+          expect(pos === 15).assertTrue();
+        }
+      } catch (err) {
+        console.log(TAG + "CollaborationEdit_Node_0009 failed. err: %s", err);
+        expect().assertFail();
+      }
+      console.log(TAG + "*****************CollaborationEdit_Node_0009 End*****************");
+    })
 })

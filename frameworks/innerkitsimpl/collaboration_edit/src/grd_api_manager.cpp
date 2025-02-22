@@ -32,6 +32,10 @@ void GRD_DBApiInitEnhance(GRD_APIInfo &GRD_DBApiInfo)
     GRD_DBApiInfo.DBCloseApi = (DBClose)dlsym(g_library, "GRD_DBClose");
     GRD_DBApiInfo.SetLocalIdApi = (SetLocalId)dlsym(g_library, "GRD_SetEquipId");
     GRD_DBApiInfo.GetLocalIdApi = (GetLocalId)dlsym(g_library, "GRD_GetEquipId");
+    GRD_DBApiInfo.ApplyUpdateApi = (ApplyUpdate)dlsym(g_library, "GRD_OplogRelayApply");
+    GRD_DBApiInfo.WriteUpdateApi = (WriteUpdate)dlsym(g_library, "GRD_WriteLogWithEquipId");
+    GRD_DBApiInfo.GetRelativePosApi = (GetRelativePos)dlsym(g_library, "GRD_AbsolutePositionToRelativePosition");
+    GRD_DBApiInfo.GetAbsolutePosApi = (GetAbsolutePos)dlsym(g_library, "GRD_RelativePositionToAbsolutePosition");
     // 2. Node operation interface encapsulation
     GRD_DBApiInfo.InsertElementsApi = (InsertElements)dlsym(g_library, "GRD_XmlFragmentInsert");
     GRD_DBApiInfo.DeleteElementsApi = (DeleteElements)dlsym(g_library, "GRD_XmlFragmentDelete");
@@ -50,12 +54,17 @@ void GRD_DBApiInitEnhance(GRD_APIInfo &GRD_DBApiInfo)
     GRD_DBApiInfo.TextReadInDeltaModeApi = (TextReadInDeltaMode)dlsym(g_library, "GRD_TextReadInDeltaMode");
     // 5. Undo/Redo operation interface encapsulation
     GRD_DBApiInfo.DocUndoManagerApi = (DocUndoManager)dlsym(g_library, "GRD_DocUndoManager");
+    GRD_DBApiInfo.DocCloseUndoManagerApi = (DocCloseUndoManager)dlsym(g_library, "GRD_DocUndoManagerClose");
     GRD_DBApiInfo.DocUndoApi = (DocUndo)dlsym(g_library, "GRD_DocUndo");
     GRD_DBApiInfo.DocRedoApi = (DocRedo)dlsym(g_library, "GRD_DocRedo");
     GRD_DBApiInfo.DocStopCapturingApi = (DocStopCapturing)dlsym(g_library, "GRD_DocStopCapturing");
+    // 6. Sync operation interface encapsulation
+    GRD_DBApiInfo.SyncApi = (Sync)dlsym(g_library, "GRD_Sync");
+    GRD_DBApiInfo.RegistryThreadPoolApi = (RegistryThreadPool)dlsym(g_library, "GRD_RegistryThreadPool");
     // Last. Memory free and others
     GRD_DBApiInfo.FreeElementIdApi = (FreeElementId)dlsym(g_library, "GRD_XmlFreeElementId");
     GRD_DBApiInfo.FreeValueApi = (FreeValue)dlsym(g_library, "GRD_DocFree");
+    GRD_DBApiInfo.SetCloudDbApi = (SetCloudDb)dlsym(g_library, "GRD_RegistryCloudDB");
 #endif
 }
 

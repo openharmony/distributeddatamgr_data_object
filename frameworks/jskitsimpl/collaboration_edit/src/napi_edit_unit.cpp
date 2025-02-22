@@ -17,11 +17,14 @@
 
 #include "napi_edit_unit.h"
 
+#include <nlohmann/json.hpp>
+
 #include "napi_collaboration_edit_object.h"
 #include "napi_error_utils.h"
 #include "napi_parser.h"
 
 namespace OHOS::CollaborationEdit {
+using json = nlohmann::json;
 EditUnit::EditUnit(std::string name) : AbstractType(),  name_(name)
 {}
 
@@ -58,6 +61,8 @@ napi_value EditUnit::Constructor(napi_env env)
             DECLARE_NAPI_FUNCTION("getChildren", GetChildren),
             DECLARE_NAPI_FUNCTION("getJsonResult", GetJsonResult),
             DECLARE_NAPI_FUNCTION("getName", GetName),
+            DECLARE_NAPI_FUNCTION("getRelativePos", GetRelativePos),
+            DECLARE_NAPI_FUNCTION("getAbsolutePos", GetAbsolutePos),
         };
         return properties;
     };
@@ -89,7 +94,7 @@ napi_value EditUnit::GetName(napi_env env, napi_callback_info info)
         return nullptr;
     }
     std::string name = editUnit->name_;
-    if (name.compare(0, NUMBER_OF_CHARS_IN_LABEL_PREFIX, std::to_string(LABEL_FRAGMENT) + "_") == 0)  {
+    if (name.compare(0, NUMBER_OF_CHARS_IN_LABEL_PREFIX, std::to_string(LABEL_FRAGMENT) + "_") == 0) {
         name = name.substr(NUMBER_OF_CHARS_IN_LABEL_PREFIX);
     }
     napi_value result;
@@ -212,4 +217,82 @@ napi_value EditUnit::GetJsonResult(napi_env env, napi_callback_info info)
     }
     return output;
 }
-} // namespace OHOS::CollaborationEdit
+
+napi_value EditUnit::GetRelativePos(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = {nullptr};
+    napi_value self = nullptr;
+    NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, &self, nullptr));
+
+    uint32_t pos;
+    napi_status status = NapiUtils::GetValue(env, argv[0], pos);
+    ASSERT_THROW(env, status == napi_ok, Status::INVALID_ARGUMENT, "read pos param go wrong");
+
+    EditUnit *editUnit = nullptr;
+    NAPI_CALL(env, napi_unwrap(env, self, reinterpret_cast<void **>(&editUnit)));
+    ASSERT(editUnit != nullptr, "unwrap self go wrong.", nullptr);
+
+    auto dbStore = editUnit->GetDBStore();
+    std::string relPos;
+    int32_t ret = (*dbStore).GetRelativePos(editUnit->name_.c_str(), "{}", pos, relPos);
+    ASSERT_THROW(env, ret == OK, Status::INTERNAL_ERROR, "GetRelativePos go wrong");
+
+    return Parser::GetRelativePosFromJsonStr(env, relPos);
+}
+
+napi_value EditUnit::GetAbsolutePos(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value argv[1] = {nullptr};
+    napi_value self = nullptr;
+    NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, &self, nullptr));
+    EditUnit *editUnit = nullptr;
+    NAPI_CALL(env, napi_unwrap(env, self, reinterpret_cast<void **>(&editUnit)));
+    ASSERT(editUnit != nullptr, "unwrap self go wrong.", nullptr);
+
+    json root;
+    napi_value type;
+    napi_status status = NapiUtils::GetNamedProperty(env, argv[0], "parentId", type);
+    json typeJson;
+    if (status == napi_ok && !NapiUtils::IsNull(env, type)) {
+        Parser::GetUniqueIdFromNapiValueToJsonStr(env, type, typeJson);
+    } else {
+        typeJson = nullptr;
+    }
+    root["type"] = typeJson;
+
+    std::string typeName;
+    NapiUtils::GetNamedProperty(env, argv[0], "parentName", typeName);
+    if (!typeName.empty()) {
+        root["tname"] = typeName;
+    } else {
+        root["tname"] = nullptr;
+    }
+
+    napi_value item;
+    status = NapiUtils::GetNamedProperty(env, argv[0], "id", item);
+    json itemJson;
+    if (status == napi_ok && !NapiUtils::IsNull(env, item)) {
+        Parser::GetUniqueIdFromNapiValueToJsonStr(env, item, itemJson);
+    } else {
+        itemJson = nullptr;
+    }
+    root["item"] = itemJson;
+
+    int64_t assoc;
+    status = NapiUtils::GetNamedProperty(env, argv[0], "pos", assoc);
+    ASSERT_THROW(env, status == napi_ok, Status::INVALID_ARGUMENT, "read pos param go wrong");
+    root["assoc"] = assoc;
+
+    std::string relPos_str = root.dump();
+    auto dbStore = editUnit->GetDBStore();
+    uint32_t pos;
+    int32_t ret = (*dbStore).GetAbsolutePos(editUnit->name_.c_str(), relPos_str.c_str(), "{}", &pos);
+    ASSERT_THROW(env, ret == SUCCESS, ret, "GetAbsolutePos go wrong");
+
+    napi_value output = nullptr;
+    status = NapiUtils::SetValue(env, static_cast<int64_t>(pos), output);
+    return output;
+}
+}  // namespace OHOS::CollaborationEdit

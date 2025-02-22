@@ -37,10 +37,7 @@ napi_value UndoManager::Initialize(napi_env env, napi_callback_info info)
     NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, &self, nullptr));
     std::string tableName;
     napi_status status = NapiUtils::GetValue(env, argv[0], tableName);
-    if (status != napi_ok) {
-        ThrowNapiError(env, Status::INVALID_ARGUMENT, "read tableName go wrong");
-        return self;
-    }
+    ASSERT_THROW_BASE(env, status == napi_ok, Status::INVALID_ARGUMENT, "read tableName go wrong", self);
     int64_t captureTimeout = 0;
     status = NapiUtils::GetNamedProperty(env, argv[1], "captureTimeout", captureTimeout);
     if (status != napi_ok) {

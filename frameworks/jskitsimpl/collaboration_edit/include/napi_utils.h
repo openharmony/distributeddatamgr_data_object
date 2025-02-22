@@ -133,6 +133,8 @@ public:
         return (jsValue == nullptr) ? status : GetValue(env, jsValue, value);
     };
 
+    static std::string RemovePrefix(std::string str, std::string prefix);
+
 private:
     enum {
         /* std::map<key, value> to js::tuple<key, value> */
