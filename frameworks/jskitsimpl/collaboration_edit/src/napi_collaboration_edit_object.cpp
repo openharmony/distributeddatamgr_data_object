@@ -364,13 +364,9 @@ InputAction CollaborationEditObject::GetCloudSyncInput(std::shared_ptr<SyncConte
     };
 }
 
-napi_value CollaborationEditObject::CloudSync(napi_env env, napi_callback_info info)
+ExecuteAction CollaborationEditObject::GetCloudSyncExec(std::shared_ptr<SyncContext> context)
 {
-    LOG_DEBUG("CloudSync start.");
-    auto context = std::make_shared<SyncContext>();
-    auto input = CollaborationEditObject::GetCloudSyncInput(context);
-    // create cloudSync execute function
-    auto exec = [context]() -> int {
+    return [context]() -> int {
         LOG_INFO("CollaborationEditObject::CloudSync Async execute.");
         auto *editObject = reinterpret_cast<CollaborationEditObject *>(context->boundObj);
         ASSERT(editObject != nullptr && context->dbStore_ != nullptr, "editObject is null or dbStore is null", ERR);
@@ -383,10 +379,26 @@ napi_value CollaborationEditObject::CloudSync(napi_env env, napi_callback_info i
             CollaborationEditObject::SyncCallbackFunc);
         if (ret != GRD_OK) {
             LOG_ERROR("dbStore sync go wrong, errCode: %{public}d", ret);
+            GRD_SyncProcessT process = {};
+            process.status = GRD_SYNC_PROCESS_FINISHED;
+            process.errCode = ret;
+            process.mode = GRD_SYNC_MODE_INVALID;
+            process.cloudDB = nullptr;
+            process.syncId = context->syncId;
+            SyncCallbackFunc(&process);
             return ERR;
         }
         return OK;
     };
+}
+
+napi_value CollaborationEditObject::CloudSync(napi_env env, napi_callback_info info)
+{
+    LOG_DEBUG("CloudSync start.");
+    auto context = std::make_shared<SyncContext>();
+    auto input = CollaborationEditObject::GetCloudSyncInput(context);
+    // create cloudSync execute function
+    auto exec = GetCloudSyncExec(context);
     // create cloudSync output function
     auto output = [context](napi_env env, napi_value &result) {
         LOG_DEBUG("CollaborationEditObject::CloudSync output.");

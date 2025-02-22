@@ -102,6 +102,17 @@ function querySyncCallback_A(progress) {
   editObject_A?.applyUpdate();
 }
 
+function sync(editObject, syncMode, pCode) {
+  return new Promise((resolve) => {
+    const callback = (progress) => {
+      console.log(TAG + "batchInsert sync callback, progress code: " + progress.code.toString());
+      expect(pCode).assertEqual(progress.code);
+      resolve();
+    }
+    editObject?.cloudSync(syncMode, callback);
+  });
+}
+
 const CLOUD_DB_FUNC = {
   batchInsert: batchInsertHandler,
   query: queryHandler,
@@ -290,41 +301,113 @@ describe('collaborationSetCloudDbTest', () => {
       editObject_B?.setCloudDB(CLOUD_DB_FUNC);
       let editUnit_A = editObject_A?.getEditUnit(EDIT_UNIT_NAME);
       let editUnit_B = editObject_B?.getEditUnit(EDIT_UNIT_NAME);
- 
+
       // equip A edit
       let node_A = new collaboration_edit.Node("p1");
       editUnit_A?.insertNodes(0, [node_A]);
       let nodeList_A = editUnit_A?.getChildren(0, 1);
       expect(nodeList_A !== undefined).assertTrue();
       expect(1).assertEqual(nodeList_A?.length);
- 
+
       // equip A push to cloud
       editObject_A?.cloudSync(collaboration_edit.SyncMode.SYNC_MODE_PUSH, batchInsertSyncCallback);
       await sleep(500);
- 
+
       // equip B edit
       let node_B = new collaboration_edit.Node("p2");
       editUnit_B?.insertNodes(0, [node_B]);
       let nodeList_B = editUnit_B?.getChildren(0, 1);
       expect(nodeList_B !== undefined).assertTrue();
       expect(1).assertEqual(nodeList_B?.length);
- 
+
       // equip B sync with SYNC_MODE_PULL_PUSH mode
       editObject_B?.cloudSync(collaboration_edit.SyncMode.SYNC_MODE_PULL_PUSH, querySyncCallback_B);
       await sleep(500);
- 
+
       // cloud has 2 records
       let records = CloudDbMock.getCloudRecords();
       expect(2).assertEqual(records.length);
       expect(2).assertEqual(records[1].cursor);
- 
+
       // equip B has 2 nodes
       nodeList_B = editUnit_B?.getChildren(0, 2);
       expect(nodeList_B !== undefined).assertTrue();
       expect(2).assertEqual(nodeList_B?.length);
- 
+
     } catch (err) {
       console.log(TAG + "CollaborationEdit_SetCloudDb_0004 failed. err: " + err);
+      expect().assertFail();
+    }
+  })
+
+  /**
+   * @tc.number CollaborationEdit_SetCloudDb_0005
+   * @tc.name test write update from cloud to local device
+   * @tc.desc 
+   *  1. equip A insert 1 node locally
+   *  2. equip A push to cloud
+   *  3. write cloud records to equip B
+   *  4. equip B contains equip A's data
+   */
+  it("CollaborationEdit_SetCloudDb_0005", 0, async () => {
+    try {
+      editObject_A?.setCloudDB(CLOUD_DB_FUNC);
+      editObject_B?.setCloudDB(CLOUD_DB_FUNC);
+      let editUnit_A = editObject_A?.getEditUnit(EDIT_UNIT_NAME);
+      let editUnit_B = editObject_B?.getEditUnit(EDIT_UNIT_NAME);
+
+      // equip A insert 1 node
+      let node_A = new collaboration_edit.Node("p1");
+      editUnit_A?.insertNodes(0, [node_A]);
+      let nodeList_A = editUnit_A?.getChildren(0, 1);
+      expect(nodeList_A !== undefined).assertTrue();
+      expect(1).assertEqual(nodeList_A?.length);
+
+      // equip A push to cloud
+      editObject_A?.cloudSync(collaboration_edit.SyncMode.SYNC_MODE_PUSH, batchInsertSyncCallback);
+      await sleep(500);
+
+      // write update to equip B
+      let records = CloudDbMock.getCloudRecords();
+      for (let record of records) {
+        editObject_B?.writeUpdate(record);
+      }
+      editObject_B?.applyUpdate();
+
+      // equip B has data from device A
+      let nodeList_B = editUnit_B?.getChildren(0, 1);
+      expect(nodeList_B !== undefined).assertTrue();
+      expect(1).assertEqual(nodeList_B?.length);
+
+    } catch (err) {
+      console.log(TAG + "CollaborationEdit_SetCloudDb_0005 failed. err: " + err);
+      expect().assertFail();
+    }
+  })
+
+  /**
+   * @tc.number CollaborationEdit_SetCloudDb_0006
+   * @tc.name test cloud sync when cloud db not set
+   * @tc.desc
+   *  1. equip A insert 1 node and push to cloud
+   *  2. get CLOUD_NOT_SET error code in callback
+   */
+  it("CollaborationEdit_SetCloudDb_0006", 0, async () => {
+    try {
+      let editUnit_A = editObject_A?.getEditUnit(EDIT_UNIT_NAME);
+
+      // equip A insert 1 node
+      let node_A = new collaboration_edit.Node("p1");
+      editUnit_A?.insertNodes(0, [node_A]);
+      let nodeList_A = editUnit_A?.getChildren(0, 1);
+      expect(nodeList_A !== undefined).assertTrue();
+      expect(1).assertEqual(nodeList_A?.length);
+
+      // equip A push to cloud
+      await sync(editObject_A, collaboration_edit.SyncMode.SYNC_MODE_PUSH,
+        collaboration_edit.ProgressCode.CLOUD_NOT_SET);
+    } catch (err) {
+      console.log(TAG + "CollaborationEdit_SetCloudDb_0006 failed. err: " + err);
       expect().assertFail();
     }
   })

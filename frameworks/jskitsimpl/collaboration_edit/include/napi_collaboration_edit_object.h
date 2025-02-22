@@ -58,6 +58,7 @@ private:
     static int ParseThis(const napi_env &env, const napi_value &self, std::shared_ptr<SyncContext> context);
     static int ParseCloudSyncMode(const napi_env env, const napi_value arg, std::shared_ptr<SyncContext> context);
     static InputAction GetCloudSyncInput(std::shared_ptr<SyncContext> context);
+    static ExecuteAction GetCloudSyncExec(std::shared_ptr<SyncContext> context);
 
     std::string docName_;
     std::shared_ptr<ContextParam> param_;
