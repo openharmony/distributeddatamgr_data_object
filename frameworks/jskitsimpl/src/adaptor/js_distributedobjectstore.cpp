@@ -15,17 +15,12 @@
 
 #include "js_distributedobjectstore.h"
 
-#include <cstring>
 #include <random>
 
-#include "ability_context.h"
 #include "accesstoken_kit.h"
-#include "application_context.h"
-#include "distributed_objectstore.h"
 #include "js_ability.h"
 #include "js_common.h"
 #include "js_distributedobject.h"
-#include "js_object_wrapper.h"
 #include "js_util.h"
 #include "logger.h"
 #include "object_error.h"

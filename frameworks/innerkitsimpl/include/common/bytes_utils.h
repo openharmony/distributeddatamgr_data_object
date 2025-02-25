@@ -16,9 +16,6 @@
 #ifndef BYTES_UTILS_H
 #define BYTES_UTILS_H
 
-#include <initializer_list>
-
-#include "bytes.h"
 #include "logger.h"
 #include "objectstore_errors.h"
 

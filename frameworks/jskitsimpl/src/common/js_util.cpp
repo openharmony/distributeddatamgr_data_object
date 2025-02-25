@@ -14,11 +14,9 @@
  */
 #include "js_util.h"
 
-#include <endian.h>
 #include <securec.h>
 
 #include "logger.h"
-#include "common_types.h"
 
 namespace OHOS::ObjectStore {
 constexpr int32_t STR_MAX_LENGTH = 4096;

@@ -16,13 +16,9 @@
 #ifndef FLAT_OBJECT_STORE_H
 #define FLAT_OBJECT_STORE_H
 
-#include <memory>
-#include <string>
-
 #include "bytes.h"
 #include "flat_object_storage_engine.h"
 #include "distributed_object.h"
-#include "object_types.h"
 
 namespace OHOS::ObjectStore {
 class FlatObjectWatcher : public TableWatcher {

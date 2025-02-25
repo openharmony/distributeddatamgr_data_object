@@ -19,12 +19,9 @@
 #include "bundle_mgr_interface.h"
 #include "dev_manager.h"
 #include "dms_handler.h"
-#include "iservice_registry.h"
 #include "logger.h"
 #include "securec.h"
-#include "session.h"
 #include "softbus_bus_center.h"
-#include "system_ability_definition.h"
 
 namespace OHOS {
 namespace ObjectStore {

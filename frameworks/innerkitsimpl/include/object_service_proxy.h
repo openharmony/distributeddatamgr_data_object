@@ -16,8 +16,6 @@
 #ifndef DISTRIBUTED_OBJECT_SERVICE_PROXY_H
 #define DISTRIBUTED_OBJECT_SERVICE_PROXY_H
 
-#include <atomic>
-#include <list>
 #include <iremote_proxy.h>
 #include "iobject_service.h"
 

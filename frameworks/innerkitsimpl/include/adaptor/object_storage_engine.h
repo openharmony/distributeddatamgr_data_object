@@ -16,11 +16,6 @@
 #ifndef OBJECT_STORAGE_ENGINE_H
 #define OBJECT_STORAGE_ENGINE_H
 
-#include <cstdint>
-#include <map>
-#include <vector>
-
-#include "kv_store_observer.h"
 #include "watcher.h"
 
 namespace OHOS::ObjectStore {

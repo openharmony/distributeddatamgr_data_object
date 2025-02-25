@@ -15,9 +15,7 @@
 
 #ifndef DISTRIBUTED_OBJECT_IMPL_H
 #define DISTRIBUTED_OBJECT_IMPL_H
-#include <string>
 
-#include "distributed_object.h"
 #include "flat_object_store.h"
 
 namespace OHOS::ObjectStore {

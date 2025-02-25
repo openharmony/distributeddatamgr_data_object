@@ -16,13 +16,8 @@
 #ifndef JS_DISTRIBUTEDDATAOBJECTSTORE_H
 #define JS_DISTRIBUTEDDATAOBJECTSTORE_H
 
-#include <list>
-
 #include "concurrent_map.h"
-#include "distributed_objectstore.h"
-#include "js_native_api.h"
 #include "js_object_wrapper.h"
-#include "node_api.h"
 namespace OHOS::ObjectStore {
 class JSDistributedObjectStore {
 public:

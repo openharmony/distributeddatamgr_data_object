@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 #include "uv_queue.h"
-#include <mutex>
 #include "logger.h"
 
 namespace OHOS::ObjectStore {

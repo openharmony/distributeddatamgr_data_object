@@ -16,9 +16,6 @@
 #ifndef JS_DISTRIBUTEDOBJECT_H
 #define JS_DISTRIBUTEDOBJECT_H
 
-#include <js_native_api.h>
-
-#include "distributed_objectstore.h"
 #include "js_object_wrapper.h"
 namespace OHOS::ObjectStore {
 struct ConstructContext {

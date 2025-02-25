@@ -15,8 +15,6 @@
 
 #include "ark_communication_provider.h"
 
-#include <logger.h>
-
 namespace OHOS {
 namespace ObjectStore {
 CommunicationProvider &ArkCommunicationProvider::Init()

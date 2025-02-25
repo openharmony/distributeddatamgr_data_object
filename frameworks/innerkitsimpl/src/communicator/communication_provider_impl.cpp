@@ -15,8 +15,6 @@
 
 #include "communication_provider_impl.h"
 
-#include <logger.h>
-
 namespace OHOS {
 namespace ObjectStore {
 std::mutex CommunicationProviderImpl::mutex_;

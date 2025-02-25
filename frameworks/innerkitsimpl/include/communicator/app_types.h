@@ -18,11 +18,7 @@
 
 #include <errors.h>
 
-#include <cstdint>
 #include <string>
-#include <vector>
-
-#include "visibility.h"
 
 namespace OHOS {
 namespace ObjectStore {

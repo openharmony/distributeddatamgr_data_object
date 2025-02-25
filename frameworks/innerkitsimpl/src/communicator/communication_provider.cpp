@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 
-#include "communication_provider.h"
-
 #include "ark_communication_provider.h"
 
 namespace OHOS {

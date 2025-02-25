@@ -16,7 +16,6 @@
 #ifndef OHOS_OBJECT_ASSET_VALUE_H
 #define OHOS_OBJECT_ASSET_VALUE_H
 
-#include <string>
 #include "common_types.h"
 
 namespace OHOS {

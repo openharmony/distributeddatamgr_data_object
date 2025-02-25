@@ -15,7 +15,6 @@
 
 #ifndef JS_COMMON_H
 #define JS_COMMON_H
-#include "hilog/log.h"
 namespace OHOS::ObjectStore {
 class Constants {
 public:

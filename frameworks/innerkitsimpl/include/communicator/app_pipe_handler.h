@@ -16,13 +16,6 @@
 #ifndef DISTRIBUTEDDATAFWK_SRC_PIPE_HANDLER_H
 #define DISTRIBUTEDDATAFWK_SRC_PIPE_HANDLER_H
 
-#include <map>
-#include <mutex>
-#include <set>
-#include <string>
-
-#include "app_data_change_listener.h"
-#include "app_types.h"
 #include "logger.h"
 #include "softbus_adapter.h"
 

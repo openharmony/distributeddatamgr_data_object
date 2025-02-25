@@ -15,10 +15,6 @@
 
 #include "app_pipe_handler.h"
 
-#include <string>
-
-#include "logger.h"
-
 namespace OHOS {
 namespace ObjectStore {
 using namespace std;

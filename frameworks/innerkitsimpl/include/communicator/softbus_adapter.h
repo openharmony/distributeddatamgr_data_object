@@ -15,19 +15,11 @@
 
 #ifndef DISTRIBUTEDDATAFWK_SRC_SOFTBUS_ADAPTER_H
 #define DISTRIBUTEDDATAFWK_SRC_SOFTBUS_ADAPTER_H
-#include <map>
-#include <memory>
-#include <set>
-#include <tuple>
-#include <vector>
 
 #include "app_data_change_listener.h"
 #include "app_device_status_change_listener.h"
-#include "app_types.h"
 #include "concurrent_map.h"
-#include "session.h"
 #include "socket.h"
-#include "softbus_bus_center.h"
 #include "task_scheduler.h"
 
 namespace OHOS {

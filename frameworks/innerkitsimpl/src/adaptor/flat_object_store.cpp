@@ -19,14 +19,9 @@
 #include "block_data.h"
 #include "bytes_utils.h"
 #include "client_adaptor.h"
-#include "distributed_objectstore_impl.h"
 #include "ipc_skeleton.h"
-#include "logger.h"
 #include "object_callback_impl.h"
 #include "object_radar_reporter.h"
-#include "object_service_proxy.h"
-#include "objectstore_errors.h"
-#include "softbus_adapter.h"
 #include "string_utils.h"
 
 namespace OHOS::ObjectStore {

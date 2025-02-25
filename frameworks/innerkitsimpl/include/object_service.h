@@ -16,10 +16,6 @@
 #ifndef DISTRIBUTED_OBJECT_SERVICE_H
 #define DISTRIBUTED_OBJECT_SERVICE_H
 
-#include <map>
-#include <string>
-#include <vector>
-#include "distributeddata_object_store_ipc_interface_code.h"
 #include "object_types.h"
 
 namespace OHOS::DistributedObject {

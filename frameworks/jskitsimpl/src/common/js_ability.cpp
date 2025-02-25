@@ -15,7 +15,6 @@
 
 #include "js_ability.h"
 
-#include "extension_context.h"
 #include "logger.h"
 
 namespace OHOS {

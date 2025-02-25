@@ -15,8 +15,6 @@
 #ifndef OBJECTSTORE_ERRORS_H
 #define OBJECTSTORE_ERRORS_H
 
-#include <stdint.h>
-
 namespace OHOS::ObjectStore {
 constexpr uint32_t BASE_ERR_OFFSET = 1650;
 

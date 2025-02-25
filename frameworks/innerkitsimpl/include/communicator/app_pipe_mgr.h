@@ -16,13 +16,7 @@
 #ifndef DISTRIBUTEDDATAMGR_APP_PIPE_MGR_H
 #define DISTRIBUTEDDATAMGR_APP_PIPE_MGR_H
 
-#include <map>
-#include <mutex>
-
-#include "app_data_change_listener.h"
 #include "app_pipe_handler.h"
-#include "app_types.h"
-#include "logger.h"
 
 namespace OHOS {
 namespace ObjectStore {

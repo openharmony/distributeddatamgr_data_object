@@ -16,7 +16,6 @@
 #define LOG_TAG "ObjectCallbackStub"
 #include "object_callback_stub.h"
 #include <ipc_skeleton.h>
-#include <logger.h>
 #include "itypes_util.h"
 #include "log_print.h"
 

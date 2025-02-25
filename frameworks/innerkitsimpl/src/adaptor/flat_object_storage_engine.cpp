@@ -16,13 +16,10 @@
 
 #include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
-#include "logger.h"
 #include "objectstore_errors.h"
 #include "process_communicator_impl.h"
-#include "securec.h"
 #include "softbus_adapter.h"
 #include "string_utils.h"
-#include "types_export.h"
 #include "object_radar_reporter.h"
 
 namespace OHOS::ObjectStore {

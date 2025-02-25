@@ -17,9 +17,6 @@
 #define JSWATCHER_H
 
 #include "distributed_objectstore.h"
-#include "flat_object_store.h"
-#include "napi/native_api.h"
-#include "napi/native_node_api.h"
 #include "uv_queue.h"
 
 namespace OHOS::ObjectStore {
@@ -38,7 +35,7 @@ public:
     virtual ~EventListener()
     {
     }
-    
+
     bool IsEmpty()
     {
         return handlers_ == nullptr;
@@ -97,7 +94,7 @@ public:
     void Emit(const char *type, const std::string &sessionId, const std::vector<std::string> &changeData);
 
     void Emit(const char *type, const std::string &sessionId, const std::string &networkId, const std::string &status);
-    
+
     bool IsEmpty();
 
     void SetListener(ChangeEventListener *changeEventListener, StatusEventListener *statusEventListener);

@@ -16,8 +16,6 @@
 #ifndef DISTRIBUTEDDATA_SRC_COMMUNICATION_PROVIDER_IMPL_H
 #define DISTRIBUTEDDATA_SRC_COMMUNICATION_PROVIDER_IMPL_H
 
-#include <set>
-
 #include "app_device_handler.h"
 #include "app_pipe_mgr.h"
 #include "communication_provider.h"

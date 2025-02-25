@@ -16,8 +16,6 @@
 #ifndef APP_DEVICE_STATUS_CHANGE_LISTENER_H
 #define APP_DEVICE_STATUS_CHANGE_LISTENER_H
 
-#include "app_types.h"
-
 namespace OHOS {
 namespace ObjectStore {
 enum class ChangeLevelType : int8_t {
