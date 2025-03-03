@@ -79,6 +79,7 @@ napi_value Node::New(napi_env env, napi_callback_info info)
         std::string name = "";
         NapiUtils::GetValue(env, argv[0], name);
         Node *node = new (std::nothrow) Node(name);
+        ASSERT_THROW_BASE(env, node != nullptr, Status::INTERNAL_ERROR, "new: new node go wrong", self);
         auto finalize = [](napi_env env, void *data, void *hint) {
             Node *node = reinterpret_cast<Node *>(data);
             delete node;

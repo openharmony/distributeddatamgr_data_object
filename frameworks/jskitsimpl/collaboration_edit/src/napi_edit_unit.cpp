@@ -43,6 +43,7 @@ napi_value EditUnit::Initialize(napi_env env, napi_callback_info info)
     ASSERT_THROW_BASE(env, !name.empty(), Status::INVALID_ARGUMENT, "Param Error: invalid name", self);
     name = std::to_string(LABEL_FRAGMENT) + "_" + name;
     EditUnit *editUnit = new (std::nothrow) EditUnit(name);
+    ASSERT_THROW_BASE(env, editUnit != nullptr, Status::INTERNAL_ERROR, "Initialize: new editunit go wrong", self);
     editUnit->SetTableName(name);
     auto finalize = [](napi_env env, void *data, void *hint) {
         EditUnit *editUnit = reinterpret_cast<EditUnit *>(data);

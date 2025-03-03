@@ -64,6 +64,7 @@ napi_value Text::New(napi_env env, napi_callback_info info)
     // create instance by 'new Node(name)'
     if (newTarget != nullptr) {
         Text *text = new (std::nothrow) Text();
+        ASSERT_THROW_BASE(env, text != nullptr, Status::INTERNAL_ERROR, "text new: new text go wrong", self);
         auto finalize = [](napi_env env, void *data, void *hint) {
             Text *text = reinterpret_cast<Text *>(data);
             delete text;

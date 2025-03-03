@@ -70,6 +70,7 @@ napi_value CollaborationEditObject::Initialize(napi_env env, napi_callback_info 
     }
 
     CollaborationEditObject *editObject = new (std::nothrow) CollaborationEditObject(docName, context);
+    ASSERT_THROW_BASE(env, editObject != nullptr, Status::INTERNAL_ERROR, "Initialize: new editObject go wrong", self);
     editObject->SetDBStore(dbStore);
     auto finalize = [](napi_env env, void *data, void *hint) {
         CollaborationEditObject *editObject = reinterpret_cast<CollaborationEditObject *>(data);
