@@ -15,13 +15,8 @@
 
 #ifndef DISTRIBUTEDDATAMGR_OBJECT_JSABILITY_H
 #define DISTRIBUTEDDATAMGR_OBJECT_JSABILITY_H
-#include <iostream>
-#include <string>
 
 #include "ability.h"
-#include "napi/native_api.h"
-#include "napi/native_common.h"
-#include "napi/native_node_api.h"
 #include "napi_base_context.h"
 
 namespace OHOS {

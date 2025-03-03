@@ -16,7 +16,6 @@
 #include "js_common.h"
 #include "js_distributedobjectstore.h"
 #include "logger.h"
-#include "notifier_impl.h"
 
 using namespace OHOS::ObjectStore;
 

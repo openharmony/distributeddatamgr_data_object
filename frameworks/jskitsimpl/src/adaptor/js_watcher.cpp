@@ -13,10 +13,6 @@
  * limitations under the License.
  */
 
-#include "js_watcher.h"
-
-#include <cstring>
-
 #include "anonymous.h"
 #include "js_common.h"
 #include "js_util.h"

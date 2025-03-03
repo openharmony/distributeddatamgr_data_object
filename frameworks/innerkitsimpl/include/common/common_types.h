@@ -16,9 +16,6 @@
 #ifndef OHOS_DATA_OBJECT_COMMON_TYPES_H
 #define OHOS_DATA_OBJECT_COMMON_TYPES_H
 #include <map>
-#include <string>
-#include <variant>
-#include <vector>
 namespace OHOS::CommonType {
 struct AssetValue {
     enum Status : int32_t {

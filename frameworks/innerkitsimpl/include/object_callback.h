@@ -17,8 +17,6 @@
 #define OBJECT_CALLBACK_H
 
 #include <map>
-#include <string>
-#include <vector>
 
 namespace OHOS {
 namespace DistributedObject {

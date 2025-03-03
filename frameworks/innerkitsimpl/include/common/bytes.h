@@ -16,7 +16,6 @@
 #ifndef BYTES_H
 #define BYTES_H
 
-#include <memory>
 #include <vector>
 
 namespace OHOS::ObjectStore {

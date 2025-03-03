@@ -15,10 +15,6 @@
 
 #ifndef DISTRIBUTED_OBJECT_H
 #define DISTRIBUTED_OBJECT_H
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
 #include "object_types.h"
 
 namespace OHOS::ObjectStore {
@@ -31,7 +27,7 @@ enum Type : uint8_t {
 class DistributedObject {
 public:
     virtual ~DistributedObject(){};
-    
+
     /**
      * @brief Put or update the data whose value type is double into the database, which means that the data of
      * objects in the same sessionId is put or updated.
@@ -42,7 +38,7 @@ public:
      * @return Returns 0 for success, others for failure.
      */
     virtual uint32_t PutDouble(const std::string &key, double value) = 0;
-    
+
     /**
      * @brief Put or update the data whose value type is bool into the database, which means that the data of
      * objects in the same sessionId is put or updated.
@@ -53,7 +49,7 @@ public:
      * @return Returns 0 for success, others for failure.
      */
     virtual uint32_t PutBoolean(const std::string &key, bool value) = 0;
-    
+
     /**
      * @brief Put or update the data whose value type is string into the database, which means that the data of
      * objects in the same sessionId is put or updated.
@@ -64,7 +60,7 @@ public:
      * @return Returns 0 for success, others for failure.
      */
     virtual uint32_t PutString(const std::string &key, const std::string &value) = 0;
-    
+
     /**
      * @brief Put or update the data whose value type is bytes stream into the database, which means that the data of
      * objects in the same sessionId is put or updated.
@@ -75,7 +71,7 @@ public:
      * @return Returns 0 for success, others for failure.
      */
     virtual uint32_t PutComplex(const std::string &key, const std::vector<uint8_t> &value) = 0;
-    
+
     /**
      * @brief Get the data whose value type is double from the database according to the key,
      * which means that the data of objects in the same sessionId is get.
@@ -86,7 +82,7 @@ public:
      * @return Returns 0 for success, others for failure.
      */
     virtual uint32_t GetDouble(const std::string &key, double &value) = 0;
-    
+
     /**
      * @brief Get the data whose value type is bool from the database according to the key,
      * which means that the data of objects in the same sessionId is get.
@@ -97,7 +93,7 @@ public:
      * @return Returns 0 for success, others for failure.
      */
     virtual uint32_t GetBoolean(const std::string &key, bool &value) = 0;
-    
+
     /**
      * @brief Get the data whose value type is string from the database according to the key,
      * which means that the data of objects in the same sessionId is get.
@@ -108,7 +104,7 @@ public:
      * @return Returns 0 for success, others for failure.
      */
     virtual uint32_t GetString(const std::string &key, std::string &value) = 0;
-    
+
     /**
      * @brief Get the data whose value type is complex from the database according to the key,
      * which means that the data of objects in the same sessionId is get.
@@ -119,7 +115,7 @@ public:
      * @return Returns 0 for success, others for failure.
      */
     virtual uint32_t GetComplex(const std::string &key, std::vector<uint8_t> &value) = 0;
-    
+
     /**
      * @brief Get the value type of key-value data by the key
      *
@@ -129,7 +125,7 @@ public:
      * @return Returns 0 for success, others for failure.
      */
     virtual uint32_t GetType(const std::string &key, Type &type) = 0;
-    
+
     /**
      * @brief Save the data to local device.
      *
@@ -138,14 +134,14 @@ public:
      * @return Returns 0 for success, others for failure.
      */
     virtual uint32_t Save(const std::string &deviceId) = 0;
-    
+
     /**
      * @brief Revoke save data.
      *
      * @return Returns 0 for success, others for failure.
      */
     virtual uint32_t RevokeSave() = 0;
-    
+
     /**
      * @brief Get the sessionId of the object.
      *

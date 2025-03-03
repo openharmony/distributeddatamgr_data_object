@@ -15,10 +15,7 @@
 
 #ifndef DISTRIBUTED_OBJECTSTORE_H
 #define DISTRIBUTED_OBJECTSTORE_H
-#include <memory>
 #include <string>
-#include <vector>
-#include <functional>
 
 #include "distributed_object.h"
 
@@ -31,7 +28,7 @@ public:
 class DistributedObjectStore {
 public:
     virtual ~DistributedObjectStore(){};
-    
+
     /**
      * @brief Get the instance to handle the object, such as create the object.
      *
@@ -40,7 +37,7 @@ public:
      * @return Returns the pointer to the DistributedObjectStore class.
      */
     static DistributedObjectStore *GetInstance(const std::string &bundleName = "");
-    
+
     /**
      * @brief Create a object according to the sessionId.
      *
@@ -49,7 +46,7 @@ public:
      * @return Returns the pointer to the DistributedObject class.
      */
     virtual DistributedObject *CreateObject(const std::string &sessionId) = 0;
-    
+
     /**
      * @brief Create a object according to the sessionId.
      *
@@ -60,7 +57,7 @@ public:
      * @return Returns the pointer to the DistributedObject class.
      */
     virtual DistributedObject *CreateObject(const std::string &sessionId, uint32_t &status) = 0;
-    
+
     /**
      * @brief Get the double pointer to the object.
      *
@@ -70,7 +67,7 @@ public:
      * @return Returns 0 for success, others for failure.
      */
     virtual uint32_t Get(const std::string &sessionId, DistributedObject **object) = 0;
-    
+
     /**
      * @brief Delete the object according to the sessionId.
      *
@@ -79,7 +76,7 @@ public:
      * @return Returns 0 for success, others for failure.
      */
     virtual uint32_t DeleteObject(const std::string &sessionId) = 0;
-    
+
     /**
      * @brief Set listening for data changes.
      *
@@ -89,7 +86,7 @@ public:
      * @return Returns 0 for success, others for failure.
      */
     virtual uint32_t Watch(DistributedObject *object, std::shared_ptr<ObjectWatcher> objectWatcher) = 0;
-    
+
     /**
      * @brief Undo listening for data changes.
      *
@@ -98,7 +95,7 @@ public:
      * @return Returns the pointer to the DistributedObject class.
      */
     virtual uint32_t UnWatch(DistributedObject *object) = 0;
-    
+
     /**
      * @brief Set listening for device online and offline .
      *
@@ -107,7 +104,7 @@ public:
      * @return Returns 0 for success, others for failure.
      */
     virtual uint32_t SetStatusNotifier(std::shared_ptr<StatusNotifier> notifier) = 0;
-    
+
     /**
      * @brief Notify the status of the local device from the cached callback function according to the sessionId.
      *

@@ -13,14 +13,12 @@
  * limitations under the License.
  */
 
-#include <thread>
 #include <unordered_set>
 
 #include "hitrace.h"
 #include "distributed_object_impl.h"
 #include "distributed_objectstore_impl.h"
 #include "objectstore_errors.h"
-#include "softbus_adapter.h"
 #include "string_utils.h"
 #include "asset_change_timer.h"
 #include "object_radar_reporter.h"

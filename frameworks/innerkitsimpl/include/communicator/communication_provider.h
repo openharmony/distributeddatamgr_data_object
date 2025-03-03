@@ -16,13 +16,8 @@
 #ifndef DISTRIBUTEDDATA_COMMUNICATION_PROVIDER_H
 #define DISTRIBUTEDDATA_COMMUNICATION_PROVIDER_H
 
-#include <memory>
-#include <vector>
-
 #include "app_data_change_listener.h"
 #include "app_device_status_change_listener.h"
-#include "app_types.h"
-#include "visibility.h"
 namespace OHOS {
 namespace ObjectStore {
 class CommunicationProvider {

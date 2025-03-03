@@ -15,8 +15,6 @@
 #ifndef OBJECT_UTILS_H
 #define OBJECT_UTILS_H
 
-#include <string>
-
 namespace OHOS::ObjectStore {
 class ObjectUtils final {
 public:

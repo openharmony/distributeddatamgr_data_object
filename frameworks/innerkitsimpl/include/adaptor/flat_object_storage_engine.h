@@ -16,12 +16,6 @@
 #ifndef FLAT_OBJECT_STORAGE_ENGINE_H
 #define FLAT_OBJECT_STORAGE_ENGINE_H
 
-#include <cstdint>
-#include <map>
-#include <mutex>
-#include <vector>
-
-#include "kv_store_delegate_manager.h"
 #include "object_storage_engine.h"
 
 namespace OHOS::ObjectStore {

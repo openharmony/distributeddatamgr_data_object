@@ -16,10 +16,6 @@
 #ifndef JS_OBJECT_WRAPPER_H
 #define JS_OBJECT_WRAPPER_H
 
-#include <shared_mutex>
-
-#include "distributed_object.h"
-#include "distributed_objectstore.h"
 #include "js_watcher.h"
 
 namespace OHOS::ObjectStore {

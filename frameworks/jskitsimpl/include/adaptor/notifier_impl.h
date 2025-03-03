@@ -16,9 +16,6 @@
 #ifndef JS_NOTIFIER_IMPL_H
 #define JS_NOTIFIER_IMPL_H
 
-#include <mutex>
-
-#include "distributed_objectstore.h"
 #include "js_watcher.h"
 namespace OHOS::ObjectStore {
 class NotifierImpl : public StatusNotifier {

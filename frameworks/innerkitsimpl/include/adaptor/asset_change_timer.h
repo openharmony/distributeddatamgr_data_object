@@ -14,11 +14,9 @@
  */
 #ifndef ASSET_CHANGE_TIMER_H
 #define ASSET_CHANGE_TIMER_H
-#include <unordered_map>
 
 #include "executor_pool.h"
 #include "flat_object_store.h"
-#include "object_types.h"
 
 namespace OHOS::ObjectStore {
 class AssetChangeTimer {

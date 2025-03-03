@@ -15,13 +15,9 @@
 #include "dev_manager.h"
 
 #include <logger.h>
-#include <thread>
 
 #include "device_manager.h"
-#include "device_manager_callback.h"
-#include "dm_device_info.h"
 #include "softbus_adapter.h"
-#include "app_types.h"
 
 namespace OHOS {
 namespace ObjectStore {

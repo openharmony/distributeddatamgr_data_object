@@ -14,8 +14,6 @@
  */
 #ifndef DATA_OBJECT_DEV_MANAGER_H
 #define DATA_OBJECT_DEV_MANAGER_H
-#include <cstdint>
-#include <string>
 #include <mutex>
 namespace OHOS {
 namespace ObjectStore {

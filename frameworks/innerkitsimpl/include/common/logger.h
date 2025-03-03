@@ -15,7 +15,6 @@
 
 #ifndef OBJECT_STORE_LOGGER_H
 #define OBJECT_STORE_LOGGER_H
-#include <memory>
 #ifdef HILOG_ENABLE
 #include "hilog/log.h"
 namespace OHOS::ObjectStore {
@@ -71,8 +70,6 @@ static inline OHOS::HiviewDFX::HiLogLabel LogLabel()
 
 } // namespace OHOS::ObjectStore
 #else
-#include <stdio.h>
-#include <stdlib.h>
 
 #define LOG_DEBUG(fmt, ...) \
     printf("[D][ObjectStore]%s:%d %s: " fmt "\n", __FILE_NAME__, __LINE__, __FUNCTION__, ##__VA_ARGS__)

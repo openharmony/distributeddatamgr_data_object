@@ -16,10 +16,7 @@
 #ifndef WATCHER_H
 #define WATCHER_H
 
-#include <cstdint>
-
 #include "kv_store_delegate_manager.h"
-#include "logger.h"
 
 namespace OHOS::ObjectStore {
 class Watcher : public DistributedDB::KvStoreObserver {

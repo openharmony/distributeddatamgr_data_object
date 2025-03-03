@@ -16,11 +16,6 @@
 #ifndef DISTRIBUTED_OBJECT_SERVICE_H
 #define DISTRIBUTED_OBJECT_SERVICE_H
 
-#include <map>
-#include <string>
-#include <vector>
-
-#include "object_callback.h"
 namespace OHOS::ObjectStore {
 class ObjectService {
 public:

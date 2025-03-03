@@ -15,7 +15,6 @@
 
 #ifndef OBJECT_CALLBACK_STUB_H
 #define OBJECT_CALLBACK_STUB_H
-#include <iremote_broker.h>
 #include <iremote_stub.h>
 #include "object_callback.h"
 

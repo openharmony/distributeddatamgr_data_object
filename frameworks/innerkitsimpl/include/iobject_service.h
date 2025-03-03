@@ -16,9 +16,6 @@
 #ifndef DISTRIBUTEDDATAFWK_IOBJECT_SERVICE_H
 #define DISTRIBUTEDDATAFWK_IOBJECT_SERVICE_H
 
-#include <string>
-
-#include <iremote_broker.h>
 #include "object_service.h"
 #include "distributeddata_object_store_ipc_interface_code.h"
 

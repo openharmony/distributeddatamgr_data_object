@@ -17,7 +17,6 @@
 #define OBJECT_CLIENT_ADAPTOR_H
 
 #include "object_service_proxy.h"
-#include "iobject_service.h"
 
 namespace OHOS::ObjectStore {
 class ObjectStoreDataServiceProxy;

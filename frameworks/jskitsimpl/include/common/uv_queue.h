@@ -14,14 +14,11 @@
  */
 #ifndef UV_QUEUE_H
 #define UV_QUEUE_H
-#include <functional>
 #include <list>
 #include <map>
 #include <shared_mutex>
 
-#include "napi/native_api.h"
 #include "napi/native_node_api.h"
-#include "uv.h"
 
 namespace OHOS::ObjectStore {
 typedef void (*Process)(napi_env env, std::list<void *> &);

@@ -15,14 +15,10 @@
 
 #include "js_distributedobject.h"
 
-#include <cstring>
-
 #include "js_common.h"
-#include "js_object_wrapper.h"
 #include "js_util.h"
 #include "logger.h"
 #include "napi_queue.h"
-#include "object_error.h"
 #include "objectstore_errors.h"
 
 namespace OHOS::ObjectStore {

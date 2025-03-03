@@ -16,8 +16,6 @@
 #ifndef DISTRIBUTEDDATAFWK_ARK_COMMUNICATION_PROVIDER_H
 #define DISTRIBUTEDDATAFWK_ARK_COMMUNICATION_PROVIDER_H
 
-#include "app_device_handler.h"
-#include "app_pipe_mgr.h"
 #include "communication_provider_impl.h"
 #include "nocopyable.h"
 

@@ -16,12 +16,9 @@
 #ifndef DISTRIBUTED_OBJECTSTORE_IMPL_H
 #define DISTRIBUTED_OBJECTSTORE_IMPL_H
 
-#include <bytes.h>
-
 #include <shared_mutex>
 
 #include "distributed_objectstore.h"
-#include "flat_object_store.h"
 namespace OHOS::ObjectStore {
 class WatcherProxy;
 enum SyncStatus : int8_t {
