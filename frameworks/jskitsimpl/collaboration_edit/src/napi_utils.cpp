@@ -20,7 +20,6 @@
 #include "napi_error_utils.h"
 
 namespace OHOS::CollaborationEdit {
-constexpr int32_t STR_MAX_LENGTH = 4096;
 constexpr size_t STR_TAIL_LENGTH = 1;
 
 // second param is the base64 code of data.collaborationEditObject
@@ -118,24 +117,21 @@ napi_status NapiUtils::GetValue(napi_env env, napi_value input, std::string &out
     napi_status ret = napi_typeof(env, input, &type);
     ASSERT((ret == napi_ok) && (type == napi_string), "invalid type", napi_invalid_arg);
 
-    size_t maxLen = STR_MAX_LENGTH;
+    size_t maxLen = 0;
     ret = napi_get_value_string_utf8(env, input, nullptr, 0, &maxLen);
-    if (maxLen <= 0) {
+    if (ret != napi_ok) {
         return ret;
     }
     LOG_DEBUG("napi_value -> std::string get length %{public}d", (int)maxLen);
     char *buf = new (std::nothrow) char[maxLen + STR_TAIL_LENGTH];
-    if (buf != nullptr) {
-        size_t len = 0;
-        ret = napi_get_value_string_utf8(env, input, buf, maxLen + STR_TAIL_LENGTH, &len);
-        if (ret == napi_ok) {
-            buf[len] = 0;
-            out = std::string(buf);
-        }
-        delete[] buf;
-    } else {
-        ret = napi_generic_failure;
+    ASSERT(buf != nullptr, "buffer is nullptr", napi_generic_failure);
+    size_t len = 0;
+    ret = napi_get_value_string_utf8(env, input, buf, maxLen + STR_TAIL_LENGTH, &len);
+    if (ret == napi_ok) {
+        buf[len] = 0;
+        out = std::string(buf);
     }
+    delete[] buf;
     return ret;
 }
 
@@ -159,7 +155,7 @@ napi_status NapiUtils::GetValue(napi_env env, napi_value input, std::vector<uint
     ASSERT(statusMsg == napi_ok, "napi_get_typedarray_info go wrong!", napi_invalid_arg);
     ASSERT(type == napi_uint8_array, "is not Uint8Array!", napi_invalid_arg);
     ASSERT((length > 0) && (data != nullptr), "invalid data!", napi_invalid_arg);
-    out.assign((uint8_t *)data, ((uint8_t *)data) + length);
+    out.assign(static_cast<uint8_t *>(data), static_cast<uint8_t *>(data) + length);
     return statusMsg;
 }
 
@@ -179,293 +175,6 @@ napi_status NapiUtils::SetValue(napi_env env, const std::vector<uint8_t> &input,
     statusMsg = napi_create_typedarray(env, napi_uint8_array, input.size(), buffer, 0, &out);
     ASSERT((statusMsg == napi_ok), "napi_value <- std::vector<uint8_t> invalid value", statusMsg);
     return statusMsg;
-}
-
-template <typename T>
-void TypedArray2Vector(uint8_t *dataPtr, size_t length, napi_typedarray_type type, std::vector<T> &out)
-{
-    auto convert = [&out](auto *dataPtr, size_t elements) {
-        for (size_t index = 0; index < elements; index++) {
-            out.push_back(static_cast<T>(dataPtr[index]));
-        }
-    };
-
-    switch (type) {
-        case napi_int8_array:
-            convert(reinterpret_cast<int8_t *>(dataPtr), length);
-            break;
-        case napi_uint8_array:
-            convert(dataPtr, length);
-            break;
-        case napi_uint8_clamped_array:
-            convert(dataPtr, length);
-            break;
-        case napi_int16_array:
-            convert(reinterpret_cast<int16_t *>(dataPtr), length / sizeof(int16_t));
-            break;
-        case napi_uint16_array:
-            convert(reinterpret_cast<uint16_t *>(dataPtr), length / sizeof(uint16_t));
-            break;
-        case napi_int32_array:
-            convert(reinterpret_cast<int32_t *>(dataPtr), length / sizeof(int32_t));
-            break;
-        case napi_uint32_array:
-            convert(reinterpret_cast<uint32_t *>(dataPtr), length / sizeof(uint32_t));
-            break;
-        case napi_float32_array:
-            convert(reinterpret_cast<float *>(dataPtr), length / sizeof(float));
-            break;
-        case napi_float64_array:
-            convert(reinterpret_cast<double *>(dataPtr), length / sizeof(double));
-            break;
-        case napi_bigint64_array:
-            convert(reinterpret_cast<int64_t *>(dataPtr), length / sizeof(int64_t));
-            break;
-        case napi_biguint64_array:
-            convert(reinterpret_cast<uint64_t *>(dataPtr), length / sizeof(uint64_t));
-            break;
-        default:
-            ASSERT_VOID(false, "[FATAL] invalid napi_typedarray_type!");
-    }
-}
-
-/* napi_value <-> std::vector<int32_t> */
-napi_status NapiUtils::GetValue(napi_env env, napi_value input, std::vector<int32_t> &out)
-{
-    out.clear();
-    LOG_DEBUG("napi_value -> std::vector<int32_t> ");
-    napi_typedarray_type type = napi_biguint64_array;
-    napi_value buffer = nullptr;
-    uint8_t *data = nullptr;
-    size_t length = 0;
-    size_t offset = 0;
-    napi_status status =
-        napi_get_typedarray_info(env, input, &type, &length, reinterpret_cast<void **>(&data), &buffer, &offset);
-    LOG_DEBUG("array type=%{public}d length=%{public}d offset=%{public}d", (int)type, (int)length, (int)offset);
-    ASSERT(status == napi_ok, "napi_get_typedarray_info go wrong!", napi_invalid_arg);
-    ASSERT(type <= napi_int32_array, "is not int32 supported typed array!", napi_invalid_arg);
-    ASSERT((length > 0) && (data != nullptr), "invalid data!", napi_invalid_arg);
-    TypedArray2Vector<int32_t>(data, length, type, out);
-    return status;
-}
-
-napi_status NapiUtils::SetValue(napi_env env, const std::vector<int32_t> &input, napi_value &out)
-{
-    LOG_DEBUG("napi_value <- std::vector<int32_t> ");
-    size_t bytes = input.size() * sizeof(int32_t);
-    ASSERT(bytes > 0, "invalid std::vector<int32_t>", napi_invalid_arg);
-    void *data = nullptr;
-    napi_value buffer = nullptr;
-    napi_status status = napi_create_arraybuffer(env, bytes, &data, &buffer);
-    ASSERT((status == napi_ok), "invalid buffer", status);
-
-    if (memcpy_s(data, bytes, input.data(), bytes) != EOK) {
-        LOG_ERROR("napi_value <- std::vector<int32_t>: memcpy_s go wrong, vector size:%{public}zd", input.size());
-        return napi_invalid_arg;
-    }
-    status = napi_create_typedarray(env, napi_int32_array, input.size(), buffer, 0, &out);
-    ASSERT((status == napi_ok), "invalid buffer", status);
-    return status;
-}
-
-/* napi_value <-> std::vector<uint32_t> */
-napi_status NapiUtils::GetValue(napi_env env, napi_value input, std::vector<uint32_t> &out)
-{
-    out.clear();
-    LOG_DEBUG("napi_value -> std::vector<uint32_t> ");
-    napi_typedarray_type type = napi_biguint64_array;
-    napi_value buffer = nullptr;
-    uint8_t *data = nullptr;
-    size_t length = 0;
-    size_t offset = 0;
-    napi_status status =
-        napi_get_typedarray_info(env, input, &type, &length, reinterpret_cast<void **>(&data), &buffer, &offset);
-    LOG_DEBUG("napi_get_typedarray_info type=%{public}d", (int)type);
-    ASSERT(status == napi_ok, "napi_get_typedarray_info go wrong!", napi_invalid_arg);
-    ASSERT((type <= napi_uint16_array) || (type == napi_uint32_array), "invalid type!", napi_invalid_arg);
-    ASSERT((length > 0) && (data != nullptr), "invalid data!", napi_invalid_arg);
-    TypedArray2Vector<uint32_t>(data, length, type, out);
-    return status;
-}
-
-napi_status NapiUtils::SetValue(napi_env env, const std::vector<uint32_t> &input, napi_value &out)
-{
-    LOG_DEBUG("napi_value <- std::vector<uint32_t> ");
-    size_t bytes = input.size() * sizeof(uint32_t);
-    ASSERT(bytes > 0, "invalid std::vector<uint32_t>", napi_invalid_arg);
-    void *data = nullptr;
-    napi_value buffer = nullptr;
-    napi_status status = napi_create_arraybuffer(env, bytes, &data, &buffer);
-    ASSERT((status == napi_ok), "invalid buffer", status);
-
-    if (memcpy_s(data, bytes, input.data(), bytes) != EOK) {
-        LOG_ERROR("napi_value <- std::vector<uint32_t>: memcpy_s go wrong, vector size:%{public}zd", input.size());
-        return napi_invalid_arg;
-    }
-    status = napi_create_typedarray(env, napi_uint32_array, input.size(), buffer, 0, &out);
-    ASSERT((status == napi_ok), "invalid buffer", status);
-    return status;
-}
-
-/* napi_value <-> std::vector<int64_t> */
-napi_status NapiUtils::GetValue(napi_env env, napi_value input, std::vector<int64_t> &out)
-{
-    out.clear();
-    LOG_DEBUG("napi_value -> std::vector<int64_t> ");
-    napi_typedarray_type type = napi_biguint64_array;
-    napi_value buffer = nullptr;
-    uint8_t *data = nullptr;
-    size_t length = 0;
-    size_t offset = 0;
-    napi_status status =
-        napi_get_typedarray_info(env, input, &type, &length, reinterpret_cast<void **>(&data), &buffer, &offset);
-    LOG_DEBUG("array type=%{public}d length=%{public}d offset=%{public}d", (int)type, (int)length, (int)offset);
-    ASSERT(status == napi_ok, "napi_get_typedarray_info go wrong!", napi_invalid_arg);
-    ASSERT((type <= napi_uint32_array) || (type == napi_bigint64_array), "invalid type!", napi_invalid_arg);
-    ASSERT((length > 0) && (data != nullptr), "invalid data!", napi_invalid_arg);
-    TypedArray2Vector<int64_t>(data, length, type, out);
-    return status;
-}
-
-napi_status NapiUtils::SetValue(napi_env env, const std::vector<int64_t> &input, napi_value &out)
-{
-    LOG_DEBUG("napi_value <- std::vector<int64_t> ");
-    size_t bytes = input.size() * sizeof(int64_t);
-    ASSERT(bytes > 0, "invalid std::vector<int64_t>", napi_invalid_arg);
-    void *data = nullptr;
-    napi_value buffer = nullptr;
-    napi_status status = napi_create_arraybuffer(env, bytes, &data, &buffer);
-    ASSERT((status == napi_ok), "invalid buffer", status);
-
-    if (memcpy_s(data, bytes, input.data(), bytes) != EOK) {
-        LOG_ERROR("napi_value <- std::vector<int64_t>: memcpy_s go wrong, vector size:%{public}zd", input.size());
-        return napi_invalid_arg;
-    }
-    status = napi_create_typedarray(env, napi_bigint64_array, input.size(), buffer, 0, &out);
-    ASSERT((status == napi_ok), "invalid buffer", status);
-    return status;
-}
-
-/* napi_value <-> std::vector<double> */
-napi_status NapiUtils::GetValue(napi_env env, napi_value input, std::vector<double> &out)
-{
-    out.clear();
-    bool isTypedArray = false;
-    napi_status status = napi_is_typedarray(env, input, &isTypedArray);
-    LOG_DEBUG("napi_value -> std::vector<double> input %{public}s a TypedArray", isTypedArray ? "is" : "is not");
-    ASSERT((status == napi_ok), "napi_is_typedarray go wrong!", status);
-    if (isTypedArray) {
-        LOG_DEBUG("napi_value -> std::vector<double> ");
-        napi_typedarray_type type = napi_biguint64_array;
-        napi_value buffer = nullptr;
-        uint8_t *data = nullptr;
-        size_t length = 0;
-        size_t offset = 0;
-        status =
-            napi_get_typedarray_info(env, input, &type, &length, reinterpret_cast<void **>(&data), &buffer, &offset);
-        LOG_DEBUG("napi_get_typedarray_info status=%{public}d type=%{public}d", status, (int)type);
-        ASSERT(status == napi_ok, "napi_get_typedarray_info go wrong!", napi_invalid_arg);
-        ASSERT((length > 0) && (data != nullptr), "invalid data!", napi_invalid_arg);
-        TypedArray2Vector<double>(data, length, type, out);
-    } else {
-        bool isArray = false;
-        status = napi_is_array(env, input, &isArray);
-        LOG_DEBUG("napi_value -> std::vector<double> input %{public}s an Array", isArray ? "is" : "is not");
-        ASSERT((status == napi_ok) && isArray, "invalid data!", napi_invalid_arg);
-        uint32_t length = 0;
-        status = napi_get_array_length(env, input, &length);
-        ASSERT((status == napi_ok) && (length > 0), "invalid data!", napi_invalid_arg);
-        for (uint32_t i = 0; i < length; ++i) {
-            napi_value item = nullptr;
-            status = napi_get_element(env, input, i, &item);
-            ASSERT((item != nullptr) && (status == napi_ok), "no element", napi_invalid_arg);
-            double vi = 0.0;
-            status = napi_get_value_double(env, item, &vi);
-            ASSERT(status == napi_ok, "element not a double", napi_invalid_arg);
-            out.push_back(vi);
-        }
-    }
-    return status;
-}
-
-napi_status NapiUtils::SetValue(napi_env env, const std::vector<double> &input, napi_value &out)
-{
-    LOG_DEBUG("napi_value <- std::vector<double> ");
-    (void)(env);
-    (void)(input);
-    (void)(out);
-    ASSERT(false, "std::vector<double> to napi_value, unsupported!", napi_invalid_arg);
-    return napi_invalid_arg;
-}
-
-/* napi_value <-> std::vector<std::string> */
-napi_status NapiUtils::GetValue(napi_env env, napi_value input, std::vector<std::string> &out)
-{
-    LOG_DEBUG("napi_value -> std::vector<std::string>");
-    out.clear();
-    bool isArray = false;
-    napi_is_array(env, input, &isArray);
-    ASSERT(isArray, "not an array", napi_invalid_arg);
-
-    uint32_t length = 0;
-    napi_status statusMsg = napi_get_array_length(env, input, &length);
-    ASSERT((statusMsg == napi_ok) && (length > 0), "get_array go wrong!", napi_invalid_arg);
-    for (uint32_t i = 0; i < length; ++i) {
-        napi_value item = nullptr;
-        statusMsg = napi_get_element(env, input, i, &item);
-        ASSERT((item != nullptr) && (statusMsg == napi_ok), "no element", napi_invalid_arg);
-        std::string value;
-        statusMsg = GetValue(env, item, value);
-        ASSERT(statusMsg == napi_ok, "not a string", napi_invalid_arg);
-        out.push_back(value);
-    }
-    return statusMsg;
-}
-
-napi_status NapiUtils::SetValue(napi_env env, const std::vector<std::string> &input, napi_value &out)
-{
-    LOG_DEBUG("napi_value <- std::vector<std::string>");
-    napi_status status = napi_create_array_with_length(env, input.size(), &out);
-    ASSERT(status == napi_ok, "create array go wrong!", status);
-    int index = 0;
-    for (auto &item : input) {
-        napi_value element = nullptr;
-        SetValue(env, item, element);
-        status = napi_set_element(env, out, index++, element);
-        ASSERT((status == napi_ok), "napi_set_element go wrong!", status);
-    }
-    return status;
-}
-
-/* napi_value <-> std::map<std::string, int32_t> */
-napi_status NapiUtils::GetValue(napi_env env, napi_value input, std::map<std::string, int32_t> &out)
-{
-    LOG_DEBUG("napi_value -> std::map<std::string, int32_t> ");
-    (void)(env);
-    (void)(input);
-    (void)(out);
-    ASSERT(false, "std::map<std::string, uint32_t> from napi_value, unsupported!", napi_invalid_arg);
-    return napi_invalid_arg;
-}
-
-napi_status NapiUtils::SetValue(napi_env environment, const std::map<std::string, int32_t> &input, napi_value &out)
-{
-    LOG_DEBUG("napi_value <- std::map<std::string, int32_t> ");
-    napi_status status = napi_create_array_with_length(environment, input.size(), &out);
-    ASSERT((status == napi_ok), "invalid object", status);
-    int index = 0;
-    for (const auto &[key, value] : input) {
-        napi_value element = nullptr;
-        napi_create_array_with_length(environment, TUPLE_SIZE, &element);
-        napi_value jsKey = nullptr;
-        napi_create_string_utf8(environment, key.c_str(), key.size(), &jsKey);
-        napi_set_element(environment, element, TUPLE_KEY, jsKey);
-        napi_value jsValue = nullptr;
-        napi_create_int32(environment, static_cast<int32_t>(value), &jsValue);
-        napi_set_element(environment, element, TUPLE_VALUE, jsValue);
-        napi_set_element(environment, out, index++, element);
-    }
-    return status;
 }
 
 napi_status NapiUtils::GetCurrentAbilityParam(napi_env env, ContextParam &param)
@@ -518,7 +227,7 @@ napi_status NapiUtils::GetValue(napi_env env, napi_value input, ContextParam &pa
     }
 
     napi_value appInfo = nullptr;
-    GetNamedProperty(env, input, "applicationInfo", hapInfo);
+    GetNamedProperty(env, input, "applicationInfo", appInfo);
     if (appInfo != nullptr) {
         status = GetNamedProperty(env, appInfo, "name", param.bundleName);
         ASSERT(status == napi_ok, "get applicationInfo.name go wrong", napi_invalid_arg);

@@ -81,36 +81,6 @@ public:
 
     static napi_status SetValue(napi_env env, const std::vector<uint8_t> &input, napi_value &out);
 
-    /* napi_value <-> std::vector<int32_t> */
-    static napi_status GetValue(napi_env env, napi_value input, std::vector<int32_t> &out);
-
-    static napi_status SetValue(napi_env env, const std::vector<int32_t> &input, napi_value &out);
-
-    /* napi_value <-> std::vector<uint32_t> */
-    static napi_status GetValue(napi_env env, napi_value input, std::vector<uint32_t> &out);
-
-    static napi_status SetValue(napi_env env, const std::vector<uint32_t> &input, napi_value &out);
-
-    /* napi_value <-> std::vector<int64_t> */
-    static napi_status GetValue(napi_env env, napi_value input, std::vector<int64_t> &out);
-
-    static napi_status SetValue(napi_env env, const std::vector<int64_t> &input, napi_value &out);
-
-    /* napi_value <-> std::vector<double> */
-    static napi_status GetValue(napi_env env, napi_value input, std::vector<double> &out);
-
-    static napi_status SetValue(napi_env env, const std::vector<double> &input, napi_value &out);
-
-    /* napi_value <-> std::vector<std::string> */
-    static napi_status GetValue(napi_env env, napi_value input, std::vector<std::string> &out);
-
-    static napi_status SetValue(napi_env env, const std::vector<std::string> &input, napi_value &out);
-
-    /* napi_value <-> std::map<std::string, int32_t> */
-    static napi_status GetValue(napi_env env, napi_value input, std::map<std::string, int32_t> &out);
-
-    static napi_status SetValue(napi_env env, const std::map<std::string, int32_t> &input, napi_value &out);
-
     static napi_status GetCurrentAbilityParam(napi_env env, ContextParam &param);
 
     static napi_status GetValue(napi_env env, napi_value input, ContextParam &param);
