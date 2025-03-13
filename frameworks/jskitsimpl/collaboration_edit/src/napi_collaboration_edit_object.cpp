@@ -57,6 +57,7 @@ napi_value CollaborationEditObject::Initialize(napi_env env, napi_callback_info 
     ContextParam context;
     napi_status status = NapiUtils::GetValue(env, argv[0], context);
     ASSERT_THROW_BASE(env, status == napi_ok, Status::INVALID_ARGUMENT, "read context param go wrong", self);
+    ASSERT_THROW_BASE(env, context.isSystemApp, Status::NOT_SYSTEM_APP, "Not a system app", self);
     std::string docName;
     status = NapiUtils::GetNamedProperty(env, argv[1], "name", docName);
     ASSERT_THROW_BASE(env, status == napi_ok, Status::INVALID_ARGUMENT, "read docName param go wrong", self);
@@ -307,6 +308,7 @@ napi_value CollaborationEditObject::Delete(napi_env env, napi_callback_info info
     ContextParam context;
     napi_status status = NapiUtils::GetValue(env, argv[0], context);
     ASSERT_THROW_BASE(env, status == napi_ok, Status::INVALID_ARGUMENT, "read context param go wrong", self);
+    ASSERT_THROW_BASE(env, context.isSystemApp, Status::NOT_SYSTEM_APP, "Not a system app", self);
     std::string docName;
     status = NapiUtils::GetNamedProperty(env, argv[1], "name", docName);
     ASSERT_THROW_BASE(env, status == napi_ok, Status::INVALID_ARGUMENT, "read docName param go wrong", self);
