@@ -13,7 +13,7 @@
 
 import("//build/test.gni")
 
-module_output_path = "data_object/napi"
+module_output_path = "distributeddatamgr/data_object/napi"
 
 ohos_js_unittest("ObjectStoreJsTest") {
   module_out_path = module_output_path
