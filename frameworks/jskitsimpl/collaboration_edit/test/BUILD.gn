@@ -17,6 +17,6 @@ import("//build/test.gni")
 group("unittest") {
   testonly = true
   deps = []
-  deps += [ "unittest/src:unittest" ]
+  deps += [ "unittest/collaboration_edit_js_test:CollaborationEditJsTest" ]
 }
 ###############################################################################

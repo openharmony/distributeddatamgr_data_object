@@ -12,40 +12,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import { describe, beforeEach, afterEach, beforeAll, afterAll, it, expect } from 'deccjsunit/index'
+
+import { describe, beforeEach, afterEach, beforeAll, it, afterAll, expect, Level } from '@ohos/hypium'
 import collaboration_edit from "@ohos.data.collaborationEditObject"
-import ability_featureAbility from '@ohos.ability.featureAbility'
- 
-const TAG = "[CollaborationEdit_JsTest]"
-const DOC_CONFIG = {name: "doc_test"}
- 
-var context = ability_featureAbility.getContext()
- 
-describe('collaborationGetEditObjectTest', () => {
-    beforeAll(async () => {
-        console.log(TAG + "beforeAll");
+import common from '@ohos.app.ability.common';
+
+const TAG = "[CollaborationEdit_JsTest_GetEditObject]"
+const DOC_CONFIG: collaboration_edit.CollaborationConfig = {name: "doc_test"}
+let context: common.UIAbilityContext = globalThis.abilityContext;
+
+export default function collaborationGetEditObjectTest() {
+  describe('collaborationGetEditObjectTest', () => {
+    beforeAll(() => {
+      console.log(TAG + "GetEditObject beforeAll");
     })
- 
-    beforeEach(async () => {
+
+    beforeEach(() => {
       console.log(TAG + "beforeEach");
     })
- 
-    afterEach(async () => {
+
+    afterEach(() => {
       console.log(TAG + "afterEach");
       try {
         collaboration_edit.deleteCollaborationEditObject(context, DOC_CONFIG);
         console.log(TAG + "delete edit object successfully");
-      } catch (err) {
-        console.log(TAG + "delete edit object failed. err: %s", err.message);
+      } catch (error) {
+        console.error(TAG + "delete edit object failed");
         expect().assertFail();
       }
     })
- 
-    afterAll(async () => {
-        console.log(TAG + "afterAll");
+
+    afterAll(() => {
+      console.log(TAG + "GetEditObject afterAll");
     })
-    
+
     /**
      * @tc.number CollaborationEdit_GetEditObject_0001
      * @tc.name Normal case of getCollaborationEditObject
@@ -53,18 +53,18 @@ describe('collaborationGetEditObjectTest', () => {
      *  1. get collaboration edit object correctly
      *  2. delete edit object by empty name, then check 401 code
      */
-    it("CollaborationEdit_GetEditObject_0001", 0, async () => {
+    it("CollaborationEdit_GetEditObject_0001", Level.LEVEL0,  async () => {
       console.log(TAG + "*****************CollaborationEdit_GetEditObject_0001 Start*****************");
-      let editObject = undefined;
+      let editObject: collaboration_edit.CollaborationEditObject | undefined = undefined;
       try {
         editObject = collaboration_edit.getCollaborationEditObject(context, DOC_CONFIG);
         expect(editObject !== undefined).assertTrue();
       } catch (err) {
-        console.log(TAG + "CollaborationEdit_GetEditObject_0001 failed.");
+        console.log(TAG + `CollaborationEdit_GetEditObject_0001 failed. code:${err.code}`);
         expect().assertFail();
       }
 
-      let errCode = "";
+      let errCode: string = "";
       try {
         collaboration_edit.deleteCollaborationEditObject(context, {name: ""});
       } catch (err) {
@@ -73,7 +73,7 @@ describe('collaborationGetEditObjectTest', () => {
       expect(errCode).assertEqual("401");
       console.log(TAG + "*****************CollaborationEdit_GetEditObject_0001 End*****************");
     })
-    
+
     /**
      * @tc.number CollaborationEdit_GetEditObject_0002
      * @tc.name getCollaborationEditObject by null context
@@ -81,20 +81,21 @@ describe('collaborationGetEditObjectTest', () => {
      *  1. get collaboration edit object by null context
      *  2. check 401 error code
      */
-    it("CollaborationEdit_GetEditObject_0002", 0, async () => {
+    it("CollaborationEdit_GetEditObject_0002", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_GetEditObject_0002 Start*****************");
-      let editObject = undefined;
-      let errCode = "";
+      let editObject: collaboration_edit.CollaborationEditObject | undefined = undefined;
+      let errCode: string = "";
       try {
         editObject = collaboration_edit.getCollaborationEditObject(null, DOC_CONFIG);
       } catch (err) {
+        console.error(TAG + `get edit object failed. code:${err.code}, message:${err.message}`);
         errCode = err.code;
       }
       expect(editObject).assertUndefined();
       expect("401").assertEqual(errCode);
       console.log(TAG + "*****************CollaborationEdit_GetEditObject_0002 End*****************");
     })
-    
+
     /**
      * @tc.number CollaborationEdit_GetEditObject_0003
      * @tc.name getCollaborationEditObject by empty name
@@ -102,17 +103,19 @@ describe('collaborationGetEditObjectTest', () => {
      *  1. get collaboration edit object by empty name
      *  2. check 401 error code
      */
-    it("CollaborationEdit_GetEditObject_0003", 0, async () => {
+    it("CollaborationEdit_GetEditObject_0003", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_GetEditObject_0003 Start*****************");
-      let editObject = undefined;
-      let errCode = "";
+      let editObject: collaboration_edit.CollaborationEditObject | undefined = undefined;
+      let errCode: string = "";
       try {
         editObject = collaboration_edit.getCollaborationEditObject(context, {name: ""});
       } catch (err) {
+        console.error(TAG + `get edit object failed. code:${err.code}, message:${err.message}`);
         errCode = err.code;
       }
       expect(editObject).assertUndefined();
       expect("401").assertEqual(errCode);
       console.log(TAG + "*****************CollaborationEdit_GetEditObject_0003 End*****************");
     })
-})
+  })
+}

@@ -1,0 +1,26 @@
+{
+    "description": "Configuration for collaboration edit js tests",
+    "driver": {
+        "type": "OHJSUnitTest",
+        "test-timeout": "180000",
+        "bundle-name": "com.collaborationedit.test",
+        "module-name": "testModule",
+        "shell-timeout": "600000",
+        "testcase-timeout": 70000
+    },
+    "kits": [
+        {
+            "test-file-name": [
+                "CollaborationEditJsTest.hap"
+            ],
+            "type": "AppInstallKit",
+            "cleanup-apps": true
+        },
+        {
+            "type": "ShellKit",
+            "teardown-command": [
+                "bm uninstall -n com.collaborationedit.test"
+            ]
+        }
+    ]
+}
