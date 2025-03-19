@@ -12,72 +12,72 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-import { describe, beforeEach, afterEach, beforeAll, afterAll, it, expect } from 'deccjsunit/index'
+
+import { describe, beforeEach, afterEach, beforeAll, it, afterAll, expect, Level } from '@ohos/hypium'
 import collaboration_edit from "@ohos.data.collaborationEditObject"
-import ability_featureAbility from '@ohos.ability.featureAbility'
- 
-const TAG = "[CollaborationEdit_JsTest]"
-const DOC_CONFIG = {name: "doc_test"}
-const EDIT_UNIT_NAME = "top"
- 
-var context = ability_featureAbility.getContext()
-var editObject = undefined;
-var editUnit = undefined;
- 
-describe('collaborationNodeTest', () => {
-    beforeAll(async () => {
-        console.log(TAG + "beforeAll");
+import common from '@ohos.app.ability.common';
+
+const TAG = "[CollaborationEdit_JsTest_Node]"
+const DOC_CONFIG: collaboration_edit.CollaborationConfig = {name: "doc_test"}
+const EDIT_UNIT_NAME: string = "top"
+let context: common.UIAbilityContext = globalThis.abilityContext;
+let editObject: collaboration_edit.CollaborationEditObject | undefined = undefined;
+let editUnit: collaboration_edit.EditUnit | undefined = undefined;
+
+export default function collaborationNodeTest() {
+  describe('collaborationNodeTest', () => {
+    beforeAll(() => {
+      console.log(TAG + "beforeAll");
     })
- 
-    beforeEach(async () => {
+
+    beforeEach(() => {
       console.log(TAG + "beforeEach");
       try {
         editObject = collaboration_edit.getCollaborationEditObject(context, DOC_CONFIG);
         editUnit = editObject.getEditUnit(EDIT_UNIT_NAME);
       } catch (err) {
-        console.log(TAG + "get edit object failed. err: %s", err.message);
+        console.error(TAG + "get edit object failed.");
       }
     })
- 
-    afterEach(async () => {
+
+    afterEach(() => {
       console.log(TAG + "afterEach");
       try {
         collaboration_edit.deleteCollaborationEditObject(context, DOC_CONFIG);
-        console.log(TAG + "delete edit object failed. err: %s", err.message);
+        console.log(TAG + "delete edit object successfully");
       } catch (err) {
-        console.log(TAG + "delete edit object failed");
+        console.error(TAG + `delete edit object failed. code:${err.code}, message:${err.message}`);
         expect().assertFail();
       }
     })
- 
-    afterAll(async () => {
-        console.log(TAG + "afterAll");
+
+    afterAll(() => {
+      console.log(TAG + "afterAll");
     })
 
     /**
      * @tc.number CollaborationEdit_Node_0001
      * @tc.name Normal case of attribute-related methods
-     * @tc.desc 
+     * @tc.desc
      *  1. construct a node list and insert them into edit unit
-     *  2. set diffrent attributes
+     *  2. set different attributes
      *  3. get attributes and check result
      *  4. get json result and check result
      *  5. remove some attributes
      *  6. again check result by getAttributes and getJsonResult
      */
-    it("CollaborationEdit_Node_0001", 0, async () => {
+    it("CollaborationEdit_Node_0001", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_Node_0001 Start*****************");
       expect(editUnit !== undefined).assertTrue();
       try {
         let node1 = new collaboration_edit.Node("p1");
         editUnit?.insertNodes(0, [node1]);
         node1.setAttributes({"align": "left", "width": 36, "italics": true});
-        let attrs = node1.getAttributes();
+        let attrs: collaboration_edit.AttributesRecord = node1.getAttributes();
         expect(attrs["align"]).assertEqual("left");
         expect(attrs["width"]).assertEqual("36");
         expect(attrs["italics"]).assertEqual("true");
-        let jsonStr = node1.getJsonResult();
+        let jsonStr: string = node1.getJsonResult();
         expect(jsonStr !== undefined).assertTrue();
         expect(jsonStr).assertEqual("{\"array\":[{\"ele\":{\"name\":\"p1\",\"attr\":{\"align\":\"left\",\"italics\":\"true\",\"width\":\"36\"},\"children\":[]}}]}");
         node1.removeAttributes(["align", "italics"]);
@@ -89,7 +89,7 @@ describe('collaborationNodeTest', () => {
         expect(jsonStr !== undefined).assertTrue();
         expect(jsonStr).assertEqual("{\"array\":[{\"ele\":{\"name\":\"p1\",\"attr\":{\"width\":\"36\"},\"children\":[]}}]}");
       } catch (err) {
-        console.log(TAG + "CollaborationEdit_Node_0001 failed. err: %s", err);
+        console.error(TAG + `CollaborationEdit_Node_0001 failed. code:${err.code}, message:${err.message}`);
         expect().assertFail();
       }
       console.log(TAG + "*****************CollaborationEdit_Node_0001 End*****************");
@@ -98,22 +98,22 @@ describe('collaborationNodeTest', () => {
     /**
      * @tc.number CollaborationEdit_Node_0002
      * @tc.name Normal case of insertTexts and delete
-     * @tc.desc 
+     * @tc.desc
      *  1. construct a node and insert it into edit unit
      *  2. construct a text list and insert them into the node
      *  3. check the unique id of the texts
-     *  4. getChildren and check unique id of the result list 
+     *  4. getChildren and check unique id of the result list
      *  5. getJsonResult and check the result
      *  6. delete the first child
      *  7. again check result by getChildren and getJsonResult
      */
-    it("CollaborationEdit_Node_0002", 0, async () => {
+    it("CollaborationEdit_Node_0002", Level.LEVEL0, () => {
       console.log(TAG + "*****************CollaborationEdit_Node_0002 Start*****************");
       expect(editUnit !== undefined).assertTrue();
       try {
         let node1 = new collaboration_edit.Node("p1");
         editUnit?.insertNodes(0, [node1]);
- 
+
         // insert Texts
         let text1 = new collaboration_edit.Text();
         let text2 = new collaboration_edit.Text();
@@ -122,17 +122,17 @@ describe('collaborationNodeTest', () => {
         expect(text2.getId() !== undefined).assertTrue();
         expect(text1.getId().clock).assertEqual(1);
         expect(text2.getId().clock).assertEqual(2);
-        let nodeList = node1.getChildren(0, 2);
+        let nodeList: Array<collaboration_edit.Node | collaboration_edit.Text> | undefined = node1.getChildren(0, 2);
         expect(nodeList !== undefined).assertTrue();
         expect(2).assertEqual(nodeList.length);
         if (nodeList !== undefined) {
           expect(nodeList[0].getId().clock).assertEqual(1);
           expect(nodeList[1].getId().clock).assertEqual(2);
         }
-        let jsonStr = node1.getJsonResult();
+        let jsonStr: string | undefined = node1.getJsonResult();
         expect(jsonStr !== undefined).assertTrue();
         expect(jsonStr).assertEqual("{\"array\":[{\"ele\":{\"name\":\"p1\",\"attr\":{},\"children\":[{\"text\":\"[]\"},{\"text\":\"[]\"}]}}]}");
- 
+
         // delete first child
         node1.delete(0, 1);
         nodeList = node1.getChildren(0, 2);  // if end out of length, return all
@@ -141,7 +141,7 @@ describe('collaborationNodeTest', () => {
         jsonStr = node1.getJsonResult();
         expect(jsonStr).assertEqual("{\"array\":[{\"ele\":{\"name\":\"p1\",\"attr\":{},\"children\":[{\"text\":\"[]\"}]}}]}");
       } catch (err) {
-        console.log(TAG + "CollaborationEdit_Node_0002 failed. err: %s", err);
+        console.error(TAG + `CollaborationEdit_Node_0002 failed. code:${err.code}, message:${err.message}`);
         expect().assertFail();
       }
       console.log(TAG + "*****************CollaborationEdit_Node_0002 End*****************");
@@ -150,22 +150,22 @@ describe('collaborationNodeTest', () => {
     /**
      * @tc.number CollaborationEdit_Node_0003
      * @tc.name Normal case of insertNode and delete
-     * @tc.desc 
+     * @tc.desc
      *  1. construct a node p1 and insert it into edit unit
      *  2. construct a node list and insert them into the node p1
      *  3. check the unique id of the node list
-     *  4. getChildren and check unique id of the result list 
+     *  4. getChildren and check unique id of the result list
      *  5. getJsonResult and check the result
      *  6. delete the second child
      *  7. again check result by getChildren and getJsonResult
      */
-    it("CollaborationEdit_Node_0003", 0, async () => {
+    it("CollaborationEdit_Node_0003", Level.LEVEL0, () => {
       console.log(TAG + "*****************CollaborationEdit_Node_0003 Start*****************");
       expect(editUnit !== undefined).assertTrue();
       try {
         let node1 = new collaboration_edit.Node("p1");
         editUnit?.insertNodes(0, [node1]);
- 
+
         // insert Nodes
         let node2 = new collaboration_edit.Node("p2");
         let node3 = new collaboration_edit.Node("p3");
@@ -174,17 +174,17 @@ describe('collaborationNodeTest', () => {
         expect(node3.getId() != undefined).assertTrue();
         expect(node2.getId().clock).assertEqual(1);
         expect(node3.getId().clock).assertEqual(2);
-        let nodeList = node1?.getChildren(0, 2);
+        let nodeList: Array<collaboration_edit.Node | collaboration_edit.Text> | undefined = node1?.getChildren(0, 2);
         expect(nodeList !== undefined).assertTrue();
         expect(2).assertEqual(nodeList?.length);
         if (nodeList !== undefined) {
           expect(nodeList[0].getId().clock).assertEqual(1);
           expect(nodeList[1].getId().clock).assertEqual(2);
         }
-        let jsonStr = node1?.getJsonResult();
+        let jsonStr: string | undefined = node1?.getJsonResult();
         expect(jsonStr !== undefined).assertTrue();
         expect(jsonStr).assertEqual("{\"array\":[{\"ele\":{\"name\":\"p1\",\"attr\":{},\"children\":[{\"ele\":{\"name\":\"p2\",\"attr\":{},\"children\":[]}},{\"ele\":{\"name\":\"p3\",\"attr\":{},\"children\":[]}}]}}]}");
- 
+
         // delete second child
         node1.delete(1, 1);
         nodeList = node1.getChildren(0, 2);  // if end out of length, return all
@@ -193,85 +193,86 @@ describe('collaborationNodeTest', () => {
         jsonStr = node1.getJsonResult();
         expect(jsonStr).assertEqual("{\"array\":[{\"ele\":{\"name\":\"p1\",\"attr\":{},\"children\":[{\"ele\":{\"name\":\"p2\",\"attr\":{},\"children\":[]}}]}}]}");
       } catch (err) {
-        console.log(TAG + "CollaborationEdit_Node_0003 failed. err: %s", err);
+        console.error(TAG + `CollaborationEdit_Node_0003 failed. code:${err.code}, message:${err.message}`);
         expect().assertFail();
       }
+
       console.log(TAG + "*****************CollaborationEdit_Node_0003 End*****************");
     })
 
     /**
      * @tc.number CollaborationEdit_Node_0004
      * @tc.name test getChildren by index out of range
-     * @tc.desc 
+     * @tc.desc
      *  1. construct a node list and insert them into edit unit
      *  2. construct a text list and insert them into the node
      *  3. check the unique id of the texts
      *  4. getChildren if start and end are out of range
      *  5. check error code
      */
-    it("CollaborationEdit_Node_0004", 0, async () => {
-        console.log(TAG + "*****************CollaborationEdit_Node_0004 Start*****************");
-        expect(editUnit !== undefined).assertTrue();
-        let errCode = "";
-        let nodeList = undefined;
-        try {
-            let node1 = new collaboration_edit.Node("p1");
-            editUnit?.insertNodes(0, [node1]);
-        
-            // insert Texts
-            let text1 = new collaboration_edit.Text();
-            let text2 = new collaboration_edit.Text();
-            node1.insertTexts(0, [text1, text2]);
-            expect(text1.getId() !== undefined).assertTrue();
-            expect(text2.getId() !== undefined).assertTrue();
-            expect(text1.getId().clock).assertEqual(1);
-            expect(text2.getId().clock).assertEqual(2);
-            nodeList = node1.getChildren(2, 4);
-        } catch (err) {
-            errCode = err.code;
-        }
-        expect(errCode).assertEqual("15410002");
-        expect(nodeList).assertUndefined();
-        console.log(TAG + "*****************CollaborationEdit_Node_0004 End*****************");
+    it("CollaborationEdit_Node_0004", Level.LEVEL0, () => {
+      console.log(TAG + "*****************CollaborationEdit_Node_0004 Start*****************");
+      expect(editUnit !== undefined).assertTrue();
+      let errCode: string = "";
+      let nodeList: Array<collaboration_edit.Node | collaboration_edit.Text> | undefined;
+      try {
+        let node1 = new collaboration_edit.Node("p1");
+        editUnit?.insertNodes(0, [node1]);
+
+        // insert Texts
+        let text1 = new collaboration_edit.Text();
+        let text2 = new collaboration_edit.Text();
+        node1.insertTexts(0, [text1, text2]);
+        expect(text1.getId() !== undefined).assertTrue();
+        expect(text2.getId() !== undefined).assertTrue();
+        expect(text1.getId().clock).assertEqual(1);
+        expect(text2.getId().clock).assertEqual(2);
+        nodeList = node1.getChildren(2, 4);
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("15410002");
+      expect(nodeList).assertUndefined();
+      console.log(TAG + "*****************CollaborationEdit_Node_0004 End*****************");
     })
 
     /**
      * @tc.number CollaborationEdit_Node_0005
      * @tc.name Invalid operation if node is not inserted
-     * @tc.desc 
+     * @tc.desc
      *  1. construct a node
      *  2. call getId/setAttributes of the node
      *  3. check the invalid operation error code
      */
-    it("CollaborationEdit_Node_0005", 0, async () => {
-        console.log(TAG + "*****************CollaborationEdit_Node_0005 Start*****************");
-        let node = new collaboration_edit.Node("p1");
-        let errCode = "";
-        let id = undefined;
-        try {
-          id = node.getId();
-        } catch (err) {
-          errCode = err.code;
-        }
-        expect(errCode).assertEqual("15410001");
-        expect(id).assertUndefined();
-      
-        errCode = "";
-        try {
-          node.setAttributes({
-            "align": "left"
-          });
-        } catch (err) {
-          errCode = err.code;
-        }
-        expect(errCode).assertEqual("15410001");
-        console.log(TAG + "*****************CollaborationEdit_Node_0005 End*****************");
+    it("CollaborationEdit_Node_0005", Level.LEVEL0, () => {
+      console.log(TAG + "*****************CollaborationEdit_Node_0005 Start*****************");
+      let node = new collaboration_edit.Node("p1");
+      let errCode: string = "";
+      let id: collaboration_edit.UniqueId | undefined;
+      try {
+        id = node.getId();
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("15410001");
+      expect(id).assertUndefined();
+
+      errCode = "";
+      try {
+        node.setAttributes({
+          "align": "left"
+        });
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("15410001");
+      console.log(TAG + "*****************CollaborationEdit_Node_0005 End*****************");
     })
 
     /**
      * @tc.number CollaborationEdit_Node_0006
      * @tc.name Invalid index input when call insertXXXs/delete/getChildren
-     * @tc.desc 
+     * @tc.desc
      *  1. insertNodes - index is negative
      *  2. insertTexts - index is negative
      *  3. delete - index is negative
@@ -281,26 +282,18 @@ describe('collaborationNodeTest', () => {
      */
     it("CollaborationEdit_Node_0006", 0, async () => {
       console.log(TAG + "*****************CollaborationEdit_Node_0006 Start*****************");
-      let node = undefined;
+      let node: collaboration_edit.Node | undefined = undefined;
       try {
         node = new collaboration_edit.Node("p1");
-        editUnit.insertNodes(0, [node]);
+        editUnit?.insertNodes(0, [node]);
       } catch (err) {
-        console.log(TAG + "CollaborationEdit_Node_0006 insertNodes failed, err: %s", err);
+        console.error(TAG + `CollaborationEdit_Node_0006 insertNodes failed. code:${err.code}, message:${err.message}`);
         expect().assertFail();
       }
       expect(node !== undefined).assertTrue();
       let errCode = "";
       try {
-        node.insertNodes(-1, []);
-      } catch (err) {
-        errCode = err.code;
-      }
-      expect(errCode).assertEqual("401");
-    
-      errCode = "";
-      try {
-        node.insertTexts(-1, []);
+        node?.insertNodes(-1, []);
       } catch (err) {
         errCode = err.code;
       }
@@ -308,7 +301,7 @@ describe('collaborationNodeTest', () => {
 
       errCode = "";
       try {
-        node.delete(-1, 1);
+        node?.insertTexts(-1, []);
       } catch (err) {
         errCode = err.code;
       }
@@ -316,7 +309,7 @@ describe('collaborationNodeTest', () => {
 
       errCode = "";
       try {
-        node.delete(0, 0);
+        node?.delete(-1, 1);
       } catch (err) {
         errCode = err.code;
       }
@@ -324,7 +317,7 @@ describe('collaborationNodeTest', () => {
 
       errCode = "";
       try {
-        node.getChildren(-1, 1);
+        node?.delete(0, 0);
       } catch (err) {
         errCode = err.code;
       }
@@ -332,7 +325,15 @@ describe('collaborationNodeTest', () => {
 
       errCode = "";
       try {
-        node.getChildren(1, 0);
+        node?.getChildren(-1, 1);
+      } catch (err) {
+        errCode = err.code;
+      }
+      expect(errCode).assertEqual("401");
+
+      errCode = "";
+      try {
+        node?.getChildren(1, 0);
       } catch (err) {
         errCode = err.code;
       }
@@ -340,7 +341,7 @@ describe('collaborationNodeTest', () => {
       console.log(TAG + "*****************CollaborationEdit_Node_0006 End*****************");
     })
 
-    it("CollaborationEdit_Node_0007", 0, async () => {
+    it("CollaborationEdit_Node_0007", Level.LEVEL0, () => {
       console.log(TAG + "*****************CollaborationEdit_Node_0007 Start*****************");
       expect(editUnit !== undefined).assertTrue();
       try {
@@ -356,24 +357,22 @@ describe('collaborationNodeTest', () => {
         let relPos = editUnit?.getRelativePos(2);
         expect(relPos !== undefined).assertTrue();
         if (relPos !== undefined) {
-          expect(relPos.parentId != null).assertTrue();
           if (relPos.parentId != null) {
             expect(relPos.parentId.clock === 1).assertTrue();
           }
-          expect(relPos.id != null).assertTrue();
           if (relPos.id != null) {
             expect(relPos.id.clock === 3).assertTrue();
           }
           expect(relPos.pos === 0).assertTrue();
         }
       } catch (err) {
-        console.log(TAG + "CollaborationEdit_Node_0007 failed. err: %s", err);
+        console.error(TAG + `CollaborationEdit_Node_0007 failed. code:${err.code}, message:${err.message}`);
         expect().assertFail();
       }
       console.log(TAG + "*****************CollaborationEdit_Node_0007 End*****************");
     })
 
-    it("CollaborationEdit_Node_0008", 0, async () => {
+    it("CollaborationEdit_Node_0008", Level.LEVEL0, () => {
       console.log(TAG + "*****************CollaborationEdit_Node_0008 Start*****************");
       expect(editUnit !== undefined).assertTrue();
       try {
@@ -390,13 +389,13 @@ describe('collaborationNodeTest', () => {
           expect(relPos.pos === 0).assertTrue();
         }
       } catch (err) {
-        console.log(TAG + "CollaborationEdit_Node_0008 failed. err: %s", err);
+        console.error(TAG + `CollaborationEdit_Node_0008 failed. code:${err.code}, message:${err.message}`);
         expect().assertFail();
       }
       console.log(TAG + "*****************CollaborationEdit_Node_0008 End*****************");
     })
 
-    it("CollaborationEdit_Node_0009", 0, async () => {
+    it("CollaborationEdit_Node_0009", Level.LEVEL0, () => {
       console.log(TAG + "*****************CollaborationEdit_Node_0009 Start*****************");
       expect(editUnit !== undefined).assertTrue();
       try {
@@ -413,23 +412,26 @@ describe('collaborationNodeTest', () => {
         let node2 = new collaboration_edit.Node("p2");
         editUnit?.insertNodes(1, [node2]);
 
-        let pos = editUnit?.getAbsolutePos({parentId: null, parentName: "top", id: null, pos: 0});
+        let pos11 = editUnit?.getRelativePos(2);
+        console.log("pos11 :" + JSON.stringify(pos11));
+        let pos = editUnit?.getAbsolutePos({parentId: null, parentName:"top", id:null, pos:0});
         expect(pos === 16).assertTrue();
 
         let localId = editObject?.getLocalId();
         expect(localId !== undefined).assertTrue();
         console.log("localId :" + localId);
         if (localId !== undefined) {
-          pos = editUnit?.getAbsolutePos({parentId: {id: localId, clock: 1}, parentName: null, id: {id: localId, clock: 4}, pos: 0});
+          pos = editUnit?.getAbsolutePos({parentId: {id:localId, clock:1}, parentName:null, id:{id:localId, clock:4}, pos:0});
           expect(pos === 3).assertTrue();
 
-          pos = editUnit?.getAbsolutePos({parentId: {id: localId, clock: 14}, parentName: null, id: null, pos: 0});
+          pos = editUnit?.getAbsolutePos({parentId: {id:localId, clock:14}, parentName:null, id:null, pos:0});
           expect(pos === 15).assertTrue();
         }
       } catch (err) {
-        console.log(TAG + "CollaborationEdit_Node_0009 failed. err: %s", err);
+        console.error(TAG + `CollaborationEdit_Node_0009 failed. code:${err.code}, message:${err.message}`);
         expect().assertFail();
       }
       console.log(TAG + "*****************CollaborationEdit_Node_0009 End*****************");
     })
-})
+  })
+}
