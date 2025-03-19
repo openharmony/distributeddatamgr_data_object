@@ -639,11 +639,13 @@ void NapiCloudDb::ClearLastException(const napi_env& env)
 {
     bool isExistException = false;
     napi_is_exception_pending(env, &isExistException);
-    if (isExistException) {
-        napi_value exception = nullptr;
-        napi_status status = napi_get_and_clear_last_exception(env, &exception);
-        LOG_ERROR("[ClearLastException] get and clear last exception, status: %{public}d, exception: %{public}p",
-            status, exception);
+    if (!isExistException) {
+        return;
+    }
+    napi_value exception = nullptr;
+    napi_status status = napi_get_and_clear_last_exception(env, &exception);
+    if (status != napi_ok) {
+        LOG_ERROR("[ClearLastException] clear last exception wrong, status: %{public}d", status);
     }
 }
 } // namespace OHOS::CollaborationEdit
