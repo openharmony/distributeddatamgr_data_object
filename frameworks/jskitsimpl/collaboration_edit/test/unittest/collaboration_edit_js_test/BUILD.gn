@@ -13,7 +13,7 @@
 
 import("//build/test.gni")
 
-module_out_path = "data_object/collaboration_edit"
+module_out_path = "data_object/data_object/collaboration_edit"
 
 ohos_js_stage_unittest("CollaborationEditJsTest") {
   hap_profile = "entry/src/main/module.json"
