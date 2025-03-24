@@ -13,7 +13,7 @@
 
 import("//build/test.gni")
 import("//foundation/distributeddatamgr/data_object/data_object.gni")
-module_output_path = "distributeddatamgr/data_object/impl"
+module_output_path = "data_object/data_object/impl"
 
 data_object_base_path = "//foundation/distributeddatamgr/data_object"
 
