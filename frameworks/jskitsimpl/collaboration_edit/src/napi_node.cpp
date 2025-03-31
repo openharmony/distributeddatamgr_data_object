@@ -84,7 +84,12 @@ napi_value Node::New(napi_env env, napi_callback_info info)
             Node *node = reinterpret_cast<Node *>(data);
             delete node;
         };
-        napi_wrap(env, self, node, finalize, nullptr, nullptr);
+        napi_status status = napi_wrap(env, self, node, finalize, nullptr, nullptr);
+        if (status != napi_ok) {
+            LOG_ERROR("napi_wrap failed. code:%{public}d", status);
+            delete node;
+            return nullptr;
+        }
         return self;
     }
 

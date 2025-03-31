@@ -53,7 +53,12 @@ napi_value UndoManager::Initialize(napi_env env, napi_callback_info info)
         UndoManager *undoManager = reinterpret_cast<UndoManager *>(data);
         delete undoManager;
     };
-    napi_wrap(env, self, undoManager, finalize, nullptr, nullptr);
+    status = napi_wrap(env, self, undoManager, finalize, nullptr, nullptr);
+    if (status != napi_ok) {
+        LOG_ERROR("napi_wrap failed. code:%{public}d", status);
+        delete undoManager;
+        return nullptr;
+    }
     return self;
 }
 

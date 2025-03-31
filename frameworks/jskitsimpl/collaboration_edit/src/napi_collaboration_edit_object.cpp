@@ -76,7 +76,12 @@ napi_value CollaborationEditObject::Initialize(napi_env env, napi_callback_info 
         CollaborationEditObject *editObject = reinterpret_cast<CollaborationEditObject *>(data);
         delete editObject;
     };
-    napi_wrap(env, self, editObject, finalize, nullptr, nullptr);
+    status = napi_wrap(env, self, editObject, finalize, nullptr, nullptr);
+    if (status != napi_ok) {
+        LOG_ERROR("napi_wrap failed. code:%{public}d", status);
+        delete editObject;
+        return nullptr;
+    }
     return self;
 }
 

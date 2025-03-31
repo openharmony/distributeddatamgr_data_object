@@ -49,7 +49,12 @@ napi_value EditUnit::Initialize(napi_env env, napi_callback_info info)
         EditUnit *editUnit = reinterpret_cast<EditUnit *>(data);
         delete editUnit;
     };
-    napi_wrap(env, self, editUnit, finalize, nullptr, nullptr);
+    status = napi_wrap(env, self, editUnit, finalize, nullptr, nullptr);
+    if (status != napi_ok) {
+        LOG_ERROR("napi_wrap failed. code:%{public}d", status);
+        delete editUnit;
+        return nullptr;
+    }
     return self;
 }
 
