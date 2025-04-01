@@ -69,7 +69,12 @@ napi_value Text::New(napi_env env, napi_callback_info info)
             Text *text = reinterpret_cast<Text *>(data);
             delete text;
         };
-        napi_wrap(env, self, text, finalize, nullptr, nullptr);
+        napi_status status = napi_wrap(env, self, text, finalize, nullptr, nullptr);
+        if (status != napi_ok) {
+            LOG_ERROR("napi_wrap failed. code:%{public}d", status);
+            delete text;
+            return nullptr;
+        }
         return self;
     }
 
