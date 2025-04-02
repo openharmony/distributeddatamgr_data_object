@@ -64,7 +64,9 @@ enum ErrorCode : int32_t {
     GETKV_FAILED = OFFSET + 6,
     DB_NOT_INIT = OFFSET + 7,
 };
-
+constexpr char DOMAIN[] = "DISTDATAMGR";
+constexpr char EVENT_NAME[] = "DISTRIBUTED_DATA_OBJECT_BEHAVIOR";
+constexpr char ORG_PKG[] = "distributeddata";
 class API_EXPORT RadarReporter {
 public:
     static void ReportStateStart(std::string func, int32_t scene, int32_t stage, int32_t stageRes,

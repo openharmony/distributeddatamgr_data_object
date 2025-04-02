@@ -17,10 +17,6 @@
 
 namespace OHOS::ObjectStore {
 using namespace ObjectStore;
-constexpr char DOMAIN[] = "DISTDATAMGR";
-constexpr char EVENT_NAME[] = "DISTRIBUTED_DATA_OBJECT_BEHAVIOR";
-constexpr char ORG_PKG[] = "distributeddata";
-
 void RadarReporter::ReportStateFinished(std::string func, int32_t scene, int32_t stage, int32_t stageRes, int32_t state)
 {
     struct HiSysEventParam params[] = {

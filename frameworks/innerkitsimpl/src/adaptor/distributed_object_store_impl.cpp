@@ -200,10 +200,6 @@ uint32_t DistributedObjectStoreImpl::SetStatusNotifier(std::shared_ptr<StatusNot
 
 void DistributedObjectStoreImpl::NotifyCachedStatus(const std::string &sessionId)
 {
-    if (flatObjectStore_ == nullptr) {
-        LOG_ERROR("NotifyCachedStatus sync flatObjectStore err ");
-        return;
-    }
     flatObjectStore_->CheckRetrieveCache(sessionId);
 }
 

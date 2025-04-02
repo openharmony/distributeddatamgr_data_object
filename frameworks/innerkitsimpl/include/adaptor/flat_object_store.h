@@ -50,6 +50,7 @@ private:
     int32_t RevokeSaveObject(
         const std::string &bundleName, const std::string &sessionId, const std::function<void(int32_t)> &callback);
     std::mutex mutex_;
+    static constexpr uint32_t WAIT_TIME = 5;
 };
 
 class FlatObjectStore {
@@ -83,6 +84,7 @@ private:
     uint32_t Put(const std::string &sessionId, const std::string &key, std::vector<uint8_t> value);
     uint32_t Get(const std::string &sessionId, const std::string &key, Bytes &value);
 
+    static constexpr const char* DISTRIBUTED_DATASYNC = "ohos.permission.DISTRIBUTED_DATASYNC";
     std::shared_ptr<FlatObjectStorageEngine> storageEngine_;
     CacheManager *cacheManager_;
     std::mutex mutex_;
