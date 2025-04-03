@@ -32,10 +32,7 @@ es2abc_gen_abc("gen_distributed_data_object_abc") {
 config("objectstore_config") {
   visibility = [ ":*" ]
 
-  cflags = [
-    "-DHILOG_ENABLE",
-    "-Oz",
-  ]
+  cflags = [ "-DHILOG_ENABLE" ]
 
   include_dirs = [
     "../../frameworks/jskitsimpl/include/adaptor",
