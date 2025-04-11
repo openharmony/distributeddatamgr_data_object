@@ -43,6 +43,8 @@ const std::string CURSOR = "cursor";
 const std::string SYNC_LOG_EVENT = "syncLogEvent";
 const std::string TIMESTAMP = "timestamp";
 
+constexpr int CURSOR_BASE = 10;
+
 static const std::map<GRD_QueryConditionTypeE, Predicate> PREDICATE_MAP = {
     {GRD_QUERY_CONDITION_TYPE_EQUAL_TO, EQUAL_TO},
     {GRD_QUERY_CONDITION_TYPE_NOT_EQUAL_TO, NOT_EQUAL_TO},
@@ -58,6 +60,14 @@ static const std::map<uint8_t, ExtendFieldParser> QRY_RSP_PARSER_MAP = {
     {QRY_RSP_SYNC_LOG_IDX, CloudDbProxy::SyncLogParseFunc},
     {QRY_RSP_CURSOR_IDX, CloudDbProxy::CursorParseFunc}
 };
+
+CloudDbProxy::~CloudDbProxy()
+{
+    if (napiCloudDb_ != nullptr) {
+        delete napiCloudDb_;
+        napiCloudDb_ = nullptr;
+    }
+}
 
 void CloudDbProxy::SetNapiCloudDb(NapiCloudDb *napiCloudDb)
 {
@@ -254,14 +264,11 @@ int32_t CloudDbProxy::GetQueryParams(GRD_CloudParamsT *cloudParams, std::vector<
                 queryConditions.push_back(condition);
                 continue;
             }
-            std::string tmpString;
-            tmpString.resize(field.valueLen);
-            errno_t errNo = memcpy_s(&tmpString[0], field.valueLen, field.value, field.valueLen);
-            if (errNo != EOK) {
-                LOG_ERROR("copy cursor value wrong");
-                return E_MEMORY_OPERATION_ERROR;
+            condition.fieldValue_num = GetCursorValue(field);
+            if (condition.fieldValue_num < 0) {
+                queryConditions.clear();
+                return E_INVALID_ARGS;
             }
-            condition.fieldValue_num = std::stoi(tmpString);
         } else if (condition.fieldName == EQUIP_ID) {
             condition.fieldValue_str = std::string(static_cast<char *>(field.value));
         } else {
@@ -272,6 +279,33 @@ int32_t CloudDbProxy::GetQueryParams(GRD_CloudParamsT *cloudParams, std::vector<
         queryConditions.push_back(condition);
     }
     return E_OK;
+}
+
+int64_t CloudDbProxy::GetCursorValue(GRD_CloudFieldT &field)
+{
+    int64_t cursor = -1;
+    if (field.value == nullptr) {
+        LOG_ERROR("field value is null");
+        return cursor;
+    }
+    std::string tmpString;
+    tmpString.resize(field.valueLen);
+    errno_t errNo = memcpy_s(&tmpString[0], field.valueLen, field.value, field.valueLen);
+    if (errNo != EOK) {
+        LOG_ERROR("copy cursor value wrong");
+        return cursor;
+    }
+    errno = 0;
+    cursor = std::strtol(tmpString.c_str(), nullptr, CURSOR_BASE);
+    if (errno == EINVAL) {
+        LOG_ERROR("cursor field is not integer");
+        cursor = -1;
+    }
+    if (errno == ERANGE) {
+        LOG_ERROR("cursor is too long");
+        cursor = -1;
+    }
+    return cursor;
 }
 
 void CloudDbProxy::CursorParseFunc(CloudParamsAdapterT &extend, ExtendRecordFieldT &destField)

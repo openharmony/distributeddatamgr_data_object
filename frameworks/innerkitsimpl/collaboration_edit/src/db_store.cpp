@@ -36,6 +36,19 @@ DBStore::DBStore(GRD_DB *db, std::string name) : db_(db), name_(name)
 DBStore::~DBStore()
 {}
 
+void DBStore::FreeCloudDB()
+{
+    if (cloudDB_ != nullptr) {
+        free(cloudDB_->assetLoader);
+        free(cloudDB_);
+        cloudDB_ = nullptr;
+    }
+    if (proxy_ != nullptr) {
+        delete proxy_;
+        proxy_ = nullptr;
+    }
+}
+
 std::string DBStore::GetLocalId()
 {
     if (localId_) {
@@ -93,6 +106,17 @@ int32_t DBStore::Sync(GRD_SyncModeE mode, uint64_t syncId, GRD_SyncTaskCallbackF
 GRD_DB *DBStore::GetDB()
 {
     return db_;
+}
+
+GRD_ICloudDBT* DBStore::GetCloudDB()
+{
+    return cloudDB_;
+}
+
+void DBStore::SetCloudDbProxy(CloudDbProxy *proxy, GRD_ICloudDBT *cloudDB)
+{
+    proxy_ = proxy;
+    cloudDB_ = cloudDB;
 }
 
 int DBStore::ApplyUpdate(std::string &applyInfo)

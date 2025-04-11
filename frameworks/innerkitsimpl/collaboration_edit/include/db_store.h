@@ -16,6 +16,7 @@
 #ifndef COLLABORATION_EDIT_DB_STORE_H
 #define COLLABORATION_EDIT_DB_STORE_H
 
+#include "cloud_db_proxy.h"
 #include "db_store_config.h"
 #include "grd_type_export.h"
 
@@ -33,10 +34,15 @@ public:
     int WriteUpdate(const char *equipId, const uint8_t *data, uint32_t size, const std::string &watermark);
     int GetRelativePos(const char *tableName, const char *nodeSize, uint32_t pos, std::string &relPos);
     int GetAbsolutePos(const char *tableName, const char *relPos, const char *nodeSize, uint32_t *pos);
+    void SetCloudDbProxy(CloudDbProxy* proxy, GRD_ICloudDBT *cloudDB);
+    GRD_ICloudDBT *GetCloudDB();
+    void FreeCloudDB();
 private:
     GRD_DB *db_;
     std::string name_;
     std::shared_ptr<std::string> localId_;
+    CloudDbProxy* proxy_ = nullptr;
+    GRD_ICloudDBT *cloudDB_ = nullptr;
 };
 } // namespace OHOS::CollaborationEdit
 #endif // COLLABORATION_EDIT_DB_STORE_H

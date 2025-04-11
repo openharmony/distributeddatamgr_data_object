@@ -43,7 +43,6 @@ private:
     static napi_value Initialize(napi_env env, napi_callback_info info);
 
     static napi_status CreateHandlerFunc(napi_env env, std::vector<napi_value> &cloudDbFunc, NapiCloudDb *napiCloudDb);
-    static void ReleaseHandlerFunc(NapiCloudDb *napiCloudDb);
     static napi_value GetEditUnit(napi_env env, napi_callback_info info);
     static napi_value GetUndoRedoManager(napi_env env, napi_callback_info info);
     static napi_value DeleteUndoRedoManager(napi_env env, napi_callback_info info);
