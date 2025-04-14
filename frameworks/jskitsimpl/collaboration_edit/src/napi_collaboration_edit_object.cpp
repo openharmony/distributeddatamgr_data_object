@@ -202,6 +202,22 @@ napi_value CollaborationEditObject::SetCloudDb(napi_env env, napi_callback_info 
     napi_value self = nullptr;
     NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, &self, nullptr));
 
+    CollaborationEditObject *editObject = nullptr;
+    napi_status status = napi_unwrap(env, self, reinterpret_cast<void **>(&editObject));
+    if (status != napi_ok) {
+        ThrowNapiError(env, Status::INTERNAL_ERROR, "unwrap editObject go wrong.");
+        return nullptr;
+    }
+    std::shared_ptr<DBStore> dbStore = editObject->GetDBStore();
+    if (dbStore == nullptr) {
+        ThrowNapiError(env, Status::INVALID_ARGUMENT, "dbStore is null.");
+        return nullptr;
+    }
+    if (dbStore->GetCloudDB() != nullptr) {
+        LOG_INFO("cloudDB already set");
+        return nullptr;
+    }
+
     std::vector<napi_value> cloudDbFunc;
     int ret = Parser::ParseCloudDbFields(env, argv[0], cloudDbFunc);
     if (ret != OK) {
@@ -210,25 +226,15 @@ napi_value CollaborationEditObject::SetCloudDb(napi_env env, napi_callback_info 
     }
     NapiCloudDb *napiCloudDb = new (std::nothrow) NapiCloudDb();
     ASSERT_THROW(env, napiCloudDb != nullptr, Status::INTERNAL_ERROR, "new cloud db instance go wrong.");
-    napi_status status = CollaborationEditObject::CreateHandlerFunc(env, cloudDbFunc, napiCloudDb);
+    status = CollaborationEditObject::CreateHandlerFunc(env, cloudDbFunc, napiCloudDb);
     if (status != napi_ok) {
-        ReleaseHandlerFunc(napiCloudDb);
         delete napiCloudDb;
         ThrowNapiError(env, Status::INTERNAL_ERROR, "create handler func go wrong.");
         return nullptr;
     }
 
-    CollaborationEditObject *editObject = nullptr;
-    status = napi_unwrap(env, self, reinterpret_cast<void **>(&editObject));
-    if (status != napi_ok) {
-        ReleaseHandlerFunc(napiCloudDb);
-        delete napiCloudDb;
-        ThrowNapiError(env, Status::INTERNAL_ERROR, "unwrap editObject go wrong.");
-        return nullptr;
-    }
-    ret = DBStoreManager::GetInstance().SetCloudDb(editObject->GetDBStore(), napiCloudDb);
+    ret = DBStoreManager::GetInstance().SetCloudDb(dbStore, napiCloudDb);
     if (ret != 0) {
-        ReleaseHandlerFunc(napiCloudDb);
         delete napiCloudDb;
         ThrowNapiError(env, ret, "set cloud db go wrong.");
     }
@@ -280,27 +286,6 @@ napi_status CollaborationEditObject::CreateHandlerFunc(napi_env env, std::vector
         nullptr, nullptr, nullptr, NapiCloudDb::DeleteLocalAssetInner, &napiCloudDb->deleteLocalAssetInnerFunc_);
     ASSERT(status == napi_ok, "create deleteLocalAsset func wrong", status);
     return napi_ok;
-}
-
-void CollaborationEditObject::ReleaseHandlerFunc(NapiCloudDb *napiCloudDb)
-{
-    if (napiCloudDb == nullptr) {
-        return;
-    }
-    napi_release_threadsafe_function(napiCloudDb->batchInsertInnerFunc_, napi_tsfn_release);
-    napi_release_threadsafe_function(napiCloudDb->queryInnerFunc_, napi_tsfn_release);
-    napi_release_threadsafe_function(napiCloudDb->downloadAssetInnerFunc_, napi_tsfn_release);
-    napi_release_threadsafe_function(napiCloudDb->uploadAssetInnerFunc_, napi_tsfn_release);
-    napi_release_threadsafe_function(napiCloudDb->deleteAssetInnerFunc_, napi_tsfn_release);
-    napi_release_threadsafe_function(napiCloudDb->deleteLocalAssetInnerFunc_, napi_tsfn_release);
-    
-    napiCloudDb->batchInsertInnerFunc_ = nullptr;
-    napiCloudDb->queryInnerFunc_ = nullptr;
-    napiCloudDb->downloadAssetInnerFunc_ = nullptr;
-    napiCloudDb->downloadAssetInnerFunc_ = nullptr;
-    napiCloudDb->uploadAssetInnerFunc_ = nullptr;
-    napiCloudDb->deleteAssetInnerFunc_ = nullptr;
-    napiCloudDb->deleteLocalAssetInnerFunc_ = nullptr;
 }
 
 napi_value CollaborationEditObject::Delete(napi_env env, napi_callback_info info)
@@ -471,9 +456,10 @@ void CollaborationEditObject::SyncCallbackFunc(GRD_SyncProcessT *syncProcess)
         return;
     }
     napi_threadsafe_function js_cb = context->callback_;
+    context->callback_ = nullptr;
+    context->ReleaseInnerReference();
     if (js_cb == nullptr) {
         LOG_ERROR("callback is null");
-        context->ReleaseInnerReference();
         return;
     }
 
@@ -481,20 +467,18 @@ void CollaborationEditObject::SyncCallbackFunc(GRD_SyncProcessT *syncProcess)
     if (ret != napi_ok) {
         LOG_ERROR("acquire thread safe function failed, ret: %{public}d", static_cast<int32_t>(ret));
         napi_release_threadsafe_function(js_cb, napi_tsfn_release);
-        context->callback_ = nullptr;
-        context->ReleaseInnerReference();
         return;
     }
     SyncCallbackParamT param = {};
     param.detail.code = CollaborationEditObject::GetProgressCode(syncProcess->errCode);
+    param.syncContext = context;
+    context.reset();
 
     std::future<int> future = param.promise.get_future();
     ret = napi_call_threadsafe_function(js_cb, &param, napi_tsfn_blocking);
     if (ret != napi_ok) {
         LOG_ERROR("call function go wrong, ret=%{public}d", static_cast<int32_t>(ret));
         napi_release_threadsafe_function(js_cb, napi_tsfn_release);
-        context->callback_ = nullptr;
-        context->ReleaseInnerReference();
         return;
     }
     std::future_status fstatus = future.wait_for(std::chrono::duration_cast<std::chrono::seconds>(TIME_THRESHOLD));
@@ -505,8 +489,6 @@ void CollaborationEditObject::SyncCallbackFunc(GRD_SyncProcessT *syncProcess)
     }
 
     napi_release_threadsafe_function(js_cb, napi_tsfn_release);
-    context->callback_ = nullptr;
-    context->ReleaseInnerReference();
     LOG_INFO("syncCallback end");
 }
 

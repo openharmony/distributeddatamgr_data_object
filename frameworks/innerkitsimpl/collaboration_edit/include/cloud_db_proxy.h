@@ -34,6 +34,7 @@ typedef void (*ExtendFieldParser)(CloudParamsAdapterT &extend, ExtendRecordField
 
 class CloudDbProxy {
 public:
+    ~CloudDbProxy();
     static int32_t BatchInsert(void *cloudDB, GRD_CloudParamsT *cloudParams);
     static int32_t Query(void *cloudDB, GRD_CloudParamsT *cloudParams);
     static int32_t DownloadAsset(void *cloudDB, const char *equipId, char *path);
@@ -63,6 +64,7 @@ private:
     static int32_t ParseExtendField(CloudParamsAdapterT &extend, uint32_t index, GRD_CloudRecordT *records,
         uint32_t maxRecordSize);
     static void FreeExtendFields(GRD_CloudFieldT *fields, uint8_t fieldSize);
+    static int64_t GetCursorValue(GRD_CloudFieldT &field);
 
     NapiCloudDb *napiCloudDb_;
 };

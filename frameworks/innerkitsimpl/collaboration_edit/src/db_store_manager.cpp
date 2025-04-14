@@ -109,6 +109,7 @@ int DBStoreManager::DeleteDBStore(const DBStoreConfig &config)
             LOG_ERROR("[DeleteDBStore] db close go wrong, err = %{public}d", errCode);
             return -1;
         }
+        dbStorePtr->FreeCloudDB();
     }
     int ret = RemoveDir(dbPath.c_str());
     if (ret != 0) {
@@ -204,6 +205,7 @@ int DBStoreManager::SetCloudDb(std::shared_ptr<DBStore> dbStore, NapiCloudDb *na
         delete cloudDbProxy;
         return -1;
     }
+    dbStore->SetCloudDbProxy(cloudDbProxy, cloudDB);
     return 0;
 }
 

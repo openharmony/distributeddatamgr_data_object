@@ -57,7 +57,22 @@ struct QueryInfo {
 
 NapiCloudDb::NapiCloudDb() {}
 
-NapiCloudDb::~NapiCloudDb() {}
+NapiCloudDb::~NapiCloudDb()
+{
+    napi_release_threadsafe_function(batchInsertInnerFunc_, napi_tsfn_release);
+    napi_release_threadsafe_function(queryInnerFunc_, napi_tsfn_release);
+    napi_release_threadsafe_function(downloadAssetInnerFunc_, napi_tsfn_release);
+    napi_release_threadsafe_function(uploadAssetInnerFunc_, napi_tsfn_release);
+    napi_release_threadsafe_function(deleteAssetInnerFunc_, napi_tsfn_release);
+    napi_release_threadsafe_function(deleteLocalAssetInnerFunc_, napi_tsfn_release);
+
+    batchInsertInnerFunc_ = nullptr;
+    queryInnerFunc_ = nullptr;
+    downloadAssetInnerFunc_ = nullptr;
+    uploadAssetInnerFunc_ = nullptr;
+    deleteAssetInnerFunc_ = nullptr;
+    deleteLocalAssetInnerFunc_ = nullptr;
+}
 
 int32_t NapiCloudDb::BatchInsert(const std::vector<CloudParamsAdapterT> &cloudParamsAdapter)
 {

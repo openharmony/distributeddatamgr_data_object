@@ -57,6 +57,9 @@ void SyncContext::ReleaseInnerReference()
 }
 
 SyncContext::~SyncContext()
+{}
+
+void SyncContext::Release()
 {
     LOG_DEBUG("SyncContext freed.");
     if (env_ == nullptr) {
@@ -140,6 +143,8 @@ void AsyncCall::CloudSyncCallback(napi_env env, napi_value js_cb, void *context,
     napi_status status = napi_create_object(env, &param);
     if (status != napi_ok) {
         LOG_ERROR("create param object wrong, status: %{public}" PRIi32, static_cast<int32_t>(status));
+        ReleaseSyncContext(callbackParam->syncContext);
+        callbackParam->syncContext.reset();
         callbackParam->promise.set_value(0);
         return;
     }
@@ -149,6 +154,8 @@ void AsyncCall::CloudSyncCallback(napi_env env, napi_value js_cb, void *context,
     status = napi_set_named_property(env, param, "code", pCode);
     if (status != napi_ok) {
         LOG_ERROR("set named property wrong, status: %{public}" PRIi32, static_cast<int32_t>(status));
+        ReleaseSyncContext(callbackParam->syncContext);
+        callbackParam->syncContext.reset();
         callbackParam->promise.set_value(0);
         return;
     }
@@ -164,6 +171,17 @@ void AsyncCall::CloudSyncCallback(napi_env env, napi_value js_cb, void *context,
     if (status != napi_ok) {
         LOG_ERROR("napi call js function wrong, status: %{public}" PRIi32, static_cast<int32_t>(status));
     }
+    // need to release sync context in js thread
+    ReleaseSyncContext(callbackParam->syncContext);
+    callbackParam->syncContext.reset();
     callbackParam->promise.set_value(0);
+}
+
+void AsyncCall::ReleaseSyncContext(std::shared_ptr<SyncContext> syncContext)
+{
+    if (syncContext == nullptr) {
+        return;
+    }
+    syncContext->Release();
 }
 } // namespace CollaborationEdit

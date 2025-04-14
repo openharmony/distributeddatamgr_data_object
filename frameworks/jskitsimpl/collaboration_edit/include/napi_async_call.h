@@ -25,15 +25,6 @@
 #include "rd_type.h"
 
 namespace OHOS::CollaborationEdit {
-struct ProgressDetailT {
-    ProgressCode code;
-};
-
-struct SyncCallbackParamT {
-    std::promise<int> promise;
-    ProgressDetailT detail;
-};
-
 using InputAction = std::function<int(napi_env, size_t, napi_value *, napi_value)>;
 using OutputAction = std::function<void(napi_env, napi_value &)>;
 using ExecuteAction = std::function<int()>;
@@ -45,6 +36,7 @@ class SyncContext {
 public:
     int SetAll(napi_env env, napi_callback_info info, InputAction input, ExecuteAction exec, OutputAction output);
     void ReleaseInnerReference();
+    void Release();
     virtual ~SyncContext();
 
     napi_env env_ = nullptr;
@@ -68,6 +60,16 @@ public:
     std::shared_ptr<DBStore> dbStore_ = nullptr;
 };
 
+struct ProgressDetailT {
+    ProgressCode code;
+};
+
+struct SyncCallbackParamT {
+    std::promise<int> promise;
+    ProgressDetailT detail;
+    std::shared_ptr<SyncContext> syncContext;
+};
+
 class AsyncCall final {
 public:
     static int Call(napi_env env, std::shared_ptr<SyncContext> context, const char *fun);
@@ -78,6 +80,7 @@ private:
     static void OnComplete(napi_env env, void *data);
     static void OnReturn(napi_env env, napi_status status, void *data);
     static void OnComplete(napi_env env, napi_status status, void *data);
+    static void ReleaseSyncContext(std::shared_ptr<SyncContext> syncContext);
 };
 } // namespace OHOS::CollaborationEdit
-#endif
+#endif
