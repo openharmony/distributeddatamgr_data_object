@@ -14,6 +14,7 @@
  */
 
 const distributedObject = requireInternal('data.distributedDataObject');
+const fs = requireInternal('file.fs');
 const SESSION_ID = '__sessionId';
 const VERSION = '__version';
 const COMPLEX_TYPE = '[COMPLEX]';
@@ -27,6 +28,7 @@ const SDK_VERSION_8 = 8;
 const SDK_VERSION_9 = 9;
 const SESSION_ID_REGEX = /^\w+$/;
 const SESSION_ID_MAX_LENGTH = 128;
+const ASSETS_MAX_NUMBER = 50;
 
 class Distributed {
   constructor(obj) {
@@ -343,6 +345,55 @@ function newDistributedV9(context, obj) {
   return new DistributedV9(obj, context);
 }
 
+function appendPropertyToObj(result, obj) {
+  result.__proxy = Object.assign(result.__proxy, obj);
+  Object.keys(obj).forEach(key => {
+    Object.defineProperty(result, key, {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        return result.__proxy[key];
+      },
+      set: function (newValue) {
+        result.__proxy[key] = newValue;
+      }
+    });
+  });
+}
+
+function getDefaultAsset(uri, distributedDir) {
+  if (uri == null) {
+    throw {
+      code: 15400002,
+      message: 'The asset uri to be set is null.'
+    };
+  }
+  const fileName = uri.substring(uri.lastIndexOf('/') + 1);
+  const filePath = distributedDir + '/' + fileName;
+  let stat;
+  try {
+    stat = fs.statSync(filePath);
+    return {
+      name: fileName,
+      uri: uri,
+      path: filePath,
+      createTime: stat.ctime,
+      modifyTime: stat.mtime,
+      size: stat.size.toString()
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      name: '',
+      uri: '',
+      path: '',
+      createTime: 0,
+      modifyTime: 0,
+      size: 0
+    };
+  }
+}
+
 class DistributedV9 {
 
   constructor(obj, context) {
@@ -428,6 +479,70 @@ class DistributedV9 {
       return JS_ERROR;
     }
     return this.__proxy.bindAssetStore(assetkey, bindInfo, callback);
+  }
+
+  setAsset(assetkey, uri) {
+    if (this.__proxy[SESSION_ID] != null || this.__proxy[SESSION_ID] !== '') {
+      throw {
+        code: 15400003,
+        message: 'SessionId has been set, and asset cannot be set.'
+      };
+    }
+    if (assetkey == null || assetkey === '' || uri == null) {
+      throw {
+        code: 15400002,
+        message: 'The property or uri of the asset is invalid.'
+      };
+    }
+
+    let assetObj = {};
+    const distributedDir = this.__context.distributedFilesDir;
+    const asset = getDefaultAsset(uri, distributedDir);
+    assetObj[assetkey] = [asset];
+    assetObj[assetkey + '0'] = asset;
+    appendPropertyToObj(this, assetObj);
+    return Promise.resolve();
+  }
+
+  setAssets(assetkey, uris) {
+    if (this.__proxy[SESSION_ID] != null || this.__proxy[SESSION_ID] !== '') {
+      throw {
+        code: 15400003,
+        message: 'SessionId has been set, and assets cannot be set.'
+      };
+    }
+    if (assetkey == null || assetkey === '') {
+      throw {
+        code: 15400002,
+        message: 'The property of the assets is invalid.'
+      };
+    }
+    if (!Array.isArray(uris) || uris.length <= 0 || uris.length > ASSETS_MAX_NUMBER) {
+      throw {
+        code: 15400002,
+        message: 'The uri array of the set assets is not an array or the length is invalid.'
+      };
+    }
+    for (let index = 0; index < uris.length; index++) {
+      if (uris[index] == null) {
+        throw {
+          code: 15400002,
+          message: 'Uri in assets array is null.'
+        };
+      }
+    }
+
+    let assetObj = {};
+    let assets = [];
+    const distributedDir = this.__context.distributedFilesDir;
+    for (let index = 0; index < uris.length; index++) {
+      const asset = getDefaultAsset(uris[index], distributedDir);
+      assets.push(asset);
+      assetObj[assetkey + index] = asset;
+    }
+    assetObj[assetkey] = assets;
+    appendPropertyToObj(this, assetObj);
+    return Promise.resolve();
   }
 
   __context;
