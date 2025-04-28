@@ -55,8 +55,8 @@ int DatabaseError::GetCode()
 
 std::string DatabaseError::GetMessage()
 {
-    return "Failed to create the in-memory database. One possible reason is that the distributed object has "
-        "already been created";
+    return "Failed to create the in-memory database. The possible reason is that other distributed data object"
+        " have already set the same sessionId";
 }
 
 int PermissionError::GetCode()
