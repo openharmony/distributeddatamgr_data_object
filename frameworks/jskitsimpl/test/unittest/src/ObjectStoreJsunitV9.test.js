@@ -41,6 +41,22 @@ function statusCallback2(sessionId, networkId, status) {
     this.response += "\nstatus changed " + sessionId + " " + status + " " + networkId;
 }
 
+function DataObserverCallback(sessionId, changeData) {
+    console.info("DataObserverCallback start");
+    console.info(TAG + "sessionId:" + " " + sessionId);
+    if (changeData != null && changeData != undefined) {
+        changeData.forEach(element => {
+            console.info(TAG + "data changed !" + element);
+        });
+    }
+    console.info("DataObserverCallback end");
+}
+
+function StatusObserverCallback(sessionId, networkId, status) {
+    console.info(TAG + "StatusObserverCallback" + " " + sessionId);
+    this.response += "\nstatus changed " + sessionId + " " + status + " " + networkId;
+}
+
 const PERMISSION_USER_SET = 1;
 const PERMISSION_USER_NAME = "ohos.permission.DISTRIBUTED_DATASYNC";
 const CATCH_ERR = -1;
@@ -1024,6 +1040,737 @@ describe('objectStoreTest', function () {
         console.log(TAG + "************* V9testcreate002 end *************");
         g_object.setSessionId((error, data) => {
             console.info(TAG + error + "," + data);
+        });
+    })
+
+    /**
+     * @tc.name: V9testSetAsset001
+     * @tc.desc: Test setAssset with invalid arrgs
+     * @tc.type: Function
+     * @tc.number: V9testSetAsset001
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testSetAsset001', 0, function () {
+        console.log(TAG + "************* V9testSetAsset001 start *************");
+        var g_object;
+        const attachment = {
+            status: 0,
+            name: "1.txt",
+            uri: "file://com.example.myapplication/data/storage/el2/distributedfiles/dir/1.txt",
+            path: "/dir/1.txt",
+            createTime: "2023-11-26 10:00:00",
+            modifyTime: "2023-11-26 10:00:00",
+            size: "1"
+        };
+        try {
+            g_object = distributedObject.create(context, {
+                title: "my note",
+                content: "It's a nice day today.",
+                mark: false,
+                attachment
+            });
+        } catch (error) {
+            console.info(error.code + error.message);
+        }
+        expect(g_object === undefined).assertEqual(false);
+
+        g_object.setSessionId("123456").then((data) => {
+            console.info(TAG + "V9testSetAsset001");
+            console.info(TAG + data);
+        }).catch((error) => {
+            console.info(TAG + error);
+        });
+        let uri = "file:1.txt";
+        try {
+            g_object.setAsset("file", uri);
+        } catch (error) {
+            expect(error.code === 15400003).assertEqual(true);
+        }
+
+        g_object.setSessionId("").then((data) => {
+            console.info(TAG + "V9testSetAsset001");
+            console.info(TAG + data);
+        }).catch((error) => {
+            console.info(TAG + error);
+        });
+
+        console.log(TAG + "************* V9testSetAsset001 end *************");
+        g_object.setSessionId((error, data) => {
+            console.info(TAG + error + "," + data);
+        });
+    })
+
+/**
+ * @tc.name: V9testSetAsset002
+ * @tc.desc: Test setAsset with empty assetkey
+ * @tc.type: Function
+ * @tc.number: V9testSetAsset002
+ * @tc.size: MediumTest
+ * @tc.level: Level 2
+ */
+it('V9testSetAsset002', 0, function () {
+    console.log(TAG + "************* V9testSetAsset002 start *************");
+    var g_object;
+    const attachment = {
+        status: 0,
+        name: "1.txt",
+        uri: "file://com.example.myapplication/data/storage/el2/distributedfiles/dir/1.txt",
+        path: "/dir/1.txt",
+        createTime: "2023-11-26 10:00:00",
+        modifyTime: "2023-11-26 10:00:00",
+        size: "1"
+    };
+    try {
+        g_object = distributedObject.create(context, {
+            title: "my note",
+            content: "It's a nice day today.",
+            mark: false,
+            attachment
+        });
+    } catch (error) {
+        console.info(error.code + error.message);
+    }
+    expect(g_object === undefined).assertEqual(false);
+
+    let uri = "file:1.txt";
+    try {
+        g_object.setAsset(null, uri);
+    } catch (error) {
+        expect(error.code === 15400002).assertEqual(true);
+    }
+
+    console.log(TAG + "************* V9testSetAsset002 end *************");
+})
+
+    /**
+     * @tc.name: V9testSetAsset003
+     * @tc.desc: Test setAssset with invalid arrgs
+     * @tc.type: Function
+     * @tc.number: V9testSetAsset003
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testSetAsset003', 0, function () {
+        console.log(TAG + "************* V9testSetAsset003 start *************");
+        var g_object;
+        const attachment = {
+            status: 0,
+            name: "1.txt",
+            uri: "file://com.example.myapplication/data/storage/el2/distributedfiles/dir/1.txt",
+            path: "/dir/1.txt",
+            createTime: "2023-11-26 10:00:00",
+            modifyTime: "2023-11-26 10:00:00",
+            size: "1"
+        };
+        try {
+            g_object = distributedObject.create(context, {
+                title: "my note",
+                content: "It's a nice day today.",
+                mark: false,
+                attachment
+            });
+        } catch (error) {
+            console.info(error.code + error.message);
+        }
+        expect(g_object === undefined).assertEqual(false);
+
+        let uri = "file:1.txt";
+        try {
+            g_object.setAsset('', uri);
+        } catch (error) {
+            expect(error.code === 15400002).assertEqual(true);
+        }
+
+        console.log(TAG + "************* V9testSetAsset003 end *************");
+    })
+
+    /**
+     * @tc.name: V9testSetAsset004
+     * @tc.desc: Test setAssset
+     * @tc.type: Function
+     * @tc.number: V9testSetAsset004
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testSetAsset004', 0, function () {
+        console.log(TAG + "************* V9testSetAsset004 start *************");
+        var g_object;
+        const attachment = {
+            status: 0,
+            name: "1.txt",
+            uri: "file://com.example.myapplication/data/storage/el2/distributedfiles/dir/1.txt",
+            path: "/dir/1.txt",
+            createTime: "2023-11-26 10:00:00",
+            modifyTime: "2023-11-26 10:00:00",
+            size: "1"
+        };
+        try {
+            g_object = distributedObject.create(context, {
+                title: "my note",
+                content: "It's a nice day today.",
+                mark: false,
+                attachment
+            });
+        } catch (error) {
+            console.info(error.code + error.message);
+        }
+        expect(g_object === undefined).assertEqual(false);
+
+        try {
+            g_object.setAsset("file", null);
+        } catch (error) {
+            expect(error.code === 15400002).assertEqual(true);
+        }
+
+        console.log(TAG + "************* V9testSetAsset004 end *************");
+    })
+
+    /**
+     * @tc.name: V9testSetAssets001
+     * @tc.desc: Test setAsssets with invalid arrgs
+     * @tc.type: Function
+     * @tc.number: V9testSetAssets001
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testSetAssets001', 0, function () {
+        console.log(TAG + "************* V9testSetAssets001 start *************");
+        var g_object;
+        const attachment = {
+            status: 0,
+            name: "1.txt",
+            uri: "file://com.example.myapplication/data/storage/el2/distributedfiles/dir/1.txt",
+            path: "/dir/1.txt",
+            createTime: "2023-11-26 10:00:00",
+            modifyTime: "2023-11-26 10:00:00",
+            size: "1"
+        };
+        try {
+            g_object = distributedObject.create(context, {
+                title: "my note",
+                content: "It's a nice day today.",
+                mark: false,
+                attachment
+            });
+        } catch (error) {
+            console.info(error.code + error.message);
+        }
+        expect(g_object === undefined).assertEqual(false);
+
+        g_object.setSessionId("123456").then((data) => {
+            console.info(TAG + "V9testSetAssets001");
+            console.info(TAG + data);
+        }).catch((error) => {
+            console.info(TAG + error);
+        });
+
+        const uris = ['file1:1.txt', 'file2:2.txt'];
+        try {
+            g_object.setAssets("file", uris);
+        } catch (error) {
+            expect(error.code === 15400003).assertEqual(true);
+        }
+
+        g_object.setSessionId("").then((data) => {
+            console.info(TAG + "V9testSetAssets001");
+            console.info(TAG + data);
+        }).catch((error) => {
+            console.info(TAG + error);
+        });
+
+        console.log(TAG + "************* V9testSetAssets001 end *************");
+        g_object.setSessionId((error, data) => {
+            console.info(TAG + error + "," + data);
+        });
+    })
+
+    /**
+     * @tc.name: V9testSetAssets002
+     * @tc.desc: Test setAsssets with invalid arrgs
+     * @tc.type: Function
+     * @tc.number: V9testSetAssets002
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testSetAssets002', 0, function () {
+        console.log(TAG + "************* V9testSetAssets002 start *************");
+        var g_object;
+        const attachment = {
+            status: 0,
+            name: "1.txt",
+            uri: "file://com.example.myapplication/data/storage/el2/distributedfiles/dir/1.txt",
+            path: "/dir/1.txt",
+            createTime: "2023-11-26 10:00:00",
+            modifyTime: "2023-11-26 10:00:00",
+            size: "1"
+        };
+        try {
+            g_object = distributedObject.create(context, {
+                title: "my note",
+                content: "It's a nice day today.",
+                mark: false,
+                attachment
+            });
+        } catch (error) {
+            console.info(error.code + error.message);
+        }
+        expect(g_object === undefined).assertEqual(false);
+
+        const uris = ['file1:1.txt', 'file2:2.txt'];
+        try {
+            g_object.setAssets(null, uris);
+        } catch (error) {
+            expect(error.code === 15400002).assertEqual(true);
+        }
+
+        console.log(TAG + "************* V9testSetAssets002 end *************");
+    })
+
+    /**
+     * @tc.name: V9testSetAssets003
+     * @tc.desc: Test setAsssets with invalid arrgs
+     * @tc.type: Function
+     * @tc.number: V9testSetAssets003
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testSetAssets003', 0, function () {
+        console.log(TAG + "************* V9testSetAssets003 start *************");
+        var g_object;
+        const attachment = {
+            status: 0,
+            name: "1.txt",
+            uri: "file://com.example.myapplication/data/storage/el2/distributedfiles/dir/1.txt",
+            path: "/dir/1.txt",
+            createTime: "2023-11-26 10:00:00",
+            modifyTime: "2023-11-26 10:00:00",
+            size: "1"
+        };
+        try {
+            g_object = distributedObject.create(context, {
+                title: "my note",
+                content: "It's a nice day today.",
+                mark: false,
+                attachment
+            });
+        } catch (error) {
+            console.info(error.code + error.message);
+        }
+        expect(g_object === undefined).assertEqual(false);
+
+        const uris = ['file1:1.txt', 'file2:2.txt'];
+        try {
+            g_object.setAssets('', uris);
+        } catch (error) {
+            expect(error.code === 15400002).assertEqual(true);
+        }
+
+        console.log(TAG + "************* V9testSetAssets003 end *************");
+    })
+
+    /**
+     * @tc.name: V9testSetAssets004
+     * @tc.desc: Test setAssset with invalid arrgs
+     * @tc.type: Function
+     * @tc.number: V9testSetAssets004
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testSetAssets004', 0, function () {
+        console.log(TAG + "************* V9testSetAssets004 start *************");
+        var g_object;
+        const attachment = {
+            status: 0,
+            name: "1.txt",
+            uri: "file://com.example.myapplication/data/storage/el2/distributedfiles/dir/1.txt",
+            path: "/dir/1.txt",
+            createTime: "2023-11-26 10:00:00",
+            modifyTime: "2023-11-26 10:00:00",
+            size: "1"
+        };
+        try {
+            g_object = distributedObject.create(context, {
+                title: "my note",
+                content: "It's a nice day today.",
+                mark: false,
+                attachment
+            });
+        } catch (error) {
+            console.info(error.code + error.message);
+        }
+        expect(g_object === undefined).assertEqual(false);
+
+        try {
+            g_object.setAssets("file", 123);
+        } catch (error) {
+            expect(error.code === 15400002).assertEqual(true);
+        }
+
+        console.log(TAG + "************* V9testSetAssets004 end *************");
+    })
+
+    /**
+     * @tc.name: V9testSetAssets005
+     * @tc.desc: Test setAssset
+     * @tc.type: Function
+     * @tc.number: V9testSetAssets005
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testSetAssets005', 0, function () {
+        console.log(TAG + "************* V9testSetAssets004 start *************");
+        var g_object;
+        const attachment = {
+            status: 0,
+            name: "1.txt",
+            uri: "file://com.example.myapplication/data/storage/el2/distributedfiles/dir/1.txt",
+            path: "/dir/1.txt",
+            createTime: "2023-11-26 10:00:00",
+            modifyTime: "2023-11-26 10:00:00",
+            size: "1"
+        };
+        try {
+            g_object = distributedObject.create(context, {
+                title: "my note",
+                content: "It's a nice day today.",
+                mark: false,
+                attachment
+            });
+        } catch (error) {
+            console.info(error.code + error.message);
+        }
+        expect(g_object === undefined).assertEqual(false);
+
+        const uris = [];
+        try {
+            g_object.setAssets("file", uris);
+        } catch (error) {
+            expect(error.code === 15400002).assertEqual(true);
+        }
+
+        console.log(TAG + "************* V9testSetAssets005 end *************");
+    })
+
+    /**
+     * @tc.name: V9testSetAssets006
+     * @tc.desc: Test setAssset
+     * @tc.type: Function
+     * @tc.number: V9testSetAssets006
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testSetAssets006', 0, function () {
+        console.log(TAG + "************* V9testSetAssets006 start *************");
+        var g_object;
+        const attachment = {
+            status: 0,
+            name: "1.txt",
+            uri: "file://com.example.myapplication/data/storage/el2/distributedfiles/dir/1.txt",
+            path: "/dir/1.txt",
+            createTime: "2023-11-26 10:00:00",
+            modifyTime: "2023-11-26 10:00:00",
+            size: "1"
+        };
+        try {
+            g_object = distributedObject.create(context, {
+                title: "my note",
+                content: "It's a nice day today.",
+                mark: false,
+                attachment
+            });
+        } catch (error) {
+            console.info(error.code + error.message);
+        }
+        expect(g_object === undefined).assertEqual(false);
+
+        const uris = [];
+        for (let index = 0; index < 55; index++) {
+            let uri = `file${index + 1}:${index + 1}.txt`;
+            uris.push(uri);
+        }
+        try {
+            g_object.setAssets("file", uris);
+        } catch (error) {
+            expect(error.code === 15400002).assertEqual(true);
+        }
+        console.log(TAG + "************* V9testSetAssets006 end *************");
+    })
+
+    /**
+     * @tc.name: V9testSetAssets007
+     * @tc.desc: Test setAssset
+     * @tc.type: Function
+     * @tc.number: V9testSetAssets007
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testSetAssets007', 0, function () {
+        console.log(TAG + "************* V9testSetAssets007 start *************");
+        var g_object;
+        const attachment = {
+            status: 0,
+            name: "1.txt",
+            uri: "file://com.example.myapplication/data/storage/el2/distributedfiles/dir/1.txt",
+            path: "/dir/1.txt",
+            createTime: "2023-11-26 10:00:00",
+            modifyTime: "2023-11-26 10:00:00",
+            size: "1"
+        };
+        try {
+            g_object = distributedObject.create(context, {
+                title: "my note",
+                content: "It's a nice day today.",
+                mark: false,
+                attachment
+            });
+        } catch (error) {
+            console.info(error.code + error.message);
+        }
+        expect(g_object === undefined).assertEqual(false);
+
+        const uris = [null, null];
+        try {
+            g_object.setAssets("file", uris);
+        } catch (error) {
+            expect(error.code === 15400002).assertEqual(true);
+        }
+        console.log(TAG + "************* V9testSetAssets006 end *************");
+    })
+
+    /**
+     * @tc.name: V9testOnCallback001
+     * @tc.desc: object join session and on,object can receive callback when data has been changed
+     * @tc.type: Function
+     * @tc.number: V9testOnCallback001
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testOnCallback001', 0, function () {
+        console.log(TAG + "************* V9testOnCallback001 start *************");
+        var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
+        expect(g_object == undefined).assertEqual(false);
+        g_object.setSessionId("session1").then(() => {
+            console.info("join session");
+        }).catch((error) => {
+            console.info(TAG + error.code + error.message);
+        });
+        expect("session1" == g_object.__sessionId).assertEqual(true);
+
+        g_object.on("change", DataObserverCallback);
+        console.info(TAG + " start call watch change");
+
+        if (g_object != undefined && g_object != null) {
+            g_object.name = "jack1";
+            g_object.age = 19;
+            g_object.isVis = true;
+            expect(g_object.name == "jack1").assertEqual(true);
+            expect(g_object.age == 19).assertEqual(true);
+            console.info(TAG + " set data success!");
+        } else {
+            console.info(TAG + " object is null,set name fail");
+        }
+
+        console.log(TAG + "************* V9testOnCallback001 end *************");
+        g_object.setSessionId("", (error, data) => {
+            console.info(TAG + error + "," + data);
+        });
+    })
+
+    /**
+     * @tc.name: V9testOnCallback002
+     * @tc.desc: object join session and on,then object change data twice,object can receive two callbacks when data has been changed
+     * @tc.type: Function
+     * @tc.number: V9testOnCallback002
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testOnCallback002', 0, function () {
+        console.log(TAG + "************* V9testOnCallback002 start *************");
+        var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
+        expect(g_object == undefined).assertEqual(false);
+        g_object.setSessionId("session1");
+        expect("session1" == g_object.__sessionId).assertEqual(true);
+
+        try {
+            g_object.on(123, DataObserverCallback);
+            console.info(TAG + " start call watch change");
+        } catch (error) {
+            expect(error.code == 401).assertEqual(true);
+            expect(error.message == "Parameter error. The type of 'type' must be 'string'.").assertEqual(true);
+        }
+        console.log(TAG + "************* V9testOnCallback002 end *************");
+        g_object.setSessionId("", (error, data) => {
+            console.info(TAG + error + "," + data);
+        });
+    })
+
+    /**
+     * @tc.name: V9testOnCallback003
+     * @tc.desc object join session and on,then object do not change data,object can not receive callbacks
+     * @tc.type: Function
+     * @tc.number: V9testOnCallback003
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testOnCallback003', 0, function () {
+        console.log(TAG + "************* V9testOnCallback003 start *************");
+        var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
+        expect(g_object == undefined).assertEqual(false);
+        g_object.setSessionId("session1").then(() => {
+            console.info("join session");
+        }).catch((error) => {
+            console.info(TAG + error.code + error.message);
+        });
+        expect("session1" == g_object.__sessionId).assertEqual(true);
+        try {
+            g_object.on("error", DataObserverCallback);
+            console.info(TAG + " start call watch change");
+        } catch (error) {
+            expect(error != undefined).assertEqual(true);
+        }
+        console.log(TAG + "************* V9testOnCallback003 end *************");
+        g_object.setSessionId("", (error, data) => {
+            console.info(TAG + error + "," + data);
+        });
+    })
+
+    /**
+     * @tc.name V9testOffCallback001
+     * @tc.desc object join session and on&off,object can not receive callback after off
+     * @tc.type: Function
+     * @tc.number: V9testOffCallback001
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testOffCallback001', 0, function () {
+        console.log(TAG + "************* V9testOffCallback001 start *************");
+        var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
+        expect(g_object == undefined).assertEqual(false);
+        g_object.setSessionId("session5").then(() => {
+            console.info("join session");
+        }).catch((error) => {
+            console.info(TAG + error.code + error.message);
+        });
+        expect("session5" == g_object.__sessionId).assertEqual(true);
+
+        g_object.on("change", DataObserverCallback);
+        console.info(TAG + " start call watch change");
+        if (g_object != undefined && g_object != null) {
+            g_object.name = "jack1";
+            g_object.age = 19;
+            g_object.isVis = true;
+            expect(g_object.name == "jack1").assertEqual(true);
+            expect(g_object.age == 19).assertEqual(true);
+            console.info(TAG + " set data success!");
+        } else {
+            console.info(TAG + " object is null,set name fail");
+        }
+        g_object.off("change", DataObserverCallback);
+        console.info(TAG + " end call watch change");
+        if (g_object != undefined && g_object != null) {
+            g_object.name = "jack2";
+            g_object.age = 20;
+            g_object.isVis = false;
+            expect(g_object.name == "jack2").assertEqual(true);
+            expect(g_object.age == 20).assertEqual(true);
+            console.info(TAG + " set data success!");
+        } else {
+            console.info(TAG + " object is null,set name fail");
+        }
+        console.log(TAG + "************* V9testOffCallback001 end *************");
+        g_object.setSessionId((error, data) => {
+            console.info(TAG + error + "," + data);
+        });
+    })
+
+    /**
+     * @tc.name: V9testOffCallback002
+     * @tc.desc object join session and off,object can not receive callback
+     * @tc.type: Function
+     * @tc.number: V9testOffCallback002
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testOffCallback002', 0, function () {
+        console.log(TAG + "************* V9testOffCallback002 start *************");
+        var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
+        expect(g_object == undefined).assertEqual(false);
+        g_object.setSessionId("session6").then(() => {
+            console.info("join session");
+        }).catch((error) => {
+            console.info(TAG + error.code + error.message);
+        });
+        expect("session6" == g_object.__sessionId).assertEqual(true);
+        try {
+            g_object.off(123);
+        } catch (error) {
+            expect(error.code == 401).assertEqual(true);
+            expect(error.message == "Parameter error. The type of 'type' must be 'string'.").assertEqual(true);
+        }
+        console.info(TAG + " end call watch change");
+        console.log(TAG + "************* V9testOffCallback002 end *************");
+        g_object.setSessionId().then((data) => {
+            console.info(TAG + data);
+            console.info(TAG + "setSessionId test");
+        }).catch((error) => {
+            console.info(TAG + error.code + error.message);
+        });
+    })
+
+    /**
+     * @tc.name: V9testOnStatusCallback001
+     * @tc.desc: object set a listener to watch another object online/offline
+     * @tc.type: Function
+     * @tc.number: V9testOnStatus001
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testOnStatusCallback001', 0, function () {
+        console.log(TAG + "************* V9testOnStatusCallback001 start *************");
+        console.log(TAG + "start watch status");
+        var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
+        expect(g_object == undefined).assertEqual(false);
+        try {
+            g_object.on("status", null);
+        } catch (error) {
+            expect(error.code == 401).assertEqual(true);
+            expect(error.message == "Parameter error. The type of 'callback' must be 'function'.").assertEqual(true);
+        }
+        console.log(TAG + "watch success");
+        console.log(TAG + "************* V9testOnStatusCallback001 end *************");
+        g_object.setSessionId("").then((data) => {
+            console.info(TAG + data);
+            console.info(TAG + "setSessionId test");
+        }).catch((error) => {
+            console.info(TAG + error.code + error.message);
+        });
+    })
+
+    /**
+     * @tc.name: V9testOnStatusCallback002
+     * @tc.desc: object set several listener and can unWatch all watcher
+     * @tc.type: Function
+     * @tc.number: V9testOnStatusCallback002
+     * @tc.size: MediumTest
+     * @tc.level: Level 2
+     */
+    it('V9testOnStatusCallback002', 0, function () {
+        console.log(TAG + "************* V9testOnStatusCallback002 start *************");
+        console.log(TAG + "start watch status");
+        var g_object = distributedObject.create(context, {name: "Amy", age: 18, isVis: false});
+        expect(g_object == undefined).assertEqual(false);
+        expect(g_object.name == "Amy").assertEqual(true);
+        g_object.on("status", StatusObserverCallback);
+        console.log(TAG + "watch success");
+        console.log(TAG + "start call unwatch status");
+        g_object.off("status");
+        console.log(TAG + "unwatch success");
+        console.log(TAG + "************* V9testOnStatusCallback002 end *************");
+        g_object.setSessionId().then(() => {
+            console.info("leave session");
+        }).catch((error) => {
+            console.info(TAG + error.code + error.message);
         });
     })
     console.log(TAG + "*************Unit Test End*************");

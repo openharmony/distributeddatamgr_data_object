@@ -482,7 +482,7 @@ class DistributedV9 {
   }
 
   setAsset(assetkey, uri) {
-    if (this.__proxy[SESSION_ID] != null || this.__proxy[SESSION_ID] !== '') {
+    if (this.__proxy[SESSION_ID] != null && this.__proxy[SESSION_ID] !== '') {
       throw {
         code: 15400003,
         message: 'SessionId has been set, and asset cannot be set.'
@@ -505,7 +505,7 @@ class DistributedV9 {
   }
 
   setAssets(assetkey, uris) {
-    if (this.__proxy[SESSION_ID] != null || this.__proxy[SESSION_ID] !== '') {
+    if (this.__proxy[SESSION_ID] != null && this.__proxy[SESSION_ID] !== '') {
       throw {
         code: 15400003,
         message: 'SessionId has been set, and assets cannot be set.'
