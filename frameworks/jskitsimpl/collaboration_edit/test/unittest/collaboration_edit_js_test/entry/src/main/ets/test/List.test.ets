@@ -19,6 +19,7 @@ import collaborationNodeTest from './Node.ets';
 import collaborationTextTest from './Text.ets';
 import collaborationUndoRedoTest from './UndoRedo.ets';
 import collaborationSetCloudDbTest from './SetCloudDb.ets';
+import collaborationrunTextTest from './RunTest.ets';
 
 export default function testsuite() {
   collaborationGetEditObjectTest();
@@ -27,4 +28,5 @@ export default function testsuite() {
   collaborationTextTest();
   collaborationUndoRedoTest();
   collaborationSetCloudDbTest();
+  collaborationrunTextTest();
 }
