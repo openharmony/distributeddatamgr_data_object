@@ -377,8 +377,8 @@ function getDefaultAsset(uri, distributedDir) {
       name: fileName,
       uri: uri,
       path: filePath,
-      createTime: stat.ctime,
-      modifyTime: stat.mtime,
+      createTime: stat.ctime.toString(),
+      modifyTime: stat.mtime.toString(),
       size: stat.size.toString()
     };
   } catch (error) {
