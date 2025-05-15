@@ -13,18 +13,8 @@
  * limitations under the License.
  */
 
-import collaborationGetEditObjectTest from './GetEditObject.ets';
-import collaborationEditUnitTest from './EditUnit.ets';
-import collaborationNodeTest from './Node.ets';
-import collaborationTextTest from './Text.ets';
-import collaborationUndoRedoTest from './UndoRedo.ets';
-import collaborationSetCloudDbTest from './SetCloudDb.ets';
+import collaborationrunTextTest from './RunTest.ets';
 
 export default function testsuite() {
-  collaborationGetEditObjectTest();
-  collaborationEditUnitTest();
-  collaborationNodeTest();
-  collaborationTextTest();
-  collaborationUndoRedoTest();
-  collaborationSetCloudDbTest();
+  collaborationrunTextTest();
 }
