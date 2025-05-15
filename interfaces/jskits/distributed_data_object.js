@@ -481,14 +481,14 @@ class DistributedV9 {
     return this.__proxy.bindAssetStore(assetkey, bindInfo, callback);
   }
 
-  setAsset(assetkey, uri) {
+  setAsset(assetKey, uri) {
     if (this.__proxy[SESSION_ID] != null && this.__proxy[SESSION_ID] !== '') {
       throw {
         code: 15400003,
         message: 'SessionId has been set, and asset cannot be set.'
       };
     }
-    if (assetkey == null || assetkey === '' || uri == null) {
+    if (!assetKey || !uri) {
       throw {
         code: 15400002,
         message: 'The property or uri of the asset is invalid.'
@@ -498,20 +498,20 @@ class DistributedV9 {
     let assetObj = {};
     const distributedDir = this.__context.distributedFilesDir;
     const asset = getDefaultAsset(uri, distributedDir);
-    assetObj[assetkey] = [asset];
-    assetObj[assetkey + '0'] = asset;
+    assetObj[assetKey] = [asset];
+    assetObj[assetKey + '0'] = asset;
     appendPropertyToObj(this, assetObj);
     return Promise.resolve();
   }
 
-  setAssets(assetkey, uris) {
+  setAssets(assetsKey, uris) {
     if (this.__proxy[SESSION_ID] != null && this.__proxy[SESSION_ID] !== '') {
       throw {
         code: 15400003,
         message: 'SessionId has been set, and assets cannot be set.'
       };
     }
-    if (assetkey == null || assetkey === '') {
+    if (!assetsKey) {
       throw {
         code: 15400002,
         message: 'The property of the assets is invalid.'
@@ -524,10 +524,10 @@ class DistributedV9 {
       };
     }
     for (let index = 0; index < uris.length; index++) {
-      if (uris[index] == null) {
+      if (!uris[index]) {
         throw {
           code: 15400002,
-          message: 'Uri in assets array is null.'
+          message: 'Uri in assets array is invalid.'
         };
       }
     }
@@ -538,9 +538,9 @@ class DistributedV9 {
     for (let index = 0; index < uris.length; index++) {
       const asset = getDefaultAsset(uris[index], distributedDir);
       assets.push(asset);
-      assetObj[assetkey + index] = asset;
+      assetObj[assetsKey + index] = asset;
     }
-    assetObj[assetkey] = assets;
+    assetObj[assetsKey] = assets;
     appendPropertyToObj(this, assetObj);
     return Promise.resolve();
   }
