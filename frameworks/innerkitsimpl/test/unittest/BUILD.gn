@@ -46,6 +46,8 @@ common_external_deps = [
   "dmsfwk:distributed_sdk",
   "dsoftbus:softbus_client",
   "ffmpeg:libohosffmpeg",
+  "googletest:gmock",
+  "googletest:gtest_main",
   "hilog:libhilog",
   "hisysevent:libhisysevent",
   "hitrace:hitrace_meter",
@@ -85,8 +87,6 @@ ohos_unittest("NativeObjectStoreTest") {
 
   deps = [
     "//foundation/distributeddatamgr/data_object/interfaces/innerkits:distributeddataobject_static",
-    "//third_party/googletest:gmock",
-    "//third_party/googletest:gtest_main",
   ]
 }
 
