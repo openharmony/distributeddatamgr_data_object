@@ -61,7 +61,10 @@
                 "dmsfwk",
                 "hisysevent"
             ],
-            "third_party": []
+            "third_party": [
+                "ffmpeg",
+                "libexif"
+            ]
         },
         "build": {
             "sub_component": [
