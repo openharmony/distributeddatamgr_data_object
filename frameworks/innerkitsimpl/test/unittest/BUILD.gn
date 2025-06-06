@@ -282,7 +282,7 @@ ohos_unittest("AppDeviceHandlerTest") {
 ohos_unittest("ObjectTaskSchedulerTest") {
   module_out_path = module_output_path
 
-  sources = [ "task_scheduler_test.cpp" ]
+  sources = [ "${data_object_base_path}/frameworks/innerkitsimpl/test/unittest/src/task_scheduler_test.cpp", ]
 
   configs = [ ":module_private_config" ]
 
