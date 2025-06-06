@@ -28,6 +28,8 @@ public:
         const std::string &bundleName, const std::string &sessionId, sptr<IObjectRevokeSaveCallback> callback) = 0;
     virtual int32_t RegisterDataObserver(
             const std::string &bundleName, const std::string &sessionId, sptr<IObjectChangeCallback> callback) = 0;
+    virtual int32_t RegisterProgressObserver(
+            const std::string &bundleName, const std::string &sessionId, sptr<IObjectProgressCallback> callback) = 0;
 };
 } // namespace OHOS::ObjectStore
 #endif

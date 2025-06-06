@@ -45,7 +45,8 @@ bool JSObjectWrapper::AddWatch(napi_env env, const char *type, napi_value handle
         std::weak_ptr<JSWatcher> watcher = watcher_;
         auto changeEventListener = new ChangeEventListener(watcher, objectStore_, object_);
         auto statusEventListener = new StatusEventListener(watcher, object_->GetSessionId());
-        watcher_->SetListener(changeEventListener, statusEventListener);
+        auto progressEventListener = new ProgressEventListener(watcher, object_->GetSessionId());
+        watcher_->SetListener(changeEventListener, statusEventListener, progressEventListener);
     }
     return watcher_->On(type, handler);
 }

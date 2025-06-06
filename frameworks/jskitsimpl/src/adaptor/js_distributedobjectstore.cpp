@@ -28,8 +28,10 @@
 
 namespace OHOS::ObjectStore {
 constexpr size_t TYPE_SIZE = 10;
+constexpr size_t PARAM_COUNT_MAX = 3;
 static ConcurrentMap<std::string, std::list<napi_ref>> g_statusCallBacks;
 static ConcurrentMap<std::string, std::list<napi_ref>> g_changeCallBacks;
+static ConcurrentMap<std::string, std::list<napi_ref>> g_progressCallBacks;
 bool JSDistributedObjectStore::AddCallback(napi_env env, ConcurrentMap<std::string, std::list<napi_ref>> &callbacks,
     const std::string &objectId, napi_value callback)
 {
@@ -137,6 +139,7 @@ napi_value JSDistributedObjectStore::NewDistributedObject(
 
     RestoreWatchers(env, objectWrapper, objectId);
     objectStore->NotifyCachedStatus(object->GetSessionId());
+    objectStore->NotifyProgressStatus(object->GetSessionId());
     NOT_MATCH_RETURN_NULL(status == napi_ok);
     return result;
 }
@@ -214,6 +217,7 @@ napi_value JSDistributedObjectStore::JSDestroyObjectSync(napi_env env, napi_call
 
     objectWrapper->DeleteWatch(env, Constants::CHANGE);
     objectWrapper->DeleteWatch(env, Constants::STATUS);
+    objectWrapper->DeleteWatch(env, Constants::PROGRESS);
     objectInfo->DeleteObject(objectWrapper->GetObject()->GetSessionId());
     objectWrapper->DestroyObject();
     return nullptr;
@@ -370,6 +374,21 @@ void JSDistributedObjectStore::RestoreWatchers(napi_env env, JSObjectWrapper *wr
     if (!watchResult) {
         LOG_INFO("no status %{public}s", objectId.c_str());
     }
+    watchResult =
+        g_progressCallBacks.ComputeIfPresent(objectId, [&](const std::string &key, std::list<napi_ref> &lists) {
+            for (auto callback : lists) {
+                status = napi_get_reference_value(env, callback, &callbackValue);
+                if (status != napi_ok) {
+                    LOG_ERROR("error! %{public}d", status);
+                    continue;
+                }
+                wrapper->AddWatch(env, Constants::PROGRESS, callbackValue);
+            }
+            return true;
+    });
+    if (!watchResult) {
+        LOG_INFO("no status %{public}s", objectId.c_str());
+    }
 }
 
 // function recordCallback(version: number, type: 'change', objectId: string,
@@ -409,9 +428,11 @@ napi_value JSDistributedObjectStore::JSRecordCallback(napi_env env, napi_callbac
 
     bool addResult = true;
     if (!strcmp(Constants::CHANGE, type)) {
-        addResult = AddCallback(env, g_changeCallBacks, objectId, argv[3]);
+        addResult = AddCallback(env, g_changeCallBacks, objectId, argv[PARAM_COUNT_MAX]);
     } else if (!strcmp(Constants::STATUS, type)) {
-        addResult = AddCallback(env, g_statusCallBacks, objectId, argv[3]);
+        addResult = AddCallback(env, g_statusCallBacks, objectId, argv[PARAM_COUNT_MAX]);
+    } else if (!strcmp(Constants::PROGRESS, type)) {
+        addResult = AddCallback(env, g_progressCallBacks, objectId, argv[PARAM_COUNT_MAX]);
     }
     NAPI_ASSERT_ERRCODE_V9(env, addResult, version, innerError);
     napi_value result = nullptr;
@@ -456,6 +477,8 @@ napi_value JSDistributedObjectStore::JSDeleteCallback(napi_env env, napi_callbac
             delResult = DelCallback(env, g_changeCallBacks, objectId);
         } else if (!strcmp(Constants::STATUS, type)) {
             delResult = DelCallback(env, g_statusCallBacks, objectId);
+        } else if (!strcmp(Constants::PROGRESS, type)) {
+            delResult = DelCallback(env, g_progressCallBacks, objectId);
         }
     } else {
         napi_valuetype callbackType = napi_undefined;
@@ -463,9 +486,11 @@ napi_value JSDistributedObjectStore::JSDeleteCallback(napi_env env, napi_callbac
         NAPI_ASSERT_ERRCODE_V9(env, status == napi_ok && callbackType == napi_function, version,
             std::make_shared<ParametersType>("callback", "function"));
         if (!strcmp(Constants::CHANGE, type)) {
-            delResult = DelCallback(env, g_changeCallBacks, objectId, argv[3]);
+            delResult = DelCallback(env, g_changeCallBacks, objectId, argv[PARAM_COUNT_MAX]);
         } else if (!strcmp(Constants::STATUS, type)) {
-            delResult = DelCallback(env, g_statusCallBacks, objectId, argv[3]);
+            delResult = DelCallback(env, g_statusCallBacks, objectId, argv[PARAM_COUNT_MAX]);
+        } else if (!strcmp(Constants::PROGRESS, type)) {
+            delResult = DelCallback(env, g_progressCallBacks, objectId, argv[PARAM_COUNT_MAX]);
         }
     }
     NAPI_ASSERT_ERRCODE_V9(env, delResult, version, innerError);

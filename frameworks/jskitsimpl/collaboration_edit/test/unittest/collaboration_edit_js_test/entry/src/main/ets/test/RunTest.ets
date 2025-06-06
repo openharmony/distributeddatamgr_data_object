@@ -66,6 +66,9 @@ function statusCallBack(sessionId: string, networkId: string, status: string) {
 function changeCallBack(sessionId: string, fields: Array<string>) {
 }
 
+function progressCallBack(sessionId: string, progress: number) {
+}
+
 let sleep = (ms:number) => {
   return new Promise<ESObject>(resolve => setTimeout(resolve, ms));
 }
@@ -420,6 +423,168 @@ export default function collaborationrunTextTest() {
         g_object.setAssets("file", uris);
       } catch (err) {
         expect(err.code == 15400002).assertEqual(true);
+      }
+    })
+
+    /**
+     * @tc.number    : CollaborationEdit_Text_0019
+     * @tc.name      : Monitor asset progress
+     * @tc.desc      : Test the interface function for monitoring asset progress
+     * @tc.size      : MEDIUM
+     * @tc.type      : Function
+     * @tc.level     : Level 1
+     */
+
+    it('CollaborationEdit_Text_0019', Level.LEVEL1, () => {
+      try {
+        let g_object: DataObject.DataObject = DataObject.create(context, note);
+        g_object.on("progress", progressCallBack);
+        expect(true).assertTrue()
+
+      } catch (err) {
+        expect(err.code == 401).assertEqual(true);
+      }
+    })
+
+
+    /**
+     * @tc.number    : CollaborationEdit_Text_0020
+     * @tc.name      : Monitor asset progress
+     * @tc.desc      : Test the interface function for monitoring asset progress, callback is closure
+     * @tc.size      : MEDIUM
+     * @tc.type      : Function
+     * @tc.level     : Level 1
+     */
+
+
+    it('CollaborationEdit_Text_0020', Level.LEVEL1, () => {
+      try {
+        let g_object: DataObject.DataObject = DataObject.create(context, note);
+        g_object.on("progress", () => {
+        });
+        expect(true).assertTrue()
+      } catch (err) {
+        expect(err.code == 401).assertEqual(true);
+      }
+    })
+
+    /**
+     * @tc.number    : CollaborationEdit_Text_0021
+     * @tc.name      : Remove monitoring of asset progress
+     * @tc.desc      : Test the interface function for remove monitoring of asset progress
+     * @tc.size      : MEDIUM
+     * @tc.type      : Function
+     * @tc.level     : Level 1
+     */
+
+    it('CollaborationEdit_Text_0021', Level.LEVEL1, () => {
+      try {
+        let g_object: DataObject.DataObject = DataObject.create(context, note);
+        g_object.on("progress",progressCallBack);
+        g_object.off("progress", progressCallBack);
+        expect(true).assertTrue();
+      } catch (err) {
+        expect(err.code == 401).assertEqual(true);
+      }
+    })
+
+    /**
+     * @tc.number    : CollaborationEdit_Text_0022
+     * @tc.name      : Remove monitoring of asset progress
+     * @tc.desc      : Test the interface function for remove of all asset progress
+     * @tc.size      : MEDIUM
+     * @tc.type      : Function
+     * @tc.level     : Level 1
+     */
+
+    it('CollaborationEdit_Text_0022', Level.LEVEL1, () => {
+      try {
+        let g_object: DataObject.DataObject = DataObject.create(context, note);
+        g_object.on("progress",progressCallBack);
+        g_object.off("progress");
+        expect(true).assertTrue();
+      } catch (err) {
+        expect(err.code == 401).assertEqual(true);
+      }
+    })
+
+    /**
+     * @tc.number    : CollaborationEdit_Text_0023
+     * @tc.name      : Monitor data object online/offline 
+     * @tc.desc      : Test the interface function for monitoring of data object online/offline 
+     * @tc.size      : MEDIUM
+     * @tc.type      : Function
+     * @tc.level     : Level 1
+     */
+
+    it('CollaborationEdit_Text_0023', Level.LEVEL1, () => {
+      try {
+        let g_object: DataObject.DataObject = DataObject.create(context, note);
+        g_object.on("progress", progressCallBack);
+        expect(true).assertTrue();
+      } catch (err) {
+        expect(err.code == 401).assertEqual(true);
+      }
+    })
+
+    /**
+     * @tc.number    : CollaborationEdit_Text_0024
+     * @tc.name      : Monitor data object online/offline 
+     * @tc.desc      : Test the interface function for monitoring of data object online/offline , no callback
+     * @tc.size      : MEDIUM
+     * @tc.type      : Function
+     * @tc.level     : Level 1
+     */
+
+    it('CollaborationEdit_Text_0024', Level.LEVEL1, () => {
+      try {
+        let g_object: DataObject.DataObject = DataObject.create(context, note);
+        g_object.on("progress", null);
+        expect(true).assertTrue();
+      } catch (err) {
+        expect(err.code == 401).assertEqual(true);
+      }
+    })
+
+
+    /**
+     * @tc.number    : CollaborationEdit_Text_0025
+     * @tc.name      : Remove monitor of data object online/offline 
+     * @tc.desc      : Test the interface function for removing monitor of data object online/offline
+     * @tc.size      : MEDIUM
+     * @tc.type      : Function
+     * @tc.level     : Level 1
+     */
+
+
+    it('CollaborationEdit_Text_0025', Level.LEVEL1, () => {
+      try {
+        let g_object: DataObject.DataObject = DataObject.create(context, note);
+        g_object.on("progress",progressCallBack);
+        g_object.off("progress", progressCallBack);
+        expect(true).assertTrue();
+      } catch (err) {
+        expect(err.code == 401).assertEqual(true);
+      }
+    })
+
+    /**
+     * @tc.number    : CollaborationEdit_Text_0023CollaborationEdit_Text_0026
+     * @tc.name      : Remove monitor of data object online/offline 
+     * @tc.desc      : Test the interface function for removing monitor of all data object online/offline
+     * @tc.size      : MEDIUM
+     * @tc.type      : Function
+     * @tc.level     : Level 1
+     */
+
+    it('CollaborationEdit_Text_0023CollaborationEdit_Text_0026', Level.LEVEL1, () => {
+      try {
+        let g_object: DataObject.DataObject = DataObject.create(context, note);
+        g_object.on("progress",progressCallBack);
+        g_object.off("progress");
+        expect(true).assertTrue();
+      } catch (err) {
+        expect(err.code == 401).assertEqual(true);
       }
     })
   })

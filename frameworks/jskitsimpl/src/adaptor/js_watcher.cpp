@@ -19,10 +19,12 @@
 #include "logger.h"
 #include "notifier_impl.h"
 #include "objectstore_errors.h"
+#include "progress_notifier_impl.h"
 
 namespace OHOS::ObjectStore {
 JSWatcher::JSWatcher(const napi_env env, DistributedObjectStore *objectStore, DistributedObject *object)
-    : UvQueue(env), env_(env), changeEventListener_(nullptr), statusEventListener_(nullptr)
+    : UvQueue(env), env_(env), changeEventListener_(nullptr), statusEventListener_(nullptr),
+      progressEventListener_(nullptr)
 {
 }
 
@@ -30,8 +32,10 @@ JSWatcher::~JSWatcher()
 {
     delete changeEventListener_;
     delete statusEventListener_;
+    delete progressEventListener_;
     changeEventListener_ = nullptr;
     statusEventListener_ = nullptr;
+    progressEventListener_ = nullptr;
 }
 
 bool JSWatcher::On(const char *type, napi_value handler)
@@ -117,6 +121,9 @@ EventListener *JSWatcher::Find(const char *type)
     if (!strcmp(Constants::STATUS, type)) {
         return statusEventListener_;
     }
+    if (!strcmp(Constants::PROGRESS, type)) {
+        return progressEventListener_;
+    }
     return nullptr;
 }
 
@@ -180,18 +187,75 @@ void JSWatcher::Emit(
     return;
 }
 
+void JSWatcher::ProcessProgress(napi_env env, std::list<void *> &args)
+{
+    constexpr static int8_t ARGV_SIZE = 2;
+    napi_value callback = nullptr;
+    napi_value global = nullptr;
+    napi_value param[ARGV_SIZE];
+    napi_value result;
+    napi_status status = napi_get_global(env, &global);
+    NOT_MATCH_GOTO_ERROR(status == napi_ok);
+    for (auto item : args) {
+        ProgressArgs *progressArgs = static_cast<ProgressArgs *>(item);
+        status = napi_get_reference_value(env, progressArgs->callback_, &callback);
+        NOT_MATCH_GOTO_ERROR(status == napi_ok);
+        status = JSUtil::SetValue(env, progressArgs->sessionId_, param[0]);
+        NOT_MATCH_GOTO_ERROR(status == napi_ok);
+        status = JSUtil::SetValue(env, static_cast<uint32_t>(progressArgs->progress_), param[1]);
+        NOT_MATCH_GOTO_ERROR(status == napi_ok);
+        LOG_INFO("start %{public}s, %{public}d", progressArgs->sessionId_.c_str(), progressArgs->progress_);
+        status = napi_call_function(env, global, callback, ARGV_SIZE, param, &result);
+        LOG_INFO("end %{public}s, %{public}d", progressArgs->sessionId_.c_str(), progressArgs->progress_);
+        NOT_MATCH_GOTO_ERROR(status == napi_ok);
+    }
+ERROR:
+    LOG_DEBUG("do clear");
+    for (auto item : args) {
+        ProgressArgs *progressArgs = static_cast<ProgressArgs *>(item);
+        delete progressArgs;
+    }
+    args.clear();
+}
+
+void JSWatcher::Emit(const char *type, const std::string &sessionId, int32_t progress)
+{
+    if (sessionId.empty()) {
+        LOG_ERROR("empty sessionId %{public}s", sessionId.c_str());
+        return;
+    }
+    LOG_INFO("progress change %{public}s %{public}d", sessionId.c_str(), progress);
+    EventListener *listener = Find(type);
+    if (listener == nullptr) {
+        LOG_ERROR("error type %{public}s", type);
+        return;
+    }
+
+    for (EventHandler *handler = listener->handlers_; handler != nullptr; handler = handler->next) {
+        ProgressArgs *progressArgs = new (std::nothrow) ProgressArgs(handler->callbackRef, sessionId, progress);
+        if (progressArgs == nullptr) {
+            LOG_ERROR("JSWatcher::Emit no memory for ProgressArgs malloc!");
+            return;
+        }
+        CallFunction(ProcessProgress, progressArgs);
+    }
+    return;
+}
+
 bool JSWatcher::IsEmpty()
 {
-    if (changeEventListener_->IsEmpty() && statusEventListener_->IsEmpty()) {
+    if (changeEventListener_->IsEmpty() && statusEventListener_->IsEmpty() && progressEventListener_->IsEmpty()) {
         return true;
     }
     return false;
 }
 
-void JSWatcher::SetListener(ChangeEventListener *changeEventListener, StatusEventListener *statusEventListener)
+void JSWatcher::SetListener(ChangeEventListener *changeEventListener, StatusEventListener *statusEventListener,
+    ProgressEventListener *progressEventListener)
 {
     changeEventListener_ = changeEventListener;
     statusEventListener_ = statusEventListener;
+    progressEventListener_ = progressEventListener;
 }
 
 EventHandler *EventListener::Find(napi_env env, napi_value handler)
@@ -369,6 +433,34 @@ StatusEventListener::StatusEventListener(std::weak_ptr<JSWatcher> watcher, const
 {
 }
 
+bool ProgressEventListener::Add(napi_env env, napi_value handler)
+{
+    LOG_INFO("Add progress watch %{public}s", sessionId_.c_str());
+    ProgressNotifierImpl::GetInstance()->AddWatcher(sessionId_, watcher_);
+    return EventListener::Add(env, handler);
+}
+
+bool ProgressEventListener::Del(napi_env env, napi_value handler)
+{
+    if (EventListener::Del(env, handler)) {
+        LOG_INFO("Del progress watch %{public}s", sessionId_.c_str());
+        ProgressNotifierImpl::GetInstance()->DelWatcher(sessionId_);
+        return true;
+    }
+    return false;
+}
+
+void ProgressEventListener::Clear(napi_env env)
+{
+    ProgressNotifierImpl::GetInstance()->DelWatcher(sessionId_);
+    EventListener::Clear(env);
+}
+
+ProgressEventListener::ProgressEventListener(std::weak_ptr<JSWatcher> watcher, const std::string &sessionId)
+    : watcher_(watcher), sessionId_(sessionId)
+{
+}
+
 JSWatcher::ChangeArgs::ChangeArgs(
     const napi_ref callback, const std::string &sessionId, const std::vector<std::string> &changeData)
     : callback_(callback), sessionId_(sessionId), changeData_(changeData)
@@ -378,6 +470,11 @@ JSWatcher::ChangeArgs::ChangeArgs(
 JSWatcher::StatusArgs::StatusArgs(
     const napi_ref callback, const std::string &sessionId, const std::string &networkId, const std::string &status)
     : callback_(callback), sessionId_(sessionId), networkId_(networkId), status_(status)
+{
+}
+
+JSWatcher::ProgressArgs::ProgressArgs(const napi_ref callback, const std::string &sessionId, int32_t progress)
+    : callback_(callback), sessionId_(sessionId), progress_(progress)
 {
 }
 } // namespace OHOS::ObjectStore

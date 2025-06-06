@@ -58,6 +58,15 @@ public:
 private:
     const std::function<void(const std::map<std::string, std::vector<uint8_t>> &, bool)> callback_;
 };
+
+class ObjectProgressCallback : public ObjectProgressCallbackStub {
+public:
+    ObjectProgressCallback(const std::function<void(int32_t)> &callback);
+    void Completed(int32_t progress) override;
+
+private:
+    const std::function<void(int32_t)> callback_;
+};
 } // namespace ObjectStore
 } // namespace OHOS
 

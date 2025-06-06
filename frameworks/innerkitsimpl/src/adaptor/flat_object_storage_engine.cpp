@@ -383,6 +383,17 @@ uint32_t FlatObjectStorageEngine::SetStatusNotifier(std::shared_ptr<StatusWatche
     return SUCCESS;
 }
 
+uint32_t FlatObjectStorageEngine::SetProgressNotifier(std::shared_ptr<ProgressWatcher> watcher)
+{
+    if (!isOpened_) {
+        LOG_ERROR("FlatObjectStorageEngine::SetProgressNotifier has not init");
+        return ERR_DB_NOT_INIT;
+    }
+    std::lock_guard<std::mutex> lock(progressMutex_);
+    progressWatcher_ = watcher;
+    return SUCCESS;
+}
+
 uint32_t FlatObjectStorageEngine::SyncAllData(const std::string &sessionId, const std::vector<std::string> &deviceIds,
     const std::function<void(const std::map<std::string, DistributedDB::DBStatus> &)> &onComplete)
 {
@@ -442,8 +453,18 @@ void FlatObjectStorageEngine::NotifyStatus(const std::string &sessionId, const s
     statusWatcher_->OnChanged(sessionId, deviceId, status);
 }
 
-void FlatObjectStorageEngine::NotifyChange(const std::string &sessionId,
-                                           const std::map<std::string, std::vector<uint8_t>> &changedData)
+bool FlatObjectStorageEngine::NotifyProgress(const std::string &sessionId, int32_t progress)
+{
+    std::lock_guard<std::mutex> lock(progressMutex_);
+    if (progressWatcher_ == nullptr) {
+        return false;
+    }
+    progressWatcher_->OnChanged(sessionId, progress);
+    return true;
+}
+
+void FlatObjectStorageEngine::NotifyChange(
+    const std::string &sessionId, const std::map<std::string, std::vector<uint8_t>> &changedData)
 {
     std::lock_guard<std::mutex> lock(operationMutex_);
     if (observerMap_.count(sessionId) == 0) {

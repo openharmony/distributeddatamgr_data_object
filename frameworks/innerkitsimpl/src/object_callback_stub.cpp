@@ -110,5 +110,27 @@ int ObjectChangeCallbackStub::OnRemoteRequest(
     }
     return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
 }
+
+int ObjectProgressCallbackStub::OnRemoteRequest(
+    uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option)
+{
+    ZLOGI("code:%{public}u, callingPid:%{public}d", code, IPCSkeleton::GetCallingPid());
+    auto localDescriptor = GetDescriptor();
+    auto remoteDescriptor = data.ReadInterfaceToken();
+    if (remoteDescriptor != localDescriptor) {
+        ZLOGE("interface token is not equal");
+        return -1;
+    }
+    if (code == COMPLETED) {
+        int32_t progress;
+        if (!ITypesUtil::Unmarshal(data, progress)) {
+            ZLOGE("write descriptor failed");
+            return -1;
+        }
+        Completed(progress);
+        return 0;
+    }
+    return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
+}
 } // namespace DistributedObject
 } // namespace OHOS

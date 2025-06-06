@@ -69,6 +69,18 @@ void StatusNotifierImpl::OnChanged(const std::string &sessionId,
 {
 }
 
+class ProgressNotifierImpl : public ProgressWatcher {
+public:
+void OnChanged(const std::string &sessionId, int32_t progress) override;
+virtual ~ProgressNotifierImpl();
+};
+ProgressNotifierImpl::~ProgressNotifierImpl()
+{
+}
+
+void ProgressNotifierImpl::OnChanged(const std::string &sessionId, int32_t progresss)
+{
+}
 void GrantPermissionNative()
 {
     const char **perms = new const char *[3];
@@ -1667,6 +1679,198 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItem_002, TestSize.Level
     uint32_t ret = storageEngine->UpdateItem(sessionId, std::string(1025, 't'), value);
     EXPECT_EQ(ERR_CLOSE_STORAGE, ret);
     ret = storageEngine->DeleteTable(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+}
+
+/**
+ * @tc.name: DistributedObjectStore_SetProgressNotifier_001
+ * @tc.desc: test DistributedObjectStore SetProgressNotifier.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_SetProgressNotifier_001, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
+    ASSERT_NE(nullptr, objectStore);
+    DistributedObject *object = objectStore->CreateObject(sessionId);
+    ASSERT_NE(nullptr, object);
+    objectStore->NotifyProgressStatus(sessionId);
+    auto progressNotifierPtr = std::shared_ptr<ProgressNotifier>();
+    auto ret = objectStore->SetProgressNotifier(progressNotifierPtr);
+    EXPECT_EQ(ret, 0);
+}
+
+/**
+ * @tc.name: DistributedObject_SetProgressNotifier_002
+ * @tc.desc: test FlatObjectStorageEngine SetProgressNotifier.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_SetProgressNotifier_002, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    storageEngine->isOpened_ = true;
+    auto progressNotifier = std::make_shared<ProgressNotifierImpl>();
+    uint32_t ret = storageEngine->SetProgressNotifier(progressNotifier);
+    EXPECT_EQ(SUCCESS, ret);
+}
+
+/**
+ * @tc.name: DistributedObject_SetProgressNotifier_003
+ * @tc.desc: test FlatObjectStorageEngine SetProgressNotifier, storageEngine is not open.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_SetProgressNotifier_003, TestSize.Level1)
+{
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    auto progressNotifier = std::make_shared<ProgressNotifierImpl>();
+    storageEngine->isOpened_ = false;
+    uint32_t ret = storageEngine->SetProgressNotifier(progressNotifier);
+    EXPECT_EQ(ERR_DB_NOT_INIT, ret);
+}
+
+/**
+ * @tc.name: DistributedObject_NotifyProgress_001
+ * @tc.desc: test FlatObjectStorageEngine NotifyProgress.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, DistributedObject_NotifyProgress_001, TestSize.Level1)
+{
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    std::string sessionId = "123456";
+    int32_t progress = 100;
+    auto ret = storageEngine->NotifyProgress(sessionId, progress);
+    EXPECT_EQ(ret, false);
+    auto progressNotifier = std::make_shared<ProgressNotifierImpl>();
+    storageEngine->isOpened_ = true;
+    ret = storageEngine->SetProgressNotifier(progressNotifier);
+    ret = storageEngine->NotifyProgress(sessionId, progress);
+    EXPECT_EQ(ret, true);
+}
+
+/**
+ * @tc.name: CacheManager_SubscribeProgressChange_001
+ * @tc.desc: test CacheManager SubscribeProgressChange.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, CacheManager_SubscribeProgressChange_001, TestSize.Level1)
+{
+    std::string bundleName = "";
+    std::string sessionId = "";
+    CacheManager cacheManager;
+    std::function<void(int32_t progress)> callback = [sessionId, this](int32_t progress) {};
+    auto ret = cacheManager.SubscribeProgressChange(bundleName, sessionId, callback);
+    EXPECT_EQ(OBJECT_PERMISSION_DENIED, ret);
+}
+
+/**
+ * @tc.name: CacheManager_UnregisterProgressChange_001
+ * @tc.desc: test CacheManager UnregisterProgressChange.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, CacheManager_UnregisterProgressChange_001, TestSize.Level1)
+{
+    std::string bundleName = "";
+    std::string sessionId = "";
+    CacheManager cacheManager;
+    auto ret = cacheManager.UnregisterProgressChange(bundleName, sessionId);
+    EXPECT_EQ(OBJECT_PERMISSION_DENIED, ret);
+}
+
+/**
+ * @tc.name: FlatObjectStore_CheckProgressCache_001
+ * @tc.desc: test FlatObjectStore CheckProgressCache.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_CheckProgressCache_001, TestSize.Level1)
+{
+    std::string sessionId = "session001";
+    std::string bundleName = "default001";
+    std::shared_ptr<FlatObjectStore> flatObjectStore = std::make_shared<FlatObjectStore>(bundleName);
+    uint32_t ret = flatObjectStore->CreateObject(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+    flatObjectStore->CheckProgressCache(sessionId);
+    flatObjectStore->SubscribeProgressChange(sessionId);
+    flatObjectStore->CheckProgressCache(sessionId);
+    int32_t progress = 100;
+    flatObjectStore->progressInfoCache_[sessionId] = progress;
+    flatObjectStore->CheckProgressCache(sessionId);
+    auto progressNotifier = std::make_shared<ProgressNotifierImpl>();
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    storageEngine->isOpened_ = true;
+    ret = storageEngine->SetProgressNotifier(progressNotifier);
+    ret = storageEngine->NotifyProgress(sessionId, progress);
+    EXPECT_EQ(ret, true);
+    flatObjectStore->CheckProgressCache(sessionId);
+    ret = flatObjectStore->Delete(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+}
+
+/**
+ * @tc.name: FlatObjectStore_SubscribeProgressChange_001
+ * @tc.desc: test FlatObjectStore SubscribeProgressChange.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_SubscribeProgressChange_001, TestSize.Level1)
+{
+    std::string sessionId = "session001";
+    std::string bundleName = "default001";
+    std::shared_ptr<FlatObjectStore> flatObjectStore = std::make_shared<FlatObjectStore>(bundleName);
+    uint32_t ret = flatObjectStore->CreateObject(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+    flatObjectStore->SubscribeProgressChange(sessionId);
+    ret = flatObjectStore->Delete(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+}
+
+/**
+ * @tc.name: FlatObjectStore_SetProgressNotifier_001
+ * @tc.desc: test FlatObjectStore SetProgressNotifier.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_SetProgressNotifier_001, TestSize.Level1)
+{
+    std::string sessionId = "session001";
+    std::string bundleName = "default001";
+    std::shared_ptr<FlatObjectStore> flatObjectStore = std::make_shared<FlatObjectStore>(bundleName);
+    uint32_t ret = flatObjectStore->CreateObject(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+    auto progressNotifier = std::make_shared<ProgressNotifierImpl>();
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    flatObjectStore->storageEngine_->isOpened_ = true;
+    flatObjectStore->SetProgressNotifier(progressNotifier);
+    flatObjectStore->storageEngine_->isOpened_ = false;
+    flatObjectStore->SetProgressNotifier(progressNotifier);
+    ret = flatObjectStore->Delete(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+}
+
+/**
+ * @tc.name: FlatObjectStore_SetProgressNotifier_002
+ * @tc.desc: test FlatObjectStore SetProgressNotifier，storageEngine is not open.
+ * @tc.type: FUNC
+ */
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_SetProgressNotifier_002, TestSize.Level1)
+{
+    std::string sessionId = "session001";
+    std::string bundleName = "default001";
+    std::shared_ptr<FlatObjectStore> flatObjectStore = std::make_shared<FlatObjectStore>(bundleName);
+    uint32_t ret = flatObjectStore->CreateObject(sessionId);
+    EXPECT_EQ(SUCCESS, ret);
+    auto progressNotifier = std::make_shared<ProgressNotifierImpl>();
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    auto notifier = std::shared_ptr<ProgressNotifier>();
+    std::shared_ptr<ProgressNotifierProxy> progressNotifierProxy = std::make_shared<ProgressNotifierProxy>(notifier);
+    int32_t progress = 100;
+    progressNotifierProxy->OnChanged(sessionId, progress);
+    progressNotifierProxy->notifier = notifier;
+    progressNotifierProxy->OnChanged(sessionId, progress);
+    storageEngine->isOpened_ = false;
+    flatObjectStore->SetProgressNotifier(progressNotifier);
+    EXPECT_EQ(SUCCESS, ret);
+    ret = flatObjectStore->Delete(sessionId);
     EXPECT_EQ(SUCCESS, ret);
 }
 } // namespace

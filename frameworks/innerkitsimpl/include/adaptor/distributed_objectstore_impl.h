@@ -38,7 +38,9 @@ public:
     uint32_t Watch(DistributedObject *object, std::shared_ptr<ObjectWatcher> watcher) override;
     uint32_t UnWatch(DistributedObject *object) override;
     uint32_t SetStatusNotifier(std::shared_ptr<StatusNotifier> notifier) override;
+    uint32_t SetProgressNotifier(std::shared_ptr<ProgressNotifier> notifier) override;
     void NotifyCachedStatus(const std::string &sessionId) override;
+    void NotifyProgressStatus(const std::string &sessionId) override;
 
 private:
     DistributedObject *CacheObject(const std::string &sessionId, FlatObjectStore *flatObjectStore);
@@ -59,6 +61,17 @@ public:
 private:
     std::shared_ptr<StatusNotifier> notifier;
 };
+
+class ProgressNotifierProxy : public ProgressWatcher {
+public:
+    virtual ~ProgressNotifierProxy();
+    ProgressNotifierProxy(const std::shared_ptr<ProgressNotifier> &notifier);
+    void OnChanged(const std::string &sessionId, int32_t progress) override;
+
+private:
+    std::shared_ptr<ProgressNotifier> notifier;
+};
+
 class WatcherProxy : public FlatObjectWatcher {
 public:
     using AssetChangeCallback = std::function<void(const std::string& sessionId,

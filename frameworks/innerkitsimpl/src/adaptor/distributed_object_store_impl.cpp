@@ -198,13 +198,24 @@ uint32_t DistributedObjectStoreImpl::SetStatusNotifier(std::shared_ptr<StatusNot
     return flatObjectStore_->SetStatusNotifier(watcherProxy);
 }
 
-void DistributedObjectStoreImpl::NotifyCachedStatus(const std::string &sessionId)
+uint32_t DistributedObjectStoreImpl::SetProgressNotifier(std::shared_ptr<ProgressNotifier> notifier)
 {
     if (flatObjectStore_ == nullptr) {
-        LOG_ERROR("NotifyCachedStatus sync flatObjectStore err ");
-        return;
+        LOG_ERROR("flatObjectStore_ is nullptr");
+        return ERR_NULL_OBJECTSTORE;
     }
+    std::shared_ptr<ProgressNotifierProxy> watcherProxy = std::make_shared<ProgressNotifierProxy>(notifier);
+    return flatObjectStore_->SetProgressNotifier(watcherProxy);
+}
+
+void DistributedObjectStoreImpl::NotifyCachedStatus(const std::string &sessionId)
+{
     flatObjectStore_->CheckRetrieveCache(sessionId);
+}
+
+void DistributedObjectStoreImpl::NotifyProgressStatus(const std::string &sessionId)
+{
+    flatObjectStore_->CheckProgressCache(sessionId);
 }
 
 WatcherProxy::WatcherProxy(const std::shared_ptr<ObjectWatcher> objectWatcher, const std::string &sessionId)
@@ -304,6 +315,22 @@ StatusNotifierProxy::StatusNotifierProxy(const std::shared_ptr<StatusNotifier> &
 StatusNotifierProxy::~StatusNotifierProxy()
 {
     LOG_ERROR("destroy");
+    notifier = nullptr;
+}
+
+void ProgressNotifierProxy::OnChanged(const std::string &sessionId, int32_t progress)
+{
+    if (notifier != nullptr) {
+        notifier->OnChanged(sessionId, progress);
+    }
+}
+
+ProgressNotifierProxy::ProgressNotifierProxy(const std::shared_ptr<ProgressNotifier> &notifier) : notifier(notifier)
+{
+}
+
+ProgressNotifierProxy::~ProgressNotifierProxy()
+{
     notifier = nullptr;
 }
 } // namespace OHOS::ObjectStore
