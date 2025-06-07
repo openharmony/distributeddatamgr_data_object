@@ -38,10 +38,11 @@ config("module_private_config") {
 common_external_deps = [
   "ability_base:want",
   "access_token:libaccesstoken_sdk",
-  "access_token:libnativetoken",
+  "access_token:libnativetoken_shared",
   "access_token:libtoken_setproc",
   "bundle_framework:appexecfwk_core",
   "c_utils:utils",
+  "cJSON:cjson",
   "device_manager:devicemanagersdk",
   "dmsfwk:distributed_sdk",
   "dsoftbus:softbus_client",
@@ -278,6 +279,21 @@ ohos_unittest("AppDeviceHandlerTest") {
   deps = [ "${data_object_base_path}/interfaces/innerkits:distributeddataobject_static" ]
 }
 
+ohos_unittest("ObjectTaskSchedulerTest") {
+  module_out_path = module_output_path
+
+  sources = [ "${data_object_base_path}/frameworks/innerkitsimpl/test/unittest/src/task_scheduler_test.cpp", ]
+
+  configs = [ ":module_private_config" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gtest",
+    "hilog:libhilog",
+  ]
+
+}
+
 group("unittest") {
   testonly = true
   deps = []
@@ -292,5 +308,6 @@ group("unittest") {
     ":ObjectCallbackStubTest",
     ":ObjectServiceProxyTest",
     ":ObjectTypesUtilTest",
+    ":ObjectTaskSchedulerTest",
   ]
 }

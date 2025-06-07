@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_DATA_OBJECT_COMMON_TYPES_H
-#define OHOS_DATA_OBJECT_COMMON_TYPES_H
+#ifndef OHOS_COMMON_TYPES_H
+#define OHOS_COMMON_TYPES_H
 #include <map>
 namespace OHOS::CommonType {
 struct AssetValue {
