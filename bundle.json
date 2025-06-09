@@ -5,7 +5,7 @@
     "homePage": "https://gitee.com/openharmony",
     "license": "Apache-2.0",
     "repository": "https://gitee.com/openharmony/distributeddatamgr_data_object",
-    "domain": "ohos",
+    "domain": "os",
     "language": "",
     "publishAs": "code-segment",
     "private": false,
