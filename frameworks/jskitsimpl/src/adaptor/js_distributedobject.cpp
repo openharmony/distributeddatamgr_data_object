@@ -307,7 +307,9 @@ napi_value JSDistributedObject::GetSaveResultCons(
     napi_env env, std::string &sessionId, double version, std::string deviceId)
 {
     const char *objectName = "SaveResult";
-    napi_value napiSessionId, napiVersion, napiDeviceId;
+    napi_value napiSessionId;
+    napi_value napiVersion;
+    napi_value napiDeviceId;
     napi_value result;
 
     napi_status status = JSUtil::SetValue(env, sessionId, napiSessionId);

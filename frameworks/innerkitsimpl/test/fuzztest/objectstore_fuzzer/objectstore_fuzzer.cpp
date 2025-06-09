@@ -151,12 +151,13 @@ bool GetDoubleFuzz(const uint8_t *data, size_t size)
 
 bool GetBooleanFuzz(const uint8_t *data, size_t size)
 {
-    bool val, result = false;
+    bool result = false;
     if (SUCCESS != SetUpTestCase()) {
         return false;
     }
     std::string skey(data, data + size);
     if (SUCCESS == object_->PutBoolean(skey, true)) {
+        bool val;
         uint32_t ret = object_->GetBoolean(skey, val);
         if (!ret) {
             result = true;
