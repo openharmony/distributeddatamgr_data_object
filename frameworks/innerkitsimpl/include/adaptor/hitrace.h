@@ -23,12 +23,12 @@ class DataObjectHiTrace final {
 public:
     inline DataObjectHiTrace(const std::string &value)
     {
-        StartTrace(HITRACE_TAG_DISTRIBUTEDDATA, value);
+        StartTraceEx(HiTraceOutputLevel::HITRACE_LEVEL_INFO, HITRACE_TAG_DISTRIBUTEDDATA, value.c_str(), "");
     }
 
     inline ~DataObjectHiTrace()
     {
-        FinishTrace(HITRACE_TAG_DISTRIBUTEDDATA);
+        FinishTraceEx(HiTraceOutputLevel::HITRACE_LEVEL_INFO, HITRACE_TAG_DISTRIBUTEDDATA);
     }
 };
 } // namespace ObjectStore
