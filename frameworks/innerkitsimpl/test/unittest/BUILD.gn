@@ -86,6 +86,10 @@ ohos_unittest("NativeObjectStoreTest") {
 
   external_deps = common_external_deps
 
+  defines = [
+    "private=public",
+  ]
+
   deps = [
     "//foundation/distributeddatamgr/data_object/interfaces/innerkits:distributeddataobject_static",
   ]
@@ -156,6 +160,7 @@ ohos_unittest("AssetChangeTimerTest") {
     "${data_object_base_path}/frameworks/jskitsimpl/src/adaptor/notifier_impl.cpp",
     "${data_object_base_path}/frameworks/jskitsimpl/src/common/js_util.cpp",
     "${data_object_base_path}/frameworks/jskitsimpl/src/common/uv_queue.cpp",
+    "${data_object_base_path}/frameworks/jskitsimpl/src/adaptor/progress_notifier_impl.cpp",
   ]
 
   cflags_cc = [ "-DHILOG_ENABLE" ]

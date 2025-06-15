@@ -43,6 +43,11 @@ class IObjectChangeCallback {
 public:
     virtual void Completed(const std::map<std::string, std::vector<uint8_t>> &results, bool allReady) = 0;
 };
+
+class IObjectProgressCallback {
+public:
+    virtual void Completed(int32_t progress) = 0;
+};
 } // namespace DistributedObject
 } // namespace OHOS
 

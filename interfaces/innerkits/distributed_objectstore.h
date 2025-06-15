@@ -25,6 +25,10 @@ public:
     virtual void OnChanged(
         const std::string &sessionId, const std::string &networkId, const std::string &onlineStatus) = 0;
 };
+class ProgressNotifier {
+public:
+    virtual void OnChanged(const std::string &sessionId, int32_t progress) = 0;
+};
 class DistributedObjectStore {
 public:
     virtual ~DistributedObjectStore(){};
@@ -112,6 +116,23 @@ public:
      *
      */
     virtual void NotifyCachedStatus(const std::string &sessionId) = 0;
+
+    /**
+     * @brief Set listening for progress.
+     *
+     * @param notifier Indicates callback function for progress.
+     *
+     * @return Returns 0 for success, others for failure.
+     */
+    virtual uint32_t SetProgressNotifier(std::shared_ptr<ProgressNotifier> notifier) = 0;
+
+    /**
+     * @brief Notify the status of the progress from the cached callback function according to the sessionId.
+     *
+     * @param sessionId Indicates the sessionId.
+     *
+     */
+    virtual void NotifyProgressStatus(const std::string &sessionId) = 0;
 };
 } // namespace OHOS::ObjectStore
 

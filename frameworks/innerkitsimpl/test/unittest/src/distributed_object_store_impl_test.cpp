@@ -96,4 +96,20 @@ HWTEST_F(DistributedObjectStoreImplTest, FindChangedAssetKey_001, TestSize.Level
     bool ret = watcherProxy.FindChangedAssetKey(changedKey, assetKey);
     EXPECT_EQ(ret, false);
 }
+
+/**
+ * @tc.name: SetProgressNotifier001
+ * @tc.desc: test SetProgressNotifier.
+ * @tc.type: FUNC
+ */
+
+HWTEST_F(DistributedObjectStoreImplTest, SetProgressNotifier001, TestSize.Level1)
+{
+    std::string bundleName = "default";
+    std::string sessionId = "123456";
+    auto objectStore = new DistributedObjectStoreImpl(nullptr);
+    auto progressNotifierPtr = std::shared_ptr<ProgressNotifier>();
+    bool ret = objectStore->SetProgressNotifier(progressNotifierPtr);
+    EXPECT_EQ(ret, true);
+}
 }

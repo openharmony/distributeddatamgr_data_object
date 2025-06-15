@@ -117,4 +117,34 @@ HWTEST_F(ObjectServiceProxyTest, BindAssetStore_001, TestSize.Level1)
     int32_t ret = objectServiceProxy.BindAssetStore(bundleName, sessionId, asset, bindInfo);
     EXPECT_EQ(ret, OHOS::ObjectStore::ERR_IPC);
 }
+
+/**
+ * @tc.name: RegisterProgressObserver_001
+ * @tc.desc: Abnormal test for RegisterProgressObserver, impl is nullptr
+ * @tc.type: FUNC
+ */
+HWTEST_F(ObjectServiceProxyTest, RegisterProgressObserver_001, TestSize.Level1)
+{
+    string bundleName = "com.example.myapplication";
+    string sessionId = "123456";
+    sptr<IRemoteObject> impl;
+    ObjectServiceProxy objectServiceProxy(impl);
+    int32_t ret = objectServiceProxy.RegisterProgressObserver(bundleName, sessionId, impl);
+    EXPECT_EQ(ret, OHOS::ObjectStore::ERR_IPC);
+}
+
+/**
+ * @tc.name: UnregisterProgressObserver_001
+ * @tc.desc: Abnormal test for UnregisterProgressObserver, impl is nullptr
+ * @tc.type: FUNC
+ */
+HWTEST_F(ObjectServiceProxyTest, UnregisterProgressObserver_001, TestSize.Level1)
+{
+    string bundleName = "com.example.myapplication";
+    string sessionId = "123456";
+    sptr<IRemoteObject> impl;
+    ObjectServiceProxy objectServiceProxy(impl);
+    int32_t ret = objectServiceProxy.UnregisterProgressObserver(bundleName, sessionId);
+    EXPECT_EQ(ret, OHOS::ObjectStore::ERR_IPC);
+}
 }

@@ -30,6 +30,8 @@ enum class ObjectServiceInterfaceCode : int8_t {
     OBJECTSTORE_BIND_ASSET_STORE,
     OBJECTSTORE_DELETE_SNAPSHOT,
     OBJECTSTORE_IS_CONTINUE,
+    OBJECTSTORE_REGISTER_PROGRESSS,
+    OBJECTSTORE_UNREGISTER_PROGRESSS,
     OBJECTSTORE_SERVICE_CMD_MAX
 };
 
@@ -37,7 +39,7 @@ enum class KvStoreServiceInterfaceCode : int8_t {
     GET_FEATURE_INTERFACE = 0,
     REGISTERCLIENTDEATHOBSERVER,
 };
-}
-} // namespace OHOS
+} // namespace ObjectStoreService
+} // namespace OHOS::DistributedObject
 
 #endif // DISTRIBUTEDDATA_OBJECT_STORE_IPC_INTERFACE_H

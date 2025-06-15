@@ -35,6 +35,7 @@ public:
     uint32_t RegisterObserver(const std::string &key, std::shared_ptr<TableWatcher> watcher) override;
     uint32_t UnRegisterObserver(const std::string &key) override;
     uint32_t SetStatusNotifier(std::shared_ptr<StatusWatcher> watcher) override;
+    uint32_t SetProgressNotifier(std::shared_ptr<ProgressWatcher> watcher) override;
     uint32_t SyncAllData(const std::string &sessionId, const std::vector<std::string> &deviceIds,
         const std::function<void(const std::map<std::string, DistributedDB::DBStatus> &)> &onComplete);
     void OnComplete(const std::string &key, const std::map<std::string, DistributedDB::DBStatus> &devices,
@@ -42,13 +43,17 @@ public:
     bool isOpened_ = false;
     void NotifyStatus(const std::string &sessionId, const std::string &deviceId, const std::string &status);
     void NotifyChange(const std::string &sessionId, const std::map<std::string, std::vector<uint8_t>> &changedData);
+    bool NotifyProgress(const std::string &sessionId, int32_t progress);
+
 private:
     std::mutex operationMutex_{};
     std::mutex watcherMutex_{};
+    std::mutex progressMutex_{};
     std::shared_ptr<DistributedDB::KvStoreDelegateManager> storeManager_;
     std::map<std::string, DistributedDB::KvStoreNbDelegate *> delegates_;
     std::map<std::string, std::shared_ptr<TableWatcher>> observerMap_;
     std::shared_ptr<StatusWatcher> statusWatcher_ = nullptr;
+    std::shared_ptr<ProgressWatcher> progressWatcher_ = nullptr;
 };
 } // namespace OHOS::ObjectStore
 #endif

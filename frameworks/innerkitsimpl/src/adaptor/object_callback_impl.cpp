@@ -55,4 +55,11 @@ ObjectChangeCallback::ObjectChangeCallback(
     : callback_(callback)
 {
 }
-} // namespace OHOS::DistributedKv
+void ObjectProgressCallback::Completed(int32_t progress)
+{
+    callback_(progress);
+}
+ObjectProgressCallback::ObjectProgressCallback(const std::function<void(int32_t)> &callback) : callback_(callback)
+{
+}
+} // namespace OHOS::ObjectStore

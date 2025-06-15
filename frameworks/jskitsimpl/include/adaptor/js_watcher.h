@@ -81,6 +81,20 @@ private:
     std::string sessionId_;
 };
 
+class ProgressEventListener : public EventListener {
+public:
+    ProgressEventListener(std::weak_ptr<JSWatcher> watcher, const std::string &sessionId);
+    bool Add(napi_env env, napi_value handler) override;
+
+    bool Del(napi_env env, napi_value handler) override;
+
+    void Clear(napi_env env) override;
+
+private:
+    std::weak_ptr<JSWatcher> watcher_;
+    std::string sessionId_;
+};
+
 class JSWatcher : public UvQueue {
 public:
     JSWatcher(const napi_env env, DistributedObjectStore *objectStore, DistributedObject *object);
@@ -95,9 +109,13 @@ public:
 
     void Emit(const char *type, const std::string &sessionId, const std::string &networkId, const std::string &status);
 
+    void Emit(const char *type, const std::string &sessionId, int32_t progress);
+
     bool IsEmpty();
 
-    void SetListener(ChangeEventListener *changeEventListener, StatusEventListener *statusEventListener);
+    void SetListener(ChangeEventListener *changeEventListener, StatusEventListener *statusEventListener,
+        ProgressEventListener *progressEventListener);
+
 private:
     struct ChangeArgs {
         ChangeArgs(const napi_ref callback, const std::string &sessionId, const std::vector<std::string> &changeData);
@@ -113,12 +131,20 @@ private:
         const std::string networkId_;
         const std::string status_;
     };
+    struct ProgressArgs {
+        ProgressArgs(const napi_ref callback, const std::string &sessionId, int32_t progress);
+        napi_ref callback_;
+        const std::string sessionId_;
+        int32_t progress_ = 0;
+    };
     EventListener *Find(const char *type);
     static void ProcessChange(napi_env env, std::list<void *> &args);
     static void ProcessStatus(napi_env env, std::list<void *> &args);
+    static void ProcessProgress(napi_env env, std::list<void *> &args);
     napi_env env_;
     ChangeEventListener *changeEventListener_;
     StatusEventListener *statusEventListener_;
+    ProgressEventListener *progressEventListener_;
 };
 
 class WatcherImpl : public ObjectWatcher {

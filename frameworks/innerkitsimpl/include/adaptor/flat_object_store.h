@@ -41,6 +41,9 @@ public:
     int32_t SubscribeDataChange(const std::string &bundleName, const std::string &sessionId,
         std::function<void(const std::map<std::string, std::vector<uint8_t>> &data, bool allReady)> &callback);
     int32_t UnregisterDataChange(const std::string &bundleName, const std::string &sessionId);
+    int32_t SubscribeProgressChange(
+        const std::string &bundleName, const std::string &sessionId, std::function<void(int32_t progress)> &callback);
+    int32_t UnregisterProgressChange(const std::string &bundleName, const std::string &sessionId);
     int32_t DeleteSnapshot(const std::string &bundleName, const std::string &sessionId);
     bool IsContinue();
 private:
@@ -60,15 +63,17 @@ public:
     uint32_t CreateObject(const std::string &sessionId);
     void ResumeObject(const std::string &sessionId);
     void SubscribeDataChange(const std::string &sessionId);
+    void SubscribeProgressChange(const std::string &sessionId);
     uint32_t Delete(const std::string &objectId);
     uint32_t Watch(const std::string &objectId, std::shared_ptr<FlatObjectWatcher> watcher);
     uint32_t UnWatch(const std::string &objectId);
     uint32_t SetStatusNotifier(std::shared_ptr<StatusWatcher> sharedPtr);
+    uint32_t SetProgressNotifier(std::shared_ptr<ProgressWatcher> sharedPtr);
     uint32_t Save(const std::string &sessionId, const std::string &deviceId);
     uint32_t RevokeSave(const std::string &sessionId);
     void CheckRetrieveCache(const std::string &sessionId);
-    void FilterData(const std::string &sessionId,
-                    std::map<std::string, std::vector<uint8_t>> &data);
+    void CheckProgressCache(const std::string &sessionId);
+    void FilterData(const std::string &sessionId, std::map<std::string, std::vector<uint8_t>> &data);
     uint32_t PutDouble(const std::string &sessionId, const std::string &key, double value);
     uint32_t PutBoolean(const std::string &sessionId, const std::string &key, bool value);
     uint32_t PutString(const std::string &sessionId, const std::string &key, const std::string &value);
@@ -86,7 +91,9 @@ private:
     std::shared_ptr<FlatObjectStorageEngine> storageEngine_;
     CacheManager *cacheManager_;
     std::mutex mutex_;
+    std::mutex progressInfoMutex_;
     std::vector<std::string> retrievedCache_ {};
+    std::map<std::string, int32_t> progressInfoCache_;
     std::string bundleName_;
 };
 } // namespace OHOS::ObjectStore

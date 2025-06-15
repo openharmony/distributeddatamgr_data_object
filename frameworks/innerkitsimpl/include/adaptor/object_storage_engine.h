@@ -38,6 +38,11 @@ public:
         const std::string &sessionId, const std::string &networkId, const std::string &onlineStatus) = 0;
 };
 
+class ProgressWatcher {
+public:
+    virtual void OnChanged(const std::string &sessionId, int32_t progress) = 0;
+};
+
 class ObjectStorageEngine {
 public:
     ObjectStorageEngine(const ObjectStorageEngine &) = delete;
@@ -58,6 +63,7 @@ public:
     virtual uint32_t RegisterObserver(const std::string &key, std::shared_ptr<TableWatcher> watcher) = 0;
     virtual uint32_t UnRegisterObserver(const std::string &key) = 0;
     virtual uint32_t SetStatusNotifier(std::shared_ptr<StatusWatcher> watcher) = 0;
+    virtual uint32_t SetProgressNotifier(std::shared_ptr<ProgressWatcher> watcher) = 0;
 };
 } // namespace OHOS::ObjectStore
 #endif

@@ -96,6 +96,7 @@ ohos_shared_library("distributeddataobject") {
     "../../frameworks/jskitsimpl/src/common/napi_queue.cpp",
     "../../frameworks/jskitsimpl/src/common/object_error.cpp",
     "../../frameworks/jskitsimpl/src/common/uv_queue.cpp",
+    "../../frameworks/jskitsimpl/src/adaptor/progress_notifier_impl.cpp",
   ]
 
   configs = [ ":objectstore_config" ]

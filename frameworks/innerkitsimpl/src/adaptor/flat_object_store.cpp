@@ -69,6 +69,7 @@ uint32_t FlatObjectStore::CreateObject(const std::string &sessionId)
     }
     SubscribeDataChange(sessionId);
     ResumeObject(sessionId);
+    SubscribeProgressChange(sessionId);
     return SUCCESS;
 }
 
@@ -122,6 +123,18 @@ void FlatObjectStore::SubscribeDataChange(const std::string &sessionId)
     cacheManager_->SubscribeDataChange(bundleName_, sessionId, remoteResumeCallback);
 }
 
+void FlatObjectStore::SubscribeProgressChange(const std::string &sessionId)
+{
+    std::function<void(int32_t progress)> remoteResumeCallback = [sessionId, this](int32_t progress) {
+        LOG_INFO("asset progress = %{public}d", progress);
+        if (!storageEngine_->NotifyProgress(sessionId, progress)) {
+            std::lock_guard<std::mutex> lck(progressInfoMutex_);
+            progressInfoCache_.insert_or_assign(sessionId, progress);
+        }
+    };
+    cacheManager_->SubscribeProgressChange(bundleName_, sessionId, remoteResumeCallback);
+}
+
 uint32_t FlatObjectStore::Delete(const std::string &sessionId)
 {
     if (!storageEngine_->isOpened_ && storageEngine_->Open(bundleName_) != SUCCESS) {
@@ -135,6 +148,7 @@ uint32_t FlatObjectStore::Delete(const std::string &sessionId)
     }
     cacheManager_->UnregisterDataChange(bundleName_, sessionId);
     cacheManager_->DeleteSnapshot(bundleName_, sessionId);
+    cacheManager_->UnregisterProgressChange(bundleName_, sessionId);
     return SUCCESS;
 }
 
@@ -191,6 +205,14 @@ uint32_t FlatObjectStore::SetStatusNotifier(std::shared_ptr<StatusWatcher> notif
     return storageEngine_->SetStatusNotifier(notifier);
 }
 
+uint32_t FlatObjectStore::SetProgressNotifier(std::shared_ptr<ProgressWatcher> notifier)
+{
+    if (!storageEngine_->isOpened_ && storageEngine_->Open(bundleName_) != SUCCESS) {
+        LOG_ERROR("FlatObjectStore::DB has not inited");
+        return ERR_DB_NOT_INIT;
+    }
+    return storageEngine_->SetProgressNotifier(notifier);
+}
 uint32_t FlatObjectStore::Save(const std::string &sessionId, const std::string &deviceId)
 {
     RadarReporter::ReportStateStart(std::string(__FUNCTION__), SAVE, SAVE_TO_SERVICE, IDLE, START, bundleName_);
@@ -245,8 +267,19 @@ void FlatObjectStore::CheckRetrieveCache(const std::string &sessionId)
     }
 }
 
-void FlatObjectStore::FilterData(const std::string &sessionId,
-                                 std::map<std::string, std::vector<uint8_t>> &data)
+void FlatObjectStore::CheckProgressCache(const std::string &sessionId)
+{
+    std::lock_guard<std::mutex> lck(progressInfoMutex_);
+    auto it = progressInfoCache_.find(sessionId);
+    if (it != progressInfoCache_.end()) {
+        auto ret = storageEngine_->NotifyProgress(sessionId, it->second);
+        if (ret) {
+            progressInfoCache_.erase(sessionId);
+        }
+    }
+}
+
+void FlatObjectStore::FilterData(const std::string &sessionId, std::map<std::string, std::vector<uint8_t>> &data)
 {
     std::map<std::string, std::vector<uint8_t>> allData {};
     storageEngine_->GetItems(sessionId, allData);
@@ -522,6 +555,26 @@ int32_t CacheManager::SubscribeDataChange(const std::string &bundleName, const s
     return status;
 }
 
+int32_t CacheManager::SubscribeProgressChange(
+    const std::string &bundleName, const std::string &sessionId, std::function<void(int32_t progress)> &callback)
+{
+    sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
+    if (proxy == nullptr) {
+        LOG_ERROR("proxy is nullptr.");
+        return ERR_NULL_PTR;
+    }
+    sptr<ObjectProgressCallbackBroker> objectRemoteResumeCallback = new (std::nothrow) ObjectProgressCallback(callback);
+    if (objectRemoteResumeCallback == nullptr) {
+        LOG_ERROR("CacheManager::SubscribeProgressChange no memory for ObjectProgressCallback malloc!");
+        return ERR_NULL_PTR;
+    }
+    int32_t status =
+        proxy->RegisterProgressObserver(bundleName, sessionId, objectRemoteResumeCallback->AsObject().GetRefPtr());
+    if (status != SUCCESS) {
+        LOG_ERROR("object remote resume failed code=%d.", static_cast<int>(status));
+    }
+    return status;
+}
 int32_t CacheManager::UnregisterDataChange(const std::string &bundleName, const std::string &sessionId)
 {
     sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
@@ -534,6 +587,21 @@ int32_t CacheManager::UnregisterDataChange(const std::string &bundleName, const 
         LOG_ERROR("object remote resume failed code=%d.", static_cast<int>(status));
     }
     LOG_INFO("object unregister data change observer successful");
+    return status;
+}
+
+int32_t CacheManager::UnregisterProgressChange(const std::string &bundleName, const std::string &sessionId)
+{
+    sptr<OHOS::DistributedObject::IObjectService> proxy = ClientAdaptor::GetObjectService();
+    if (proxy == nullptr) {
+        LOG_ERROR("proxy is nullptr.");
+        return ERR_NULL_PTR;
+    }
+    int32_t status = proxy->UnregisterProgressObserver(bundleName, sessionId);
+    if (status != SUCCESS) {
+        LOG_ERROR("object remote resume failed code=%d.", static_cast<int>(status));
+    }
+    LOG_INFO("object unregister progress change observer successful");
     return status;
 }
 

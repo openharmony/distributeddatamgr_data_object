@@ -59,6 +59,16 @@ class ObjectChangeCallbackStub : public IRemoteStub<ObjectChangeCallbackBroker> 
 public:
     int OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
 };
+
+class ObjectProgressCallbackBroker : public IObjectProgressCallback, public IRemoteBroker {
+public:
+    DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.DistributedObject.IObjectProgressCallback");
+};
+
+class ObjectProgressCallbackStub : public IRemoteStub<ObjectProgressCallbackBroker> {
+public:
+    int OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
+};
 } // namespace DistributedObject
 } // namespace OHOS
 

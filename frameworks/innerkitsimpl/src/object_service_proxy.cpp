@@ -210,6 +210,65 @@ int32_t ObjectServiceProxy::UnregisterDataChangeObserver(const std::string &bund
     return reply.ReadInt32();
 }
 
+int32_t ObjectServiceProxy::RegisterProgressObserver(const std::string &bundleName,
+    const std::string &sessionId, sptr<IRemoteObject> callback)
+{
+    MessageParcel data;
+    if (!data.WriteInterfaceToken(ObjectServiceProxy::GetDescriptor())) {
+        ZLOGE("write descriptor failed");
+        return ERR_IPC;
+    }
+
+    if (!ITypesUtil::Marshal(data, bundleName, sessionId, callback)) {
+        ZLOGE("Marshalling failed, bundleName = %{public}s", bundleName.c_str());
+        return ERR_IPC;
+    }
+
+    MessageParcel reply;
+    MessageOption mo { MessageOption::TF_SYNC };
+    sptr<IRemoteObject> remoteObject = Remote();
+    if (remoteObject == nullptr) {
+        LOG_ERROR("RegisterProgressObserver remoteObject is nullptr.");
+        return ERR_IPC;
+    }
+    int32_t error =
+        remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_REGISTER_PROGRESSS), data, reply, mo);
+    if (error != 0) {
+        ZLOGE("SendRequest returned %d", error);
+        return error;
+    }
+    return reply.ReadInt32();
+}
+
+int32_t ObjectServiceProxy::UnregisterProgressObserver(const std::string &bundleName, const std::string &sessionId)
+{
+    MessageParcel data;
+    if (!data.WriteInterfaceToken(ObjectServiceProxy::GetDescriptor())) {
+        ZLOGE("write descriptor failed");
+        return ERR_IPC;
+    }
+
+    if (!ITypesUtil::Marshal(data, bundleName, sessionId)) {
+        ZLOGE("Marshalling failed, bundleName = %{public}s", bundleName.c_str());
+        return ERR_IPC;
+    }
+
+    MessageParcel reply;
+    MessageOption mo { MessageOption::TF_SYNC };
+    sptr<IRemoteObject> remoteObject = Remote();
+    if (remoteObject == nullptr) {
+        LOG_ERROR("UnregisterProgressObserver remoteObject is nullptr.");
+        return ERR_IPC;
+    }
+    int32_t error =
+        remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_UNREGISTER_PROGRESSS), data, reply, mo);
+    if (error != 0) {
+        ZLOGE("SendRequest returned %d", error);
+        return error;
+    }
+    return reply.ReadInt32();
+}
+
 int32_t ObjectServiceProxy::BindAssetStore(const std::string &bundleName, const std::string &sessionId,
     Asset &asset, AssetBindInfo &bindInfo)
 {
