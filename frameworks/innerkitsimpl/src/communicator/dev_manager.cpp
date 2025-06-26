@@ -90,6 +90,7 @@ void DMStateCallback::NotifyAll(const DmDeviceInfo &deviceInfo, DeviceChangeType
 
 DevManager::DevManager()
 {
+    RegisterDevCallback();
 }
 
 DevManager::~DevManager()
