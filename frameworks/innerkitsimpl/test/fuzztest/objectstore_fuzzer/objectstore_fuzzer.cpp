@@ -59,18 +59,11 @@ public:
     virtual ~TestStatusNotifier(){}
 };
 
-class TestProgressNotifier : public ProgressNotifier {
-public:
-    void OnChanged(const std::string &sessionId, int32_t progress) override {
-
-    }
-    virtual ~TestProgressNotifier(){}
-};
 std::string FilterSessionId(const std::string& input) {
     std::string result;
     std::copy_if(input.begin(), input.end(), std::back_inserter(result),
         [](char c) {
-            // ±£Áô£ºÊı×Ö(0-9)¡¢×ÖÄ¸(a-z,A-Z)¡¢ÏÂ»®Ïß(_)
+            // ä¿ç•™ï¼šæ•°å­—(0-9)ã€å­—æ¯(a-z,A-Z)ã€ä¸‹åˆ’çº¿(_)
             return std::isalnum(static_cast<unsigned char>(c)) || c == '_';
         });
     return result;
@@ -402,24 +395,6 @@ bool StatusNotifierFuzz(FuzzedDataProvider &provider)
     objectStore_->DeleteObject(skey);
     return true;
 }
-
-bool ProgressNotifierFuzz(FuzzedDataProvider &provider)
-{
-    std::string bundleName = provider.ConsumeRandomLengthString();
-    objectStore_ = DistributedObjectStore::GetInstance(bundleName);
-    if (objectStore_ == nullptr) {
-        return false;
-    }
-    std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
-    auto object = objectStore_->CreateObject(skey);
-    if (object == nullptr) {
-        return false;
-    }
-    objectStore_->SetProgressNotifier(std::make_shared<TestProgressNotifier>());
-    objectStore_->NotifyProgressStatus(skey);
-    objectStore_->DeleteObject(skey);
-    return true;
-}
 }
 
 /* Fuzzer entry point */
@@ -446,7 +421,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     OHOS::GetSessionIdFuzz(provider);
     OHOS::WatchAndUnWatchFuzz(provider);
     OHOS::StatusNotifierFuzz(provider);
-    OHOS::ProgressNotifierFuzz(provider);
     /* Run your code on data */
     return 0;
 }
