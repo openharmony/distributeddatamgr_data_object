@@ -16,13 +16,15 @@
 #include "objectstore_fuzzer.h"
 
 #include <cstdint>
+#include <fuzzer/FuzzedDataProvider.h>
 #include <string>
 #include <vector>
-#include <fuzzer/FuzzedDataProvider.h>
+
 #include "distributed_object.h"
 #include "distributed_objectstore.h"
 #include "flat_object_storage_engine.h"
 #include "objectstore_errors.h"
+
 
 using namespace OHOS::ObjectStore;
 namespace OHOS {
@@ -33,39 +35,48 @@ constexpr const char *TABLESESSIONID = "654321";
 constexpr const char *BUNDLENAME = "com.example.myapplication";
 class TableWatcherImpl : public TableWatcher {
 public:
-    explicit TableWatcherImpl(const std::string &sessionId) : TableWatcher(sessionId) {}
-    void OnChanged(
-        const std::string &sessionid, const std::vector<std::string> &changedData, bool enableTransfer) override;
+    explicit TableWatcherImpl(const std::string &sessionId) : TableWatcher(sessionId)
+    {
+    }
+    void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData,
+        bool enableTransfer) override;
     virtual ~TableWatcherImpl();
 };
-TableWatcherImpl::~TableWatcherImpl() {}
-void TableWatcherImpl::OnChanged(
-    const std::string &sessionid, const std::vector<std::string> &changedData, bool enableTransfer) {}
+TableWatcherImpl::~TableWatcherImpl()
+{
+}
+void TableWatcherImpl::OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData,
+    bool enableTransfer)
+{
+}
 
 class TestObjectWatcher : public ObjectWatcher {
 public:
-    void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override {
-
+    void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override
+    {
     }
-    virtual ~TestObjectWatcher(){}
+    virtual ~TestObjectWatcher()
+    {
+    }
 };
 
 class TestStatusNotifier : public StatusNotifier {
 public:
-    void OnChanged(
-        const std::string &sessionId, const std::string &networkId, const std::string &onlineStatus) override {
-
+    void OnChanged(const std::string &sessionId, const std::string &networkId, const std::string &onlineStatus) override
+    {
     }
-    virtual ~TestStatusNotifier(){}
+    virtual ~TestStatusNotifier()
+    {
+    }
 };
 
-std::string FilterSessionId(const std::string& input) {
+std::string FilterSessionId(const std::string &input)
+{
     std::string result;
-    std::copy_if(input.begin(), input.end(), std::back_inserter(result),
-        [](char c) {
-            // 保留：数字(0-9)、字母(a-z,A-Z)、下划线(_)
-            return std::isalnum(static_cast<unsigned char>(c)) || c == '_';
-        });
+    std::copy_if(input.begin(), input.end(), std::back_inserter(result), [](char c) {
+        // Reservations: Numbers (0-9), letters (a-z, A-Z), underscores (_)
+        return std::isalnum(static_cast<unsigned char>(c)) || c == '_';
+    });
     return result;
 }
 
@@ -326,16 +337,11 @@ bool BindAssetStoreFuzz(FuzzedDataProvider &provider)
     if (object == nullptr) {
         return false;
     }
-    AssetBindInfo bindInfo = {
-        .storeName = provider.ConsumeRandomLengthString(),
+    AssetBindInfo bindInfo = { .storeName = provider.ConsumeRandomLengthString(),
         .tableName = provider.ConsumeRandomLengthString(),
-        .primaryKey = {
-            {"data1", 123},
-            {"data2", "test1"}
-        },
+        .primaryKey = { { "data1", 123 }, { "data2", "test1" } },
         .field = provider.ConsumeRandomLengthString(),
-        .assetName = provider.ConsumeRandomLengthString()
-    };
+        .assetName = provider.ConsumeRandomLengthString() };
     object->BindAssetStore(skey, bindInfo);
     objectStore_->DeleteObject(skey);
     return true;
@@ -395,7 +401,7 @@ bool StatusNotifierFuzz(FuzzedDataProvider &provider)
     objectStore_->DeleteObject(skey);
     return true;
 }
-}
+} // namespace OHOS
 
 /* Fuzzer entry point */
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
