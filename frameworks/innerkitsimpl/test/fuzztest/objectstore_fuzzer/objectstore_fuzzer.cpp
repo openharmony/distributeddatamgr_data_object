@@ -15,12 +15,16 @@
 
 #include "objectstore_fuzzer.h"
 
+#include <cstdint>
+#include <fuzzer/FuzzedDataProvider.h>
 #include <string>
 #include <vector>
+
 #include "distributed_object.h"
 #include "distributed_objectstore.h"
 #include "flat_object_storage_engine.h"
 #include "objectstore_errors.h"
+
 
 using namespace OHOS::ObjectStore;
 namespace OHOS {
@@ -28,20 +32,57 @@ static DistributedObject *object_ = nullptr;
 static DistributedObjectStore *objectStore_ = nullptr;
 constexpr const char *SESSIONID = "123456";
 constexpr const char *TABLESESSIONID = "654321";
+constexpr const char *BUNDLENAME = "com.example.myapplication";
 class TableWatcherImpl : public TableWatcher {
 public:
-    explicit TableWatcherImpl(const std::string &sessionId) : TableWatcher(sessionId) {}
-    void OnChanged(
-        const std::string &sessionid, const std::vector<std::string> &changedData, bool enableTransfer) override;
+    explicit TableWatcherImpl(const std::string &sessionId) : TableWatcher(sessionId)
+    {
+    }
+    void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData,
+        bool enableTransfer) override;
     virtual ~TableWatcherImpl();
 };
-TableWatcherImpl::~TableWatcherImpl() {}
-void TableWatcherImpl::OnChanged(
-    const std::string &sessionid, const std::vector<std::string> &changedData, bool enableTransfer) {}
+TableWatcherImpl::~TableWatcherImpl()
+{
+}
+void TableWatcherImpl::OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData,
+    bool enableTransfer)
+{
+}
+
+class TestObjectWatcher : public ObjectWatcher {
+public:
+    void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override
+    {
+    }
+    virtual ~TestObjectWatcher()
+    {
+    }
+};
+
+class TestStatusNotifier : public StatusNotifier {
+public:
+    void OnChanged(const std::string &sessionId, const std::string &networkId, const std::string &onlineStatus) override
+    {
+    }
+    virtual ~TestStatusNotifier()
+    {
+    }
+};
+
+std::string FilterSessionId(const std::string &input)
+{
+    std::string result;
+    std::copy_if(input.begin(), input.end(), std::back_inserter(result), [](char c) {
+        // Reservations: Numbers (0-9), letters (a-z, A-Z), underscores (_)
+        return std::isalnum(static_cast<unsigned char>(c)) || c == '_';
+    });
+    return result;
+}
 
 uint32_t SetUpTestCase()
 {
-    std::string bundleName = "com.example.myapplication";
+    std::string bundleName = BUNDLENAME;
     DistributedObjectStore *objectStore = nullptr;
     DistributedObject *object = nullptr;
     objectStore = DistributedObjectStore::GetInstance(bundleName);
@@ -59,331 +100,350 @@ uint32_t SetUpTestCase()
     }
 }
 
-bool PutDoubleFuzz(const uint8_t *data, size_t size)
+bool PutDoubleFuzz(FuzzedDataProvider &provider)
 {
-    bool result = false;
     if (SUCCESS != SetUpTestCase()) {
         return false;
     }
-    double sval = static_cast<double>(size);
-    std::string skey(data, data + size);
-    uint32_t ret = object_->PutDouble(skey, sval);
-    if (!ret) {
-        result = true;
-    }
-    objectStore_->DeleteObject(SESSIONID);
-    return result;
-}
-
-bool PutBooleanFuzz(const uint8_t *data, size_t size)
-{
-    bool result = false;
-    if (SUCCESS != SetUpTestCase()) {
-        return false;
-    }
-    std::string skey(data, data + size);
-    uint32_t ret = object_->PutBoolean(skey, true);
-    if (!ret) {
-        result = true;
-    }
-    ret = object_->PutBoolean(skey, false);
-    if (ret != SUCCESS) {
-        result = false;
-    }
-    objectStore_->DeleteObject(SESSIONID);
-    return result;
-}
-
-bool PutStringFuzz(const uint8_t *data, size_t size)
-{
-    bool result = false;
-    if (SUCCESS != SetUpTestCase()) {
-        return false;
-    }
-    std::string skey(data, data + size);
-    std::string sval(data, data + size);
-    uint32_t ret = object_->PutString(skey, sval);
-    if (!ret) {
-        result = true;
-    }
-    objectStore_->DeleteObject(SESSIONID);
-    return result;
-}
-
-bool PutComplexFuzz(const uint8_t *data, size_t size)
-{
-    bool result = false;
-    if (SUCCESS != SetUpTestCase()) {
-        return false;
-    }
-    size_t sum = 10;
-    std::string skey(data, data + size);
-    std::vector<uint8_t> value;
-    for (size_t i = 0; i < sum; i++) {
-        value.push_back(*data + i);
-    }
-    uint32_t ret = object_->PutComplex(skey, value);
-    if (!ret) {
-        result = true;
-    }
-    objectStore_->DeleteObject(SESSIONID);
-    return result;
-}
-
-bool GetDoubleFuzz(const uint8_t *data, size_t size)
-{
-    bool result = false;
-    if (SUCCESS != SetUpTestCase()) {
-        return false;
-    }
-    double sval = static_cast<double>(size);
-    double val;
-    std::string skey(data, data + size);
-    if (SUCCESS == object_->PutDouble(skey, sval)) {
-        uint32_t ret = object_->GetDouble(skey, val);
-        if (!ret) {
-            result = true;
-        }
-    }
-    objectStore_->DeleteObject(SESSIONID);
-    return result;
-}
-
-bool GetBooleanFuzz(const uint8_t *data, size_t size)
-{
-    bool result = false;
-    if (SUCCESS != SetUpTestCase()) {
-        return false;
-    }
-    std::string skey(data, data + size);
-    if (SUCCESS == object_->PutBoolean(skey, true)) {
-        bool val;
-        uint32_t ret = object_->GetBoolean(skey, val);
-        if (!ret) {
-            result = true;
-        }
-    }
-    objectStore_->DeleteObject(SESSIONID);
-    return result;
-}
-
-bool GetStringFuzz(const uint8_t *data, size_t size)
-{
-    bool result = false;
-    if (SUCCESS != SetUpTestCase()) {
-        return false;
-    }
-    std::string skey(data, data + size);
-    std::string sval(data, data + size);
-    std::string val;
-    if (SUCCESS == object_->PutString(skey, sval)) {
-        uint32_t ret = object_->GetString(skey, val);
-        if (!ret) {
-            result = true;
-        }
-    }
-    objectStore_->DeleteObject(SESSIONID);
-    return result;
-}
-
-bool GetComplexFuzz(const uint8_t *data, size_t size)
-{
-    bool result = false;
-    if (SUCCESS != SetUpTestCase()) {
-        return false;
-    }
-    size_t sum = 10;
-    std::string skey(data, data + size);
-    std::vector<uint8_t> svalue;
-    std::vector<uint8_t> val;
-    for (size_t i = 0; i < sum; i++) {
-        svalue.push_back(*data + i);
-    }
-    if (SUCCESS == object_->PutComplex(skey, svalue)) {
-        uint32_t ret = object_->GetComplex(skey, val);
-        if (!ret) {
-            result = true;
-        }
-    }
-    objectStore_->DeleteObject(SESSIONID);
-    return result;
-}
-
-bool GetTypeFuzz(const uint8_t *data, size_t size)
-{
-    bool result = false;
-    if (SUCCESS != SetUpTestCase()) {
-        return false;
-    }
-    std::string skey(data, data + size);
-    Type val;
-    uint32_t ret = object_->GetType(skey, val);
-    if (!ret) {
-        result = true;
-    }
-    objectStore_->DeleteObject(SESSIONID);
-    return result;
-}
-
-bool SaveFuzz(const uint8_t *data, size_t size)
-{
-    bool result = false;
-    if (SUCCESS != SetUpTestCase()) {
-        return false;
-    }
-    std::string skey(data, data + size);
-    uint32_t ret = object_->Save(skey);
-    if (!ret) {
-        result = true;
-    }
-    objectStore_->DeleteObject(SESSIONID);
-    return result;
-}
-
-bool SaveAndRevokeSaveFuzz(const uint8_t *data, size_t size)
-{
-    bool result = false;
-    if (SUCCESS != SetUpTestCase()) {
-        return false;
-    }
-    std::string skey(data, data + size);
-    if (SUCCESS == object_->PutDouble(skey, static_cast<double>(size))) {
-        uint32_t ret = object_->Save(skey);
-        if (!ret) {
-            result = false;
-        }
-
-        if (object_->RevokeSave()) {
-            return false;
-        }
-        result = true;
-    }
-    objectStore_->DeleteObject(SESSIONID);
-    return result;
-}
-
-bool CreateObjectV9Fuzz(const uint8_t *data, size_t size)
-{
-    bool result = false;
-    std::string bundleName = "com.example.myapplication";
-    DistributedObject *object = nullptr;
-    objectStore_ = DistributedObjectStore::GetInstance(bundleName);
-    uint32_t status = 0;
-    std::string skey(data, data + size);
-    if (objectStore_ == nullptr) {
-        return false;
-    }
-    object = objectStore_->CreateObject(skey, status);
-    if (object == nullptr || status != SUCCESS) {
-        return false;
-    }
-    double val = static_cast<double>(size);
-    if (SUCCESS == object->PutDouble(skey, val)) {
-        double getResult;
-        if (object->GetDouble(skey, getResult)) {
-            result = true;
-        }
-    }
-    objectStore_->DeleteObject(skey);
-    return result;
-}
-
-bool GetFuzz(const uint8_t *data, size_t size)
-{
-    std::string bundleName = "default1";
-    objectStore_ = DistributedObjectStore::GetInstance(bundleName);
-    if (objectStore_ == nullptr) {
-        return false;
-    }
-    uint32_t status = 0;
-    DistributedObject *object = objectStore_->CreateObject(SESSIONID, status);
-    if (object == nullptr) {
-        return false;
-    }
-
-    DistributedObject *object2 = nullptr;
-    std::string skey(data, data + size);
-    if (!objectStore_->Get(skey, &object2)) {
-        return false;
-    }
-
-    if (object != object2) {
-        return false;
-    }
+    double sval = provider.ConsumeFloatingPoint<double>();
+    std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
+    object_->PutDouble(skey, sval);
     objectStore_->DeleteObject(SESSIONID);
     return true;
 }
 
-bool GetTableFuzz(const uint8_t *data, size_t size)
+bool PutBooleanFuzz(FuzzedDataProvider &provider)
 {
-    bool result = false;
-    std::string skey(data, data + size);
-    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
-    storageEngine->Open("com.myapplication");
-    storageEngine->CreateTable(TABLESESSIONID);
-    std::map<std::string, Value> tableResult;
-    uint32_t ret = storageEngine->GetTable(skey, tableResult);
-    if (ret != SUCCESS) {
-        result = false;
-    }
-    storageEngine->DeleteTable(TABLESESSIONID);
-    return result;
-}
-
-bool NotifyStatusAndNotifyChangeFuzz(const uint8_t *data, size_t size)
-{
-    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
-    storageEngine->Open("com.example.myapplication");
-    uint32_t ret = storageEngine->CreateTable(TABLESESSIONID);
-    if (ret != SUCCESS) {
+    if (SUCCESS != SetUpTestCase()) {
         return false;
     }
+    std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
+    bool val = provider.ConsumeBool();
+    object_->PutBoolean(skey, val);
+    objectStore_->DeleteObject(SESSIONID);
+    return true;
+}
+
+bool PutStringFuzz(FuzzedDataProvider &provider)
+{
+    if (SUCCESS != SetUpTestCase()) {
+        return false;
+    }
+    std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
+    std::string sval = provider.ConsumeRandomLengthString();
+    object_->PutString(skey, sval);
+    objectStore_->DeleteObject(SESSIONID);
+    return true;
+}
+
+bool PutComplexFuzz(FuzzedDataProvider &provider)
+{
+    if (SUCCESS != SetUpTestCase()) {
+        return false;
+    }
+    size_t sum = provider.ConsumeIntegralInRange<size_t>(0, 100);
+    std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
+    std::vector<uint8_t> value;
+    for (size_t i = 0; i < sum; i++) {
+        uint8_t val = provider.ConsumeIntegral<uint8_t>();
+        value.push_back(val);
+    }
+    object_->PutComplex(skey, value);
+    objectStore_->DeleteObject(SESSIONID);
+    return true;
+}
+
+bool GetDoubleFuzz(FuzzedDataProvider &provider)
+{
+    if (SUCCESS != SetUpTestCase()) {
+        return false;
+    }
+    double sval = provider.ConsumeFloatingPoint<double>();
+    std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
+    object_->PutDouble(skey, sval);
+    double val = 0;
+    object_->GetDouble(skey, val);
+    objectStore_->DeleteObject(SESSIONID);
+    return true;
+}
+
+bool GetBooleanFuzz(FuzzedDataProvider &provider)
+{
+    if (SUCCESS != SetUpTestCase()) {
+        return false;
+    }
+    std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
+    bool value = provider.ConsumeBool();
+    object_->PutBoolean(skey, value);
+    bool val = false;
+    object_->GetBoolean(skey, val);
+    objectStore_->DeleteObject(SESSIONID);
+    return true;
+}
+
+bool GetStringFuzz(FuzzedDataProvider &provider)
+{
+    if (SUCCESS != SetUpTestCase()) {
+        return false;
+    }
+    std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
+    std::string sval = provider.ConsumeRandomLengthString();
+    std::string val;
+    object_->PutString(skey, sval);
+    object_->GetString(skey, val);
+    objectStore_->DeleteObject(SESSIONID);
+    return true;
+}
+
+bool GetComplexFuzz(FuzzedDataProvider &provider)
+{
+    if (SUCCESS != SetUpTestCase()) {
+        return false;
+    }
+
+    size_t sum = provider.ConsumeIntegralInRange<size_t>(0, 10);
+    std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
+    std::vector<uint8_t> svalue;
+    std::vector<uint8_t> val;
+    for (size_t i = 0; i < sum; i++) {
+        uint8_t val = provider.ConsumeIntegral<uint8_t>();
+        svalue.push_back(val);
+    }
+    object_->PutComplex(skey, svalue);
+    object_->GetComplex(skey, val);
+    objectStore_->DeleteObject(SESSIONID);
+    return true;
+}
+
+bool GetTypeFuzz(FuzzedDataProvider &provider)
+{
+    if (SUCCESS != SetUpTestCase()) {
+        return false;
+    }
+    std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
+    Type val;
+    object_->GetType(skey, val);
+    objectStore_->DeleteObject(SESSIONID);
+    return true;
+}
+
+bool SaveFuzz(FuzzedDataProvider &provider)
+{
+    if (SUCCESS != SetUpTestCase()) {
+        return false;
+    }
+    std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
+    object_->Save(skey);
+    objectStore_->DeleteObject(SESSIONID);
+    return true;
+}
+
+bool SaveAndRevokeSaveFuzz(FuzzedDataProvider &provider)
+{
+    if (SUCCESS != SetUpTestCase()) {
+        return false;
+    }
+    std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
+    double sval = provider.ConsumeFloatingPoint<double>();
+    object_->PutDouble(skey, sval);
+    object_->Save(skey);
+    object_->RevokeSave();
+    objectStore_->DeleteObject(SESSIONID);
+    return true;
+}
+
+bool CreateObjectV9Fuzz(FuzzedDataProvider &provider)
+{
+    std::string bundleName = provider.ConsumeRandomLengthString();
+    objectStore_ = DistributedObjectStore::GetInstance(bundleName);
+    if (objectStore_ == nullptr) {
+        return false;
+    }
+    uint32_t status = provider.ConsumeIntegral<uint32_t>();
+    std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
+    auto object = objectStore_->CreateObject(skey, status);
+    if (object != nullptr) {
+        double val = provider.ConsumeFloatingPoint<double>();
+        object->PutDouble(skey, val);
+        double getResult = 0;
+        object->GetDouble(skey, getResult);
+    }
+    objectStore_->DeleteObject(skey);
+    return true;
+}
+
+bool GetFuzz(FuzzedDataProvider &provider)
+{
+    std::string bundleName = provider.ConsumeRandomLengthString();
+    objectStore_ = DistributedObjectStore::GetInstance(bundleName);
+    if (objectStore_ == nullptr) {
+        return false;
+    }
+    uint32_t status = provider.ConsumeIntegral<uint32_t>();
+    std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
+    objectStore_->CreateObject(skey, status);
+    DistributedObject *object = nullptr;
+    objectStore_->Get(skey, &object);
+    objectStore_->DeleteObject(skey);
+    return true;
+}
+
+bool GetTableFuzz(FuzzedDataProvider &provider)
+{
+    std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    storageEngine->Open(BUNDLENAME);
+    storageEngine->CreateTable(TABLESESSIONID);
+    std::map<std::string, Value> tableResult;
+    storageEngine->GetTable(skey, tableResult);
+    storageEngine->DeleteTable(TABLESESSIONID);
+    return true;
+}
+
+bool NotifyStatusAndNotifyChangeFuzz(FuzzedDataProvider &provider)
+{
+    std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
+    storageEngine->Open(BUNDLENAME);
+    storageEngine->CreateTable(TABLESESSIONID);
     std::map<std::string, std::vector<uint8_t>> filteredData;
-    std::string skey(data, data + size);
+    std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
     storageEngine->NotifyChange(skey, filteredData);
     storageEngine->NotifyStatus(skey, skey, skey);
     storageEngine->DeleteTable(TABLESESSIONID);
     return true;
 }
 
-bool RegisterObserverAndUnRegisterObserverFuzz(const uint8_t *data, size_t size)
+bool RegisterObserverAndUnRegisterObserverFuzz(FuzzedDataProvider &provider)
 {
-    bool result = true;
     std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
-    storageEngine->Open("com.example.myapplication");
-    std::string skey(data, data + size);
+    storageEngine->Open(BUNDLENAME);
+    std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
     auto tableWatcherPtr = std::make_shared<TableWatcherImpl>(SESSIONID);
-    uint32_t ret = storageEngine->RegisterObserver(skey, tableWatcherPtr);
-    if (ret != SUCCESS) {
-        result =  false;
-    }
-    ret = storageEngine->UnRegisterObserver(skey);
-    if (ret != SUCCESS) {
-        result =  false;
-    }
-    return result;
+    storageEngine->RegisterObserver(skey, tableWatcherPtr);
+    storageEngine->UnRegisterObserver(skey);
+    return true;
 }
+
+bool BindAssetStoreFuzz(FuzzedDataProvider &provider)
+{
+    std::string bundleName = provider.ConsumeRandomLengthString();
+    objectStore_ = DistributedObjectStore::GetInstance(bundleName);
+    if (objectStore_ == nullptr) {
+        return false;
+    }
+    uint32_t status = provider.ConsumeIntegral<uint32_t>();
+    std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
+    auto object = objectStore_->CreateObject(skey, status);
+    if (object == nullptr) {
+        return false;
+    }
+    AssetBindInfo bindInfo = { .storeName = provider.ConsumeRandomLengthString(),
+        .tableName = provider.ConsumeRandomLengthString(),
+        .primaryKey = { { "data1", 123 }, { "data2", "test1" } },
+        .field = provider.ConsumeRandomLengthString(),
+        .assetName = provider.ConsumeRandomLengthString() };
+    object->BindAssetStore(skey, bindInfo);
+    objectStore_->DeleteObject(skey);
+    return true;
 }
+
+bool GetSessionIdFuzz(FuzzedDataProvider &provider)
+{
+    std::string bundleName = provider.ConsumeRandomLengthString();
+    objectStore_ = DistributedObjectStore::GetInstance(bundleName);
+    if (objectStore_ == nullptr) {
+        return false;
+    }
+    uint32_t status = provider.ConsumeIntegral<uint32_t>();
+    std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
+    auto object = objectStore_->CreateObject(skey, status);
+    if (object != nullptr) {
+        object->GetSessionId();
+    }
+    objectStore_->DeleteObject(skey);
+    return true;
+}
+
+bool WatchAndUnWatchFuzz(FuzzedDataProvider &provider)
+{
+    std::string bundleName = provider.ConsumeRandomLengthString();
+    objectStore_ = DistributedObjectStore::GetInstance(bundleName);
+    if (objectStore_ == nullptr) {
+        return false;
+    }
+    std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
+    auto object = objectStore_->CreateObject(skey);
+    if (object == nullptr) {
+        return false;
+    }
+    objectStore_->Watch(object, std::make_shared<TestObjectWatcher>());
+    double sval = provider.ConsumeFloatingPoint<double>();
+    object->PutDouble(skey, sval);
+    objectStore_->UnWatch(object);
+    objectStore_->DeleteObject(skey);
+    return true;
+}
+
+bool StatusNotifierFuzz(FuzzedDataProvider &provider)
+{
+    std::string bundleName = provider.ConsumeRandomLengthString();
+    objectStore_ = DistributedObjectStore::GetInstance(bundleName);
+    if (objectStore_ == nullptr) {
+        return false;
+    }
+    std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
+    auto object = objectStore_->CreateObject(skey);
+    if (object == nullptr) {
+        return false;
+    }
+    objectStore_->SetStatusNotifier(std::make_shared<TestStatusNotifier>());
+    objectStore_->NotifyCachedStatus(skey);
+    objectStore_->DeleteObject(skey);
+    return true;
+}
+
+bool RandomSessionIdFuzz(FuzzedDataProvider &provider)
+{
+    std::string bundleName = provider.ConsumeRandomLengthString();
+    objectStore_ = DistributedObjectStore::GetInstance(bundleName);
+    if (objectStore_ == nullptr) {
+        return false;
+    }
+    std::string skey = provider.ConsumeRandomLengthString();
+    auto object = objectStore_->CreateObject(skey);
+    if (object == nullptr) {
+        return false;
+    }
+    objectStore_->DeleteObject(skey);
+    return true;
+}
+} // namespace OHOS
 
 /* Fuzzer entry point */
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-    OHOS::PutDoubleFuzz(data, size);
-    OHOS::PutBooleanFuzz(data, size);
-    OHOS::PutStringFuzz(data, size);
-    OHOS::PutComplexFuzz(data, size);
-    OHOS::GetDoubleFuzz(data, size);
-    OHOS::GetBooleanFuzz(data, size);
-    OHOS::GetStringFuzz(data, size);
-    OHOS::GetComplexFuzz(data, size);
-    OHOS::GetTypeFuzz(data, size);
-    OHOS::SaveFuzz(data, size);
-    OHOS::SaveAndRevokeSaveFuzz(data, size);
-    OHOS::CreateObjectV9Fuzz(data, size);
-    OHOS::GetFuzz(data, size);
-    OHOS::GetTableFuzz(data, size);
-    OHOS::NotifyStatusAndNotifyChangeFuzz(data, size);
-    OHOS::RegisterObserverAndUnRegisterObserverFuzz(data, size);
+    FuzzedDataProvider provider(data, size);
+    OHOS::PutDoubleFuzz(provider);
+    OHOS::PutBooleanFuzz(provider);
+    OHOS::PutStringFuzz(provider);
+    OHOS::PutComplexFuzz(provider);
+    OHOS::GetDoubleFuzz(provider);
+    OHOS::GetBooleanFuzz(provider);
+    OHOS::GetStringFuzz(provider);
+    OHOS::GetComplexFuzz(provider);
+    OHOS::GetTypeFuzz(provider);
+    OHOS::SaveFuzz(provider);
+    OHOS::SaveAndRevokeSaveFuzz(provider);
+    OHOS::CreateObjectV9Fuzz(provider);
+    OHOS::GetFuzz(provider);
+    OHOS::GetTableFuzz(provider);
+    OHOS::NotifyStatusAndNotifyChangeFuzz(provider);
+    OHOS::RegisterObserverAndUnRegisterObserverFuzz(provider);
+    OHOS::BindAssetStoreFuzz(provider);
+    OHOS::GetSessionIdFuzz(provider);
+    OHOS::WatchAndUnWatchFuzz(provider);
+    OHOS::StatusNotifierFuzz(provider);
+    OHOS::RandomSessionIdFuzz(provider);
     /* Run your code on data */
     return 0;
 }
