@@ -141,7 +141,7 @@ bool PutComplexFuzz(FuzzedDataProvider &provider)
     if (SUCCESS != SetUpTestCase()) {
         return false;
     }
-    size_t sum = provider.ConsumeIntegralInRange<size_t>(0, 10);
+    size_t sum = provider.ConsumeIntegralInRange<size_t>(0, 100);
     std::string skey = FilterSessionId(provider.ConsumeRandomLengthString());
     std::vector<uint8_t> value;
     for (size_t i = 0; i < sum; i++) {
@@ -401,6 +401,22 @@ bool StatusNotifierFuzz(FuzzedDataProvider &provider)
     objectStore_->DeleteObject(skey);
     return true;
 }
+
+bool RandomSessionIdFuzz(FuzzedDataProvider &provider)
+{
+    std::string bundleName = provider.ConsumeRandomLengthString();
+    objectStore_ = DistributedObjectStore::GetInstance(bundleName);
+    if (objectStore_ == nullptr) {
+        return false;
+    }
+    std::string skey = provider.ConsumeRandomLengthString();
+    auto object = objectStore_->CreateObject(skey);
+    if (object == nullptr) {
+        return false;
+    }
+    objectStore_->DeleteObject(skey);
+    return true;
+}
 } // namespace OHOS
 
 /* Fuzzer entry point */
@@ -427,6 +443,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     OHOS::GetSessionIdFuzz(provider);
     OHOS::WatchAndUnWatchFuzz(provider);
     OHOS::StatusNotifierFuzz(provider);
+    OHOS::RandomSessionIdFuzz(provider);
     /* Run your code on data */
     return 0;
 }
