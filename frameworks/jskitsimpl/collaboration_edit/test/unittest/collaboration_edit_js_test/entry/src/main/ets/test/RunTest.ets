@@ -438,7 +438,7 @@ export default function collaborationrunTextTest() {
     it('CollaborationEdit_Text_0019', Level.LEVEL1, () => {
       try {
         let g_object: DataObject.DataObject = DataObject.create(context, note);
-        g_object.on("progress", progressCallBack);
+        g_object.on("progressChanged", progressCallBack);
         expect(true).assertTrue()
 
       } catch (err) {
@@ -460,7 +460,7 @@ export default function collaborationrunTextTest() {
     it('CollaborationEdit_Text_0020', Level.LEVEL1, () => {
       try {
         let g_object: DataObject.DataObject = DataObject.create(context, note);
-        g_object.on("progress", () => {
+        g_object.on("progressChanged", () => {
         });
         expect(true).assertTrue()
       } catch (err) {
@@ -480,8 +480,8 @@ export default function collaborationrunTextTest() {
     it('CollaborationEdit_Text_0021', Level.LEVEL1, () => {
       try {
         let g_object: DataObject.DataObject = DataObject.create(context, note);
-        g_object.on("progress",progressCallBack);
-        g_object.off("progress", progressCallBack);
+        g_object.on("progressChanged",progressCallBack);
+        g_object.off("progressChanged", progressCallBack);
         expect(true).assertTrue();
       } catch (err) {
         expect(err.code == 401).assertEqual(true);
@@ -500,8 +500,8 @@ export default function collaborationrunTextTest() {
     it('CollaborationEdit_Text_0022', Level.LEVEL1, () => {
       try {
         let g_object: DataObject.DataObject = DataObject.create(context, note);
-        g_object.on("progress",progressCallBack);
-        g_object.off("progress");
+        g_object.on("progressChanged",progressCallBack);
+        g_object.off("progressChanged");
         expect(true).assertTrue();
       } catch (err) {
         expect(err.code == 401).assertEqual(true);
@@ -520,7 +520,7 @@ export default function collaborationrunTextTest() {
     it('CollaborationEdit_Text_0023', Level.LEVEL1, () => {
       try {
         let g_object: DataObject.DataObject = DataObject.create(context, note);
-        g_object.on("progress", progressCallBack);
+        g_object.on("progressChanged", progressCallBack);
         expect(true).assertTrue();
       } catch (err) {
         expect(err.code == 401).assertEqual(true);
@@ -539,7 +539,7 @@ export default function collaborationrunTextTest() {
     it('CollaborationEdit_Text_0024', Level.LEVEL1, () => {
       try {
         let g_object: DataObject.DataObject = DataObject.create(context, note);
-        g_object.on("progress", null);
+        g_object.on("progressChanged", null);
         expect(true).assertTrue();
       } catch (err) {
         expect(err.code == 401).assertEqual(true);
@@ -560,8 +560,8 @@ export default function collaborationrunTextTest() {
     it('CollaborationEdit_Text_0025', Level.LEVEL1, () => {
       try {
         let g_object: DataObject.DataObject = DataObject.create(context, note);
-        g_object.on("progress",progressCallBack);
-        g_object.off("progress", progressCallBack);
+        g_object.on("progressChanged",progressCallBack);
+        g_object.off("progressChanged", progressCallBack);
         expect(true).assertTrue();
       } catch (err) {
         expect(err.code == 401).assertEqual(true);
@@ -569,7 +569,7 @@ export default function collaborationrunTextTest() {
     })
 
     /**
-     * @tc.number    : CollaborationEdit_Text_0023CollaborationEdit_Text_0026
+     * @tc.number    : CollaborationEdit_Text_0026
      * @tc.name      : Remove monitor of data object online/offline 
      * @tc.desc      : Test the interface function for removing monitor of all data object online/offline
      * @tc.size      : MEDIUM
@@ -577,14 +577,74 @@ export default function collaborationrunTextTest() {
      * @tc.level     : Level 1
      */
 
-    it('CollaborationEdit_Text_0023CollaborationEdit_Text_0026', Level.LEVEL1, () => {
+    it('CollaborationEdit_Text_0026', Level.LEVEL1, () => {
       try {
         let g_object: DataObject.DataObject = DataObject.create(context, note);
-        g_object.on("progress",progressCallBack);
-        g_object.off("progress");
+        g_object.on("progressChanged",progressCallBack);
+        g_object.off("progressChanged");
         expect(true).assertTrue();
       } catch (err) {
         expect(err.code == 401).assertEqual(true);
+      }
+    })
+
+    /**
+     * @tc.number    : CollaborationEdit_Text_0027
+     * @tc.name      : Remove monitor of data object
+     * @tc.desc      : Test the interface function for removing monitor of all data object
+     * @tc.size      : MEDIUM
+     * @tc.type      : Function
+     * @tc.level     : Level 1
+     */
+
+    it('CollaborationEdit_Text_0027', Level.LEVEL1, () => {
+      try {
+        let g_object: DataObject.DataObject = DataObject.create(context, note);
+        g_object.on("progressChanged",()=>{});
+        g_object.on("progressChanged",progressCallBack);
+        g_object.off("progressChanged",()=>{});
+      } catch (err) {
+        expect().assertFail();
+      }
+    })
+
+    /**
+     * @tc.number    : CollaborationEdit_Text_0028
+     * @tc.name      : Remove monitor of data object
+     * @tc.desc      : Test the interface function for removing monitor of all data object
+     * @tc.size      : MEDIUM
+     * @tc.type      : Function
+     * @tc.level     : Level 1
+     */
+
+    it('CollaborationEdit_Text_0028', Level.LEVEL1, () => {
+      try {
+        let g_object: DataObject.DataObject = DataObject.create(context, note);
+        g_object.on("progressChanged",progressCallBack);
+        g_object.on("progressChanged",progressCallBack);
+        g_object.off("progressChanged",()=>{});
+      } catch (err) {
+        expect().assertFail();
+      }
+    })
+
+  /**
+     * @tc.number    : CollaborationEdit_Text_0029
+     * @tc.name      : Remove monitor of data object
+     * @tc.desc      : Test the interface function for removing monitor of all data object
+     * @tc.size      : MEDIUM
+     * @tc.type      : Function
+     * @tc.level     : Level 1
+     */
+
+    it('CollaborationEdit_Text_0029', Level.LEVEL1, () => {
+      try {
+        let g_object: DataObject.DataObject = DataObject.create(context, note);
+        g_object.on("progressChanged",progressCallBack);
+        g_object.on("progressChanged",progressCallBack);
+        g_object.off("progressChanged",undefined);
+      } catch (err) {
+        expect().assertFail();
       }
     })
   })

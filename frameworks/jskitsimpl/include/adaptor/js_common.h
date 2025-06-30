@@ -20,7 +20,7 @@ class Constants {
 public:
     static constexpr const char *CHANGE = "change";
     static constexpr const char *STATUS = "status";
-    static constexpr const char *PROGRESS = "progress";
+    static constexpr const char *PROGRESS = "progressChanged";
 };
 #define OBJECT_REVT_NOTHING
 
