@@ -14,6 +14,7 @@
  */
 #include "flat_object_storage_engine.h"
 
+#include "anonymous.h"
 #include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
 #include "objectstore_errors.h"
@@ -99,7 +100,7 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
     {
         std::lock_guard<std::mutex> lock(operationMutex_);
         if (delegates_.count(key) != 0) {
-            LOG_ERROR("table: %{public}s already created", SoftBusAdapter::ToBeAnonymous(key).c_str());
+            LOG_ERROR("table: %{public}s already created", Anonymous::Change(key).c_str());
             RadarReporter::ReportStateError(std::string(__FUNCTION__), CREATE, CREATE_TABLE, RADAR_FAILED,
                 DUPLICATE_CREATE, FINISHED);
             return ERR_EXIST;
@@ -116,7 +117,7 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
             LOG_INFO("create table result %{public}d", status);
         });
     if (status != DistributedDB::DBStatus::OK || kvStore == nullptr) {
-        LOG_ERROR("GetKvStore fail[%{public}d], store:%{public}s", status, SoftBusAdapter::ToBeAnonymous(key).c_str());
+        LOG_ERROR("GetKvStore fail[%{public}d], store:%{public}s", status, Anonymous::Change(key).c_str());
         RadarReporter::ReportStateError(std::string(__FUNCTION__), CREATE, CREATE_TABLE,
             RADAR_FAILED, status, FINISHED);
         return ERR_DB_GETKV_FAIL;
@@ -126,12 +127,12 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
     LOG_INFO("start Pragma");
     status = kvStore->Pragma(DistributedDB::AUTO_SYNC, data);
     if (status != DistributedDB::DBStatus::OK) {
-        LOG_ERROR("Set Pragma fail[%{public}d], store:%{public}s", status, SoftBusAdapter::ToBeAnonymous(key).c_str());
+        LOG_ERROR("Set Pragma fail[%{public}d], store:%{public}s", status, Anonymous::Change(key).c_str());
         RadarReporter::ReportStateError(std::string(__FUNCTION__), CREATE, CREATE_TABLE,
             RADAR_FAILED, status, FINISHED);
         return ERR_DB_GETKV_FAIL;
     }
-    LOG_INFO("create table %{public}s success", SoftBusAdapter::ToBeAnonymous(key).c_str());
+    LOG_INFO("create table %{public}s success", Anonymous::Change(key).c_str());
     {
         std::lock_guard<std::mutex> lock(operationMutex_);
         delegates_.insert_or_assign(key, kvStore);
@@ -361,8 +362,8 @@ uint32_t FlatObjectStorageEngine::SetStatusNotifier(std::shared_ptr<StatusWatche
             auto onComplete = [this, storeId](const std::map<std::string, DistributedDB::DBStatus> &devices) {
                 for (auto item : devices) {
                     LOG_INFO("%{public}s pull data result %{public}d in device %{public}s",
-                        SoftBusAdapter::ToBeAnonymous(storeId).c_str(), item.second,
-                        SoftBusAdapter::ToBeAnonymous(SoftBusAdapter::GetInstance()->ToNodeID(item.first)).c_str());
+                        Anonymous::Change(storeId).c_str(), item.second,
+                        Anonymous::Change(SoftBusAdapter::GetInstance()->ToNodeID(item.first)).c_str());
                 }
                 if (statusWatcher_ != nullptr) {
                     for (auto item : devices) {
@@ -400,7 +401,7 @@ uint32_t FlatObjectStorageEngine::SyncAllData(const std::string &sessionId, cons
     LOG_INFO("start");
     std::lock_guard<std::mutex> lock(operationMutex_);
     if (delegates_.count(sessionId) == 0) {
-        LOG_ERROR("%{public}s already deleted", SoftBusAdapter::ToBeAnonymous(sessionId).c_str());
+        LOG_ERROR("%{public}s already deleted", Anonymous::Change(sessionId).c_str());
         return ERR_DB_NOT_EXIST;
     }
     DistributedDB::KvStoreNbDelegate *kvstore = delegates_.at(sessionId);
@@ -408,28 +409,28 @@ uint32_t FlatObjectStorageEngine::SyncAllData(const std::string &sessionId, cons
         LOG_INFO("single device,no need sync");
         return ERR_SINGLE_DEVICE;
     }
-    LOG_INFO("start sync %{public}s", SoftBusAdapter::ToBeAnonymous(sessionId).c_str());
+    LOG_INFO("start sync %{public}s", Anonymous::Change(sessionId).c_str());
     DistributedDB::DBStatus status = kvstore->Sync(deviceIds, DistributedDB::SyncMode::SYNC_MODE_PULL_ONLY, onComplete);
     if (status != DistributedDB::DBStatus::OK) {
         LOG_ERROR("FlatObjectStorageEngine::UnRegisterObserver unRegister err %{public}d", status);
         return ERR_UNRIGSTER;
     }
-    LOG_INFO("end sync %{public}s", SoftBusAdapter::ToBeAnonymous(sessionId).c_str());
+    LOG_INFO("end sync %{public}s", Anonymous::Change(sessionId).c_str());
     return SUCCESS;
 }
 
 uint32_t FlatObjectStorageEngine::GetItems(const std::string &key, std::map<std::string, std::vector<uint8_t>> &data)
 {
     if (!isOpened_) {
-        LOG_ERROR("GetItems %{public}s not init", SoftBusAdapter::ToBeAnonymous(key).c_str());
+        LOG_ERROR("GetItems %{public}s not init", Anonymous::Change(key).c_str());
         return ERR_DB_NOT_INIT;
     }
     std::lock_guard<std::mutex> lock(operationMutex_);
     if (delegates_.count(key) == 0) {
-        LOG_ERROR("GetItems %{public}s not exist", SoftBusAdapter::ToBeAnonymous(key).c_str());
+        LOG_ERROR("GetItems %{public}s not exist", Anonymous::Change(key).c_str());
         return ERR_DB_NOT_EXIST;
     }
-    LOG_INFO("start Get %{public}s", SoftBusAdapter::ToBeAnonymous(key).c_str());
+    LOG_INFO("start Get %{public}s", Anonymous::Change(key).c_str());
     std::vector<DistributedDB::Entry> entries;
     DistributedDB::DBStatus status = delegates_.at(key)->GetEntries(StringUtils::StrToBytes(""), entries);
     if (status != DistributedDB::DBStatus::OK) {
@@ -439,7 +440,7 @@ uint32_t FlatObjectStorageEngine::GetItems(const std::string &key, std::map<std:
     for (auto &item : entries) {
         data[StringUtils::BytesToStr(item.key)] = item.value;
     }
-    LOG_INFO("end Get %{public}s", SoftBusAdapter::ToBeAnonymous(key).c_str());
+    LOG_INFO("end Get %{public}s", Anonymous::Change(key).c_str());
     return SUCCESS;
 }
 

@@ -187,7 +187,7 @@ uint32_t ObjectStoreDataServiceProxy::RegisterClientDeathObserver(
     int32_t error =
         remoteObject->SendRequest(static_cast<uint32_t>(KvStoreCode::REGISTERCLIENTDEATHOBSERVER), data, reply, mo);
     if (error != 0) {
-        LOG_WARN("failed during IPC. errCode %d", error);
+        LOG_WARN("failed during IPC. errCode %{public}d", error);
         return ERR_IPC;
     }
     return static_cast<uint32_t>(reply.ReadInt32());

@@ -37,10 +37,6 @@ using namespace OHOS::Security::AccessToken;
 using namespace OHOS::ObjectStore;
 
 namespace {
-constexpr int32_t HEAD_SIZE = 3;
-constexpr const char *REPLACE_CHAIN = "***";
-constexpr const char *DEFAULT_ANONYMOUS = "******";
-
 class NativeCommunicatorTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
@@ -303,32 +299,6 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_StopWatchDataChange_002, TestSiz
     SoftBusAdapter softBusAdapter;
     auto ret = softBusAdapter.StopWatchDataChange(nullptr, pipeInfo);
     EXPECT_EQ(Status::ERROR, ret);
-}
-
-/**
- * @tc.name: SoftBusAdapter_ToBeAnonymous_001
- * @tc.desc: test SoftBusAdapter ToBeAnonymous.
- * @tc.type: FUNC
- */
-HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_ToBeAnonymous_001, TestSize.Level1)
-{
-    std::string name = "na";
-    SoftBusAdapter softBusAdapter;
-    auto ret = softBusAdapter.ToBeAnonymous(name);
-    EXPECT_EQ(DEFAULT_ANONYMOUS, ret);
-}
-
-/**
- * @tc.name: SoftBusAdapter_ToBeAnonymous_002
- * @tc.desc: test SoftBusAdapter ToBeAnonymous.
- * @tc.type: FUNC
- */
-HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_ToBeAnonymous_002, TestSize.Level1)
-{
-    std::string name = "name";
-    SoftBusAdapter softBusAdapter;
-    auto ret = softBusAdapter.ToBeAnonymous(name);
-    EXPECT_EQ(name.substr(0, HEAD_SIZE) + REPLACE_CHAIN, ret);
 }
 
 /**

@@ -16,6 +16,7 @@
 
 #include <logger.h>
 
+#include "anonymous.h"
 #include "device_manager.h"
 #include "softbus_adapter.h"
 
@@ -42,7 +43,7 @@ private:
 void DMStateCallback::OnDeviceOnline(const DmDeviceInfo &deviceInfo)
 {
     std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(std::string(deviceInfo.networkId));
-    LOG_INFO("[Online] id:%{public}s, name:%{public}s, typeId:%{public}d", SoftBusAdapter::ToBeAnonymous(uuid).c_str(),
+    LOG_INFO("[Online] id:%{public}s, name:%{public}s, typeId:%{public}d", Anonymous::Change(uuid).c_str(),
         deviceInfo.deviceName, deviceInfo.deviceTypeId);
     NotifyAll(deviceInfo, DeviceChangeType::DEVICE_ONLINE);
 }
@@ -50,16 +51,15 @@ void DMStateCallback::OnDeviceOnline(const DmDeviceInfo &deviceInfo)
 void DMStateCallback::OnDeviceOffline(const DmDeviceInfo &deviceInfo)
 {
     std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(std::string(deviceInfo.networkId));
-    LOG_INFO("[Offline] id:%{public}s, name:%{public}s, typeId:%{public}d",
-        SoftBusAdapter::ToBeAnonymous(uuid).c_str(), deviceInfo.deviceName, deviceInfo.deviceTypeId);
+    LOG_INFO("[Offline] id:%{public}s, name:%{public}s, typeId:%{public}d", Anonymous::Change(uuid).c_str(),
+        deviceInfo.deviceName, deviceInfo.deviceTypeId);
     NotifyAll(deviceInfo, DeviceChangeType::DEVICE_OFFLINE);
 }
 
 void DMStateCallback::OnDeviceChanged(const DmDeviceInfo &deviceInfo)
 {
     std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(std::string(deviceInfo.networkId));
-    LOG_INFO("[InfoChange] id:%{public}s, name:%{public}s", SoftBusAdapter::ToBeAnonymous(uuid).c_str(),
-        deviceInfo.deviceName);
+    LOG_INFO("[InfoChange] id:%{public}s, name:%{public}s", Anonymous::Change(uuid).c_str(), deviceInfo.deviceName);
 }
 
 void DMStateCallback::OnDeviceReady(const DmDeviceInfo &deviceInfo)
@@ -90,7 +90,6 @@ void DMStateCallback::NotifyAll(const DmDeviceInfo &deviceInfo, DeviceChangeType
 
 DevManager::DevManager()
 {
-    RegisterDevCallback();
 }
 
 DevManager::~DevManager()
@@ -140,7 +139,7 @@ std::string DevManager::GetUuidByNodeId(const std::string &nodeId) const
     int32_t ret = DistributedHardware::DeviceManager::GetInstance().GetEncryptedUuidByNetworkId(
         "ohos.objectstore", nodeId.c_str(), uuid);
     if (ret != DM_OK) {
-        LOG_WARN("GetEncryptedUuidByNetworkId error, nodeId:%{public}s", SoftBusAdapter::ToBeAnonymous(nodeId).c_str());
+        LOG_WARN("GetEncryptedUuidByNetworkId error, nodeId:%{public}s", Anonymous::Change(nodeId).c_str());
         return "";
     }
     return uuid;

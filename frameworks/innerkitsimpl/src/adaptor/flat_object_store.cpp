@@ -478,7 +478,7 @@ int32_t CacheManager::SaveObject(const std::string &bundleName, const std::strin
     int32_t status = proxy->ObjectStoreSave(
         bundleName, sessionId, deviceId, objectData, objectSaveCallback->AsObject().GetRefPtr());
     if (status != SUCCESS) {
-        LOG_ERROR("object save failed code=%d.", static_cast<int>(status));
+        LOG_ERROR("object save failed code=%{public}d.", static_cast<int>(status));
         RadarReporter::ReportStateError(std::string(__FUNCTION__), SAVE, SAVE_TO_SERVICE,
             RADAR_FAILED, IPC_ERROR, FINISHED);
     } else {
@@ -504,7 +504,7 @@ int32_t CacheManager::RevokeSaveObject(
     int32_t status = proxy->ObjectStoreRevokeSave(
         bundleName, sessionId, objectRevokeSaveCallback->AsObject().GetRefPtr());
     if (status != SUCCESS) {
-        LOG_ERROR("object revoke save failed code=%d.", static_cast<int>(status));
+        LOG_ERROR("object revoke save failed code=%{public}d.", static_cast<int>(status));
     }
     LOG_INFO("object revoke save successful");
     return status;
@@ -526,7 +526,7 @@ int32_t CacheManager::ResumeObject(const std::string &bundleName, const std::str
     int32_t status = proxy->ObjectStoreRetrieve(
         bundleName, sessionId, objectRetrieveCallback->AsObject().GetRefPtr());
     if (status != SUCCESS) {
-        LOG_ERROR("object resume failed code=%d.", static_cast<int>(status));
+        LOG_ERROR("object resume failed code=%{public}d.", static_cast<int>(status));
     }
     LOG_INFO("object resume successful");
     return status;
@@ -549,7 +549,7 @@ int32_t CacheManager::SubscribeDataChange(const std::string &bundleName, const s
     int32_t status = proxy->RegisterDataObserver(
         bundleName, sessionId, objectRemoteResumeCallback->AsObject().GetRefPtr());
     if (status != SUCCESS) {
-        LOG_ERROR("object remote resume failed code=%d.", static_cast<int>(status));
+        LOG_ERROR("object remote resume failed code=%{public}d.", static_cast<int>(status));
     }
     LOG_INFO("object remote resume successful");
     return status;
@@ -571,7 +571,7 @@ int32_t CacheManager::SubscribeProgressChange(
     int32_t status =
         proxy->RegisterProgressObserver(bundleName, sessionId, objectRemoteResumeCallback->AsObject().GetRefPtr());
     if (status != SUCCESS) {
-        LOG_ERROR("object remote resume failed code=%d.", static_cast<int>(status));
+        LOG_ERROR("object remote resume failed code=%{public}d.", static_cast<int>(status));
     }
     return status;
 }
@@ -584,7 +584,7 @@ int32_t CacheManager::UnregisterDataChange(const std::string &bundleName, const 
     }
     int32_t status = proxy->UnregisterDataChangeObserver(bundleName, sessionId);
     if (status != SUCCESS) {
-        LOG_ERROR("object remote resume failed code=%d.", static_cast<int>(status));
+        LOG_ERROR("object remote resume failed code=%{public}d.", static_cast<int>(status));
     }
     LOG_INFO("object unregister data change observer successful");
     return status;
@@ -599,7 +599,7 @@ int32_t CacheManager::UnregisterProgressChange(const std::string &bundleName, co
     }
     int32_t status = proxy->UnregisterProgressObserver(bundleName, sessionId);
     if (status != SUCCESS) {
-        LOG_ERROR("object remote resume failed code=%d.", static_cast<int>(status));
+        LOG_ERROR("object remote resume failed code=code=%{public}d.", static_cast<int>(status));
     }
     LOG_INFO("object unregister progress change observer successful");
     return status;
@@ -614,7 +614,7 @@ int32_t CacheManager::DeleteSnapshot(const std::string &bundleName, const std::s
     }
     int32_t status = proxy->DeleteSnapshot(bundleName, sessionId);
     if (status != SUCCESS) {
-        LOG_ERROR("object delete snapshot failed code=%d.", static_cast<int>(status));
+        LOG_ERROR("object delete snapshot failed code=code=%{public}d.", static_cast<int>(status));
     }
     LOG_INFO("object delete snapshot successful");
     return status;
