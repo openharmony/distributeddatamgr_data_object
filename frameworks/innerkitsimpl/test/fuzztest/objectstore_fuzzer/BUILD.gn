@@ -39,6 +39,9 @@ ohos_fuzztest("ObjectStoreFuzzTest") {
   ]
 
   external_deps = [
+    "access_token:libaccesstoken_sdk",
+    "access_token:libnativetoken_shared",
+    "access_token:libtokensetproc_shared",
     "hilog:libhilog",
     "kv_store:distributeddb",
   ]
