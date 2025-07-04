@@ -316,7 +316,7 @@ int CollaborationEditObject::ParseCloudSyncMode(const napi_env env, const napi_v
     int32_t mode = 0;
     napi_status status = NapiUtils::GetValue(env, arg, mode);
     if (status != napi_ok || mode < 0 || mode > SyncMode::PULL_PUSH) {
-        LOG_ERROR("CloudSync parse syncMode go wrong, mode: %d", mode);
+        LOG_ERROR("CloudSync parse syncMode go wrong, mode: %{public}d", mode);
         return ERR;
     }
     context->syncMode_ = mode;

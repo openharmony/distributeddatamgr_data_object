@@ -78,9 +78,11 @@ void JSWatcher::ProcessChange(napi_env env, std::list<void *> &args)
         NOT_MATCH_GOTO_ERROR(status == napi_ok);
         JSUtil::SetValue(env, changeArgs->changeData_, param[1]);
         NOT_MATCH_GOTO_ERROR(status == napi_ok);
-        LOG_INFO("start %{public}s, %{public}zu", changeArgs->sessionId_.c_str(), changeArgs->changeData_.size());
+        LOG_INFO("start %{public}s, %{public}zu", Anonymous::Change(changeArgs->sessionId_).c_str(),
+            changeArgs->changeData_.size());
         status = napi_call_function(env, global, callback, ARGV_SIZE, param, &result);
-        LOG_INFO("end %{public}s, %{public}zu", changeArgs->sessionId_.c_str(), changeArgs->changeData_.size());
+        LOG_INFO("end %{public}3s, %{public}zu", Anonymous::Change(changeArgs->sessionId_).c_str(),
+            changeArgs->changeData_.size());
         NOT_MATCH_GOTO_ERROR(status == napi_ok);
     }
 ERROR:
@@ -96,7 +98,7 @@ void JSWatcher::Emit(const char *type, const std::string &sessionId, const std::
         LOG_ERROR("empty change");
         return;
     }
-    LOG_INFO("start %{public}s, %{public}s", sessionId.c_str(), changeData.at(0).c_str());
+    LOG_INFO("start %{public}3s, %{public}s", Anonymous::Change(sessionId).c_str(), changeData.at(0).c_str());
     EventListener *listener = Find(type);
     if (listener == nullptr) {
         LOG_ERROR("error type %{public}s", type);
@@ -146,10 +148,10 @@ void JSWatcher::ProcessStatus(napi_env env, std::list<void *> &args)
         NOT_MATCH_GOTO_ERROR(status == napi_ok);
         status = JSUtil::SetValue(env, statusArgs->status_, param[2]);
         NOT_MATCH_GOTO_ERROR(status == napi_ok);
-        LOG_INFO("start %{public}s, %{public}s, %{public}s", statusArgs->sessionId_.c_str(),
+        LOG_INFO("start %{public}s, %{public}s, %{public}s", Anonymous::Change(statusArgs->sessionId_).c_str(),
             Anonymous::Change(statusArgs->networkId_).c_str(), statusArgs->status_.c_str());
         status = napi_call_function(env, global, callback, ARGV_SIZE, param, &result);
-        LOG_INFO("end %{public}s, %{public}s, %{public}s", statusArgs->sessionId_.c_str(),
+        LOG_INFO("end %{public}s, %{public}s, %{public}s", Anonymous::Change(statusArgs->sessionId_).c_str(),
             Anonymous::Change(statusArgs->networkId_).c_str(), statusArgs->status_.c_str());
         NOT_MATCH_GOTO_ERROR(status == napi_ok);
     }
@@ -166,10 +168,12 @@ void JSWatcher::Emit(
     const char *type, const std::string &sessionId, const std::string &networkId, const std::string &status)
 {
     if (sessionId.empty() || networkId.empty()) {
-        LOG_ERROR("empty %{public}s  %{public}s", sessionId.c_str(), Anonymous::Change(networkId).c_str());
+        LOG_ERROR("empty %{public}s  %{public}s", Anonymous::Change(sessionId).c_str(),
+            Anonymous::Change(networkId).c_str());
         return;
     }
-    LOG_INFO("status change %{public}s  %{public}s", sessionId.c_str(), Anonymous::Change(networkId).c_str());
+    LOG_INFO("status change %{public}s  %{public}s", Anonymous::Change(sessionId).c_str(),
+        Anonymous::Change(networkId).c_str());
     EventListener *listener = Find(type);
     if (listener == nullptr) {
         LOG_ERROR("error type %{public}s", type);
@@ -204,9 +208,11 @@ void JSWatcher::ProcessProgress(napi_env env, std::list<void *> &args)
         NOT_MATCH_GOTO_ERROR(status == napi_ok);
         status = JSUtil::SetValue(env, static_cast<uint32_t>(progressArgs->progress_), param[1]);
         NOT_MATCH_GOTO_ERROR(status == napi_ok);
-        LOG_INFO("start %{public}s, %{public}d", progressArgs->sessionId_.c_str(), progressArgs->progress_);
+        LOG_INFO("start %{public}s, %{public}d", Anonymous::Change(progressArgs->sessionId_).c_str(),
+            progressArgs->progress_);
         status = napi_call_function(env, global, callback, ARGV_SIZE, param, &result);
-        LOG_INFO("end %{public}s, %{public}d", progressArgs->sessionId_.c_str(), progressArgs->progress_);
+        LOG_INFO("end %{public}s, %{public}d", Anonymous::Change(progressArgs->sessionId_).c_str(),
+            progressArgs->progress_);
         NOT_MATCH_GOTO_ERROR(status == napi_ok);
     }
 ERROR:
@@ -221,10 +227,10 @@ ERROR:
 void JSWatcher::Emit(const char *type, const std::string &sessionId, int32_t progress)
 {
     if (sessionId.empty()) {
-        LOG_ERROR("empty sessionId %{public}s", sessionId.c_str());
+        LOG_ERROR("empty sessionId %{public}s", Anonymous::Change(sessionId).c_str());
         return;
     }
-    LOG_INFO("progress change %{public}s %{public}d", sessionId.c_str(), progress);
+    LOG_INFO("progress change %{public}s %{public}d", Anonymous::Change(sessionId).c_str(), progress);
     EventListener *listener = Find(type);
     if (listener == nullptr) {
         LOG_ERROR("error type %{public}s", type);
@@ -361,9 +367,9 @@ bool ChangeEventListener::Add(napi_env env, napi_value handler)
         std::shared_ptr<WatcherImpl> watcher = std::make_shared<WatcherImpl>(watcher_);
         uint32_t ret = objectStore_->Watch(object_, watcher);
         if (ret != SUCCESS) {
-            LOG_ERROR("Watch %{public}s error", object_->GetSessionId().c_str());
+            LOG_ERROR("Watch %{public}s error", Anonymous::Change(object_->GetSessionId()).c_str());
         } else {
-            LOG_INFO("Watch %{public}s success", object_->GetSessionId().c_str());
+            LOG_INFO("Watch %{public}s success", Anonymous::Change(object_->GetSessionId()).c_str());
             isWatched_ = true;
         }
     }
@@ -376,9 +382,9 @@ bool ChangeEventListener::Del(napi_env env, napi_value handler)
     if (isEmpty && isWatched_ && object_ != nullptr) {
         uint32_t ret = objectStore_->UnWatch(object_);
         if (ret != SUCCESS) {
-            LOG_ERROR("UnWatch %{public}s error", object_->GetSessionId().c_str());
+            LOG_ERROR("UnWatch %{public}s error", Anonymous::Change(object_->GetSessionId()).c_str());
         } else {
-            LOG_INFO("UnWatch %{public}s success", object_->GetSessionId().c_str());
+            LOG_INFO("UnWatch %{public}s success", Anonymous::Change(object_->GetSessionId()).c_str());
             isWatched_ = false;
         }
     }
@@ -391,9 +397,9 @@ void ChangeEventListener::Clear(napi_env env)
     if (isWatched_ && object_ != nullptr) {
         uint32_t ret = objectStore_->UnWatch(object_);
         if (ret != SUCCESS) {
-            LOG_ERROR("UnWatch %{public}s error", object_->GetSessionId().c_str());
+            LOG_ERROR("UnWatch %{public}s error", Anonymous::Change(object_->GetSessionId()).c_str());
         } else {
-            LOG_INFO("UnWatch %{public}s success", object_->GetSessionId().c_str());
+            LOG_INFO("UnWatch %{public}s success", Anonymous::Change(object_->GetSessionId()).c_str());
             isWatched_ = false;
         }
     }
@@ -407,7 +413,7 @@ ChangeEventListener::ChangeEventListener(
 
 bool StatusEventListener::Add(napi_env env, napi_value handler)
 {
-    LOG_INFO("Add status watch %{public}s", sessionId_.c_str());
+    LOG_INFO("Add status watch %{public}s", Anonymous::Change(sessionId_).c_str());
     NotifierImpl::GetInstance()->AddWatcher(sessionId_, watcher_);
     return EventListener::Add(env, handler);
 }
@@ -415,7 +421,7 @@ bool StatusEventListener::Add(napi_env env, napi_value handler)
 bool StatusEventListener::Del(napi_env env, napi_value handler)
 {
     if (EventListener::Del(env, handler)) {
-        LOG_INFO("Del status watch %{public}s", sessionId_.c_str());
+        LOG_INFO("Del status watch %{public}s", Anonymous::Change(sessionId_).c_str());
         NotifierImpl::GetInstance()->DelWatcher(sessionId_);
         return true;
     }
@@ -435,7 +441,7 @@ StatusEventListener::StatusEventListener(std::weak_ptr<JSWatcher> watcher, const
 
 bool ProgressEventListener::Add(napi_env env, napi_value handler)
 {
-    LOG_INFO("Add progress watch %{public}s", sessionId_.c_str());
+    LOG_INFO("Add progress watch %{public}s", Anonymous::Change(sessionId_).c_str());
     ProgressNotifierImpl::GetInstance()->AddWatcher(sessionId_, watcher_);
     return EventListener::Add(env, handler);
 }
@@ -443,7 +449,7 @@ bool ProgressEventListener::Add(napi_env env, napi_value handler)
 bool ProgressEventListener::Del(napi_env env, napi_value handler)
 {
     if (EventListener::Del(env, handler)) {
-        LOG_INFO("Del progress watch %{public}s", sessionId_.c_str());
+        LOG_INFO("Del progress watch %{public}s", Anonymous::Change(sessionId_).c_str());
         ProgressNotifierImpl::GetInstance()->DelWatcher(sessionId_);
         return true;
     }

@@ -59,11 +59,11 @@ void ProgressNotifierImpl::OnChanged(const std::string &sessionId, int32_t progr
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (watchers_.count(sessionId) != 0) {
-        LOG_INFO("start emit %{public}s %{public}d", sessionId.c_str(), progress);
+        LOG_INFO("start emit %{public}s %{public}d", Anonymous::Change(sessionId).c_str(), progress);
         std::shared_ptr<JSWatcher> lockedWatcher = watchers_.at(sessionId).lock();
         if (lockedWatcher) {
             lockedWatcher->Emit("progress", sessionId, progress);
-            LOG_INFO("end emit %{public}s %{public}d", sessionId.c_str(), progress);
+            LOG_INFO("end emit %{public}s %{public}d", Anonymous::Change(sessionId).c_str(), progress);
         } else {
             LOG_ERROR("watcher expired");
         }

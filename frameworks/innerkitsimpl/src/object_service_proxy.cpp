@@ -53,7 +53,7 @@ int32_t ObjectServiceProxy::ObjectStoreSave(const std::string &bundleName, const
     }
     int32_t error = remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_SAVE), data, reply, mo);
     if (error != 0) {
-        ZLOGE("SendRequest returned %d", error);
+        ZLOGE("SendRequest returned %{public}d", error);
         return ERR_IPC;
     }
     return reply.ReadInt32();
@@ -85,7 +85,7 @@ int32_t ObjectServiceProxy::OnAssetChanged(const std::string &bundleName, const 
     int32_t error = remoteObject->SendRequest(
         static_cast<uint32_t>(ObjectCode::OBJECTSTORE_ON_ASSET_CHANGED), data, reply, mo);
     if (error != 0) {
-        ZLOGE("SendRequest returned %d", error);
+        ZLOGE("SendRequest returned %{public}d", error);
         return ERR_IPC;
     }
     return reply.ReadInt32();
@@ -115,7 +115,7 @@ int32_t ObjectServiceProxy::ObjectStoreRevokeSave(
     int32_t error =
         remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_REVOKE_SAVE), data, reply, mo);
     if (error != 0) {
-        ZLOGE("SendRequest returned %d", error);
+        ZLOGE("SendRequest returned %{public}d", error);
         return ERR_IPC;
     }
     return reply.ReadInt32();
@@ -145,7 +145,7 @@ int32_t ObjectServiceProxy::ObjectStoreRetrieve(
     int32_t error =
         remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_RETRIEVE), data, reply, mo);
     if (error != 0) {
-        ZLOGE("SendRequest returned %d", error);
+        ZLOGE("SendRequest returned %{public}d", error);
         return ERR_IPC;
     }
     return reply.ReadInt32();
@@ -175,7 +175,7 @@ int32_t ObjectServiceProxy::RegisterDataObserver(const std::string &bundleName,
     int32_t error =
         remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_REGISTER_OBSERVER), data, reply, mo);
     if (error != 0) {
-        ZLOGE("SendRequest returned %d", error);
+        ZLOGE("SendRequest returned %{public}d", error);
         return ERR_IPC;
     }
     return reply.ReadInt32();
@@ -204,7 +204,7 @@ int32_t ObjectServiceProxy::UnregisterDataChangeObserver(const std::string &bund
     int32_t error =
         remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_UNREGISTER_OBSERVER), data, reply, mo);
     if (error != 0) {
-        ZLOGE("SendRequest returned %d", error);
+        ZLOGE("SendRequest returned %{public}d", error);
         return ERR_IPC;
     }
     return reply.ReadInt32();
@@ -234,7 +234,7 @@ int32_t ObjectServiceProxy::RegisterProgressObserver(const std::string &bundleNa
     int32_t error =
         remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_REGISTER_PROGRESSS), data, reply, mo);
     if (error != 0) {
-        ZLOGE("SendRequest returned %d", error);
+        ZLOGE("SendRequest returned %{public}d", error);
         return error;
     }
     return reply.ReadInt32();
@@ -263,7 +263,7 @@ int32_t ObjectServiceProxy::UnregisterProgressObserver(const std::string &bundle
     int32_t error =
         remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_UNREGISTER_PROGRESSS), data, reply, mo);
     if (error != 0) {
-        ZLOGE("SendRequest returned %d", error);
+        ZLOGE("SendRequest returned %{public}d", error);
         return error;
     }
     return reply.ReadInt32();
@@ -293,7 +293,7 @@ int32_t ObjectServiceProxy::BindAssetStore(const std::string &bundleName, const 
     int32_t error =
         remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_BIND_ASSET_STORE), data, reply, mo);
     if (error != 0) {
-        ZLOGE("SendRequest returned %d", error);
+        ZLOGE("SendRequest returned %{public}d", error);
         return ERR_IPC;
     }
     return reply.ReadInt32();
@@ -322,7 +322,7 @@ int32_t ObjectServiceProxy::DeleteSnapshot(const std::string &bundleName, const 
     int32_t error =
         remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_DELETE_SNAPSHOT), data, reply, mo);
     if (error != 0) {
-        ZLOGE("SendRequest returned %d", error);
+        ZLOGE("SendRequest returned %{public}d", error);
         return ERR_IPC;
     }
     return reply.ReadInt32();

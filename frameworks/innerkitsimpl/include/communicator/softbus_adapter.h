@@ -41,7 +41,6 @@ public:
     DeviceInfo GetLocalBasicInfo() const;
     // get all remote connected device's node information;
     std::vector<DeviceInfo> GetRemoteNodesBasicInfo() const;
-    static std::string ToBeAnonymous(const std::string &name);
 
     // add DataChangeListener to watch data change;
     Status StartWatchDataChange(const AppDataChangeListener *observer, const PipeInfo &pipeInfo);
