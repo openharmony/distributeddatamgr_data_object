@@ -59,6 +59,16 @@ SoftBusAdapter::~SoftBusAdapter()
         taskQueue_->Clean();
         taskQueue_ = nullptr;
     }
+    std::lock_guard<std::mutex> lock(deviceDataLock_);
+    for (auto &deviceData : dataCaches_) {
+        for (auto &bytesMsg : deviceData.second) {
+            if (bytesMsg.ptr != nullptr) {
+                delete[] bytesMsg.ptr;
+                bytesMsg.ptr = nullptr;
+            }
+        }
+    }
+
     dataCaches_.clear();
     sockets_.clear();
 }
