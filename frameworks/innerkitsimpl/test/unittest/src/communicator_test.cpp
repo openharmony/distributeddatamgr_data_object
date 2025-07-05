@@ -569,4 +569,32 @@ HWTEST_F(NativeCommunicatorTest, DevManager_GetLocalDevice_001, TestSize.Level1)
     DevManager::DetailInfo detailInfo = devManager->GetLocalDevice();
     EXPECT_EQ(detailInfo.networkId, "");
 }
+
+/**
+* @tc.name: DestructedSoftBusAdapter001
+* @tc.desc: Test that the destructor cleans the dataCaches when bytesMsg.ptr is not nullptr.
+* @tc.type: FUNC
+*/
+HWTEST_F(NativeCommunicatorTest, DestructedSoftBusAdapter001, TestSize.Level1)
+{
+    auto softBusAdapter = std::make_shared<SoftBusAdapter>();
+    uint32_t length = 10;
+    uint8_t *data = new uint8_t[length];
+    SoftBusAdapter::BytesMsg bytesMsg = { data, length };
+    softBusAdapter->dataCaches_["device1"] = { bytesMsg };
+    EXPECT_FALSE(softBusAdapter->dataCaches_.empty());
+}
+
+/**
+* @tc.name: DestructedSoftBusAdapter002
+* @tc.desc: Test that the destructor does not clean the dataCaches when bytesMsg.ptr is nullptr.
+* @tc.type: FUNC
+*/
+HWTEST_F(NativeCommunicatorTest, DestructedSoftBusAdapter002, TestSize.Level1)
+{
+    auto softBusAdapter = std::make_shared<SoftBusAdapter>();
+    SoftBusAdapter::BytesMsg bytesMsg = { nullptr, 0 };
+    softBusAdapter->dataCaches_["device2"] = { bytesMsg };
+    EXPECT_FALSE(softBusAdapter->dataCaches_.empty());
+}
 }
