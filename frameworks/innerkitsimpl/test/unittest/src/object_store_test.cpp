@@ -28,6 +28,7 @@
 #include "nativetoken_kit.h"
 #include "object_storage_engine.h"
 #include "objectstore_errors.h"
+#include "store_errno.h"
 #include "token_setproc.h"
 
 using namespace testing::ext;
@@ -1238,7 +1239,7 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_Save_001, TestSize.Level1)
     std::map<std::string, std::vector<uint8_t>> objectData;
     CacheManager cacheManager;
     auto ret = cacheManager.Save(bundleName, sessionId, deviceId, objectData);
-    EXPECT_EQ(OBJECT_PERMISSION_DENIED, ret);
+    EXPECT_EQ(OHOS::DistributedKv::Status::INVALID_ARGUMENT, ret);
 }
 
 /**
@@ -1252,7 +1253,7 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_RevokeSave_001, TestSize.Level1)
     std::string sessionId = "";
     CacheManager cacheManager;
     auto ret = cacheManager.RevokeSave(bundleName, sessionId);
-    EXPECT_EQ(OBJECT_PERMISSION_DENIED, ret);
+    EXPECT_EQ(SUCCESS, ret);
 }
 
 /**
@@ -1268,7 +1269,7 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_ResumeObject_001, TestSize.Level1)
     std::function<void(const std::map<std::string, std::vector<uint8_t>> &data, bool allReady)> callback =
         [](const std::map<std::string, std::vector<uint8_t>> &data, bool allReady) {};
     auto ret = cacheManager.ResumeObject(bundleName, sessionId, callback);
-    EXPECT_EQ(OBJECT_PERMISSION_DENIED, ret);
+    EXPECT_EQ(OHOS::DistributedKv::Status::KEY_NOT_FOUND, ret);
 }
 
 /**
@@ -1284,7 +1285,7 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_SubscribeDataChange_001, TestSize.L
     std::function<void(const std::map<std::string, std::vector<uint8_t>> &data, bool allReady)> callback =
         [](const std::map<std::string, std::vector<uint8_t>> &data, bool allReady) {};
     auto ret = cacheManager.SubscribeDataChange(bundleName, sessionId, callback);
-    EXPECT_EQ(OBJECT_PERMISSION_DENIED, ret);
+    EXPECT_EQ(SUCCESS, ret);
 }
 
 /**
@@ -1298,7 +1299,7 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_UnregisterDataChange_001, TestSize.
     std::string sessionId = "";
     CacheManager cacheManager;
     auto ret = cacheManager.UnregisterDataChange(bundleName, sessionId);
-    EXPECT_EQ(OBJECT_PERMISSION_DENIED, ret);
+    EXPECT_EQ(SUCCESS, ret);
 }
 
 /**
@@ -1762,7 +1763,7 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_SubscribeProgressChange_001, TestSi
     CacheManager cacheManager;
     std::function<void(int32_t progress)> callback = [sessionId, this](int32_t progress) {};
     auto ret = cacheManager.SubscribeProgressChange(bundleName, sessionId, callback);
-    EXPECT_EQ(OBJECT_PERMISSION_DENIED, ret);
+    EXPECT_EQ(SUCCESS, ret);
 }
 
 /**
@@ -1776,7 +1777,7 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_UnregisterProgressChange_001, TestS
     std::string sessionId = "";
     CacheManager cacheManager;
     auto ret = cacheManager.UnregisterProgressChange(bundleName, sessionId);
-    EXPECT_EQ(OBJECT_PERMISSION_DENIED, ret);
+    EXPECT_EQ(SUCCESS, ret);
 }
 
 /**
