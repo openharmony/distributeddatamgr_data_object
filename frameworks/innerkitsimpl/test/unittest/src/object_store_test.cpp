@@ -78,7 +78,7 @@ ProgressNotifierImpl::~ProgressNotifierImpl()
 {
 }
 
-void ProgressNotifierImpl::OnChanged(const std::string &sessionId, int32_t progresss)
+void ProgressNotifierImpl::OnChanged(const std::string &sessionId, int32_t progress)
 {
 }
 void GrantPermissionNative()
