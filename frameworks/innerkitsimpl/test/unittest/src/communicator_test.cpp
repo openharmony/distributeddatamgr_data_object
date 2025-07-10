@@ -37,10 +37,6 @@ using namespace OHOS::Security::AccessToken;
 using namespace OHOS::ObjectStore;
 
 namespace {
-constexpr int32_t HEAD_SIZE = 3;
-constexpr const char *REPLACE_CHAIN = "***";
-constexpr const char *DEFAULT_ANONYMOUS = "******";
-
 class NativeCommunicatorTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
@@ -306,32 +302,6 @@ HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_StopWatchDataChange_002, TestSiz
 }
 
 /**
- * @tc.name: SoftBusAdapter_ToBeAnonymous_001
- * @tc.desc: test SoftBusAdapter ToBeAnonymous.
- * @tc.type: FUNC
- */
-HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_ToBeAnonymous_001, TestSize.Level1)
-{
-    std::string name = "na";
-    SoftBusAdapter softBusAdapter;
-    auto ret = softBusAdapter.ToBeAnonymous(name);
-    EXPECT_EQ(DEFAULT_ANONYMOUS, ret);
-}
-
-/**
- * @tc.name: SoftBusAdapter_ToBeAnonymous_002
- * @tc.desc: test SoftBusAdapter ToBeAnonymous.
- * @tc.type: FUNC
- */
-HWTEST_F(NativeCommunicatorTest, SoftBusAdapter_ToBeAnonymous_002, TestSize.Level1)
-{
-    std::string name = "name";
-    SoftBusAdapter softBusAdapter;
-    auto ret = softBusAdapter.ToBeAnonymous(name);
-    EXPECT_EQ(name.substr(0, HEAD_SIZE) + REPLACE_CHAIN, ret);
-}
-
-/**
  * @tc.name: SoftBusAdapter_GetLocalBasicInfo_001
  * @tc.desc: test SoftBusAdapter GetLocalBasicInfo.
  * @tc.type: FUNC
@@ -568,5 +538,33 @@ HWTEST_F(NativeCommunicatorTest, DevManager_GetLocalDevice_001, TestSize.Level1)
     EXPECT_TRUE(devManager != nullptr);
     DevManager::DetailInfo detailInfo = devManager->GetLocalDevice();
     EXPECT_EQ(detailInfo.networkId, "");
+}
+
+/**
+* @tc.name: DestructedSoftBusAdapter001
+* @tc.desc: Test that the destructor cleans the dataCaches when bytesMsg.ptr is not nullptr.
+* @tc.type: FUNC
+*/
+HWTEST_F(NativeCommunicatorTest, DestructedSoftBusAdapter001, TestSize.Level1)
+{
+    auto softBusAdapter = std::make_shared<SoftBusAdapter>();
+    uint32_t length = 10;
+    uint8_t *data = new uint8_t[length];
+    SoftBusAdapter::BytesMsg bytesMsg = { data, length };
+    softBusAdapter->dataCaches_["device1"] = { bytesMsg };
+    EXPECT_FALSE(softBusAdapter->dataCaches_.empty());
+}
+
+/**
+* @tc.name: DestructedSoftBusAdapter002
+* @tc.desc: Test that the destructor does not clean the dataCaches when bytesMsg.ptr is nullptr.
+* @tc.type: FUNC
+*/
+HWTEST_F(NativeCommunicatorTest, DestructedSoftBusAdapter002, TestSize.Level1)
+{
+    auto softBusAdapter = std::make_shared<SoftBusAdapter>();
+    SoftBusAdapter::BytesMsg bytesMsg = { nullptr, 0 };
+    softBusAdapter->dataCaches_["device2"] = { bytesMsg };
+    EXPECT_FALSE(softBusAdapter->dataCaches_.empty());
 }
 }

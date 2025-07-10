@@ -25,11 +25,6 @@
 
 namespace OHOS {
 namespace ObjectStore {
-constexpr int32_t HEAD_SIZE = 3;
-constexpr int32_t END_SIZE = 3;
-constexpr int32_t MIN_SIZE = HEAD_SIZE + END_SIZE + 3;
-constexpr const char *REPLACE_CHAIN = "***";
-constexpr const char *DEFAULT_ANONYMOUS = "******";
 constexpr int32_t SOFTBUS_OK = 0;
 constexpr int32_t INVALID_SOCKET_ID = 0;
 constexpr size_t TASK_CAPACITY_MAX = 15;
@@ -59,6 +54,16 @@ SoftBusAdapter::~SoftBusAdapter()
         taskQueue_->Clean();
         taskQueue_ = nullptr;
     }
+    std::lock_guard<std::mutex> lock(deviceDataLock_);
+    for (auto &deviceData : dataCaches_) {
+        for (auto &bytesMsg : deviceData.second) {
+            if (bytesMsg.ptr != nullptr) {
+                delete[] bytesMsg.ptr;
+                bytesMsg.ptr = nullptr;
+            }
+        }
+    }
+
     dataCaches_.clear();
     sockets_.clear();
 }
@@ -111,7 +116,7 @@ void SoftBusAdapter::NotifyAll(const DeviceInfo &deviceInfo, const DeviceChangeT
         }
         LOG_DEBUG("high");
         std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(deviceInfo.deviceId);
-        LOG_DEBUG("[Notify] to DB from: %{public}s, type:%{public}hhd", ToBeAnonymous(uuid).c_str(), type);
+        LOG_DEBUG("[Notify] to DB from: %{public}s, type:%{public}hhd", Anonymous::Change(uuid).c_str(), type);
         UpdateRelationship(deviceInfo.deviceId, type);
         for (const auto &device : listeners) {
             if (device == nullptr) {
@@ -193,7 +198,7 @@ DeviceInfo SoftBusAdapter::GetLocalDevice()
         return DeviceInfo();
     }
     std::string uuid = DevManager::GetInstance()->GetUuidByNodeId(std::string(info.networkId));
-    LOG_DEBUG("[LocalDevice] id:%{private}s, name:%{private}s, type:%{private}d", ToBeAnonymous(uuid).c_str(),
+    LOG_DEBUG("[LocalDevice] id:%{public}s, name:%{public}s, type:%{public}d", Anonymous::Change(uuid).c_str(),
         info.deviceName, info.deviceTypeId);
     localInfo_ = { uuid, std::string(info.deviceName), std::to_string(info.deviceTypeId) };
     return localInfo_;
@@ -208,9 +213,8 @@ DeviceInfo SoftBusAdapter::GetLocalBasicInfo() const
         LOG_ERROR("GetLocalNodeDeviceInfo error");
         return DeviceInfo();
     }
-    LOG_DEBUG("[LocalBasicInfo] networkId:%{private}s, name:%{private}s, "
-              "type:%{private}d",
-        ToBeAnonymous(std::string(info.networkId)).c_str(), info.deviceName, info.deviceTypeId);
+    LOG_DEBUG("[LocalBasicInfo] networkId:%{public}s, name:%{public}s, type:%{public}d",
+        Anonymous::Change(std::string(info.networkId)).c_str(), info.deviceName, info.deviceTypeId);
     DeviceInfo localInfo = { std::string(info.networkId), std::string(info.deviceName),
         std::to_string(info.deviceTypeId) };
     return localInfo;
@@ -299,19 +303,6 @@ std::string SoftBusAdapter::ToNodeID(const std::string &nodeId) const
         FreeNodeInfo(info);
     }
     return networkId;
-}
-
-std::string SoftBusAdapter::ToBeAnonymous(const std::string &name)
-{
-    if (name.length() <= HEAD_SIZE) {
-        return DEFAULT_ANONYMOUS;
-    }
-
-    if (name.length() < MIN_SIZE) {
-        return (name.substr(0, HEAD_SIZE) + REPLACE_CHAIN);
-    }
-
-    return (name.substr(0, HEAD_SIZE) + REPLACE_CHAIN + name.substr(name.length() - END_SIZE, END_SIZE));
 }
 
 std::shared_ptr<SoftBusAdapter> SoftBusAdapter::GetInstance()
@@ -561,7 +552,7 @@ void SoftBusAdapter::NotifyDataListeners(
     auto it = dataChangeListeners_.find(pipeInfo.pipeId);
     if (it != dataChangeListeners_.end()) {
         LOG_DEBUG("ready to notify, pipeName:%{public}s, deviceId:%{public}s.", pipeInfo.pipeId.c_str(),
-            ToBeAnonymous(deviceId).c_str());
+            Anonymous::Change(deviceId).c_str());
         DeviceInfo deviceInfo = { deviceId, "", "" };
         it->second->OnMessage(deviceInfo, ptr, size, pipeInfo);
         return;
@@ -606,7 +597,7 @@ void AppDataListenerWrap::OnServerBind(int32_t socket, PeerSocketInfo info)
 {
     softBusAdapter_->OnBind(socket, info);
     LOG_INFO("Server on bind, socket: %{public}d, peer networkId: %{public}s", socket,
-        SoftBusAdapter::ToBeAnonymous(info.networkId).c_str());
+        Anonymous::Change(info.networkId).c_str());
 }
 
 void AppDataListenerWrap::OnServerShutdown(int32_t socket, ShutdownReason reason)
