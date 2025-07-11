@@ -142,10 +142,10 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Create_Destroy_001, TestS
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
 
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
 
     uint32_t ret = objectStore->DeleteObject(sessionId);
     EXPECT_EQ(SUCCESS, ret);
@@ -176,10 +176,10 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Create_Destroy_003, TestS
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
 
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
 
     DistributedObject *object2 = objectStore->CreateObject(sessionId);
     EXPECT_EQ(nullptr, object2);
@@ -198,11 +198,11 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Create_Destroy_004, TestS
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
     
     uint32_t status = -1;
     DistributedObject *object = objectStore->CreateObject(sessionId, status);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
     EXPECT_EQ(SUCCESS, status);
 
     uint32_t ret = objectStore->DeleteObject(sessionId);
@@ -219,7 +219,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_CreateObject_001, Tes
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
 
     DistributedObject *object = objectStore->CreateObject("");
     EXPECT_EQ(nullptr, object);
@@ -253,7 +253,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_CreateObject_003, Tes
     std::string bundleName = "default";
     std::string sessionId = "";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
 
     uint32_t status = -1;
     DistributedObject *object = objectStore->CreateObject(sessionId, status);
@@ -274,10 +274,10 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_Get_001, TestSize.Lev
     std::string bundleName = "default";
     std::string sessionId = "sessionId";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
 
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
 
     DistributedObject *Object1 = nullptr;
     uint32_t status = objectStore->Get("", &Object1);
@@ -325,10 +325,10 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_Watch_002, TestSize.L
     std::string bundleName = "default";
     std::string sessionId = "sessionId";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
 
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
 
     std::shared_ptr<MockObjectWatcher> watcher = std::make_shared<MockObjectWatcher>();
     uint32_t status = objectStore->Watch(object, watcher);
@@ -366,10 +366,10 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Get_001, TestSize.Level1)
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
 
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
 
     DistributedObject *object2 = nullptr;
     uint32_t ret = objectStore->Get(sessionId, &object2);
@@ -390,10 +390,10 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Watch_UnWatch_001, TestSi
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
 
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
 
     auto watcherPtr = std::shared_ptr<ObjectWatcher>();
     uint32_t ret = objectStore->Watch(object, watcherPtr);
@@ -416,9 +416,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_SetStatusNotifier_001, Te
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
 
     auto notifierPtr = std::shared_ptr<StatusNotifier>();
     uint32_t ret = objectStore->SetStatusNotifier(notifierPtr);
@@ -439,9 +439,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_Double_001, TestSize.Level1)
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
 
     uint32_t ret = object->PutDouble("salary", SALARY);
     EXPECT_EQ(ret, 0);
@@ -465,9 +465,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetDouble_001, TestSize.Level1
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
 
     double value = 0.0;
     uint32_t ret = object->GetDouble("salary", value);
@@ -488,9 +488,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_Boolean_001, TestSize.Level1)
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
 
     uint32_t ret = object->PutBoolean("isTrue", true);
     EXPECT_EQ(SUCCESS, ret);
@@ -514,9 +514,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetBoolean_001, TestSize.Level
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
 
     bool value = false;
     uint32_t ret = object->GetBoolean("isTrue", value);
@@ -537,9 +537,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_String_001, TestSize.Level1)
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
 
     uint32_t ret = object->PutString("name", "zhangsan");
     EXPECT_EQ(SUCCESS, ret);
@@ -563,9 +563,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetString_001, TestSize.Level1
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
 
     std::string value = "";
     uint32_t ret = object->GetString("name", value);
@@ -586,9 +586,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetSessionId_001, TestSize.Lev
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
     std::string getSessionId = object->GetSessionId();
     EXPECT_EQ(sessionId, getSessionId);
     uint32_t ret = objectStore->DeleteObject(sessionId);
@@ -605,9 +605,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_PutComplex_001, TestSize.Level
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
 
     std::vector<uint8_t> value = {'z', 'h'};
     uint32_t ret = object->PutComplex("name", value);
@@ -626,9 +626,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetComplex_001, TestSize.Level
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
 
     std::vector<uint8_t> value = {'z', 'h'};
     uint32_t ret = object->PutComplex("name", value);
@@ -649,9 +649,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetComplex_002, TestSize.Level
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
 
     std::vector<uint8_t> value = {'z', 'h'};
     uint32_t ret = object->GetComplex("name", value);
@@ -670,9 +670,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_SetAsset_001, TestSize.Level1)
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
 
     uint32_t ret = object->PutString("attachment.name", "1.txt");
     EXPECT_EQ(SUCCESS, ret);
@@ -700,9 +700,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_TestSetSessionId_001, TestSize
 {
     auto testSetSessionId = [] (std::string bundleName, std::string sessionId) {
         DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-        EXPECT_NE(nullptr, objectStore);
+        ASSERT_NE(nullptr, objectStore);
         DistributedObject *object = objectStore->CreateObject(sessionId);
-        EXPECT_NE(nullptr, object);
+        ASSERT_NE(nullptr, object);
 
         uint32_t ret = objectStore->DeleteObject(sessionId);
         EXPECT_EQ(SUCCESS, ret);
@@ -725,9 +725,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetType_001, TestSize.Level1)
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
 
     uint32_t ret = object->PutString("name", "zhangsan");
     EXPECT_EQ(SUCCESS, ret);
@@ -762,9 +762,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetType_002, TestSize.Level1)
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
 
     Type type;
     uint32_t ret = object->GetType("name", type);
@@ -785,9 +785,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_Save_RevokeSave_001, TestSize.
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
 
 
     uint32_t ret = object->PutString("name", "zhangsan");
@@ -815,9 +815,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_Save_RevokeSave_002, TestSize.
 {
     auto testSaveAndRevokeSave = [](std::string bundleName, std::string sessionId) {
         DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-        EXPECT_NE(nullptr, objectStore);
+        ASSERT_NE(nullptr, objectStore);
         DistributedObject *object = objectStore->CreateObject(sessionId);
-        EXPECT_NE(nullptr, object);
+        ASSERT_NE(nullptr, object);
 
         uint32_t ret = object->PutString("name", "zhangsan");
         EXPECT_EQ(SUCCESS, ret);
@@ -852,9 +852,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_Save_RevokeSave_003, TestSize.
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
 
     uint32_t ret = object->RevokeSave();
     EXPECT_EQ(SUCCESS, ret);
@@ -1324,10 +1324,10 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_NotifyCachedStatus_001, TestSi
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
     uint32_t status = 0;
     DistributedObject *object = objectStore->CreateObject(sessionId, status);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
     EXPECT_EQ(SUCCESS, status);
     objectStore->NotifyCachedStatus(sessionId);
     uint32_t ret = objectStore->DeleteObject(sessionId);
@@ -1344,9 +1344,9 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_UnWatch_001, TestSize.Level1)
     std::string bundleName = "default";
     std::string sessionId = "123456";
     DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
-    EXPECT_NE(nullptr, objectStore);
+    ASSERT_NE(nullptr, objectStore);
     DistributedObject *object = objectStore->CreateObject(sessionId);
-    EXPECT_NE(nullptr, object);
+    ASSERT_NE(nullptr, object);
     uint32_t ret = objectStore->UnWatch(nullptr);
     EXPECT_EQ(ERR_NULL_OBJECT, ret);
     ret = objectStore->DeleteObject(sessionId);
