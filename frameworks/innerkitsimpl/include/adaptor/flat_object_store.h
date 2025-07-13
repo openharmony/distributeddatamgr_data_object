@@ -89,7 +89,7 @@ private:
     uint32_t Get(const std::string &sessionId, const std::string &key, Bytes &value);
 
     std::shared_ptr<FlatObjectStorageEngine> storageEngine_;
-    CacheManager *cacheManager_;
+    CacheManager *cacheManager_ = nullptr;
     std::mutex mutex_;
     std::mutex progressInfoMutex_;
     std::vector<std::string> retrievedCache_ {};
