@@ -26,7 +26,7 @@ typedef struct ExtendRecordField {
     GRD_CloudFieldTypeE type;
     std::string fieldName;
     std::string fieldValue_str;
-    const void *valuePtr;
+    const void *valuePtr = nullptr;
     uint32_t valueLen;
 } ExtendRecordFieldT;
 
@@ -66,7 +66,7 @@ private:
     static void FreeExtendFields(GRD_CloudFieldT *fields, uint8_t fieldSize);
     static int64_t GetCursorValue(GRD_CloudFieldT &field);
 
-    NapiCloudDb *napiCloudDb_;
+    NapiCloudDb *napiCloudDb_ = nullptr;
 };
 } // namespace OHOS::CollaborationEdit
 #endif // COLLABORATION_EDIT_CLOUD_DB_PROXY_H

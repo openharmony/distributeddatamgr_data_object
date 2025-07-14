@@ -48,7 +48,7 @@ public:
     virtual void Clear(napi_env env);
 
     EventHandler *Find(napi_env env, napi_value handler);
-    EventHandler *handlers_;
+    EventHandler *handlers_ = nullptr;
 };
 
 class ChangeEventListener : public EventListener {
@@ -63,8 +63,8 @@ public:
     void Clear(napi_env env) override;
 private:
     bool isWatched_ = false;
-    DistributedObjectStore *objectStore_;
-    DistributedObject *object_;
+    DistributedObjectStore *objectStore_ = nullptr;
+    DistributedObject *object_ = nullptr;
     std::weak_ptr<JSWatcher> watcher_;
 };
 
@@ -142,9 +142,9 @@ private:
     static void ProcessStatus(napi_env env, std::list<void *> &args);
     static void ProcessProgress(napi_env env, std::list<void *> &args);
     napi_env env_;
-    ChangeEventListener *changeEventListener_;
-    StatusEventListener *statusEventListener_;
-    ProgressEventListener *progressEventListener_;
+    ChangeEventListener *changeEventListener_ = nullptr;
+    StatusEventListener *statusEventListener_ = nullptr;
+    ProgressEventListener *progressEventListener_ = nullptr;
 };
 
 class WatcherImpl : public ObjectWatcher {

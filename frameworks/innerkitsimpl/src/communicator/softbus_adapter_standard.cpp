@@ -29,7 +29,7 @@ constexpr int32_t SOFTBUS_OK = 0;
 constexpr int32_t INVALID_SOCKET_ID = 0;
 constexpr size_t TASK_CAPACITY_MAX = 15;
 constexpr const char *PKG_NAME = "ohos.objectstore";
-SoftBusAdapter *AppDataListenerWrap::softBusAdapter_;
+SoftBusAdapter *AppDataListenerWrap::softBusAdapter_ = nullptr;
 std::shared_ptr<SoftBusAdapter> SoftBusAdapter::instance_;
 
 SoftBusAdapter::SoftBusAdapter()

@@ -34,8 +34,8 @@ public:
     std::string GetObjectId();
 
 private:
-    DistributedObjectStore *objectStore_;
-    DistributedObject *object_;
+    DistributedObjectStore *objectStore_ = nullptr;
+    DistributedObject *object_ = nullptr;
     std::shared_ptr<JSWatcher> watcher_ = nullptr;
     std::shared_mutex watchMutex_{};
     std::mutex mutex_;

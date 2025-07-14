@@ -38,7 +38,7 @@ public:
     GRD_ICloudDBT *GetCloudDB();
     void FreeCloudDB();
 private:
-    GRD_DB *db_;
+    GRD_DB *db_ = nullptr;
     std::string name_;
     std::shared_ptr<std::string> localId_;
     CloudDbProxy* proxy_ = nullptr;

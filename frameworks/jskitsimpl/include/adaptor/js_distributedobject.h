@@ -19,8 +19,8 @@
 #include "js_object_wrapper.h"
 namespace OHOS::ObjectStore {
 struct ConstructContext {
-    DistributedObjectStore *objectStore;
-    DistributedObject *object;
+    DistributedObjectStore *objectStore = nullptr;
+    DistributedObject *object = nullptr;
 };
 
 class JSDistributedObject {
