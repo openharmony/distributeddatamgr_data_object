@@ -26,7 +26,7 @@ typedef struct ExtendRecordField {
     GRD_CloudFieldTypeE type;
     std::string fieldName;
     std::string fieldValue_str;
-    const void *valuePtr;
+    const void *valuePtr = nullptr;
     uint32_t valueLen;
 } ExtendRecordFieldT;
 
