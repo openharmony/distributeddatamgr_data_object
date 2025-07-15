@@ -27,7 +27,7 @@
 #include "objectstore_errors.h"
 
 namespace OHOS::ObjectStore {
-constexpr size_t TYPE_SIZE = 10;
+constexpr size_t TYPE_SIZE = 20;
 constexpr size_t PARAM_COUNT_MAX = 3;
 static ConcurrentMap<std::string, std::list<napi_ref>> g_statusCallBacks;
 static ConcurrentMap<std::string, std::list<napi_ref>> g_changeCallBacks;
