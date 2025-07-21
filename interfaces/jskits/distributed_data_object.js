@@ -29,6 +29,11 @@ const SDK_VERSION_9 = 9;
 const SESSION_ID_REGEX = /^\w+$/;
 const SESSION_ID_MAX_LENGTH = 128;
 const ASSETS_MAX_NUMBER = 50;
+const HEAD_SIZE = 3;
+const END_SIZE = 3;
+const MIN_SIZE = HEAD_SIZE + END_SIZE + 3;
+const REPLACE_CHAIN = '***';
+const DEFAULT_ANONYMOUS = '******';
 
 class Distributed {
   constructor(obj) {
@@ -307,15 +312,28 @@ function leaveSession(version, obj) {
   delete obj[SESSION_ID];
 }
 
+function toBeAnonymous(name) {
+  if (name == null || name == undefined || name === '') {
+    return '';
+  }
+  if (name.length <= HEAD_SIZE) {
+    return DEFAULT_ANONYMOUS;
+  }
+  if (name.length < MIN_SIZE) {
+    return name.substring(0, HEAD_SIZE) + REPLACE_CHAIN;
+  }
+  return name.substring(0, HEAD_SIZE) + REPLACE_CHAIN + name.substring(name.length - END_SIZE);
+}
+
 function onWatch(version, type, obj, callback) {
-  console.info('start on ' + obj[SESSION_ID]);
+  console.info('start on ' + toBeAnonymous(obj[SESSION_ID]));
   if (obj[SESSION_ID] != null && obj[SESSION_ID] !== undefined && obj[SESSION_ID].length > 0) {
     distributedObject.on(version, type, obj, callback);
   }
 }
 
 function offWatch(version, type, obj, callback = undefined) {
-  console.info('start off ' + obj[SESSION_ID] + ' ' + callback);
+  console.info('start off ' + toBeAnonymous(obj[SESSION_ID]) + ' ' + callback);
   if (obj[SESSION_ID] != null && obj[SESSION_ID] !== undefined && obj[SESSION_ID].length > 0) {
     if (callback !== undefined || callback != null) {
       distributedObject.off(version, type, obj, callback);
