@@ -313,7 +313,7 @@ function leaveSession(version, obj) {
 }
 
 function toBeAnonymous(name) {
-  if (name == null || name == undefined || name === '') {
+  if (name == null || name === undefined || name === '') {
     return '';
   }
   if (name.length <= HEAD_SIZE) {
