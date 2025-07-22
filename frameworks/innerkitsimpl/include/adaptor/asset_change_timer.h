@@ -30,7 +30,7 @@ private:
     ~AssetChangeTimer() = default;
     AssetChangeTimer(const AssetChangeTimer &) = delete;
     AssetChangeTimer &operator=(const AssetChangeTimer &) = delete;
-    AssetChangeTimer(FlatObjectStore *flatObjectStore);
+    explicit AssetChangeTimer(FlatObjectStore *flatObjectStore);
     void StartTimer(const std::string &sessionId, const std::string &assetKey, std::shared_ptr<ObjectWatcher> watcher);
     void StopTimer(const std::string &sessionId, const std::string &assetKey);
     std::function<void()> ProcessTask(
