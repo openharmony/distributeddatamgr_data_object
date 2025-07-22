@@ -39,10 +39,9 @@ AssetChangeTimer *AssetChangeTimer::GetInstance(FlatObjectStore *flatObjectStore
     return instance;
 }
 
-AssetChangeTimer::AssetChangeTimer(FlatObjectStore *flatObjectStore)
+AssetChangeTimer::AssetChangeTimer(FlatObjectStore *flatObjectStore) : flatObjectStore_(flatObjectStore)
 {
-    flatObjectStore_ = flatObjectStore;
-    executor_ = std::make_shared<ExecutorPool>(MAX_THREADS, MIN_THREADS);
+    executor_ = std::make_shared<ExecutorPool>(MAX_THREADS, MIN_THREADS, "OBJECT_TASK");
 }
 
 void AssetChangeTimer::OnAssetChanged(
