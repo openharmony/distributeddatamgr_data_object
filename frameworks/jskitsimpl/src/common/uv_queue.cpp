@@ -44,16 +44,16 @@ void UvQueue::ExecUvWork(UvEntry *entry)
     entry = nullptr;
 }
 
-void UvQueue::CallFunction(Process process, void *argv)
+bool UvQueue::CallFunction(Process process, void *argv)
 {
     if (process == nullptr || argv == nullptr) {
         LOG_ERROR("nullptr");
-        return;
+        return false;
     }
     auto *uvEntry = new (std::nothrow)UvEntry { weak_from_this() };
     if (uvEntry == nullptr) {
         LOG_ERROR("no memory for UvEntry");
-        return;
+        return false;
     }
     {
         std::unique_lock<std::shared_mutex> cacheLock(mutex_);
@@ -71,11 +71,15 @@ void UvQueue::CallFunction(Process process, void *argv)
     auto task = [uvEntry]() {
         UvQueue::ExecUvWork(uvEntry);
     };
-    if (napi_send_event(env_, task, napi_eprio_high) != 0) {
+    auto ret = napi_send_event(env_, task, napi_eprio_high);
+    if (ret != 0) {
         if (uvEntry != nullptr) {
             delete uvEntry;
             uvEntry = nullptr;
         }
+        LOG_ERROR("napi_send_event filed, ret: %{public}d}", ret);
+        return false;
     }
+    return true;
 }
 } // namespace OHOS::ObjectStore
