@@ -68,7 +68,6 @@ bool UvQueue::CallFunction(Process process, void *argv)
     {
         std::unique_lock<std::shared_mutex> cacheLock(mutex_);
         auto &processList = args_[process];
-        // Always use push_back and don't insert anywhere like insert
         processList.push_back(argv);
     }
 
