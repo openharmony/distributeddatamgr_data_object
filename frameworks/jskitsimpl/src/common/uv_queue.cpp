@@ -44,38 +44,41 @@ void UvQueue::ExecUvWork(UvEntry *entry)
     entry = nullptr;
 }
 
-void UvQueue::CallFunction(Process process, void *argv)
+bool UvQueue::CallFunction(Process process, void *argv)
 {
     if (process == nullptr || argv == nullptr) {
         LOG_ERROR("nullptr");
-        return;
+        return false;
     }
-    auto *uvEntry = new (std::nothrow)UvEntry { weak_from_this() };
+    auto *uvEntry = new (std::nothrow) UvEntry{ weak_from_this() };
     if (uvEntry == nullptr) {
         LOG_ERROR("no memory for UvEntry");
-        return;
+        return false;
     }
+    auto rollbackAddition = [this, process, argv]() {
+        std::unique_lock<std::shared_mutex> lock(mutex_);
+        auto it = args_.find(process);
+        if (it != args_.end() && !it->second.empty()) {
+            it->second.pop_back();
+            if (it->second.empty()) {
+                args_.erase(it);
+            }
+        }
+    };
     {
         std::unique_lock<std::shared_mutex> cacheLock(mutex_);
-        if (args_.count(process) != 0) {
-            std::list<void *> newData = args_.at(process);
-            newData.push_back(argv);
-            args_.insert_or_assign(process, newData);
-        } else {
-            std::list<void *> data;
-            data.push_back(argv);
-            args_.insert_or_assign(process, data);
-        }
+        auto &processList = args_[process];
+        processList.push_back(argv);
     }
 
-    auto task = [uvEntry]() {
-        UvQueue::ExecUvWork(uvEntry);
-    };
-    if (napi_send_event(env_, task, napi_eprio_high) != 0) {
-        if (uvEntry != nullptr) {
-            delete uvEntry;
-            uvEntry = nullptr;
-        }
+    auto task = [uvEntry]() { UvQueue::ExecUvWork(uvEntry); };
+    auto ret = napi_send_event(env_, task, napi_eprio_high);
+    if (ret != 0) {
+        LOG_ERROR("napi_send_event failed, ret: %{public}d.", ret);
+        rollbackAddition();
+        delete uvEntry;
+        return false;
     }
+    return true;
 }
 } // namespace OHOS::ObjectStore
