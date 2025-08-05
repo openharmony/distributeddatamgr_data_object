@@ -77,7 +77,7 @@ bool UvQueue::CallFunction(Process process, void *argv)
             delete uvEntry;
             uvEntry = nullptr;
         }
-        LOG_ERROR("napi_send_event filed, ret: %{public}d}", ret);
+        LOG_ERROR("napi_send_event failed, ret: %{public}d.", ret);
         return false;
     }
     return true;
