@@ -107,7 +107,7 @@ export default function collaborationNodeTest() {
      *  6. delete the first child
      *  7. again check result by getChildren and getJsonResult
      */
-    it("CollaborationEdit_Node_0002", Level.LEVEL0, () => {
+    it("CollaborationEdit_Node_0002", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_Node_0002 Start*****************");
       expect(editUnit !== undefined).assertTrue();
       try {
@@ -159,7 +159,7 @@ export default function collaborationNodeTest() {
      *  6. delete the second child
      *  7. again check result by getChildren and getJsonResult
      */
-    it("CollaborationEdit_Node_0003", Level.LEVEL0, () => {
+    it("CollaborationEdit_Node_0003", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_Node_0003 Start*****************");
       expect(editUnit !== undefined).assertTrue();
       try {
@@ -210,7 +210,7 @@ export default function collaborationNodeTest() {
      *  4. getChildren if start and end are out of range
      *  5. check error code
      */
-    it("CollaborationEdit_Node_0004", Level.LEVEL0, () => {
+    it("CollaborationEdit_Node_0004", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_Node_0004 Start*****************");
       expect(editUnit !== undefined).assertTrue();
       let errCode: string = "";
@@ -244,7 +244,7 @@ export default function collaborationNodeTest() {
      *  2. call getId/setAttributes of the node
      *  3. check the invalid operation error code
      */
-    it("CollaborationEdit_Node_0005", Level.LEVEL0, () => {
+    it("CollaborationEdit_Node_0005", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_Node_0005 Start*****************");
       let node = new collaboration_edit.Node("p1");
       let errCode: string = "";
@@ -280,7 +280,7 @@ export default function collaborationNodeTest() {
      *  5. getChildren - start is negative
      *  6. getChildren - start is greater than end
      */
-    it("CollaborationEdit_Node_0006", 0, async () => {
+    it("CollaborationEdit_Node_0006", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_Node_0006 Start*****************");
       let node: collaboration_edit.Node | undefined = undefined;
       try {
@@ -341,7 +341,7 @@ export default function collaborationNodeTest() {
       console.log(TAG + "*****************CollaborationEdit_Node_0006 End*****************");
     })
 
-    it("CollaborationEdit_Node_0007", Level.LEVEL0, () => {
+    it("CollaborationEdit_Node_0007", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_Node_0007 Start*****************");
       expect(editUnit !== undefined).assertTrue();
       try {
@@ -372,7 +372,7 @@ export default function collaborationNodeTest() {
       console.log(TAG + "*****************CollaborationEdit_Node_0007 End*****************");
     })
 
-    it("CollaborationEdit_Node_0008", Level.LEVEL0, () => {
+    it("CollaborationEdit_Node_0008", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_Node_0008 Start*****************");
       expect(editUnit !== undefined).assertTrue();
       try {
@@ -395,7 +395,7 @@ export default function collaborationNodeTest() {
       console.log(TAG + "*****************CollaborationEdit_Node_0008 End*****************");
     })
 
-    it("CollaborationEdit_Node_0009", Level.LEVEL0, () => {
+    it("CollaborationEdit_Node_0009", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_Node_0009 Start*****************");
       expect(editUnit !== undefined).assertTrue();
       try {

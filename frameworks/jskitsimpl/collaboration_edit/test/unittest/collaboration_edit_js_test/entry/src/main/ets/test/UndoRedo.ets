@@ -64,7 +64,7 @@ export default function collaborationUndoRedoTest() {
      *  1. editUnitName is any non-empty string
      *  2. captureTimeout is float
      */
-    it("CollaborationEdit_UndoRedo_0001", Level.LEVEL0, () => {
+    it("CollaborationEdit_UndoRedo_0001", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_UndoRedo_0001 Start*****************");
       expect(editUnit !== undefined).assertTrue();
       let undoManager: collaboration_edit.UndoRedoManager | undefined;
@@ -83,7 +83,7 @@ export default function collaborationUndoRedoTest() {
      * @tc.desc
      *  1. captureTimeout is negative, then check 401 error code
      */
-    it("CollaborationEdit_UndoRedo_0002", Level.LEVEL0, () => {
+    it("CollaborationEdit_UndoRedo_0002", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_UndoRedo_0002 Start*****************");
       expect(editUnit !== undefined).assertTrue();
       let undoManager: collaboration_edit.UndoRedoManager | undefined;
@@ -282,7 +282,7 @@ export default function collaborationUndoRedoTest() {
      *  1. get undo redo manager
      *  2. delete undo redo manager
      */
-    it("CollaborationEdit_UndoRedo_0006", 0, async () => {
+    it("CollaborationEdit_UndoRedo_0006", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_UndoRedo_0006 Start*****************");
       expect(editUnit !== undefined).assertTrue();
       let undoManager: collaboration_edit.UndoRedoManager | undefined;
