@@ -124,7 +124,7 @@ int ObjectProgressCallbackStub::OnRemoteRequest(
     if (code == COMPLETED) {
         int32_t progress;
         if (!ITypesUtil::Unmarshal(data, progress)) {
-            ZLOGE("write descriptor failed");
+            ZLOGE("Unmarshal failed");
             return -1;
         }
         Completed(progress);

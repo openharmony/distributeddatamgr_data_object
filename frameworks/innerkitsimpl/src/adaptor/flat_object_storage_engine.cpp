@@ -24,8 +24,6 @@
 #include "object_radar_reporter.h"
 
 namespace OHOS::ObjectStore {
-constexpr static const char *DISTRIBUTED_DATASYNC = "ohos.permission.DISTRIBUTED_DATASYNC";
-
 FlatObjectStorageEngine::~FlatObjectStorageEngine()
 {
     if (!isOpened_) {

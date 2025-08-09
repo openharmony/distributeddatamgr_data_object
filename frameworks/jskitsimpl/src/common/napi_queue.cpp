@@ -19,8 +19,6 @@
 #include "logger.h"
 
 namespace OHOS::ObjectStore {
-static constexpr size_t ARGC_MAX = 6;
-
 ContextBase::~ContextBase()
 {
     LOG_DEBUG("no memory leak after callback or promise[resolved/rejected]");
@@ -72,7 +70,7 @@ napi_value NapiQueue::AsyncWork(napi_env env, std::shared_ptr<ContextBase> conte
 {
     AsyncContext *aCtx = new (std::nothrow) AsyncContext;
     if (aCtx == nullptr) {
-        LOG_ERROR("create aysnc context failed");
+        LOG_ERROR("create async context failed");
         return nullptr;
     }
     aCtx->ctxt = std::move(contextBase);

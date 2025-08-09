@@ -232,7 +232,7 @@ int32_t ObjectServiceProxy::RegisterProgressObserver(const std::string &bundleNa
         return ERR_IPC;
     }
     int32_t error =
-        remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_REGISTER_PROGRESSS), data, reply, mo);
+        remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_REGISTER_PROGRESS), data, reply, mo);
     if (error != 0) {
         ZLOGE("SendRequest returned %{public}d", error);
         return error;
@@ -261,7 +261,7 @@ int32_t ObjectServiceProxy::UnregisterProgressObserver(const std::string &bundle
         return ERR_IPC;
     }
     int32_t error =
-        remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_UNREGISTER_PROGRESSS), data, reply, mo);
+        remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_UNREGISTER_PROGRESS), data, reply, mo);
     if (error != 0) {
         ZLOGE("SendRequest returned %{public}d", error);
         return error;

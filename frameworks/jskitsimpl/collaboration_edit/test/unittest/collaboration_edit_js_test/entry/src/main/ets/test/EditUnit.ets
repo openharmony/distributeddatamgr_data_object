@@ -62,7 +62,7 @@ export default function collaborationEditUnitTest() {
      *  1. getEditUnit by empty input string
      *  2. check 401 error code
      */
-    it("CollaborationEdit_EditUnit_0001", Level.LEVEL0, () => {
+    it("CollaborationEdit_EditUnit_0001", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_EditUnit_0001 Start*****************");
       expect(editObject !== undefined).assertTrue();
       let editUnit: collaboration_edit.EditUnit | undefined;
@@ -83,7 +83,7 @@ export default function collaborationEditUnitTest() {
      *  1. check EditUnit.getName
      *  2. insert null node array and check 401 error code
      */
-    it("CollaborationEdit_EditUnit_0002", Level.LEVEL0, () => {
+    it("CollaborationEdit_EditUnit_0002", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_EditUnit_0002 Start*****************");
       expect(editUnit !== undefined).assertTrue();
       expect(EDIT_UNIT_NAME).assertEqual(editUnit?.getName());
@@ -107,7 +107,7 @@ export default function collaborationEditUnitTest() {
      *  4. EditUnit.getChildren and check result
      *  5. EditUnit.getJsonResult and check result
      */
-    it("CollaborationEdit_EditUnit_0003", Level.LEVEL0, () => {
+    it("CollaborationEdit_EditUnit_0003", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_EditUnit_0003 Start*****************");
       expect(editUnit !== undefined).assertTrue();
       try {

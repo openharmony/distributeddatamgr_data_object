@@ -81,7 +81,7 @@ void JSWatcher::ProcessChange(napi_env env, std::list<void *> &args)
         LOG_INFO("start %{public}s, %{public}zu", Anonymous::Change(changeArgs->sessionId_).c_str(),
             changeArgs->changeData_.size());
         status = napi_call_function(env, global, callback, ARGV_SIZE, param, &result);
-        LOG_INFO("end %{public}3s, %{public}zu", Anonymous::Change(changeArgs->sessionId_).c_str(),
+        LOG_INFO("end %{public}s, %{public}zu", Anonymous::Change(changeArgs->sessionId_).c_str(),
             changeArgs->changeData_.size());
         NOT_MATCH_GOTO_ERROR(status == napi_ok);
     }
@@ -98,7 +98,7 @@ void JSWatcher::Emit(const char *type, const std::string &sessionId, const std::
         LOG_ERROR("empty change");
         return;
     }
-    LOG_INFO("start %{public}3s, %{public}s", Anonymous::Change(sessionId).c_str(), changeData.at(0).c_str());
+    LOG_INFO("start %{public}s, %{public}s", Anonymous::Change(sessionId).c_str(), changeData.at(0).c_str());
     EventListener *listener = Find(type);
     if (listener == nullptr) {
         LOG_ERROR("error type %{public}s", type);

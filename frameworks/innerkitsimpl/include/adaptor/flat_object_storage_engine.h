@@ -46,6 +46,7 @@ public:
     bool NotifyProgress(const std::string &sessionId, int32_t progress);
 
 private:
+    constexpr static const char *DISTRIBUTED_DATASYNC = "ohos.permission.DISTRIBUTED_DATASYNC";
     std::mutex operationMutex_{};
     std::mutex watcherMutex_{};
     std::mutex progressMutex_{};

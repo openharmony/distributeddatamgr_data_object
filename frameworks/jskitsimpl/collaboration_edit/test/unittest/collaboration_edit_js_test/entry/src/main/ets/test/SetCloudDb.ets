@@ -20,7 +20,7 @@ import common from '@ohos.app.ability.common';
 import CloudDbMock from "./CloudDbMock";
 import TestUtils from './TestUtils';
 
-const TAG = "[CollaborationEdit_JsTest_UndoRedo]"
+const TAG = "[CollaborationEdit_JsTest_SetCloudDb]"
 const DOC_CONFIG_A: collaboration_edit.CollaborationConfig = {name: "doc_test_A"}
 const DOC_CONFIG_B: collaboration_edit.CollaborationConfig = {name: "doc_test_B"}
 let context: common.UIAbilityContext = globalThis.abilityContext;
@@ -206,7 +206,7 @@ export default function collaborationSetCloudDbTest() {
      *  2. equip A push to cloud
      *  3. verify cloud record
      */
-    it("CollaborationEdit_SetCloudDb_0002", 0, async () => {
+    it("CollaborationEdit_SetCloudDb_0002", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_SetCloudDb_002 Start*****************");
       try {
         expect(editObject_A !== undefined).assertTrue();
@@ -247,7 +247,7 @@ export default function collaborationSetCloudDbTest() {
      *  5. equip B delete asset node, then sync
      *  6. equip A reads updated data
      */
-    it("CollaborationEdit_SetCloudDb_0003", 0, async () => {
+    it("CollaborationEdit_SetCloudDb_0003", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_SetCloudDb_003 Start*****************");
       try {
         expect(editObject_A !== undefined).assertTrue();
@@ -366,7 +366,7 @@ export default function collaborationSetCloudDbTest() {
      *  3. write cloud records to equip B
      *  4. equip B contains equip A's data
      */
-    it("CollaborationEdit_SetCloudDb_0005", 0, async () => {
+    it("CollaborationEdit_SetCloudDb_0005", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_SetCloudDb_005 Start*****************");
       try {
         expect(editObject_A !== undefined).assertTrue();
@@ -413,7 +413,7 @@ export default function collaborationSetCloudDbTest() {
      *  1. equip A insert 1 node and push to cloud
      *  2. get CLOUD_NOT_SET error code in callback
      */
-    it("CollaborationEdit_SetCloudDb_0006", 0, async () => {
+    it("CollaborationEdit_SetCloudDb_0006", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_SetCloudDb_006 Start*****************");
       try {
         expect(editObject_A !== undefined).assertTrue();

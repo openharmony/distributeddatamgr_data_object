@@ -66,7 +66,7 @@ export default function collaborationTextTest() {
      *  5. format some characters and check result by getJsonResult
      *  6. delete some characters and check result by getPlainText and getJsonResult
      */
-    it("CollaborationEdit_Text_0001", Level.LEVEL0, () => {
+    it("CollaborationEdit_Text_0001", Level.LEVEL0, async () => {
       console.log(TAG + "*****************CollaborationEdit_Text_0001 Start*****************");
       expect(editUnit !== undefined).assertTrue();
       try {

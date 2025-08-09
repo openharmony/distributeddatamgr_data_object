@@ -25,9 +25,6 @@
 #include "string_utils.h"
 
 namespace OHOS::ObjectStore {
-static constexpr uint32_t WAIT_TIME = 5;
-static constexpr const char* DISTRIBUTED_DATASYNC = "ohos.permission.DISTRIBUTED_DATASYNC";
-
 FlatObjectStore::FlatObjectStore(const std::string &bundleName)
 {
     bundleName_ = bundleName;
@@ -599,7 +596,7 @@ int32_t CacheManager::UnregisterProgressChange(const std::string &bundleName, co
     }
     int32_t status = proxy->UnregisterProgressObserver(bundleName, sessionId);
     if (status != SUCCESS) {
-        LOG_ERROR("object remote resume failed code=code=%{public}d.", static_cast<int>(status));
+        LOG_ERROR("object remote resume failed code=%{public}d.", static_cast<int>(status));
     }
     LOG_INFO("object unregister progress change observer successful");
     return status;
@@ -614,7 +611,7 @@ int32_t CacheManager::DeleteSnapshot(const std::string &bundleName, const std::s
     }
     int32_t status = proxy->DeleteSnapshot(bundleName, sessionId);
     if (status != SUCCESS) {
-        LOG_ERROR("object delete snapshot failed code=code=%{public}d.", static_cast<int>(status));
+        LOG_ERROR("object delete snapshot failed code=%{public}d.", static_cast<int>(status));
     }
     LOG_INFO("object delete snapshot successful");
     return status;
