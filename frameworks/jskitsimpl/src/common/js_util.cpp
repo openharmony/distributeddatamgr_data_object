@@ -19,7 +19,7 @@
 #include "logger.h"
 
 namespace OHOS::ObjectStore {
-constexpr int32_t STR_MAX_LENGTH = 4096;
+constexpr int32_t STR_MAX_LENGTH = 500 * 1024;
 constexpr size_t STR_TAIL_LENGTH = 1;
 
 /* napi_value <-> bool */
@@ -75,7 +75,8 @@ napi_status JSUtil::GetValue(napi_env env, napi_value in, std::string &out)
 {
     size_t maxLen = STR_MAX_LENGTH;
     napi_status status = napi_get_value_string_utf8(env, in, NULL, 0, &maxLen);
-    if (status != napi_ok || maxLen <= 0) {
+    if (status != napi_ok || maxLen <= 0 || maxLen > STR_MAX_LENGTH) {
+        LOG_ERROR("napi_get_value_string_utf8 failed! status=%{public}d, maxLen=%{public}zu", status, maxLen);
         return napi_generic_failure;
     }
     char *buf = new (std::nothrow) char[maxLen + STR_TAIL_LENGTH];
