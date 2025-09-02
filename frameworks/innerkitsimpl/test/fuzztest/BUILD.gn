@@ -18,11 +18,11 @@ group("fuzztest") {
   testonly = true
 
   deps = [
-    "objectstore1_fuzzer:fuzztest",
-    "objectstore2_fuzzer:fuzztest",
-    "objectstore3_fuzzer:fuzztest",
-    "objectstore4_fuzzer:fuzztest",
-    "objectstore5_fuzzer:fuzztest",
-    "objectstore6_fuzzer:fuzztest",
+    "object_storage_engine_fuzzer:fuzztest",
+    "object_store_bind_asset_fuzzer:fuzztest",
+    "object_store_create_object_fuzzer:fuzztest",
+    "object_store_get_fuzzer:fuzztest",
+    "object_store_put_fuzzer:fuzztest",
+    "object_store_save_fuzzer:fuzztest",
     ]
 }
