@@ -26,12 +26,12 @@ config("module_private_config") {
 }
 
 ##############################fuzztest##########################################
-ohos_fuzztest("ObjectStoreGetFuzzTest") {
+ohos_fuzztest("ObjectStoreCreateObjectFuzzTest") {
   module_out_path = "data_object/data_object"
 
-  fuzz_config_file = "//foundation/distributeddatamgr/data_object/frameworks/innerkitsimpl/test/fuzztest/object_store_get_fuzzer"
+  fuzz_config_file = "//foundation/distributeddatamgr/data_object/frameworks/innerkitsimpl/test/fuzztest/objectstorecreateobject_fuzzer"
 
-  sources = [ "object_store_get_fuzzer.cpp" ]
+  sources = [ "object_store_create_object_fuzzer.cpp" ]
 
   configs = [ ":module_private_config" ]
   deps = [
@@ -53,7 +53,7 @@ group("fuzztest") {
   deps = []
   deps += [
     # deps file
-    ":ObjectStoreGetFuzzTest",
+    ":ObjectStoreCreateObjectFuzzTest",
   ]
 }
 

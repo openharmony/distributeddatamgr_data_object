@@ -29,7 +29,7 @@ config("module_private_config") {
 ohos_fuzztest("ObjectStoreSaveFuzzTest") {
   module_out_path = "data_object/data_object"
 
-  fuzz_config_file = "//foundation/distributeddatamgr/data_object/frameworks/innerkitsimpl/test/fuzztest/object_store_save_fuzzer"
+  fuzz_config_file = "//foundation/distributeddatamgr/data_object/frameworks/innerkitsimpl/test/fuzztest/objectstoresave_fuzzer"
 
   sources = [ "object_store_save_fuzzer.cpp" ]
 

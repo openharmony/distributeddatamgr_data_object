@@ -29,7 +29,7 @@ config("module_private_config") {
 ohos_fuzztest("ObjectStoreBindAssetFuzzTest") {
   module_out_path = "data_object/data_object"
 
-  fuzz_config_file = "//foundation/distributeddatamgr/data_object/frameworks/innerkitsimpl/test/fuzztest/object_store_bind_asset_fuzzer"
+  fuzz_config_file = "//foundation/distributeddatamgr/data_object/frameworks/innerkitsimpl/test/fuzztest/objectstorebindasset_fuzzer"
 
   sources = [ "object_store_bind_asset_fuzzer.cpp" ]
 
