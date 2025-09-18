@@ -49,39 +49,35 @@ sptr<OHOS::DistributedObject::IObjectService> ClientAdaptor::GetObjectService()
 
 std::shared_ptr<ObjectStoreDataServiceProxy> ClientAdaptor::GetDistributedDataManager()
 {
-    int retry = 0;
-    while (++retry <= GET_SA_RETRY_TIMES) {
-        auto manager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-        if (manager == nullptr) {
-            LOG_ERROR("get system ability manager failed");
-            return nullptr;
-        }
-        LOG_INFO("get distributed data manager %{public}d", retry);
-        auto remoteObject = manager->CheckSystemAbility(DISTRIBUTED_KV_DATA_SERVICE_ABILITY_ID);
-        if (remoteObject == nullptr) {
-            LOG_WARN("check distributed data manager failed");
-            remoteObject = manager->LoadSystemAbility(DISTRIBUTED_KV_DATA_SERVICE_ABILITY_ID, LOAD_SA_TIMEOUT_SECONDS);
-        }
-        if (remoteObject == nullptr) {
-            std::this_thread::sleep_for(std::chrono::seconds(RETRY_INTERVAL));
-            continue;
-        }
-        LOG_INFO("get distributed data manager success");
-        sptr<ObjectStoreDataServiceProxy> proxy = new (std::nothrow)ObjectStoreDataServiceProxy(remoteObject);
-        if (proxy == nullptr) {
-            LOG_ERROR("new ObjectStoreDataServiceProxy fail.");
-            return nullptr;
-        }
-        sptr<ClientAdaptor::ServiceDeathRecipient> deathRecipientPtr = new (std::nothrow)ServiceDeathRecipient();
-        if (deathRecipientPtr == nullptr) {
-            LOG_ERROR("new deathRecipientPtr fail!");
-            return nullptr;
-        }
-        if (!remoteObject->AddDeathRecipient(deathRecipientPtr)) {
-            LOG_ERROR("Add death recipient fail!");
-        }
-        return std::shared_ptr<ObjectStoreDataServiceProxy>(proxy.GetRefPtr(), [holder = proxy](const auto *) {});
+    auto manager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (manager == nullptr) {
+        LOG_ERROR("get system ability manager failed");
+        return nullptr;
     }
+    auto remoteObject = manager->CheckSystemAbility(DISTRIBUTED_KV_DATA_SERVICE_ABILITY_ID);
+    if (remoteObject == nullptr) {
+        LOG_WARN("check distributed data manager failed");
+        remoteObject = manager->LoadSystemAbility(DISTRIBUTED_KV_DATA_SERVICE_ABILITY_ID, LOAD_SA_TIMEOUT_SECONDS);
+    }
+    if (remoteObject == nullptr) {
+        LOG_ERROR("get system ability manager LoadSystemAbility failed");
+        return nullptr;
+    }
+    LOG_INFO("get distributed data manager success");
+    sptr<ObjectStoreDataServiceProxy> proxy = new (std::nothrow)ObjectStoreDataServiceProxy(remoteObject);
+    if (proxy == nullptr) {
+        LOG_ERROR("new ObjectStoreDataServiceProxy fail.");
+        return nullptr;
+    }
+    sptr<ClientAdaptor::ServiceDeathRecipient> deathRecipientPtr = new (std::nothrow)ServiceDeathRecipient();
+    if (deathRecipientPtr == nullptr) {
+        LOG_ERROR("new deathRecipientPtr fail!");
+        return nullptr;
+    }
+    if (!remoteObject->AddDeathRecipient(deathRecipientPtr)) {
+        LOG_ERROR("Add death recipient fail!");
+    }
+    return std::shared_ptr<ObjectStoreDataServiceProxy>(proxy.GetRefPtr(), [holder = proxy](const auto *) {});
 
     LOG_ERROR("get distributed data manager failed");
     return nullptr;
