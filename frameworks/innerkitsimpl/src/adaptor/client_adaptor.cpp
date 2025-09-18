@@ -59,7 +59,7 @@ std::shared_ptr<ObjectStoreDataServiceProxy> ClientAdaptor::GetDistributedDataMa
         LOG_INFO("get distributed data manager %{public}d", retry);
         auto remoteObject = manager->CheckSystemAbility(DISTRIBUTED_KV_DATA_SERVICE_ABILITY_ID);
         if (remoteObject == nullptr) {
-            LOG_ERROR("check distributed data manager failed");
+            LOG_WARN("check distributed data manager failed");
             remoteObject = manager->LoadSystemAbility(DISTRIBUTED_KV_DATA_SERVICE_ABILITY_ID, LOAD_SA_TIMEOUT_SECONDS);
         }
         if (remoteObject == nullptr) {
