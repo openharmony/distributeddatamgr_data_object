@@ -170,7 +170,7 @@ uint32_t FlatObjectStore::UnWatch(const std::string &sessionId)
     }
     uint32_t status = storageEngine_->UnRegisterObserver(sessionId);
     if (status != SUCCESS) {
-        LOG_ERROR("FlatObjectStore::Watch failed %{public}d", status);
+        LOG_ERROR("FlatObjectStore::UnWatch failed %{public}d", status);
     }
     return status;
 }
@@ -370,7 +370,7 @@ uint32_t FlatObjectStore::PutComplex(const std::string &sessionId, const std::st
     data.insert(data.end(), value.begin(), value.end());
     uint32_t status = Put(sessionId, FIELDS_PREFIX + key, data);
     if (status != SUCCESS) {
-        LOG_ERROR("PutBoolean setField err %{public}d", status);
+        LOG_ERROR("PutComplex setField err %{public}d", status);
     }
     return status;
 }
@@ -380,7 +380,7 @@ uint32_t FlatObjectStore::GetComplex(const std::string &sessionId, const std::st
 {
     uint32_t status = Get(sessionId, FIELDS_PREFIX + key, value);
     if (status != SUCCESS) {
-        LOG_ERROR("GetString field not exist. %{public}d %{public}s", status, key.c_str());
+        LOG_ERROR("GetComplex field not exist. %{public}d %{public}s", status, key.c_str());
         return status;
     }
     value.erase(value.begin(), value.begin() + sizeof(Type));

@@ -76,8 +76,8 @@ public:
      * @brief Get the data whose value type is double from the database according to the key,
      * which means that the data of objects in the same sessionId is get.
      *
-     * @param key Indicates the key of key-value data to put or update.
-     * @param value Indicates the value of key-value data to put or update.
+     * @param key Indicates the key of key-value data to get.
+     * @param value Indicates the value of key-value data to get.
      *
      * @return Returns 0 for success, others for failure.
      */
@@ -98,8 +98,8 @@ public:
      * @brief Get the data whose value type is string from the database according to the key,
      * which means that the data of objects in the same sessionId is get.
      *
-     * @param key Indicates the key of key-value data to put or update.
-     * @param value Indicates the value of key-value data to put or update.
+     * @param key Indicates the key of key-value data to get.
+     * @param value Indicates the value of key-value data to get.
      *
      * @return Returns 0 for success, others for failure.
      */
@@ -109,8 +109,8 @@ public:
      * @brief Get the data whose value type is complex from the database according to the key,
      * which means that the data of objects in the same sessionId is get.
      *
-     * @param key Indicates the key of key-value data to put or update.
-     * @param value Indicates the value of key-value data to put or update.
+     * @param key Indicates the key of key-value data to get.
+     * @param value Indicates the value of key-value data to get.
      *
      * @return Returns 0 for success, others for failure.
      */

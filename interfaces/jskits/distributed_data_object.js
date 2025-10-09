@@ -64,7 +64,7 @@ class Distributed {
 
   off(type, callback) {
     offWatch(this.__sdkVersion, type, this.__proxy, callback);
-    if (callback !== undefined || callback != null) {
+    if (callback !== undefined && callback != null) {
       distributedObject.deleteCallback(this.__sdkVersion, type, this.__objectId, callback);
     } else {
       distributedObject.deleteCallback(this.__sdkVersion, type, this.__objectId);
@@ -405,8 +405,8 @@ function getDefaultAsset(uri, distributedDir) {
       name: '',
       uri: '',
       path: '',
-      createTime: 0,
-      modifyTime: 0,
+      createTime: "0",
+      modifyTime: "0",
       size: 0
     };
   }
@@ -468,7 +468,7 @@ class DistributedV9 {
 
   off(type, callback) {
     offWatch(this.__sdkVersion, type, this.__proxy, callback);
-    if (callback !== undefined || callback != null) {
+    if (callback !== undefined && callback != null) {
       distributedObject.deleteCallback(this.__sdkVersion, type, this.__objectId, callback);
     } else {
       distributedObject.deleteCallback(this.__sdkVersion, type, this.__objectId);

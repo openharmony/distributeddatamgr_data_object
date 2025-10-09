@@ -239,8 +239,8 @@ napi_value JSDistributedObject::JSSave(napi_env env, napi_callback_info info)
     NAPI_ASSERT_ERRCODE(env, ctxt->status != napi_invalid_arg, ctxt->error);
     auto execute = [ctxt]() {
         LOG_INFO("start");
-        CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
-        CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper->GetObject() != nullptr, ctxt, "object is null");
+        CHECK_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
+        CHECK_STATUS_RETURN_VOID(env, ctxt->wrapper->GetObject() != nullptr, ctxt, "object is null");
         uint32_t status = ctxt->wrapper->GetObject()->Save(ctxt->deviceId);
         INVALID_API_THROW_ERROR(status != ERR_PROCESSING);
         INVALID_STATUS_THROW_ERROR(status == SUCCESS, "operation failed");
@@ -249,8 +249,8 @@ napi_value JSDistributedObject::JSSave(napi_env env, napi_callback_info info)
     };
     auto output = [env, ctxt](napi_value &result) {
         if (ctxt->status == napi_ok) {
-            CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
-            CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper->GetObject() != nullptr, ctxt, "object is null");
+            CHECK_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
+            CHECK_STATUS_RETURN_VOID(env, ctxt->wrapper->GetObject() != nullptr, ctxt, "object is null");
             std::string &sessionId = ctxt->wrapper->GetObject()->GetSessionId();
             ctxt->status = napi_new_instance(
                 env, GetSaveResultCons(env, sessionId, ctxt->version, ctxt->deviceId), 0, nullptr, &result);
@@ -282,8 +282,8 @@ napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info in
         return nullptr;
     }
     auto execute = [ctxt]() {
-        CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
-        CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper->GetObject() != nullptr, ctxt, "object is null");
+        CHECK_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
+        CHECK_STATUS_RETURN_VOID(env, ctxt->wrapper->GetObject() != nullptr, ctxt, "object is null");
         uint32_t status = ctxt->wrapper->GetObject()->RevokeSave();
         INVALID_API_THROW_ERROR(status != ERR_PROCESSING);
         INVALID_STATUS_THROW_ERROR(status == SUCCESS, "operation failed");
@@ -292,8 +292,8 @@ napi_value JSDistributedObject::JSRevokeSave(napi_env env, napi_callback_info in
     };
     auto output = [env, ctxt](napi_value &result) {
         if (ctxt->status == napi_ok) {
-            CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
-            CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper->GetObject() != nullptr, ctxt, "object is null");
+            CHECK_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
+            CHECK_STATUS_RETURN_VOID(env, ctxt->wrapper->GetObject() != nullptr, ctxt, "object is null");
             ctxt->status = napi_new_instance(env,
                 JSDistributedObject::GetRevokeSaveResultCons(env, ctxt->wrapper->GetObject()->GetSessionId()), 0,
                 nullptr, &result);
@@ -373,8 +373,8 @@ napi_value JSDistributedObject::JSBindAssetStore(napi_env env, napi_callback_inf
     ctxt->GetCbInfo(env, info, input);
     NAPI_ASSERT_ERRCODE(env, ctxt->status == napi_ok, ctxt->error);
     auto execute = [ctxt]() {
-        CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
-        CHECH_STATUS_RETURN_VOID(env, ctxt->wrapper->GetObject() != nullptr, ctxt, "object is null");
+        CHECK_STATUS_RETURN_VOID(env, ctxt->wrapper != nullptr, ctxt, "wrapper is null");
+        CHECK_STATUS_RETURN_VOID(env, ctxt->wrapper->GetObject() != nullptr, ctxt, "object is null");
         uint32_t status = ctxt->wrapper->GetObject()->BindAssetStore(ctxt->assetKey, ctxt->bindInfo);
         LOG_INFO("BindAssetStore return: %{public}d", status);
         INVALID_API_THROW_ERROR(status != ERR_PROCESSING);

@@ -30,7 +30,7 @@ constexpr uint32_t SUCCESS = 0;
 constexpr uint32_t ERR_DB_SET_PROCESS = BASE_ERR_OFFSET + 1;
 
 /**
- * @brief Already exit.
+ * @brief Already exists.
  */
 constexpr uint32_t ERR_EXIST = BASE_ERR_OFFSET + 2;
 
@@ -102,7 +102,7 @@ constexpr uint32_t ERR_NO_OBSERVER = BASE_ERR_OFFSET + 15;
 /**
  * @brief Deregistration failure.
  */
-constexpr uint32_t ERR_UNRIGSTER = BASE_ERR_OFFSET + 16;
+constexpr uint32_t ERR_UNREGISTER = BASE_ERR_OFFSET + 16;
 
 /**
  * @brief Only one device.

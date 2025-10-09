@@ -56,7 +56,7 @@ int ObjectRevokeSaveCallbackStub::OnRemoteRequest(
     if (code == COMPLETED) {
         int32_t status;
         if (!ITypesUtil::Unmarshal(data, status)) {
-            ZLOGE("write descriptor failed");
+            ZLOGE("Unmarshal failed");
             return -1;
         }
         Completed(status);
@@ -79,7 +79,7 @@ int ObjectRetrieveCallbackStub::OnRemoteRequest(
         std::map<std::string, std::vector<uint8_t>> results;
         bool allReady;
         if (!ITypesUtil::Unmarshal(data, results, allReady)) {
-            ZLOGE("write descriptor failed");
+            ZLOGE("Unmarshal failed");
             return -1;
         }
         Completed(results, allReady);
@@ -102,7 +102,7 @@ int ObjectChangeCallbackStub::OnRemoteRequest(
         std::map<std::string, std::vector<uint8_t>> results;
         bool allReady;
         if (!ITypesUtil::Unmarshal(data, results, allReady)) {
-            ZLOGE("write descriptor failed");
+            ZLOGE("Unmarshal failed");
             return -1;
         }
         Completed(results, allReady);

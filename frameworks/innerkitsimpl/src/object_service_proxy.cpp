@@ -48,7 +48,7 @@ int32_t ObjectServiceProxy::ObjectStoreSave(const std::string &bundleName, const
     MessageOption mo { MessageOption::TF_SYNC };
     sptr<IRemoteObject> remoteObject = Remote();
     if (remoteObject == nullptr) {
-        LOG_ERROR("ObjectStoreSave remoteObject is nullptr.");
+        ZLOGE("ObjectStoreSave remoteObject is nullptr.");
         return ERR_IPC;
     }
     int32_t error = remoteObject->SendRequest(static_cast<uint32_t>(ObjectCode::OBJECTSTORE_SAVE), data, reply, mo);

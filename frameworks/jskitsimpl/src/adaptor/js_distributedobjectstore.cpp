@@ -387,7 +387,7 @@ void JSDistributedObjectStore::RestoreWatchers(napi_env env, JSObjectWrapper *wr
             return true;
     });
     if (!watchResult) {
-        LOG_INFO("no status %{public}s", objectId.c_str());
+        LOG_INFO("no progress %{public}s", objectId.c_str());
     }
 }
 
@@ -513,11 +513,18 @@ napi_value JSDistributedObjectStore::JSEquenceNum(napi_env env, napi_callback_in
 // don't create distributed data object while this application is sandbox
 bool JSDistributedObjectStore::IsSandBox()
 {
-    int32_t dlpFlag = Security::AccessToken::AccessTokenKit::GetHapDlpFlag(
-        AbilityRuntime::Context::GetApplicationContext()->GetApplicationInfo()->accessTokenId);
-    if (dlpFlag != 0) {
-        return true;
+    auto context = AbilityRuntime::Context::GetApplicationContext();
+    if (context == nullptr) {
+        LOG_ERROR("Application context is null, assuming not in sandbox");
+        return false;
     }
-    return false;
+
+    auto applicationInfo = context->GetApplicationInfo();
+    if (applicationInfo == nullptr) {
+        LOG_ERROR("Application info is null, assuming not in sandbox");
+        return false;
+    }
+
+    return (Security::AccessToken::AccessTokenKit::GetHapDlpFlag(applicationInfo->accessTokenId) != 0);
 }
 } // namespace OHOS::ObjectStore

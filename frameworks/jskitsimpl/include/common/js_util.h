@@ -142,7 +142,7 @@ public:
         }                                                                                                   \
     } while (0)
 
-#define CHECH_STATUS_RETURN_VOID(env, condition, ctxt, info) \
+#define CHECK_STATUS_RETURN_VOID(env, condition, ctxt, info) \
     do {                                                     \
         if (!(condition)) {                                  \
             LOG_ERROR(info);                                 \
