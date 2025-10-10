@@ -405,8 +405,8 @@ function getDefaultAsset(uri, distributedDir) {
       name: '',
       uri: '',
       path: '',
-      createTime: "0",
-      modifyTime: "0",
+      createTime: '0',
+      modifyTime: '0',
       size: 0
     };
   }
