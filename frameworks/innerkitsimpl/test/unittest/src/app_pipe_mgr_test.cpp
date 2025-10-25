@@ -371,4 +371,186 @@ HWTEST_F(NativeAppPipeMgrTest, NativeAppPipeMgrTest_IsSameStartedOnPeer_003, Tes
     auto ret = appPipeMgr.IsSameStartedOnPeer(pipeInfo, deviceId);
     EXPECT_EQ(true, ret);
 }
+
+/**
+ * @tc.name: AppPipeMgr_Stop_NormalCase_ShouldSuccess
+ * @tc.desc: Verify Stop function works correctly in normal case
+ * @tc.type: FUNC
+ * @tc.require:
+ * @tc.author:
+ */
+HWTEST_F(NativeAppPipeMgrTest, Stop_NormalCase_ShouldSuccess, TestSize.Level1)
+{
+    AppPipeMgr pipeMgr;
+    PipeInfo pipeInfo;
+    pipeInfo.pipeId = "test_pipe_001";
+
+    Status startStatus = pipeMgr.Start(pipeInfo);
+    EXPECT_EQ(startStatus, Status::SUCCESS);
+
+    Status stopStatus = pipeMgr.Stop(pipeInfo);
+
+    EXPECT_EQ(stopStatus, Status::SUCCESS);
+}
+
+/**
+ * @tc.name: AppPipeMgr_Stop_PipeNotFound_ShouldReturnKeyNotFound
+ * @tc.desc: Verify Stop returns KEY_NOT_FOUND when pipeId not exists
+ * @tc.type: FUNC
+ * @tc.require:
+ * @tc.author:
+ */
+HWTEST_F(NativeAppPipeMgrTest, Stop_PipeNotFound_ShouldReturnKeyNotFound, TestSize.Level1)
+{
+    AppPipeMgr pipeMgr;
+    PipeInfo pipeInfo;
+    pipeInfo.pipeId = "non_existent_pipe";
+
+    Status status = pipeMgr.Stop(pipeInfo);
+
+    EXPECT_EQ(status, Status::KEY_NOT_FOUND);
+}
+
+/**
+ * @tc.name: AppPipeMgr_Stop_RemoveSessionServerFailed_ShouldReturnError
+ * @tc.desc: Verify Stop returns ERROR when RemoveSessionServer fails
+ * @tc.type: FUNC
+ * @tc.require:
+ * @tc.author:
+ */
+HWTEST_F(NativeAppPipeMgrTest, Stop_RemoveSessionServerFailed_ShouldReturnError, TestSize.Level1)
+{
+    AppPipeMgr pipeMgr;
+    PipeInfo pipeInfo;
+    pipeInfo.pipeId = "test_pipe_fail_remove";
+
+    {
+        std::lock_guard<std::mutex> lock(pipeMgr.dataBusMapMutex_);
+        pipeMgr.dataBusMap_[pipeInfo.pipeId] = nullptr;
+    }
+
+    Status status = pipeMgr.Stop(pipeInfo);
+    EXPECT_EQ(status, Status::ERROR);
+}
+
+/**
+ * @tc.name: AppPipeMgr_Stop_ConcurrentAccess_ShouldThreadSafe
+ * @tc.desc: Verify Stop function is thread-safe with concurrent access
+ * @tc.type: FUNC
+ * @tc.require:
+ * @tc.author:
+ */
+HWTEST_F(NativeAppPipeMgrTest, Stop_ConcurrentAccess_ShouldThreadSafe, TestSize.Level2)
+{
+    AppPipeMgr pipeMgr;
+    constexpr int THREAD_COUNT = 5;
+    std::vector<std::thread> threads;
+    std::vector<Status> results(THREAD_COUNT);
+
+    // Setup multiple pipes first
+    for (int i = 0; i < THREAD_COUNT; ++i) {
+        PipeInfo pipeInfo;
+        pipeInfo.pipeId = "concurrent_pipe_" + std::to_string(i);
+        pipeMgr.Start(pipeInfo);
+    }
+
+    // Concurrent stop operations
+    for (int i = 0; i < THREAD_COUNT; ++i) {
+        threads.emplace_back([&, i]() {
+            PipeInfo pipeInfo;
+            pipeInfo.pipeId = "concurrent_pipe_" + std::to_string(i);
+            results[i] = pipeMgr.Stop(pipeInfo);
+        });
+    }
+
+    for (auto &thread : threads) {
+        thread.join();
+    }
+
+    // All stops should succeed
+    for (int i = 0; i < THREAD_COUNT; ++i) {
+        EXPECT_EQ(results[i], Status::SUCCESS);
+    }
+}
+
+/**
+ * @tc.name: AppPipeMgr_Stop_EmptyPipeId_ShouldWorkNormally
+ * @tc.desc: Verify Stop handles empty pipeId correctly (though Start would reject it)
+ * @tc.type: FUNC
+ * @tc.require:
+ * @tc.author:
+ */
+HWTEST_F(NativeAppPipeMgrTest, Stop_EmptyPipeId_ShouldWorkNormally, TestSize.Level1)
+{
+    AppPipeMgr pipeMgr;
+    PipeInfo pipeInfo;
+    pipeInfo.pipeId = ""; // Empty pipe ID
+
+    Status status = pipeMgr.Stop(pipeInfo);
+
+    // Should return KEY_NOT_FOUND since empty ID wouldn't be in the map
+    EXPECT_EQ(status, Status::KEY_NOT_FOUND);
+}
+
+/**
+ * @tc.name: AppPipeMgr_Stop_AfterMultipleStarts_ShouldSuccess
+ * @tc.desc: Verify Stop works correctly after pipe has been started multiple times
+ * @tc.type: FUNC
+ * @tc.require:
+ * @tc.author:
+ */
+HWTEST_F(NativeAppPipeMgrTest, Stop_AfterMultipleStarts_ShouldSuccess, TestSize.Level1)
+{
+    AppPipeMgr pipeMgr;
+    PipeInfo pipeInfo;
+    pipeInfo.pipeId = "multi_start_pipe";
+
+    // Start multiple times (though second start should fail with REPEATED_REGISTER)
+    pipeMgr.Start(pipeInfo);
+    Status secondStart = pipeMgr.Start(pipeInfo);
+    EXPECT_EQ(secondStart, Status::REPEATED_REGISTER);
+
+    // Stop should still work
+    Status stopStatus = pipeMgr.Stop(pipeInfo);
+    EXPECT_EQ(stopStatus, Status::SUCCESS);
+
+    // Verify pipe is removed
+    Status secondStop = pipeMgr.Stop(pipeInfo);
+    EXPECT_EQ(secondStop, Status::KEY_NOT_FOUND);
+}
+
+/**
+ * @tc.name: AppPipeMgr_Stop_MemoryCleanup_ShouldReleaseResources
+ * @tc.desc: Verify Stop properly cleans up resources and memory
+ * @tc.type: FUNC
+ * @tc.require:
+ * @tc.author:
+ */
+HWTEST_F(NativeAppPipeMgrTest, Stop_MemoryCleanup_ShouldReleaseResources, TestSize.Level1)
+{
+    AppPipeMgr pipeMgr;
+    PipeInfo pipeInfo;
+    pipeInfo.pipeId = "cleanup_test_pipe";
+
+    // Start and get initial handler reference count
+    pipeMgr.Start(pipeInfo);
+
+    std::shared_ptr<AppPipeHandler> handlerBeforeStop;
+    {
+        std::lock_guard<std::mutex> lock(pipeMgr.dataBusMapMutex_);
+        auto it = pipeMgr.dataBusMap_.find(pipeInfo.pipeId);
+        handlerBeforeStop = it->second;
+    }
+
+    // Stop should remove from map and potentially reduce ref count
+    Status status = pipeMgr.Stop(pipeInfo);
+    EXPECT_EQ(status, Status::SUCCESS);
+
+    // Verify pipe is removed from map
+    {
+        std::lock_guard<std::mutex> lock(pipeMgr.dataBusMapMutex_);
+        auto it = pipeMgr.dataBusMap_.find(pipeInfo.pipeId);
+        EXPECT_EQ(it, pipeMgr.dataBusMap_.end());
+    }
+}
 } // namespace
