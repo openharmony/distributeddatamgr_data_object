@@ -377,6 +377,10 @@ Status SoftBusAdapter::CacheData(const std::string &deviceId, const DataInfo &da
     } else {
         deviceIdData->second.push_back(bytesMsg);
         if (deviceIdData->second.size() > VECTOR_SIZE_THRESHOLD) {
+            BytesMsg& oldMsg = deviceIdData->second.front();
+            delete[] oldMsg.ptr;
+            oldMsg.ptr = nullptr;
+            oldMsg.size = 0;
             deviceIdData->second.erase(deviceIdData->second.begin());
         }
     }

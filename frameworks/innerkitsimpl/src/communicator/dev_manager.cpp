@@ -154,7 +154,7 @@ const DevManager::DetailInfo &DevManager::GetLocalDevice()
     DevInfo info;
     auto ret = DeviceManager::GetInstance().GetLocalDeviceInfo(PKG_NAME, info);
     if (ret != DM_OK) {
-        LOG_ERROR("get local device info fail");
+        LOG_ERROR("get local device info fail, ret: %{public}d", ret);
         return invalidDetail_;
     }
     auto networkId = std::string(info.networkId);

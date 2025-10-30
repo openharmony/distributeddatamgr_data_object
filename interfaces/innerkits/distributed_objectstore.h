@@ -96,7 +96,7 @@ public:
      *
      * @param object Indicates the pointer to the DistributedObject class.
      *
-     * @return Returns the pointer to the DistributedObject class.
+     * @return Returns 0 for success, others for failure.
      */
     virtual uint32_t UnWatch(DistributedObject *object) = 0;
 

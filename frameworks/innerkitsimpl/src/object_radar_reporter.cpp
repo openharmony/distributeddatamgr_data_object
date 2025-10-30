@@ -116,7 +116,7 @@ void RadarReporter::ReportStateStart(std::string func, int32_t scene, int32_t st
             .v = { .i32 = state },
             .arraySize = 0 },
         { .name = { "APP_CALLER" },
-            .t = HISYSEVENT_INT32,
+            .t = HISYSEVENT_STRING,
             .v = { .s = const_cast<char *>(appCaller.c_str()) },
             .arraySize = 0 },
     };

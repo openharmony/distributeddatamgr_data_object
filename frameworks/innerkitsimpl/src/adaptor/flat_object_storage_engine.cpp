@@ -335,7 +335,7 @@ uint32_t FlatObjectStorageEngine::UnRegisterObserver(const std::string &key)
     DistributedDB::DBStatus status = delegate->UnRegisterObserver(watcher);
     if (status != DistributedDB::DBStatus::OK) {
         LOG_ERROR("FlatObjectStorageEngine::UnRegisterObserver unRegister err %{public}d", status);
-        return ERR_UNRIGSTER;
+        return ERR_UNREGISTER;
     }
     LOG_DEBUG("end UnRegisterObserver %{public}s", key.c_str());
     observerMap_.erase(key);
@@ -410,8 +410,8 @@ uint32_t FlatObjectStorageEngine::SyncAllData(const std::string &sessionId, cons
     LOG_INFO("start sync %{public}s", Anonymous::Change(sessionId).c_str());
     DistributedDB::DBStatus status = kvstore->Sync(deviceIds, DistributedDB::SyncMode::SYNC_MODE_PULL_ONLY, onComplete);
     if (status != DistributedDB::DBStatus::OK) {
-        LOG_ERROR("FlatObjectStorageEngine::UnRegisterObserver unRegister err %{public}d", status);
-        return ERR_UNRIGSTER;
+        LOG_ERROR("sync err %{public}d", status);
+        return ERR_UNREGISTER;
     }
     LOG_INFO("end sync %{public}s", Anonymous::Change(sessionId).c_str());
     return SUCCESS;
