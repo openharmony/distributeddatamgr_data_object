@@ -1,0 +1,175 @@
+/*
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@!namespace("@ohos.data.distributedDataObject", "distributedDataObject")
+@!sts_export_default
+
+@!sts_inject_into_module("""
+import BaseContext from 'application.BaseContext';
+import { AsyncCallback, Callback, BusinessError } from '@ohos.base';
+""")
+
+use ohos.data.commonType as commonType;
+
+@!sts_inject("""
+const COMPLEX_TYPE : string = '[COMPLEX]';
+const STRING_TYPE : string = '[STRING]';
+const NULL_TYPE : string = '[NULL]';
+
+static { loadLibrary("distributed_dataobject_ani.z");}
+
+function create(context: BaseContext, source: object): DataObject
+{
+    if (typeof context !== 'object') {
+        let err : BusinessError = { code: 401, message :"Parameter error. The type of context must be object."}
+        throw err;
+    };
+    if (typeof context !== 'object') {
+        let err : BusinessError = { code: 401, message :"Parameter error. The type of source must be object."}
+        throw err;
+    };
+    let keys : Array<string> = Object.keys(source)
+    return createImpl(context, source, keys)
+}
+
+function jsonStringify(para : Object) : string
+{
+    return JSON.stringify(para);
+}
+function jsonParserParse(para : string) : Object
+{
+    return JSONParser.parse(para);
+}
+""")
+
+struct BindInfo {
+    storeName: String;
+    tableName: String;
+    primaryKey: @record Map<String, commonType.ValueType>;
+    field: String;
+    assetName: String;
+}
+
+union SourceObjValueType {
+    @null EMPTY;
+    UNDEFINED: @sts_type("undefined") Opaque;
+    BOOL: bool;
+    F64: f64;
+    STRING: String;
+    Uint8Array: @typedarray Array<u8>;
+    ASSET: commonType.Asset;
+    ASSETS: Array<commonType.Asset>;
+}
+
+function CreateImpl(context: @sts_type("BaseContext") Opaque, source: Opaque, keys: Array<String>): DataObject;
+function GenSessionId(): String;
+
+struct SaveSuccessResponse {
+    sessionId: String;
+    version: i32;
+    deviceId: String;
+}
+
+struct RevokeSaveSuccessResponse {
+    sessionId: String;
+}
+
+interface DataObject {
+    @gen_async("setSessionId")
+    @gen_promise("setSessionId")
+    SetSessionIdSync(sessionId: Optional<String>): void;
+
+    @gen_async("save")
+    @gen_promise("save")
+    SaveSync(deviceId: String): SaveSuccessResponse;
+
+    @gen_async("revokeSave")
+    @gen_promise("revokeSave")
+    RevokeSaveSync(): RevokeSaveSuccessResponse;
+
+    @gen_async("bindAssetStore")
+    @gen_promise("bindAssetStore")
+    BindAssetStoreSync(assetKey: String, bindInfo: BindInfo): void;
+
+    @gen_promise("setAsset")
+    SetAssetSync(assetKey: String, uri: String): void;
+
+    @gen_promise("setAssets")
+    SetAssetsSync(assetsKey: String, uris: Array<String>): void;
+
+    OnChange(callback: (sessionId: String, fields: Array<String>) => void) : void;
+    OffChange(callback: Optional<(sessionId: String, fields: Array<String>) => void>) : void;
+
+    OnStatus(callback: (sessionId: String, networkId: String, status: String) => void) : void;
+    OffStatus(callback: Optional<(sessionId: String, networkId: String, status: String) => void>) : void;
+
+    OnProgressChanged(callback: (sessionId: String, progress: i32) => void) : void;
+    OffProgressChanged(callback: Optional<(sessionId: String, progress: i32) => void>) : void;
+
+    GetValueImpl(key : String) : Opaque;
+    SetValueImpl(key : String, value : Opaque) : void;
+    GetAssetValue(key : String, attr : String) : Opaque;
+    SetAssetValue(key : String, attr : String, value : Opaque) : void;
+
+    @!sts_inject_into_interface("""
+    getValue(key : String) : Object | null | undefined;
+    setValue(key : String, value : Object) : void;
+    on(type: string, callback: (p1 : object, p2 : object) => void): void;
+    off(type: string, callback?: (p1 : object, p2 : object) => void): void;
+    on(type: string, callback: (p1 : object, p2 : object, p3 : object) => void): void;
+    off(type: string, callback?: (p1 : object, p2 : object, p3 : object) => void): void;
+    """)
+    @!sts_inject_into_class("""
+    $_get(key : string) : Object | null | undefined
+    {
+        return this.getValue(key);
+    }
+    $_set(key : string, value: Object) : void
+    {
+        this.setValue(key, value);
+    }
+    setValue(key : String, newValue : Object) : void
+    {
+        this.setValueImpl(key, newValue)
+    }
+    getValue(key : String) : Object | null | undefined
+    {
+        let result : Object = this.getValueImpl(key);
+        return result;
+    }
+    on(type: string, callback: Object): void {
+        if (type === "change") {
+            this.onChange(callback as (sessionId: string, fields: Array<string>) => void);
+        } else if (type === "status") {
+            this.onStatus(callback as (sessionId: string, networkId: string, status: string) => void);
+        } else if (type === "progressChanged") {
+            this.onProgressChanged(callback as (sessionId: string, progress: int) => void);
+        } else {
+            throw new Error(`Unknown type: ${type}`);
+        }
+    }
+    off(type: string, callback?: Object): void {
+        if (type === "change") {
+            this.offChange(callback as (sessionId: string, fields: Array<string>) => void);
+        } else if (type === "status") {
+            this.offStatus(callback as ((sessionId: string, networkId: string, status: string) => void));
+        } else if (type === "progressChanged") {
+            this.offProgressChanged(callback as ((sessionId: string, progress: int) => void));
+        } else {
+            throw new Error(`Unknown type: ${type}`);
+        }
+    }
+    """)
+}
