@@ -53,6 +53,8 @@
             <filefilter name="binaryFileTypePolicyFilter" desc="Filters for binary file policies">
                 <filteritem type="filepath" name="samples/distributedNotepad/pictures/下线状态提示.png"
                             desc="png for ets test"/>
+                <filteritem type="filepath" name="samples/distributedNotepad/pictures/上线状态提示.png"
+                            desc="png for ets test"/>
                 <filteritem type="filepath" name="samples/distributedNotepad/pictures/应用展示.gif"
                             desc="png for ets test"/>
                 <filteritem type="filepath" name="samples/distributedNotepad/pictures/数据内容列表展示.png"
