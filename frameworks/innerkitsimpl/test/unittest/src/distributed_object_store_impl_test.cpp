@@ -69,7 +69,7 @@ void DistributedObjectStoreImplTest::TearDown(void)
  * @tc.type: FUNC
  */
 
-HWTEST_F(DistributedObjectStoreImplTest, OnChanged_001, TestSize.Level1)
+HWTEST_F(DistributedObjectStoreImplTest, OnChanged_001, TestSize.Level0)
 {
     string sessionId = "sessionId";
     std::vector<std::string> changedData = {};
@@ -87,7 +87,7 @@ HWTEST_F(DistributedObjectStoreImplTest, OnChanged_001, TestSize.Level1)
  * @tc.type: FUNC
  */
 
-HWTEST_F(DistributedObjectStoreImplTest, FindChangedAssetKey_001, TestSize.Level1)
+HWTEST_F(DistributedObjectStoreImplTest, FindChangedAssetKey_001, TestSize.Level0)
 {
     string changedKey = "sessionId.";
     string assetKey = "assetKey";
@@ -103,7 +103,7 @@ HWTEST_F(DistributedObjectStoreImplTest, FindChangedAssetKey_001, TestSize.Level
  * @tc.type: FUNC
  */
 
-HWTEST_F(DistributedObjectStoreImplTest, SetProgressNotifier001, TestSize.Level1)
+HWTEST_F(DistributedObjectStoreImplTest, SetProgressNotifier001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";

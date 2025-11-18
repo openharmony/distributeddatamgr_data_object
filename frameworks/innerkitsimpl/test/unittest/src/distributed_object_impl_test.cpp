@@ -65,7 +65,7 @@ void DistributedObjectImplTest::TearDown(void)
  * @tc.type: FUNC
  */
 
-HWTEST_F(DistributedObjectImplTest, BindAssetStore_001, TestSize.Level1)
+HWTEST_F(DistributedObjectImplTest, BindAssetStore_001, TestSize.Level0)
 {
     string assetKey = "assetKey";
     string sessionId = "123";

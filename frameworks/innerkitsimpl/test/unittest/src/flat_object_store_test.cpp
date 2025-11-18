@@ -74,7 +74,7 @@ void FlatObjectStoreTest::TearDown(void)
  * @tc.type: FUNC
  */
 
-HWTEST_F(FlatObjectStoreTest, BindAssetStore_001, TestSize.Level1)
+HWTEST_F(FlatObjectStoreTest, BindAssetStore_001, TestSize.Level0)
 {
     string sessionId = "123";
     AssetBindInfo bindInfo = {
@@ -111,7 +111,7 @@ HWTEST_F(FlatObjectStoreTest, BindAssetStore_001, TestSize.Level1)
  * @tc.type: FUNC
  */
 
-HWTEST_F(FlatObjectStoreTest, GetBundleName_001, TestSize.Level1)
+HWTEST_F(FlatObjectStoreTest, GetBundleName_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     FlatObjectStore flatObjectStore = FlatObjectStore(bundleName);
