@@ -137,7 +137,7 @@ void NativeObjectStoreTest::TearDown(void)
  * @tc.desc: test Create DistributedObject and Destroy DistrbutedObject
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Create_Destroy_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Create_Destroy_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -156,7 +156,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Create_Destroy_001, TestS
  * @tc.desc: test Create DistributedObject and Destroy DistrbutedObject
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Create_Destroy_002, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Create_Destroy_002, TestSize.Level0)
 {
     std::string sessionId = "123456";
 
@@ -171,7 +171,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Create_Destroy_002, TestS
  * @tc.desc: test Create DistributedObject and Destroy DistrbutedObject
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Create_Destroy_003, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Create_Destroy_003, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -193,7 +193,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Create_Destroy_003, TestS
  * @tc.desc: test Create DistributedObject and Destroy DistrbutedObject
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Create_Destroy_004, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Create_Destroy_004, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -214,7 +214,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Create_Destroy_004, TestS
  * @tc.desc: test Create DistributedObjectStoreImpl
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_CreateObject_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_CreateObject_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -230,7 +230,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_CreateObject_001, Tes
  * @tc.desc: test Create DistributedObjectStoreImpl
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_CreateObject_002, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_CreateObject_002, TestSize.Level0)
 {
     std::string sessionId = "123456";
     auto objectStore = DistributedObjectStoreImpl(nullptr);
@@ -248,7 +248,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_CreateObject_002, Tes
  * @tc.desc: test Create DistributedObjectStoreImpl
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_CreateObject_003, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_CreateObject_003, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "";
@@ -269,7 +269,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_CreateObject_003, Tes
  * @tc.desc: test DistributedObjectStoreImpl Get
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_Get_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_Get_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "sessionId";
@@ -292,7 +292,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_Get_001, TestSize.Lev
  * @tc.desc: test DistributedObjectStoreImpl Watch
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_Watch_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_Watch_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "sessionId";
@@ -320,7 +320,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_Watch_001, TestSize.L
  * @tc.desc: test DistributedObjectStoreImpl Watch
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_Watch_002, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_Watch_002, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "sessionId";
@@ -361,7 +361,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStoreImpl_Watch_002, TestSize.L
  * @tc.desc: test DistributedObjectStore Get.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Get_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Get_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -385,7 +385,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Get_001, TestSize.Level1)
  * @tc.desc: test DistributedObjectStore Watch and UnWatch.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Watch_UnWatch_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Watch_UnWatch_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -411,7 +411,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_Watch_UnWatch_001, TestSi
  * @tc.desc: test DistributedObjectStore SetStatusNotifier.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_SetStatusNotifier_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_SetStatusNotifier_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -434,7 +434,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_SetStatusNotifier_001, Te
  * @tc.desc: test DistributedObjectStore PutDouble.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_Double_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_Double_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -460,7 +460,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_Double_001, TestSize.Level1)
  * @tc.desc: test DistributedObjectStore GetDouble.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_GetDouble_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetDouble_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -483,7 +483,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetDouble_001, TestSize.Level1
  * @tc.desc: test DistributedObjectStore PutBoolean.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_Boolean_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_Boolean_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -509,7 +509,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_Boolean_001, TestSize.Level1)
  * @tc.desc: test DistributedObjectStore GetBoolean.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_GetBoolean_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetBoolean_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -532,7 +532,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetBoolean_001, TestSize.Level
  * @tc.desc: test DistributedObjectStore String.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_String_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_String_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -558,7 +558,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_String_001, TestSize.Level1)
  * @tc.desc: test DistributedObjectStore GetString.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_GetString_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetString_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -581,7 +581,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetString_001, TestSize.Level1
  * @tc.desc: test DistributedObjectStore GetSessionId.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_GetSessionId_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetSessionId_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -600,7 +600,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetSessionId_001, TestSize.Lev
  * @tc.desc: test DistributedObjectStore PutComplex.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_PutComplex_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_PutComplex_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -621,7 +621,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_PutComplex_001, TestSize.Level
  * @tc.desc: test DistributedObjectStore GetComplex.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_GetComplex_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetComplex_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -644,7 +644,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetComplex_001, TestSize.Level
  * @tc.desc: test DistributedObjectStore GetComplex.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_GetComplex_002, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetComplex_002, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -665,7 +665,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetComplex_002, TestSize.Level
  * @tc.desc: test DistributedObjectStore SetAsset.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_SetAsset_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_SetAsset_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -696,7 +696,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_SetAsset_001, TestSize.Level1)
  * @tc.desc: test DistributedObjectStore TestSetSessionId.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_TestSetSessionId_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_TestSetSessionId_001, TestSize.Level0)
 {
     auto testSetSessionId = [] (std::string bundleName, std::string sessionId) {
         DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
@@ -720,7 +720,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_TestSetSessionId_001, TestSize
  * @tc.desc: test DistributedObject GetType.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_GetType_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetType_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -757,7 +757,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetType_001, TestSize.Level1)
  * @tc.desc: test DistributedObject GetType.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_GetType_002, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetType_002, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -780,7 +780,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetType_002, TestSize.Level1)
  * @tc.desc: test DistributedObjectStore Save.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_Save_RevokeSave_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_Save_RevokeSave_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -811,7 +811,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_Save_RevokeSave_001, TestSize.
  * @tc.desc: test DistributedObjectStore Save.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_Save_RevokeSave_002, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_Save_RevokeSave_002, TestSize.Level0)
 {
     auto testSaveAndRevokeSave = [](std::string bundleName, std::string sessionId) {
         DistributedObjectStore *objectStore = DistributedObjectStore::GetInstance(bundleName);
@@ -847,7 +847,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_Save_RevokeSave_002, TestSize.
  * @tc.desc: test DistributedObjectStore Save.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_Save_RevokeSave_003, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_Save_RevokeSave_003, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -868,7 +868,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_Save_RevokeSave_003, TestSize.
  * @tc.desc: test ObjectStorageEngine Open, calling Open repeatedly.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_Open_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_Open_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -889,7 +889,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_Open_001, TestSize.Level1)
  * @tc.desc: test ObjectStorageEngine CreateTable.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_CreateTable_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_CreateTable_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -908,7 +908,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_CreateTable_001, TestSize.Leve
  * @tc.desc: test ObjectStorageEngine CreateTable, calling CreateTable() repeatedly.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_CreateTable_002, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_CreateTable_002, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -929,7 +929,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_CreateTable_002, TestSize.Leve
  * @tc.desc: test ObjectStorageEngine CreateTable, calling CreateTable after calling Close().
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_CreateTable_003, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_CreateTable_003, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -948,7 +948,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_CreateTable_003, TestSize.Leve
  * @tc.desc: test ObjectStorageEngine GetTable, not calling Open().
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_GetTable_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetTable_001, TestSize.Level0)
 {
     std::string sessionId = "session01";
     ObjectStorageEngine *objectStorageEngine = new FlatObjectStorageEngine();
@@ -963,7 +963,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetTable_001, TestSize.Level1)
  * @tc.desc: test ObjectStorageEngine GetTable, calling Open(),but not calling CreateTable().
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_GetTable_002, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetTable_002, TestSize.Level0)
 {
     std::string bundleName = "default02";
     std::string sessionId = "session02";
@@ -981,7 +981,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetTable_002, TestSize.Level1)
  * @tc.desc: test ObjectStorageEngine GetTable, calling Open() and CreateTable(), but not calling UpdateItem().
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_GetTable_003, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetTable_003, TestSize.Level0)
 {
     std::string bundleName = "default03";
     std::string sessionId = "session03";
@@ -1003,7 +1003,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetTable_003, TestSize.Level1)
  * @tc.desc: test ObjectStorageEngine GetTable.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_GetTable_004, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetTable_004, TestSize.Level0)
 {
     std::string bundleName = "default04";
     std::string sessionId = "session04";
@@ -1028,7 +1028,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetTable_004, TestSize.Level1)
  * @tc.desc: test ObjectStorageEngine UpdateItems. input data is empty.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItems_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItems_001, TestSize.Level0)
 {
     std::string bundleName = "default06";
     std::string sessionId = "session06";
@@ -1048,7 +1048,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItems_001, TestSize.Leve
  * @tc.desc: test FlatObjectStore UpdateItems.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, FlatObjectStore_UpdateItems_002, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_UpdateItems_002, TestSize.Level0)
 {
     std::string bundleName = "default07";
     std::string sessionId = "session07";
@@ -1069,7 +1069,7 @@ HWTEST_F(NativeObjectStoreTest, FlatObjectStore_UpdateItems_002, TestSize.Level1
  * @tc.desc: test FlatObjectStorageEngine OpenAndClose and Close when FlatObjectStorageEngine is not open.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_OpenAndClose_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_OpenAndClose_001, TestSize.Level0)
 {
     std::string bundleName = "default07";
     FlatObjectStorageEngine *objectStorageEngine = new FlatObjectStorageEngine();
@@ -1088,7 +1088,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_OpenAndClose_001, TestSize.Lev
  * @tc.desc: test FlatObjectStorageEngine NotifyChange.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_NotifyChange_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_NotifyChange_001, TestSize.Level0)
 {
     std::string bundleName = "default07";
     std::string sessionId = "session07";
@@ -1107,7 +1107,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_NotifyChange_001, TestSize.Lev
  * @tc.desc: test FlatObjectStore CheckRetrieveCache.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, FlatObjectStore_CheckRetrieveCache_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_CheckRetrieveCache_001, TestSize.Level0)
 {
     std::string sessionId = "session05";
     std::string bundleName = "default07";
@@ -1124,7 +1124,7 @@ HWTEST_F(NativeObjectStoreTest, FlatObjectStore_CheckRetrieveCache_001, TestSize
  * @tc.desc: test FlatObjectStore Delete. wrong sessionId
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, FlatObjectStore_Delete_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_Delete_001, TestSize.Level0)
 {
     std::string sessionId = "session001";
     std::string bundleName = "default001";
@@ -1141,7 +1141,7 @@ HWTEST_F(NativeObjectStoreTest, FlatObjectStore_Delete_001, TestSize.Level1)
  * @tc.desc: test FlatObjectStore Delete. wrong sessionId
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, FlatObjectStore_Delete_002, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_Delete_002, TestSize.Level0)
 {
     std::string sessionId = "session001";
     std::string bundleName = "";
@@ -1155,7 +1155,7 @@ HWTEST_F(NativeObjectStoreTest, FlatObjectStore_Delete_002, TestSize.Level1)
  * @tc.desc: test FlatObjectStore Watch. wrong sessionId
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, FlatObjectStore_Watch_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_Watch_001, TestSize.Level0)
 {
     std::string sessionId = "session002";
     std::string bundleName = "default002";
@@ -1173,7 +1173,7 @@ HWTEST_F(NativeObjectStoreTest, FlatObjectStore_Watch_001, TestSize.Level1)
  * @tc.desc: test FlatObjectStore UnWatch. wrong sessionId
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, FlatObjectStore_UnWatch_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_UnWatch_001, TestSize.Level0)
 {
     std::string sessionId = "session003";
     std::string bundleName = "default003";
@@ -1191,7 +1191,7 @@ HWTEST_F(NativeObjectStoreTest, FlatObjectStore_UnWatch_001, TestSize.Level1)
  * @tc.desc: test FlatObjectStore Save. wrong sessionId
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, FlatObjectStore_Save_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_Save_001, TestSize.Level0)
 {
     std::string sessionId = "session004";
     std::string bundleName = "default004";
@@ -1210,7 +1210,7 @@ HWTEST_F(NativeObjectStoreTest, FlatObjectStore_Save_001, TestSize.Level1)
  * @tc.desc: test FlatObjectStore OnComplete.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, FlatObjectStore_OnComplete_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_OnComplete_001, TestSize.Level0)
 {
     std::string bundleName = "default005";
     std::string sessionId = "session005";
@@ -1231,7 +1231,7 @@ HWTEST_F(NativeObjectStoreTest, FlatObjectStore_OnComplete_001, TestSize.Level1)
  * @tc.desc: test CacheManager Save.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, CacheManager_Save_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, CacheManager_Save_001, TestSize.Level0)
 {
     std::string bundleName = "";
     std::string sessionId = "";
@@ -1247,7 +1247,7 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_Save_001, TestSize.Level1)
  * @tc.desc: test CacheManager RevokeSave.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, CacheManager_RevokeSave_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, CacheManager_RevokeSave_001, TestSize.Level0)
 {
     std::string bundleName = "";
     std::string sessionId = "";
@@ -1261,7 +1261,7 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_RevokeSave_001, TestSize.Level1)
  * @tc.desc: test CacheManager ResumeObject.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, CacheManager_ResumeObject_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, CacheManager_ResumeObject_001, TestSize.Level0)
 {
     std::string bundleName = "";
     std::string sessionId = "";
@@ -1277,7 +1277,7 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_ResumeObject_001, TestSize.Level1)
  * @tc.desc: test CacheManager SubscribeDataChange.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, CacheManager_SubscribeDataChange_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, CacheManager_SubscribeDataChange_001, TestSize.Level0)
 {
     std::string bundleName = "";
     std::string sessionId = "";
@@ -1293,7 +1293,7 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_SubscribeDataChange_001, TestSize.L
  * @tc.desc: test CacheManager UnregisterDataChange.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, CacheManager_UnregisterDataChange_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, CacheManager_UnregisterDataChange_001, TestSize.Level0)
 {
     std::string bundleName = "";
     std::string sessionId = "";
@@ -1307,7 +1307,7 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_UnregisterDataChange_001, TestSize.
  * @tc.desc: test CacheManager IsContinue.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, CacheManager_IsContinue_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, CacheManager_IsContinue_001, TestSize.Level0)
 {
     auto cacheManager = std::make_shared<CacheManager>();
     auto result = cacheManager->IsContinue();
@@ -1319,7 +1319,7 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_IsContinue_001, TestSize.Level1)
  * @tc.desc: test DistributedObjectStore NotifyCachedStatus.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_NotifyCachedStatus_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_NotifyCachedStatus_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -1339,7 +1339,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_NotifyCachedStatus_001, TestSi
  * @tc.desc: test DistributedObjectStore UnWatch, DistributedObject is nullptr.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_UnWatch_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_UnWatch_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -1358,7 +1358,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_UnWatch_001, TestSize.Level1)
  * @tc.desc: test FlatObjectStorageEngine CreateTable, sessionId is empty.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_CreateTable_004, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_CreateTable_004, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
@@ -1372,7 +1372,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_CreateTable_004, TestSize.Leve
  * @tc.desc: test FlatObjectStorageEngine GetTable, storageEngine is not open or sessionId is empty.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_GetTable_005, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetTable_005, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -1394,7 +1394,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetTable_005, TestSize.Level1)
  * @tc.desc: test FlatObjectStorageEngine UpdateItem, storageEngine is not open or error sessionid.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItem_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItem_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -1416,7 +1416,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItem_001, TestSize.Level
  * @tc.desc: test FlatObjectStorageEngine UpdateItems, storageEngine is not open or error sessionid.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItems_003, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItems_003, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -1440,7 +1440,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItems_003, TestSize.Leve
  * @tc.desc: test FlatObjectStorageEngine DeleteTable, storageEngine is not open or error sessionid.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_DeleteTable_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_DeleteTable_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -1461,7 +1461,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_DeleteTable_001, TestSize.Leve
  * @tc.desc: test FlatObjectStorageEngine GetItem, storageEngine is not open or error key.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_GetItem_002, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetItem_002, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -1482,7 +1482,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetItem_002, TestSize.Level1)
  * @tc.desc: test FlatObjectStorageEngine GetItem, error key.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_GetItem_003, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetItem_003, TestSize.Level0)
 {
     std::string sessionId = "123456";
     std::string bundleName = "default";
@@ -1498,7 +1498,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetItem_003, TestSize.Level1)
  * @tc.desc: test FlatObjectStorageEngine RegisterObserver, storageEngine is not open.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_RegisterObserver_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_RegisterObserver_001, TestSize.Level0)
 {
     std::string sessionId = "123456";
     std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
@@ -1513,7 +1513,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_RegisterObserver_001, TestSize
  * @tc.desc: test FlatObjectStorageEngine RegisterObserver, empty sessionId.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_RegisterObserver_002, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_RegisterObserver_002, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -1532,7 +1532,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_RegisterObserver_002, TestSize
  * @tc.desc: test FlatObjectStorageEngine RegisterObserver, repeat RegisterObserver.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_RegisterObserver_003, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_RegisterObserver_003, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -1554,7 +1554,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_RegisterObserver_003, TestSize
  * @tc.desc: test FlatObjectStorageEngine UnRegisterObserver, storageEngine is not open.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_UnRegisterObserver_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_UnRegisterObserver_001, TestSize.Level0)
 {
     std::string sessionId = "123456";
     std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
@@ -1568,7 +1568,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_UnRegisterObserver_001, TestSi
  * @tc.desc: test FlatObjectStorageEngine UnRegisterObserver, empty sessionId.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_UnRegisterObserver_002, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_UnRegisterObserver_002, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
@@ -1582,7 +1582,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_UnRegisterObserver_002, TestSi
  * @tc.desc: test FlatObjectStorageEngine SetStatusNotifier.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_SetStatusNotifier_002, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_SetStatusNotifier_002, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -1601,7 +1601,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_SetStatusNotifier_002, TestSiz
  * @tc.desc: test FlatObjectStorageEngine SetStatusNotifier, storageEngine is not open.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_SetStatusNotifier_003, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_SetStatusNotifier_003, TestSize.Level0)
 {
     std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
     auto statusNotifier = std::make_shared<StatusNotifierImpl>();
@@ -1615,7 +1615,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_SetStatusNotifier_003, TestSiz
  * @tc.desc: test FlatObjectStorageEngine GetItems, storageEngine is not open or error key.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_GetItems_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_GetItems_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -1639,7 +1639,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_GetItems_001, TestSize.Level1)
  * @tc.desc: test FlatObjectStorageEngine NotifyStatus.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_NotifyStatus_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_NotifyStatus_001, TestSize.Level0)
 {
     std::string bundleName = "default07";
     std::string sessionId = "123456";
@@ -1655,7 +1655,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_NotifyStatus_001, TestSize.Lev
  * @tc.desc: test FlatObjectStorageEngine SyncAllData.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_SyncAllData_002, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_SyncAllData_002, TestSize.Level0)
 {
     std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
     auto onComplete = [](const std::map<std::string, DistributedDB::DBStatus> &) {};
@@ -1669,7 +1669,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_SyncAllData_002, TestSize.Leve
  * @tc.desc: test FlatObjectStorageEngine UpdateItem, error status.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItem_002, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItem_002, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -1688,7 +1688,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_UpdateItem_002, TestSize.Level
  * @tc.desc: test DistributedObjectStore SetProgressNotifier.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_SetProgressNotifier_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_SetProgressNotifier_001, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -1707,7 +1707,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObjectStore_SetProgressNotifier_001, 
  * @tc.desc: test FlatObjectStorageEngine SetProgressNotifier.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_SetProgressNotifier_002, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_SetProgressNotifier_002, TestSize.Level0)
 {
     std::string bundleName = "default";
     std::string sessionId = "123456";
@@ -1723,7 +1723,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_SetProgressNotifier_002, TestS
  * @tc.desc: test FlatObjectStorageEngine SetProgressNotifier, storageEngine is not open.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_SetProgressNotifier_003, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_SetProgressNotifier_003, TestSize.Level0)
 {
     std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
     auto progressNotifier = std::make_shared<ProgressNotifierImpl>();
@@ -1737,7 +1737,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_SetProgressNotifier_003, TestS
  * @tc.desc: test FlatObjectStorageEngine NotifyProgress.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, DistributedObject_NotifyProgress_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, DistributedObject_NotifyProgress_001, TestSize.Level0)
 {
     std::shared_ptr<FlatObjectStorageEngine> storageEngine = std::make_shared<FlatObjectStorageEngine>();
     std::string sessionId = "123456";
@@ -1756,7 +1756,7 @@ HWTEST_F(NativeObjectStoreTest, DistributedObject_NotifyProgress_001, TestSize.L
  * @tc.desc: test CacheManager SubscribeProgressChange.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, CacheManager_SubscribeProgressChange_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, CacheManager_SubscribeProgressChange_001, TestSize.Level0)
 {
     std::string bundleName = "";
     std::string sessionId = "";
@@ -1771,7 +1771,7 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_SubscribeProgressChange_001, TestSi
  * @tc.desc: test CacheManager UnregisterProgressChange.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, CacheManager_UnregisterProgressChange_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, CacheManager_UnregisterProgressChange_001, TestSize.Level0)
 {
     std::string bundleName = "";
     std::string sessionId = "";
@@ -1785,7 +1785,7 @@ HWTEST_F(NativeObjectStoreTest, CacheManager_UnregisterProgressChange_001, TestS
  * @tc.desc: test FlatObjectStore CheckProgressCache.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, FlatObjectStore_CheckProgressCache_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_CheckProgressCache_001, TestSize.Level0)
 {
     std::string sessionId = "session001";
     std::string bundleName = "default001";
@@ -1814,7 +1814,7 @@ HWTEST_F(NativeObjectStoreTest, FlatObjectStore_CheckProgressCache_001, TestSize
  * @tc.desc: test FlatObjectStore SubscribeProgressChange.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, FlatObjectStore_SubscribeProgressChange_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_SubscribeProgressChange_001, TestSize.Level0)
 {
     std::string sessionId = "session001";
     std::string bundleName = "default001";
@@ -1831,7 +1831,7 @@ HWTEST_F(NativeObjectStoreTest, FlatObjectStore_SubscribeProgressChange_001, Tes
  * @tc.desc: test FlatObjectStore SetProgressNotifier.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, FlatObjectStore_SetProgressNotifier_001, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_SetProgressNotifier_001, TestSize.Level0)
 {
     std::string sessionId = "session001";
     std::string bundleName = "default001";
@@ -1853,7 +1853,7 @@ HWTEST_F(NativeObjectStoreTest, FlatObjectStore_SetProgressNotifier_001, TestSiz
  * @tc.desc: test FlatObjectStore SetProgressNotifier，storageEngine is not open.
  * @tc.type: FUNC
  */
-HWTEST_F(NativeObjectStoreTest, FlatObjectStore_SetProgressNotifier_002, TestSize.Level1)
+HWTEST_F(NativeObjectStoreTest, FlatObjectStore_SetProgressNotifier_002, TestSize.Level0)
 {
     std::string sessionId = "session001";
     std::string bundleName = "default001";
