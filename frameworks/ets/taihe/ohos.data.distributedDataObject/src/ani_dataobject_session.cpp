@@ -14,7 +14,9 @@
  */
 #define LOG_TAG "AniDataObjectSession"
 #include "ani_dataobject_session.h"
+#include "ohos.data.distributedDataObject.DataObject.hpp"
 #include "logger.h"
+#include "ani_utils.h"
 #include "ani_error_utils.h"
 #include "object_error.h"
 #include "objectstore_errors.h"
@@ -157,7 +159,7 @@ uint32_t AniDataobjectSession::BindAssetStore(std::string key, OHOS::ObjectStore
     return status;
 }
 
-uint32_t AniDataobjectSession::SyncDataToStore(std::string const& key, ObjectValueType const& objValue,
+uint32_t AniDataobjectSession::SyncDataToStore(std::string const& key, NativeObjectValueType const& objValue,
     bool withPrefix)
 {
     if (distributedObj_ == nullptr) {
@@ -191,7 +193,7 @@ uint32_t AniDataobjectSession::SyncDataToStore(std::string const& key, ObjectVal
     }
     auto pvalAsset = std::get_if<OHOS::CommonType::AssetValue>(&objValue);
     if (pvalAsset != nullptr) {
-        SyncAssetToStore(key + std::to_string(0), *pvalAsset);
+        SyncAssetToStore(key, *pvalAsset);
         return 0;
     }
     auto pvalAssets = std::get_if<std::vector<OHOS::CommonType::AssetValue>>(&objValue);
@@ -233,14 +235,20 @@ uint32_t AniDataobjectSession::SyncAssetToStore(std::string const& key, OHOS::Co
 uint32_t AniDataobjectSession::SyncAssetsToStore(std::string const& key, std::vector<OHOS::CommonType::AssetValue> const& assets)
 {
     LOG_INFO("AniDataobjectSession::SyncAssetsToStore, called");
-    for (size_t index = 0; index < assets.size(); index++) {
-        auto& item = assets[index];
-        SyncAssetToStore(key + std::to_string(index), item);
+    ani_vm* vm = DataObjectImpl::GetVm();
+    if (vm == nullptr) {
+        return 0;
     }
+    ani_utils::AniExecuteFunc(vm, [&] (ani_env* newEnv) {
+        ani_object aniobj = ani_utils::AniCreateAssets(newEnv, assets);
+        std::string str = DataObjectImpl::JsonStringify(newEnv, aniobj);
+        LOG_INFO("AniDataobjectSession::SyncAssetsToStore, Json %{public}s", str.c_str());
+        distributedObj_->PutString(key, COMPLEX_TYPE + str);
+    });
     return 0;
 }
 
-uint32_t AniDataobjectSession::FlushCachedData(std::map<std::string, ObjectValueType> const& dataMap)
+uint32_t AniDataobjectSession::FlushCachedData(std::map<std::string, NativeObjectValueType> const& dataMap)
 {
     LOG_INFO("AniDataobjectSession::FLushCachedData, called");
     if (distributedObj_ == nullptr) {
@@ -254,10 +262,10 @@ uint32_t AniDataobjectSession::FlushCachedData(std::map<std::string, ObjectValue
     return 0;
 }
 
-ObjectValueType AniDataobjectSession::GetValueFromStore(const char *key)
+NativeObjectValueType AniDataobjectSession::GetValueFromStore(const char *key)
 {
     LOG_INFO("AniDataobjectSession::GetValueFromStore, called");
-    ObjectValueType resultValueType;
+    NativeObjectValueType resultValueType;
     ani_env *aniEnv = taihe::get_env();
     if (aniEnv == nullptr) {
         LOG_INFO("DataObjectImpl::GetValueFromStore, aniEnv null");
@@ -317,40 +325,59 @@ ObjectValueType AniDataobjectSession::GetValueFromStore(const char *key)
     return resultValueType;
 }
 
-ObjectValueType AniDataobjectSession::GetAssetValueFromStore(const char *key)
+NativeObjectValueType AniDataobjectSession::GetAssetValueFromStore(const char *key)
 {
     LOG_INFO("AniDataobjectSession::GetAssetValueFromStore, called");
-    ObjectValueType temp;
+    NativeObjectValueType resultEmpty;
     if (distributedObj_ == nullptr) {
         auto err = std::make_shared<InnerError>();
         ani_errorutils::ThrowError(err->GetCode(), "object is null");
-        return temp;
+        return resultEmpty;
     }
     if (key == nullptr) {
         auto err = std::make_shared<InnerError>();
         ani_errorutils::ThrowError(err->GetCode(), "key is null");
-        return temp;
+        return resultEmpty;
     }
     std::string stdkey(key);
-    OHOS::CommonType::AssetValue result;
-    result.id = distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "id");
-    result.name = distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "name");
-    result.uri = distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "uri");
-    result.createTime = distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "createTime");
-    result.modifyTime = distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "modifyTime");
-    result.size = distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "size");
-    result.hash = distributedObj_->GetString(kestdkey + ASSET_KEY_SEPARATOR + "hash");
-    result.path = distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "path");
-    result.status = distributedObj_->GetDouble(stdkey + ASSET_KEY_SEPARATOR + "status");
-    RemoveTypePrefixForAsset(result);
-    temp = result;
-    return temp;
+    OHOS::CommonType::AssetValue assetResult;
+    if (SUCCESS != distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "id", assetResult.id)) {
+        return resultEmpty;
+    }
+    if (SUCCESS != distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "name", assetResult.name)) {
+        return resultEmpty;
+    }
+    if (SUCCESS != distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "uri", assetResult.uri)) {
+        return resultEmpty;
+    }
+    if (SUCCESS != distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "createTime", assetResult.createTime)) {
+        return resultEmpty;
+    }
+    if (SUCCESS != distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "modifyTime", assetResult.modifyTime)) {
+        return resultEmpty;
+    }
+    if (SUCCESS != distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "size", assetResult.size)) {
+        return resultEmpty;
+    }
+    if (SUCCESS != distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "hash", assetResult.hash)) {
+        return resultEmpty;
+    }
+    if (SUCCESS != distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "path", assetResult.path)) {
+        return resultEmpty;
+    }
+    double status = 0;
+    if (SUCCESS != distributedObj_->GetDouble(stdkey + ASSET_KEY_SEPARATOR + "status", status)) {
+        return resultEmpty;
+    }
+    assetResult.status = (uint32_t)(status);
+    RemoveTypePrefixForAsset(assetResult);
+    return assetResult;
 }
 
-ObjectValueType AniDataobjectSession::GetAssetsValueFromStore(const char *key, size_t size)
+NativeObjectValueType AniDataobjectSession::GetAssetsValueFromStore(const char *key, size_t size)
 {
-    LOG_INFO("AniDataobjectSession::GetAssetValueFromStore, called");
-    ObjectValueType temp;
+    LOG_INFO("AniDataobjectSession::GetAssetsValueFromStore, called");
+    NativeObjectValueType temp;
     if (distributedObj_ == nullptr) {
         auto err = std::make_shared<InnerError>();
         ani_errorutils::ThrowError(err->GetCode(), "object is null");
@@ -362,8 +389,9 @@ ObjectValueType AniDataobjectSession::GetAssetsValueFromStore(const char *key, s
         return temp;
     }
     std::vector<OHOS::CommonType::AssetValue> assets;
-    for (int k = 0; k < size; k++) {
-        ObjectValueType temp = GetAssetValueFromStore(std::string(key) + std::to_string(k));
+    for (size_t k = 0; k < size; k++) {
+        std::string tempKey = std::string(key) + std::to_string(k);
+        NativeObjectValueType temp = GetAssetValueFromStore(tempKey.c_str());
         auto pvalAsset = std::get_if<OHOS::CommonType::AssetValue>(&temp);
         if (pvalAsset != nullptr) {
             assets.push_back(*pvalAsset);
@@ -377,28 +405,28 @@ void AniDataobjectSession::RemoveTypePrefixForAsset(OHOS::CommonType::AssetValue
 {
     LOG_INFO("AniDataobjectSession::RemoveTypePrefixForAsset, called");
     if (asset.id.find(STRING_TYPE) == 0) {
-        asset.id = asset.id.sub_str(STRING_TYPE.length());
+        asset.id = asset.id.substr(STRING_TYPE.length());
     }
-    if (asset.id.find(STRING_TYPE) == 0) {
-        asset.id = asset.id.sub_str(STRING_TYPE.length());
+    if (asset.name.find(STRING_TYPE) == 0) {
+        asset.name = asset.name.substr(STRING_TYPE.length());
     }
-    if (asset.id.find(STRING_TYPE) == 0) {
-        asset.id = asset.id.sub_str(STRING_TYPE.length());
+    if (asset.uri.find(STRING_TYPE) == 0) {
+        asset.uri = asset.uri.substr(STRING_TYPE.length());
     }
-    if (asset.id.find(STRING_TYPE) == 0) {
-        asset.id = asset.id.sub_str(STRING_TYPE.length());
+    if (asset.createTime.find(STRING_TYPE) == 0) {
+        asset.createTime = asset.createTime.substr(STRING_TYPE.length());
     }
-    if (asset.id.find(STRING_TYPE) == 0) {
-        asset.id = asset.id.sub_str(STRING_TYPE.length());
+    if (asset.modifyTime.find(STRING_TYPE) == 0) {
+        asset.modifyTime = asset.modifyTime.substr(STRING_TYPE.length());
     }
-    if (asset.id.find(STRING_TYPE) == 0) {
-        asset.id = asset.id.sub_str(STRING_TYPE.length());
+    if (asset.size.find(STRING_TYPE) == 0) {
+        asset.size = asset.size.substr(STRING_TYPE.length());
     }
-    if (asset.id.find(STRING_TYPE) == 0) {
-        asset.id = asset.id.sub_str(STRING_TYPE.length());
+    if (asset.hash.find(STRING_TYPE) == 0) {
+        asset.hash = asset.hash.substr(STRING_TYPE.length());
     }
-    if (asset.id.find(STRING_TYPE) == 0) {
-        asset.id = asset.id.sub_str(STRING_TYPE.length());
+    if (asset.path.find(STRING_TYPE) == 0) {
+        asset.path = asset.path.substr(STRING_TYPE.length());
     }
 }
 

@@ -131,17 +131,10 @@ private:
     ani_object obj_;
 };
 
-bool AniGetMapItem(ani_env *env, ::taihe::map_view<::taihe::string, uintptr_t> const& taiheMap,
-    const char* key, std::string& value);
-bool AniGetMapItem(ani_env *env, ::taihe::map_view<::taihe::string, uintptr_t> const& taiheMap,
-    const char* key, int32_t& value);
-
 void AniExecuteFunc(ani_vm* vm, const std::function<void(ani_env*)> func);
-
-OHOS::ObjectStore::AssetBindInfo BindInfoToNative(::ohos::data::distributedDataObject::BindInfo const& taiheBindInfo);
-
 ani_object AniCreateAsset(ani_env *env, OHOS::CommonType::AssetValue const& asset);
 ani_object AniCreateAssets(ani_env *env, std::vector<OHOS::CommonType::AssetValue> const& assets);
+OHOS::ObjectStore::AssetBindInfo BindInfoToNative(::ohos::data::distributedDataObject::BindInfo const& taiheBindInfo);
 
 } //namespace ani_utils
 #endif

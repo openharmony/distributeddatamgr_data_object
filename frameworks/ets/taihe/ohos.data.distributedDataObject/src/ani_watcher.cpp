@@ -26,21 +26,23 @@
 
 namespace OHOS::ObjectStore {
 
-static const int32_t ANI_SCOPE_SIZE = 16;
 std::shared_ptr<OHOS::AppExecFwk::EventHandler> AsyncUtilBase::mainHandler_;
+static std::once_flag g_handlerOnceFlag;
 
 bool AsyncUtilBase::AsyncExecueInMainThread(const std::function<void()> func)
 {
     if (func == nullptr) {
         return false;
     }
-    if (!mainHandler_) {
-        std::shared_ptr<OHOS::AppExecFwk::EventRunner> runner = OHOS::AppExecFwk::EventRunner::GetMainEventRunner();
-        if (!runner) {
-            LOG_ERROR("GetMainEventRunner failed");
-            return false;
+    std::call_once(g_handlerOnceFlag, []{
+        auto runner = OHOS::AppExecFwk::EventRunner::GetMainEventRunner();
+        if (runner) {
+            mainHandler_ = std::make_shared<OHOS::AppExecFwk::EventHandler>(runner);
         }
-        mainHandler_ = std::make_shared<OHOS::AppExecFwk::EventHandler>(runner);
+    });
+    if (!mainHandler_) {
+        LOG_ERROR("Failed to initialize event handler");
+        return false;
     }
     mainHandler_->PostTask(func, "", 0, OHOS::AppExecFwk::EventQueue::Priority::IMMEDIATE, {});
     return true;
@@ -151,10 +153,6 @@ void AniWatcher::Emit(std::string type, const std::string &sessionId, const std:
             sharedThis->cachedChangeEventList_.clear();
             return;
         }
-        ani_status localScopeStatus = aniEnv->CreateLocalScope(ANI_SCOPE_SIZE);
-        if (localScopeStatus != ANI_OK) {
-            LOG_WARN("Failed to creat local scope");
-        }
         std::unique_lock<std::shared_mutex> cacheLock(sharedThis->cachedChangeEventMutex_);
         for (auto &itemPtr : sharedThis->cachedChangeEventList_) {
             if (itemPtr == nullptr) {
@@ -167,10 +165,6 @@ void AniWatcher::Emit(std::string type, const std::string &sessionId, const std:
             itemPtr->callback_(taiheSessionId, taiheStringList);
         }
         sharedThis->cachedChangeEventList_.clear();
-
-        if (localScopeStatus == ANI_OK) {
-            aniEnv->DestroyLocalScope();
-        }
     });
 }
 
@@ -212,10 +206,6 @@ void AniWatcher::Emit(
             sharedThis->cachedStatusEventList_.clear();
             return;
         }
-        ani_status localScopeStatus = aniEnv->CreateLocalScope(ANI_SCOPE_SIZE);
-        if (localScopeStatus != ANI_OK) {
-            LOG_WARN("Failed to creat local scope");
-        }
         std::unique_lock<std::shared_mutex> cacheLock(sharedThis->cachedStatusEventMutex_);
         for (auto &itemPtr : sharedThis->cachedStatusEventList_) {
             if (itemPtr == nullptr) {
@@ -227,10 +217,6 @@ void AniWatcher::Emit(
             itemPtr->callback_(taiheSessionId, taiheNetworkId, taiheStatus);
         }
         sharedThis->cachedStatusEventList_.clear();
-
-        if (localScopeStatus == ANI_OK) {
-            aniEnv->DestroyLocalScope();
-        }
     });
 }
 
@@ -259,7 +245,6 @@ void AniWatcher::Emit(
         }
     }
 
-    LOG_INFO("xxx AniWatcher::Emit AsyncExecueInMainThread");
     auto sharedThis = shared_from_this();
     AsyncUtilBase::AsyncExecueInMainThread([sharedThis] {
         LOG_INFO("AniWatcher::Emit, status, AsyncExecueInMainThread!");
@@ -268,10 +253,6 @@ void AniWatcher::Emit(
             LOG_ERROR("aniEnv null, clear");
             sharedThis->cachedProgressEventList_.clear();
             return;
-        }
-        ani_status localScopeStatus = aniEnv->CreateLocalScope(ANI_SCOPE_SIZE);
-        if (localScopeStatus != ANI_OK) {
-            LOG_WARN("Failed to creat local scope");
         }
         std::unique_lock<std::shared_mutex> cacheLock(sharedThis->cachedProgressEventMutex_);
         for (auto &itemPtr : sharedThis->cachedProgressEventList_) {
@@ -282,10 +263,6 @@ void AniWatcher::Emit(
             itemPtr->callback_(taiheSessionId, itemPtr->progress_);
         }
         sharedThis->cachedProgressEventList_.clear();
-
-        if (localScopeStatus == ANI_OK) {
-            aniEnv->DestroyLocalScope();
-        }
     });
 }
 
@@ -397,7 +374,6 @@ bool EventListener::Add(VarCallbackType handler)
 
 void WatcherImpl::OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData)
 {
-    LOG_INFO("xxx WatcherImpl OnChanged 1");
     std::shared_ptr<AniWatcher> lockedWatcher = watcher_.lock();
     if (lockedWatcher) {
         lockedWatcher->Emit(EVENT_CHANGE, sessionid, changedData);
@@ -413,12 +389,8 @@ WatcherImpl::~WatcherImpl()
 
 bool ChangeEventListener::Add(VarCallbackType handler)
 {
-    LOG_INFO("xxx ChangeEventListener::Add 1");
-
     if (!isWatched_ && object_ != nullptr) {
         std::shared_ptr<WatcherImpl> watcher = std::make_shared<WatcherImpl>(watcher_);
-
-        LOG_INFO("xxx ChangeEventListener::Add objectStore_->Watch");
         uint32_t ret = objectStore_->Watch(object_, watcher);
         if (ret != SUCCESS) {
             LOG_ERROR("Watch %{public}s error", object_->GetSessionId().c_str());
@@ -526,8 +498,8 @@ AniWatcher::ChangeArgs::ChangeArgs(
     : callback_(callback), sessionId_(sessionId), changeData_(changeData)
 {
 }
-AniWatcher::StatusArgs::StatusArgs(
-    const AniStatusCallbackType callback, const std::string &sessionId, const std::string &networkId, const std::string &status)
+AniWatcher::StatusArgs::StatusArgs(const AniStatusCallbackType callback,
+    const std::string &sessionId, const std::string &networkId, const std::string &status)
     : callback_(callback), sessionId_(sessionId), networkId_(networkId), status_(status)
 {
 }

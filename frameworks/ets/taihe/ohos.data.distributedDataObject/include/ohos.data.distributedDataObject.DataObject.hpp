@@ -21,22 +21,21 @@
 #include <map>
 #include <optional>
 #include <ani.h>
+#include "taihe/runtime.hpp"
 #include "ani_watcher.h"
 #include "ani_dataobject_session.h"
 #include "common_types.h"
 
-const int32_t SDK_VERSION_9 = 9;
-
-using ObjectValueType = std::variant<std::monostate, bool, double,
-    std::string, std::vector<uint8_t>, OHOS::CommonType::AssetValue, std::vector<OHOS::CommonType::AssetValue>>; 
+namespace OHOS::ObjectStore {
 
 class DataObjectImpl {
 public:
     explicit DataObjectImpl(ani_object context, ani_object sourceObj, ::taihe::array_view<::taihe::string> keys);
     ~DataObjectImpl();
-    std::string JsonStringify(ani_env* aniEnv, ani_ref sourceObj);
-    ani_ref JsonParse(ani_env* aniEnv, std::string const& str);
-    ObjectValueType ParseObjectValue(ani_env* aniEnv, ani_ref valueRef, bool needPrefix = true);
+    static ani_vm* GetVm() { return vm_; }
+    static std::string JsonStringify(ani_env* aniEnv, ani_ref sourceObj);
+    static ani_ref JsonParse(ani_env* aniEnv, std::string const& str);
+    NativeObjectValueType ParseObjectValue(ani_env* aniEnv, ani_ref valueRef);
     void ParseObject(ani_object sourceObj, ::taihe::array_view<::taihe::string> const& keys);
 
     static std::string GenerateRandomNum();
@@ -77,17 +76,23 @@ public:
         ::taihe::callback<void(::taihe::string_view sessionId, int32_t progress)>> callback);
     void BindAssetStoreSync(::taihe::string_view assetKey, ::ohos::data::distributedDataObject::BindInfo const& bindInfo);
 
-    uintptr_t GetValueImpl(::taihe::string_view key);
+    ::ohos::data::distributedDataObject::ObjectValueType GetValueImpl(::taihe::string_view key);
     void SetValueImpl(::taihe::string_view key, uintptr_t valueRef);
     uintptr_t GetAssetValue(::taihe::string_view key, ::taihe::string_view attr);
     void SetAssetValue(::taihe::string_view key, ::taihe::string_view attr, uintptr_t value);
 
-    ani_ref VectorUint8ToAni(ani_env* env, const std::vector<uint8_t> &para);
-    uintptr_t ObjectValueTypeToAni(ani_env* aniEnv, ObjectValueType objValue);
+    ani_ref GetAssetsRefFromStore(ani_env* aniEnv, std::string assetsKey);
+    ::ohos::data::commonType::AssetStatus AssetStatusToTaihe(int32_t status);
+    ::ohos::data::commonType::Asset AssetToTaihe(OHOS::CommonType::AssetValue const& value);
+    ::taihe::array<::ohos::data::commonType::Asset> AssetsToTaihe(std::vector<OHOS::CommonType::AssetValue> const& values);
+    ::ohos::data::distributedDataObject::ObjectValueType ObjectValueTypeToTaihe(ani_env* aniEnv, NativeObjectValueType const &valueObj);
+
 protected:
+    static ani_vm* vm_;
+    ani_ref globalSourceObj_;
     std::string bundleName_;
     std::string distributedDir_;
-    std::map<std::string, ObjectValueType> sourceDataMap_;
+    std::map<std::string, NativeObjectValueType> sourceDataMap_;
     std::string objectId_;
     unsigned long version_ = 0;
     int sdkVersion_ = SDK_VERSION_9;
@@ -101,3 +106,5 @@ protected:
     std::list<VarCallbackType> progressCallBacks_;
     std::mutex progressCallBacksMutex_;
 };
+
+} //namespace OHOS::ObjectStore

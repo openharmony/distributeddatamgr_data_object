@@ -14,7 +14,7 @@
  */
 #define LOG_TAG "AniUtils"
 #include "ani_utils.h"
-
+#include "taihe/runtime.hpp"
 #include "logger.h"
 
 namespace ani_utils {
@@ -331,38 +331,8 @@ ani_object AniCreateArray(ani_env *env, std::vector<ani_object> const& objectArr
         }
         index++;
     }
+    LOG_ERROR("AniCreateArray, ret %{public}p", array);
     return array;
-}
-
-bool AniMapSet(ani_env *env, ani_object map, ani_method mapSetMethod, const char* key, ani_ref value)
-{
-    if (env == nullptr || map == nullptr || mapSetMethod == nullptr
-        || key == nullptr || key[0] == 0 || value == nullptr) {
-        return false;
-    }
-    ani_ref keyref = AniCreateString(env, std::string(key));
-    if (keyref == nullptr) {
-        LOG_ERROR("AniCreateString failed");
-        return false;
-    }
-    if (ANI_OK != env->Object_CallMethod_Void(map, mapSetMethod, keyref, value)) {
-        LOG_ERROR("Object_CallMethod_Void failed");
-        return false;
-    }
-    return true;
-}
-
-bool AniMapSet(ani_env *env, ani_object map, ani_method mapSetMethod, const char* key, std::string const& valueStr)
-{
-    if (valueStr.empty()) {
-        return false;
-    }
-    ani_ref valueRef = AniCreateString(env, valueStr);
-    if (valueRef == nullptr) {
-        LOG_ERROR("AniCreateString failed");
-        return false;
-    }
-    return AniMapSet(env, map, mapSetMethod, key, valueRef);
 }
 
 template<>
@@ -748,42 +718,6 @@ bool UnionAccessor::TryConvert<std::vector<OHOS::CommonType::Asset>>(std::vector
     return true;
 }
 
-bool AniGetMapItem(ani_env *env, ::taihe::map_view<::taihe::string, uintptr_t> const& taiheMap,
-    const char* key, std::string& value)
-{
-    if (env == nullptr) {
-        return false;
-    }
-    std::string stdKey(key);
-    auto iter = taiheMap.find_item(stdKey);
-    if (iter == taiheMap.end()) {
-        LOG_ERROR("find_item %{public}s failed", stdKey.c_str());
-        return false;
-    }
-    ani_object aniobj = reinterpret_cast<ani_object>(iter->second);
-    UnionAccessor access(env, aniobj);
-    bool result = access.TryConvert(value);
-    return result;
-}
-
-bool AniGetMapItem(ani_env *env, ::taihe::map_view<::taihe::string, uintptr_t> const& taiheMap,
-    const char* key, int32_t& value)
-{
-    if (env == nullptr) {
-        return false;
-    }
-    std::string stdKey(key);
-    auto iter = taiheMap.find_item(stdKey);
-    if (iter == taiheMap.end()) {
-        LOG_ERROR("find_item %{public}s failed", stdKey.c_str());
-        return false;
-    }
-    ani_object aniobj = reinterpret_cast<ani_object>(iter->second);
-    UnionAccessor access(env, aniobj);
-    bool result = access.TryConvert(value);
-    return result;
-}
-
 void AniExecuteFunc(ani_vm* vm, const std::function<void(ani_env*)> func)
 {
     LOG_INFO("AniExecutePromise");
@@ -828,10 +762,15 @@ ani_object AniCreateAsset(ani_env *env, OHOS::CommonType::AssetValue const& asse
     ani_ref ani_field_status;
     env->GetUndefined(&ani_field_status);
     if (asset.status != OHOS::CommonType::AssetValue::Status::STATUS_UNKNOWN) {
-        ani_enum_item ani_enum_status = {};
         int32_t status = (int32_t)asset.status;
-        if (ANI_OK == env->FindEnum("@ohos.data.commonType.commonType.AssetStatus", &ani_enum_status)) {
-            env->Enum_GetEnumItemByIndex(ani_enum_status, static_cast<ani_size>(status), &ani_field_status);
+        ani_enum enumType;
+        ani_enum_item enumItem = nullptr;
+        bool ret = false;
+        if (ANI_OK == env->FindEnum("@ohos.data.commonType.commonType.AssetStatus", &enumType)) {
+            ret = (ANI_OK == env->Enum_GetEnumItemByIndex(enumType, static_cast<ani_size>(status), &enumItem));
+        }
+        if (ret && enumItem != nullptr) {
+            ani_field_status = reinterpret_cast<ani_ref>(enumItem);
         }
     }
     ani_class cls = ani_utils::AniGetClass(env,
@@ -841,6 +780,7 @@ ani_object AniCreateAsset(ani_env *env, OHOS::CommonType::AssetValue const& asse
     ani_object ani_obj = {};
     env->Object_New(cls, method, &ani_obj, ani_field_name, ani_field_uri, ani_field_path,
         ani_field_createTime, ani_field_modifyTime, ani_field_size, ani_field_status);
+        LOG_ERROR("AniCreateAsset, ret %{public}p", ani_obj);
     return ani_obj;
 }
 
@@ -855,6 +795,84 @@ ani_object AniCreateAssets(ani_env *env, std::vector<OHOS::CommonType::AssetValu
         objectArray.push_back(aniAsset);
     }
     return AniCreateArray(env, objectArray);
+}
+
+OHOS::CommonType::Asset AssetToNative(::ohos::data::commonType::Asset const &asset)
+{
+    OHOS::CommonType::Asset value;
+    value.name = std::string(asset.name);
+    value.uri = std::string(asset.uri);
+    value.createTime = std::string(asset.createTime);
+    value.modifyTime = std::string(asset.modifyTime);
+    value.size = std::string(asset.size);
+    value.path = std::string(asset.path);
+    if (asset.status.has_value()) {
+        value.status = (OHOS::CommonType::Asset::Status)((int32_t)(asset.status.value()));
+    }
+    return value;
+}
+
+std::vector<OHOS::CommonType::Asset> AssetsToNative(
+    ::taihe::array<::ohos::data::commonType::Asset> const &assets)
+{
+    std::vector<OHOS::CommonType::Asset> result(assets.size());
+    std::transform(assets.begin(), assets.end(), result.begin(), [](::ohos::data::commonType::Asset c) {
+        OHOS::CommonType::Asset value = AssetToNative(c);
+        return value;
+    });
+    return result;
+}
+
+OHOS::CommonType::Value ValueTypeToNative(::ohos::data::commonType::ValueType const &taiheValue)
+{
+    OHOS::CommonType::Value valueVar;
+    auto tag = taiheValue.get_tag();
+    switch (tag) {
+        case ohos::data::commonType::ValueType::tag_t::INT64: {
+            valueVar = taiheValue.get_INT64_ref();
+        }
+            break;
+        case TaiheValueType::tag_t::F64: {
+            valueVar = taiheValue.get_F64_ref();
+        }
+            break;
+        case TaiheValueType::tag_t::STRING: {
+            valueVar = std::string(taiheValue.get_STRING_ref());
+        }
+            break;
+        case TaiheValueType::tag_t::BOOL: {
+            valueVar = taiheValue.get_BOOL_ref();
+        }
+            break;
+        case TaiheValueType::tag_t::Uint8Array: {
+            ::taihe::array<uint8_t> const &tmp = taiheValue.get_Uint8Array_ref();
+            valueVar = std::vector<uint8_t>(tmp.data(), tmp.data() + tmp.size());
+        }
+            break;
+        case TaiheValueType::tag_t::ASSET: {
+            valueVar = AssetToNative(taiheValue.get_ASSET_ref());
+        }
+            break;
+        case TaiheValueType::tag_t::ASSETS: {
+            valueVar = AssetsToNative(taiheValue.get_ASSETS_ref());
+        }
+            break;
+        default:
+            break;
+    }
+    return valueVar;
+}
+
+OHOS::CommonType::ValuesBucket ValuesBucketToNative(
+    ::taihe::map<::taihe::string, ::ohos::data::commonType::ValueType> const &taiheValues)
+{
+    OHOS::CommonType::ValuesBucket bucket;
+    for (auto it = taiheValues.begin(); it != taiheValues.end(); ++it) {
+        auto const &[key, value] = *it;
+        auto temp = ValueTypeToNative(value);
+        bucket[std::string(key)] = temp;
+    }
+    return bucket;
 }
 
 OHOS::ObjectStore::AssetBindInfo BindInfoToNative(::ohos::data::distributedDataObject::BindInfo const& taiheBindInfo)

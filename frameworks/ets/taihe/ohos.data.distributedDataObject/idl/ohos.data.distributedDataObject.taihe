@@ -48,9 +48,16 @@ function jsonStringify(para : Object) : string
 {
     return JSON.stringify(para);
 }
+
 function jsonParserParse(para : string) : Object
 {
     return JSONParser.parse(para);
+}
+
+function jsonParseJsonElement(para : string) : Object
+{
+    let result : jsonx.JsonElement = JSON.parseJsonElement(para);
+    return result;
 }
 """)
 
@@ -62,9 +69,10 @@ struct BindInfo {
     assetName: String;
 }
 
-union SourceObjValueType {
+union ObjectValueType {
     @null EMPTY;
-    UNDEFINED: @sts_type("undefined") Opaque;
+    @undefined UNDEFINED;
+    OPAQUE: Opaque;
     BOOL: bool;
     F64: f64;
     STRING: String;
@@ -118,7 +126,7 @@ interface DataObject {
     OnProgressChanged(callback: (sessionId: String, progress: i32) => void) : void;
     OffProgressChanged(callback: Optional<(sessionId: String, progress: i32) => void>) : void;
 
-    GetValueImpl(key : String) : Opaque;
+    GetValueImpl(key : String) : ObjectValueType;
     SetValueImpl(key : String, value : Opaque) : void;
     GetAssetValue(key : String, attr : String) : Opaque;
     SetAssetValue(key : String, attr : String, value : Opaque) : void;
@@ -146,8 +154,7 @@ interface DataObject {
     }
     getValue(key : String) : Object | null | undefined
     {
-        let result : Object = this.getValueImpl(key);
-        return result;
+        return this.getValueImpl(key);
     }
     on(type: string, callback: Object): void {
         if (type === "change") {

@@ -27,7 +27,7 @@
 #include "object_types.h"
 
 namespace OHOS::ObjectStore {
-using ObjectValueType = std::variant<std::monostate, bool, double,
+using NativeObjectValueType = std::variant<std::monostate, bool, double,
     std::string, std::vector<uint8_t>, OHOS::CommonType::AssetValue, std::vector<OHOS::CommonType::AssetValue>>; 
 
 const int32_t SDK_VERSION_9 = 9;
@@ -56,14 +56,14 @@ public:
     void DeleteWatch(std::string type, VarCallbackType taiheCallback);
     
     uint32_t BindAssetStore(std::string key, OHOS::ObjectStore::AssetBindInfo &nativeBindInfo);
-    uint32_t SyncDataToStore(std::string const& key, ObjectValueType const& objValue, bool withPrefix);
+    uint32_t SyncDataToStore(std::string const& key, NativeObjectValueType const& objValue, bool withPrefix);
     uint32_t SyncAssetToStore(std::string const& key, OHOS::CommonType::AssetValue const& asset);
     uint32_t SyncAssetsToStore(std::string const& key, std::vector<OHOS::CommonType::AssetValue> const& assets);
-    uint32_t FlushCachedData(std::map<std::string, ObjectValueType> const& dataMap);
+    uint32_t FlushCachedData(std::map<std::string, NativeObjectValueType> const& dataMap);
 
-    ObjectValueType GetValueFromStore(const char *key);
-    ObjectValueType GetAssetValueFromStore(const char *key);
-    ObjectValueType GetAssetsValueFromStore(const char *key);
+    NativeObjectValueType GetValueFromStore(const char *key);
+    NativeObjectValueType GetAssetValueFromStore(const char *key);
+    NativeObjectValueType GetAssetsValueFromStore(const char *key, size_t size);
     void RemoveTypePrefixForAsset(OHOS::CommonType::AssetValue &asset);
 protected:
     std::shared_mutex watchMutex_{};
@@ -73,6 +73,6 @@ protected:
     std::string sessionId_;
 };
 
-}
+} //namespace OHOS::ObjectStore
 #endif
 
