@@ -21,6 +21,12 @@
 
 namespace ani_errorutils {
 
+enum AniError : int32_t {
+    AniError_ParameterCheck = 401,
+    AniError_ParameterError = 15400002,
+    AniError_SessionJoined = 15400003,
+};
+
 void ThrowError(const char* message);
 void ThrowError(int32_t code, const std::string &message);
 ani_object ToBusinessError(ani_env *env, int32_t code, const std::string &message);

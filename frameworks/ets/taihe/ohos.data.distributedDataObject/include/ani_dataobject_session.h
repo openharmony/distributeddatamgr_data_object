@@ -28,7 +28,7 @@
 
 namespace OHOS::ObjectStore {
 using NativeObjectValueType = std::variant<std::monostate, bool, double,
-    std::string, std::vector<uint8_t>, OHOS::CommonType::AssetValue, std::vector<OHOS::CommonType::AssetValue>>; 
+    std::string, std::vector<uint8_t>, OHOS::CommonType::AssetValue, std::vector<OHOS::CommonType::AssetValue>>;
 
 const int32_t SDK_VERSION_9 = 9;
 const std::string SESSION_ID_REGEX = "^\\w+$";
@@ -36,8 +36,7 @@ const std::string COMPLEX_TYPE = "[COMPLEX]";
 const std::string STRING_TYPE = "[STRING]";
 const std::string NULL_TYPE = "[NULL]";
 
-class AniDataobjectSession
-{
+class AniDataobjectSession {
 public:
     AniDataobjectSession(OHOS::ObjectStore::DistributedObject* obj, std::string sessionId);
     ~AniDataobjectSession();
@@ -52,7 +51,8 @@ public:
     ::ohos::data::distributedDataObject::SaveSuccessResponse Save(std::string deviceId, unsigned long version);
     ::ohos::data::distributedDataObject::RevokeSaveSuccessResponse RevokeSave();
 
-    bool AddWatch(OHOS::ObjectStore::DistributedObjectStore *objectStore, std::string type, VarCallbackType taiheCallback);
+    bool AddWatch(OHOS::ObjectStore::DistributedObjectStore *objectStore,
+        std::string type, VarCallbackType taiheCallback);
     void DeleteWatch(std::string type, VarCallbackType taiheCallback);
     
     uint32_t BindAssetStore(std::string key, OHOS::ObjectStore::AssetBindInfo &nativeBindInfo);

@@ -14,7 +14,7 @@
  */
 
 #include "ohos.data.distributedDataObject.ani.hpp"
-#include "ohos.data.distributedDataObject.DataObject.hpp"
+#include "ohos.data.distributedDataObject.DataObject.h"
 #include <thread>
 
 #include "anonymous.h"
@@ -34,7 +34,7 @@ bool AsyncUtilBase::AsyncExecueInMainThread(const std::function<void()> func)
     if (func == nullptr) {
         return false;
     }
-    std::call_once(g_handlerOnceFlag, []{
+    std::call_once(g_handlerOnceFlag, [] {
         auto runner = OHOS::AppExecFwk::EventRunner::GetMainEventRunner();
         if (runner) {
             mainHandler_ = std::make_shared<OHOS::AppExecFwk::EventHandler>(runner);
@@ -145,7 +145,7 @@ void AniWatcher::Emit(std::string type, const std::string &sessionId, const std:
         }
     }
     auto sharedThis = shared_from_this();
-    AsyncUtilBase::AsyncExecueInMainThread( [ sharedThis ] {
+    AsyncUtilBase::AsyncExecueInMainThread([ sharedThis ] {
         LOG_INFO("AniWatcher::Emit, change, AsyncExecueInMainThread!");
         ani_env *aniEnv = taihe::get_env();
         if (aniEnv == nullptr) {
@@ -171,13 +171,13 @@ void AniWatcher::Emit(std::string type, const std::string &sessionId, const std:
 void AniWatcher::Emit(
     std::string type, const std::string &sessionId, const std::string &networkId, const std::string &status)
 {
-    LOG_INFO("xxx AniWatcher::Emit 1");
+    LOG_INFO("AniWatcher::Emit 1");
 
     if (sessionId.empty() || networkId.empty()) {
         LOG_ERROR("empty %{public}s  %{public}s", sessionId.c_str(), Anonymous::Change(networkId).c_str());
         return;
     }
-    LOG_INFO("xxx AniWatcher::Emit 2");
+    LOG_INFO("AniWatcher::Emit 2");
     LOG_INFO("status change %{public}s  %{public}s", sessionId.c_str(), Anonymous::Change(networkId).c_str());
     EventListener *listener = Find(type);
     if (listener == nullptr) {
@@ -196,7 +196,7 @@ void AniWatcher::Emit(
         }
     }
 
-    LOG_INFO("xxx AniWatcher::Emit AsyncExecueInMainThread");
+    LOG_INFO("AniWatcher::Emit AsyncExecueInMainThread");
     auto sharedThis = shared_from_this();
     AsyncUtilBase::AsyncExecueInMainThread([sharedThis] {
         LOG_INFO("AniWatcher::Emit, status, AsyncExecueInMainThread!");

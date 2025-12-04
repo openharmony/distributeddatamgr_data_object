@@ -14,7 +14,7 @@
  */
 #define LOG_TAG "AniDataObjectSession"
 #include "ani_dataobject_session.h"
-#include "ohos.data.distributedDataObject.DataObject.hpp"
+#include "ohos.data.distributedDataObject.DataObject.h"
 #include "logger.h"
 #include "ani_utils.h"
 #include "ani_error_utils.h"
@@ -55,7 +55,8 @@ void AniDataobjectSession::LeaveSession(OHOS::ObjectStore::DistributedObjectStor
     sessionId_.clear();
 }
 
-bool AniDataobjectSession::AddWatch(OHOS::ObjectStore::DistributedObjectStore *objectStore, std::string type, VarCallbackType taiheCallback)
+bool AniDataobjectSession::AddWatch(OHOS::ObjectStore::DistributedObjectStore *objectStore,
+    std::string type, VarCallbackType taiheCallback)
 {
     LOG_INFO("AniDataobjectSession::AddWatch, called");
     if (type.size() == 0) {
@@ -232,7 +233,8 @@ uint32_t AniDataobjectSession::SyncAssetToStore(std::string const& key, OHOS::Co
     return 0;
 }
 
-uint32_t AniDataobjectSession::SyncAssetsToStore(std::string const& key, std::vector<OHOS::CommonType::AssetValue> const& assets)
+uint32_t AniDataobjectSession::SyncAssetsToStore(std::string const& key,
+    std::vector<OHOS::CommonType::AssetValue> const& assets)
 {
     LOG_INFO("AniDataobjectSession::SyncAssetsToStore, called");
     ani_vm* vm = DataObjectImpl::GetVm();

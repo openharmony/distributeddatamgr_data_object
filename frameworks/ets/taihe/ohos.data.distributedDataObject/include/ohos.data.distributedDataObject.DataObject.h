@@ -34,7 +34,7 @@ public:
     ~DataObjectImpl();
     static ani_vm* GetVm() { return vm_; }
     static std::string JsonStringify(ani_env* aniEnv, ani_ref sourceObj);
-    static ani_ref JsonParse(ani_env* aniEnv, std::string const& str);
+    static ani_ref JsonParseToJsonElement(ani_env* aniEnv, std::string const& str);
     NativeObjectValueType ParseObjectValue(ani_env* aniEnv, ani_ref valueRef);
     void ParseObject(ani_object sourceObj, ::taihe::array_view<::taihe::string> const& keys);
 
@@ -63,18 +63,19 @@ public:
     void SetAssetsSync(::taihe::string_view assetsKey, ::taihe::array_view<::taihe::string> uris);
 
     void OnChange(::taihe::callback_view<
-        void(::taihe::string_view sessionId, ::taihe::array_view<::taihe::string> fields)> callback);
+        void(::taihe::string_view, ::taihe::array_view<::taihe::string>)> callback);
     void OffChange(::taihe::optional_view<
-        ::taihe::callback<void(::taihe::string_view sessionId, ::taihe::array_view<::taihe::string> fields)>> callback);
+        ::taihe::callback<void(::taihe::string_view, ::taihe::array_view<::taihe::string>)>> callback);
     void OnStatus(::taihe::callback_view<
-        void(::taihe::string_view sessionId, ::taihe::string_view networkId, ::taihe::string_view status)> callback);
+        void(::taihe::string_view, ::taihe::string_view, ::taihe::string_view)> callback);
     void OffStatus(::taihe::optional_view<
-        ::taihe::callback<void(::taihe::string_view sessionId, ::taihe::string_view networkId, ::taihe::string_view status)>> callback);
+        ::taihe::callback<void(::taihe::string_view, ::taihe::string_view, ::taihe::string_view)>> callback);
     void OnProgressChanged(::taihe::callback_view<
-        void(::taihe::string_view sessionId, int32_t progress)> callback);
+        void(::taihe::string_view, int32_t)> callback);
     void OffProgressChanged(::taihe::optional_view<
-        ::taihe::callback<void(::taihe::string_view sessionId, int32_t progress)>> callback);
-    void BindAssetStoreSync(::taihe::string_view assetKey, ::ohos::data::distributedDataObject::BindInfo const& bindInfo);
+        ::taihe::callback<void(::taihe::string_view, int32_t)>> callback);
+    void BindAssetStoreSync(::taihe::string_view assetKey,
+        ::ohos::data::distributedDataObject::BindInfo const& bindInfo);
 
     ::ohos::data::distributedDataObject::ObjectValueType GetValueImpl(::taihe::string_view key);
     void SetValueImpl(::taihe::string_view key, uintptr_t valueRef);
@@ -84,8 +85,10 @@ public:
     ani_ref GetAssetsRefFromStore(ani_env* aniEnv, std::string assetsKey);
     ::ohos::data::commonType::AssetStatus AssetStatusToTaihe(int32_t status);
     ::ohos::data::commonType::Asset AssetToTaihe(OHOS::CommonType::AssetValue const& value);
-    ::taihe::array<::ohos::data::commonType::Asset> AssetsToTaihe(std::vector<OHOS::CommonType::AssetValue> const& values);
-    ::ohos::data::distributedDataObject::ObjectValueType ObjectValueTypeToTaihe(ani_env* aniEnv, NativeObjectValueType const &valueObj);
+    ::taihe::array<::ohos::data::commonType::Asset> AssetsToTaihe(
+        std::vector<OHOS::CommonType::AssetValue> const& values);
+    ::ohos::data::distributedDataObject::ObjectValueType ObjectValueTypeToTaihe(
+        ani_env* aniEnv, NativeObjectValueType const &valueObj);
 
 protected:
     static ani_vm* vm_;

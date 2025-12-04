@@ -14,7 +14,7 @@
  */
 
 #include "ohos.data.distributedDataObject.impl.hpp"
-#include "ohos.data.distributedDataObject.DataObject.hpp"
+#include "ohos.data.distributedDataObject.DataObject.h"
 #include "stdexcept"
 #include "logger.h"
 

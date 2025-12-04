@@ -32,7 +32,8 @@ using AniChangeCallbackType = ::taihe::callback<void(::taihe::string_view, ::tai
 using AniStatusCallbackType = ::taihe::callback<void(::taihe::string_view, ::taihe::string_view, ::taihe::string_view)>;
 using AniProgressCallbackType = ::taihe::callback<void(::taihe::string_view, int32_t)>;
 
-using VarCallbackType = std::variant<std::monostate, AniChangeCallbackType, AniStatusCallbackType, AniProgressCallbackType>;
+using VarCallbackType = std::variant<std::monostate,
+    AniChangeCallbackType, AniStatusCallbackType, AniProgressCallbackType>;
 
 const std::string EVENT_CHANGE = "change";
 const std::string EVENT_STATUS = "status";
@@ -159,25 +160,30 @@ public:
         ProgressEventListener *progressEventListener);
 
 private:
-    struct ChangeArgs {
-        ChangeArgs(const AniChangeCallbackType callback, const std::string &sessionId, const std::vector<std::string> &changeData);
-        AniChangeCallbackType callback_;
-        const std::string sessionId_;
-        const std::vector<std::string> changeData_;
+    class ChangeArgs {
+        public:
+            explicit ChangeArgs(const AniChangeCallbackType callback,
+                const std::string &sessionId, const std::vector<std::string> &changeData);
+            AniChangeCallbackType callback_;
+            const std::string sessionId_;
+            const std::vector<std::string> changeData_;
     };
-    struct StatusArgs {
-        StatusArgs(const AniStatusCallbackType callback, const std::string &sessionId, const std::string &networkId,
-            const std::string &status);
-        AniStatusCallbackType callback_;
-        const std::string sessionId_;
-        const std::string networkId_;
-        const std::string status_;
+    class StatusArgs {
+        public:
+            explicit StatusArgs(const AniStatusCallbackType callback,
+                const std::string &sessionId, const std::string &networkId, const std::string &status);
+            AniStatusCallbackType callback_;
+            const std::string sessionId_;
+            const std::string networkId_;
+            const std::string status_;
     };
-    struct ProgressArgs {
-        ProgressArgs(const AniProgressCallbackType callback, const std::string &sessionId, const int32_t progress);
-        AniProgressCallbackType callback_;
-        const std::string sessionId_;
-        const int32_t progress_;
+    class ProgressArgs {
+        public:
+            explicit ProgressArgs(const AniProgressCallbackType callback,
+                const std::string &sessionId, const int32_t progress);
+            AniProgressCallbackType callback_;
+            const std::string sessionId_;
+            const int32_t progress_;
     };
 
     EventListener *Find(std::string type);
@@ -196,7 +202,7 @@ private:
 
 class WatcherImpl : public ObjectWatcher {
 public:
-    WatcherImpl(std::weak_ptr<AniWatcher> watcher) : watcher_(watcher)
+    explicit WatcherImpl(std::weak_ptr<AniWatcher> watcher) : watcher_(watcher)
     {
     }
 

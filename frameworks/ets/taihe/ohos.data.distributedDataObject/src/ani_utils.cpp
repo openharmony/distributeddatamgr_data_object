@@ -648,37 +648,29 @@ bool UnionAccessor::TryConvert<OHOS::CommonType::Asset>(OHOS::CommonType::Asset 
 {
     std::string clsName = "std.core.Object";
     if (!IsInstanceOf(clsName)) {
-        LOG_ERROR("xxxerr TryConvert 1");
         return false;
     }
     OHOS::CommonType::Asset tmp;
     if (ANI_OK != AniGetProperty(env_, obj_, "name", tmp.name)) {
-        LOG_ERROR("xxxerr TryConvert 2");
         return false;
     }
     if (ANI_OK != AniGetProperty(env_, obj_, "uri", tmp.uri)) {
-        LOG_ERROR("xxxerr TryConvert 3");
         return false;
     }
     if (ANI_OK != AniGetProperty(env_, obj_, "path", tmp.path)) {
-        LOG_ERROR("xxxerr TryConvert 4");
         return false;
     }
     if (ANI_OK != AniGetProperty(env_, obj_, "createTime", tmp.createTime)) {
-        LOG_ERROR("xxxerr TryConvert 5");
         return false;
     }
     if (ANI_OK != AniGetProperty(env_, obj_, "modifyTime", tmp.modifyTime)) {
-        LOG_ERROR("xxxerr TryConvert 6");
         return false;
     }
     if (ANI_OK != AniGetProperty(env_, obj_, "size", tmp.size)) {
-        LOG_ERROR("xxxxerr TryConvert 7");
         return false;
     }
     ani_int enumVal = 0;
     if (ANI_OK != AniGetProperty(env_, obj_, "status", enumVal, true)) {
-        LOG_ERROR("xxxxerr TryConvert 8");
         return false;
     }
     tmp.status = static_cast<OHOS::CommonType::Asset::Status>(enumVal);
