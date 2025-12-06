@@ -233,6 +233,28 @@ uint32_t AniDataobjectSession::SyncAssetToStore(std::string const& key, OHOS::Co
     return 0;
 }
 
+uint32_t AniDataobjectSession::SyncAssetAttrToStore(std::string const& key,
+    std::string const& attr, uint32_t value)
+{
+    if (distributedObj_ == nullptr) {
+        LOG_ERROR("distributedObj_ nullptr");
+        return 0;
+    }
+    distributedObj_->PutDouble(key + ASSET_KEY_SEPARATOR + attr, value);
+    return 0;
+}
+
+uint32_t AniDataobjectSession::SyncAssetAttrToStore(std::string const& key,
+    std::string const& attr, std::string const& value)
+{
+    if (distributedObj_ == nullptr) {
+        LOG_ERROR("distributedObj_ nullptr");
+        return 0;
+    }
+    distributedObj_->PutString(key + ASSET_KEY_SEPARATOR + attr, STRING_TYPE + value);
+    return 0;
+}
+
 uint32_t AniDataobjectSession::SyncAssetsToStore(std::string const& key,
     std::vector<OHOS::CommonType::AssetValue> const& assets)
 {

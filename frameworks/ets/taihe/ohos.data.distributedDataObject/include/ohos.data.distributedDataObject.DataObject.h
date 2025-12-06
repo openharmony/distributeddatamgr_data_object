@@ -36,6 +36,7 @@ public:
     static std::string JsonStringify(ani_env* aniEnv, ani_ref sourceObj);
     static ani_ref JsonParseToJsonElement(ani_env* aniEnv, std::string const& str);
     NativeObjectValueType ParseObjectValue(ani_env* aniEnv, ani_ref valueRef);
+    bool ParseRecord(ani_env* env, ani_ref recordRef, std::map<std::string, NativeObjectValueType> &resultMap);
     void ParseObject(ani_object sourceObj, ::taihe::array_view<::taihe::string> const& keys);
 
     static std::string GenerateRandomNum();
@@ -79,16 +80,19 @@ public:
 
     ::ohos::data::distributedDataObject::ObjectValueType GetValueImpl(::taihe::string_view key);
     void SetValueImpl(::taihe::string_view key, uintptr_t valueRef);
-    uintptr_t GetAssetValue(::taihe::string_view key, ::taihe::string_view attr);
-    void SetAssetValue(::taihe::string_view key, ::taihe::string_view attr, uintptr_t value);
+    void SetAssetItemValue(::taihe::string_view key, ::taihe::string_view attr,
+        ::ohos::data::distributedDataObject::AssetValueType const& value);
+    void UpdateAssetAttr(OHOS::CommonType::AssetValue &asset, std::string const& externalKey,
+        std::string const& attr, ::ohos::data::distributedDataObject::AssetValueType const& value);
 
     ani_ref GetAssetsRefFromStore(ani_env* aniEnv, std::string assetsKey);
     ::ohos::data::commonType::AssetStatus AssetStatusToTaihe(int32_t status);
+    uint32_t TaiheStatusToNative(::ohos::data::commonType::AssetStatus status);
     ::ohos::data::commonType::Asset AssetToTaihe(OHOS::CommonType::AssetValue const& value);
     ::taihe::array<::ohos::data::commonType::Asset> AssetsToTaihe(
         std::vector<OHOS::CommonType::AssetValue> const& values);
     ::ohos::data::distributedDataObject::ObjectValueType ObjectValueTypeToTaihe(
-        ani_env* aniEnv, NativeObjectValueType const &valueObj);
+        ani_env* aniEnv, std::string const& externalKey, NativeObjectValueType const &valueObj);
 
 protected:
     static ani_vm* vm_;

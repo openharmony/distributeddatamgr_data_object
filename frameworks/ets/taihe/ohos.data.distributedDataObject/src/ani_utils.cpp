@@ -284,6 +284,18 @@ ani_method AniGetClassMethod(ani_env *env, const char* className, const char* me
     return retMethod;
 }
 
+ani_field AniFindClassField(ani_env *env, ani_class cls, char const *name)
+{
+    ani_field fld;
+    if (cls == nullptr) {
+        return nullptr;
+    }
+    if (ANI_OK != env->Class_FindField(cls, name, &fld)) {
+        return nullptr;
+    }
+    return fld;
+}
+
 ani_object AniCreatEmptyRecord(ani_env* env, ani_method& setMethod)
 {
     ani_method constructor = ani_utils::AniGetClassMethod(env, "escompat.Record", "<ctor>", ":");
@@ -368,20 +380,24 @@ bool UnionAccessor::IsInstanceOfType<std::string>()
 template<>
 bool UnionAccessor::TryConvertArray<ani_ref>(std::vector<ani_ref> &value)
 {
-    ani_double length;
-    if (ANI_OK != env_->Object_GetPropertyByName_Double(obj_, "length", &length)) {
-        LOG_ERROR("Object_GetPropertyByName_Double length failed");
+    if (!IsInstanceOf("A{C{std.core.Object}}") && !IsInstanceOf("escompat.Array")) {
         return false;
     }
-    for (int i = 0; i < int(length); i++) {
-        ani_ref ref;
-        if (ANI_OK != env_->Object_CallMethodByName_Ref(obj_, "$_get", "i:C{std.core.Object}", &ref, (ani_int)i)) {
-            LOG_ERROR("Object_GetPropertyByName_Ref failed");
+    ani_size arrayLength = 0;
+    auto status = env_->Array_GetLength(static_cast<ani_array>(obj_), &arrayLength);
+    if (status != ANI_OK) {
+        LOG_ERROR("Array_GetLength failed");
+        return false;
+    }
+    for (ani_size i = 0; i < arrayLength; i++) {
+        ani_ref result;
+        status = env_->Array_Get(static_cast<ani_array>(obj_), i, &result);
+        if (status != ANI_OK) {
+            LOG_ERROR("Array_Get failed");
             return false;
         }
-        value.push_back(ref);
+        value.push_back(result);
     }
-    LOG_DEBUG("convert ref array ok.");
     return true;
 }
 
@@ -463,25 +479,20 @@ bool UnionAccessor::TryConvertArray<double>(std::vector<double> &value)
 template<>
 bool UnionAccessor::TryConvertArray<uint8_t>(std::vector<uint8_t> &value)
 {
-    LOG_ERROR("TryConvertArray vector<uint8_t> 5");
-
     ani_ref buffer;
     if (ANI_OK != env_->Object_GetFieldByName_Ref(obj_, "buffer", &buffer)) {
         LOG_ERROR("Object_GetFieldByName_Ref failed");
         return false;
     }
-    LOG_ERROR("TryConvertArray vector<uint8_t> 6");
     void* data;
     size_t size;
     if (ANI_OK != env_->ArrayBuffer_GetInfo(static_cast<ani_arraybuffer>(buffer), &data, &size)) {
         LOG_ERROR("ArrayBuffer_GetInfo failed");
         return false;
     }
-    LOG_ERROR("TryConvertArray vector<uint8_t> 7");
     for (size_t i = 0; i < size; i++) {
         value.push_back(static_cast<uint8_t*>(data)[i]);
     }
-    LOG_DEBUG("convert uint8 array ok.");
     return true;
 }
 
@@ -617,11 +628,9 @@ bool UnionAccessor::TryConvert<bool>(bool &value)
 template<>
 bool UnionAccessor::TryConvert<std::vector<uint8_t>>(std::vector<uint8_t> &value)
 {
-    LOG_ERROR("TryConvert vector<uint8_t> 1");
     if (!IsInstanceOf("escompat.Uint8Array")) {
         return false;
     }
-    LOG_ERROR("TryConvert vector<uint8_t> 2");
     return TryConvertArray(value);
 }
 
@@ -681,8 +690,7 @@ bool UnionAccessor::TryConvert<OHOS::CommonType::Asset>(OHOS::CommonType::Asset 
 template<>
 bool UnionAccessor::TryConvert<std::vector<OHOS::CommonType::Asset>>(std::vector<OHOS::CommonType::Asset> &value)
 {
-    std::string clsName = "A{C{std.core.Object}}";
-    if (!IsInstanceOf(clsName)) {
+    if (!IsInstanceOf("A{C{std.core.Object}}") && !IsInstanceOf("escompat.Array")) {
         return false;
     }
     ani_size arrayLength = 0;
@@ -740,9 +748,52 @@ void AniExecuteFunc(ani_vm* vm, const std::function<void(ani_env*)> func)
     }
 }
 
+ani_object AniCreateProxyAsset(ani_env *env, std::string const& externalKey, OHOS::CommonType::AssetValue const& asset)
+{
+    if (env == nullptr) {
+        return {};
+    }
+    ani_class assetProxyClass = ani_utils::AniGetClass(env,
+        "@ohos.data.distributedDataObject.distributedDataObject.DdoAssetProxy");
+    if (assetProxyClass == nullptr) {
+        return {};
+    }
+    ani_object ani_field_externalkey = AniCreateString(env, externalKey);
+    ani_object ani_field_name = AniCreateString(env, asset.name);
+    ani_object ani_field_uri = AniCreateString(env, asset.uri);
+    ani_object ani_field_path = AniCreateString(env, asset.path);
+    ani_object ani_field_createTime = AniCreateString(env, asset.createTime);
+    ani_object ani_field_modifyTime = AniCreateString(env, asset.modifyTime);
+    ani_object ani_field_size = AniCreateString(env, asset.size);
+    ani_ref ani_field_status;
+    env->GetUndefined(&ani_field_status);
+    if (asset.status != OHOS::CommonType::AssetValue::Status::STATUS_UNKNOWN) {
+        int32_t status = (int32_t)asset.status;
+        ani_enum enumType;
+        ani_enum_item enumItem = nullptr;
+        bool ret = false;
+        if (ANI_OK == env->FindEnum("@ohos.data.commonType.commonType.AssetStatus", &enumType)) {
+            ret = (ANI_OK == env->Enum_GetEnumItemByIndex(enumType, static_cast<ani_size>(status), &enumItem));
+        }
+        if (ret && enumItem != nullptr) {
+            ani_field_status = reinterpret_cast<ani_ref>(enumItem);
+        }
+    }
+    ani_method method = AniGetMethod(env, assetProxyClass, "<ctor>", nullptr);
+    ani_object ani_obj = {};
+    auto status = env->Object_New(assetProxyClass, method, &ani_obj, ani_field_externalkey, ani_field_name, ani_field_uri, ani_field_path,
+        ani_field_createTime, ani_field_modifyTime, ani_field_size, ani_field_status);
+    LOG_INFO("AniCreateProxyAsset, ret %{public}d", status);
+    return ani_obj;
+}
+
 ani_object AniCreateAsset(ani_env *env, OHOS::CommonType::AssetValue const& asset)
 {
     if (env == nullptr) {
+        return {};
+    }
+    ani_class assetClass = ani_utils::AniGetClass(env, "@ohos.data.commonType.commonType._taihe_Asset_inner");
+    if (assetClass == nullptr) {
         return {};
     }
     ani_object ani_field_name = AniCreateString(env, asset.name);
@@ -765,14 +816,11 @@ ani_object AniCreateAsset(ani_env *env, OHOS::CommonType::AssetValue const& asse
             ani_field_status = reinterpret_cast<ani_ref>(enumItem);
         }
     }
-    ani_class cls = ani_utils::AniGetClass(env,
-        "@ohos.data.commonType.commonType._taihe_Asset_inner");
-    ani_method method = ani_utils::AniGetClassMethod(env,
-        "@ohos.data.commonType.commonType._taihe_Asset_inner", "<ctor>", nullptr);
+    ani_method method = AniGetMethod(env, assetClass, "<ctor>", nullptr);
     ani_object ani_obj = {};
-    env->Object_New(cls, method, &ani_obj, ani_field_name, ani_field_uri, ani_field_path,
+    auto status = env->Object_New(assetClass, method, &ani_obj, ani_field_name, ani_field_uri, ani_field_path,
         ani_field_createTime, ani_field_modifyTime, ani_field_size, ani_field_status);
-        LOG_ERROR("AniCreateAsset, ret %{public}p", ani_obj);
+    LOG_INFO("AniCreateAsset, ret %{public}d", status);
     return ani_obj;
 }
 

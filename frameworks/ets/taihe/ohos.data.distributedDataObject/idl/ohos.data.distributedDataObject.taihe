@@ -19,6 +19,7 @@
 @!sts_inject_into_module("""
 import BaseContext from 'application.BaseContext';
 import { AsyncCallback, Callback, BusinessError } from '@ohos.base';
+import commonTypeTemp from './@ohos.data.commonType';
 """)
 
 use ohos.data.commonType as commonType;
@@ -40,7 +41,13 @@ function create(context: BaseContext, source: object): DataObject
         let err : BusinessError = { code: 401, message :"Parameter error. The type of source must be object."}
         throw err;
     };
-    let keys : Array<string> = Object.keys(source)
+    console.info("DDo, source type is,", JSON.stringify(Type.of(source)))
+    let keys : Array<string> = [];
+    try {
+        keys = Object.keys(source);
+    } catch (err) {
+        console.error("DDo, Object.keys err, ", JSON.stringify(err));
+    }
     return createImpl(context, source, keys)
 }
 
@@ -49,15 +56,121 @@ function jsonStringify(para : Object) : string
     return JSON.stringify(para);
 }
 
-function jsonParserParse(para : string) : Object
-{
-    return JSONParser.parse(para);
-}
-
 function jsonParseJsonElement(para : string) : Object
 {
     let result : jsonx.JsonElement = JSON.parseJsonElement(para);
     return result;
+}
+
+export class DdoAssetProxy implements commonTypeTemp.Asset {
+    nameProxy: string;
+    uriProxy: string;
+    pathProxy: string;
+    createTimeProxy: string;
+    modifyTimeProxy: string;
+    sizeProxy: string;
+    statusProxy: (commonTypeTemp.AssetStatus | undefined);
+    ddoExternalKey: string;
+    ddoManager: DataObject | undefined;
+    constructor(
+        externalKey: string,
+        name: string,
+        uri: string,
+        path: string,
+        createTime: string,
+        modifyTime: string,
+        size: string,
+        status: (commonTypeTemp.AssetStatus | undefined),
+    )
+    {
+        this.nameProxy = name;
+        this.uriProxy = uri;
+        this.pathProxy = path;
+        this.createTimeProxy = createTime;
+        this.modifyTimeProxy = modifyTime;
+        this.sizeProxy = size;
+        this.statusProxy = status;
+        this.ddoManager = undefined;
+        this.ddoExternalKey = externalKey;
+    }
+    setStrValue(attrkey: string, value: string): void
+    {
+        if (this.ddoManager == undefined || this.ddoManager == null) {
+            return;
+        }
+        this.ddoManager!.setAssetItemValue(this.ddoExternalKey, attrkey, value);
+    }
+    set name(newValue: string)
+    {
+        this.nameProxy = newValue;
+        this.setStrValue("name", newValue);
+    }
+    get name(): string
+    {
+        return this.nameProxy;
+    }
+    set uri(newValue: string)
+    {
+        this.uriProxy = newValue;
+        this.setStrValue("uri", newValue);
+    }
+    get uri(): string
+    {
+        return this.uriProxy;
+    }
+    set path(newValue: string)
+    {
+        this.pathProxy = newValue;
+        this.setStrValue("path", newValue);
+    }
+    get path(): string
+    {
+        return this.pathProxy;
+    }
+    set createTime(newValue: string)
+    {
+        this.createTimeProxy = newValue;
+        this.setStrValue("createTime", newValue);
+    }
+    get createTime(): string
+    {
+        return this.createTimeProxy;
+    }
+    set modifyTime(newValue: string)
+    {
+        this.modifyTimeProxy = newValue;
+        this.setStrValue("modifyTime", newValue);
+    }
+    get modifyTime(): string
+    {
+        return this.modifyTimeProxy;
+    }
+    set size(newValue: string)
+    {
+        this.sizeProxy = newValue;
+        this.setStrValue("size", newValue);
+    }
+    get size(): string
+    {
+        return this.sizeProxy;
+    }
+    set status(newValue: commonTypeTemp.AssetStatus | undefined)
+    {
+        if (this.ddoManager == undefined || this.ddoManager == null || newValue == undefined) {
+            return;
+        }
+        let tempStatus = newValue as commonTypeTemp.AssetStatus;
+        this.ddoManager!.setAssetItemValue(this.ddoExternalKey, "status", tempStatus);
+    }
+    get status(): commonTypeTemp.AssetStatus | undefined
+    {
+        return this.statusProxy;
+    }
+    setExtraData(ddoManager: DataObject) : void
+    {
+        console.info("DDO, setExtraData");
+        this.ddoManager = ddoManager;
+    }
 }
 """)
 
@@ -81,7 +194,13 @@ union ObjectValueType {
     ASSETS: Array<commonType.Asset>;
 }
 
+union AssetValueType {
+    STR: String;
+    STATUS: commonType.AssetStatus;
+}
+
 function CreateImpl(context: @sts_type("BaseContext") Opaque, source: Opaque, keys: Array<String>): DataObject;
+
 function GenSessionId(): String;
 
 struct SaveSuccessResponse {
@@ -128,8 +247,7 @@ interface DataObject {
 
     GetValueImpl(key : String) : ObjectValueType;
     SetValueImpl(key : String, value : Opaque) : void;
-    GetAssetValue(key : String, attr : String) : Opaque;
-    SetAssetValue(key : String, attr : String, value : Opaque) : void;
+    SetAssetItemValue(key : String, attr : String, value : AssetValueType) : void;
 
     @!sts_inject_into_interface("""
     getValue(key : String) : Object | null | undefined;
@@ -154,7 +272,16 @@ interface DataObject {
     }
     getValue(key : String) : Object | null | undefined
     {
-        return this.getValueImpl(key);
+        let tempResult = this.getValueImpl(key);
+        if (tempResult != null && tempResult != undefined && tempResult instanceof DdoAssetProxy) {
+            console.info("DDo, getValue, ret DdoAssetProxy");
+            try {
+                let assetProxy = tempResult as DdoAssetProxy;
+                assetProxy.setExtraData(this);
+            } catch (err) {
+            }
+        }
+        return tempResult;
     }
     on(type: string, callback: Object): void {
         if (type === "change") {

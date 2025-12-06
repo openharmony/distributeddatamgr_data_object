@@ -49,6 +49,7 @@ ani_object AniCreatEmptyRecord(ani_env* env, ani_method& setMethod);
 ani_method AniGetMethod(ani_env *env, ani_class cls, const char* methodName, const char* signature);
 ani_class AniGetClass(ani_env *env, const char* className);
 ani_method AniGetClassMethod(ani_env *env, const char* className, const char* methodName, const char* signature);
+ani_field AniFindClassField(ani_env *env, ani_class cls, char const *name);
 
 bool AniMapSet(ani_env *env, ani_object map, ani_method mapSetMethod, const char* key, std::string const& valueStr);
 
@@ -132,6 +133,7 @@ private:
 };
 
 void AniExecuteFunc(ani_vm* vm, const std::function<void(ani_env*)> func);
+ani_object AniCreateProxyAsset(ani_env *env, std::string const& externalKey, OHOS::CommonType::AssetValue const& asset);
 ani_object AniCreateAsset(ani_env *env, OHOS::CommonType::AssetValue const& asset);
 ani_object AniCreateAssets(ani_env *env, std::vector<OHOS::CommonType::AssetValue> const& assets);
 OHOS::ObjectStore::AssetBindInfo BindInfoToNative(::ohos::data::distributedDataObject::BindInfo const& taiheBindInfo);

@@ -174,7 +174,7 @@ NativeObjectValueType DataObjectImpl::ParseObjectValue(ani_env *aniEnv, ani_ref 
         objValue = asset;
     } else if (accessor.TryConvert<std::vector<OHOS::CommonType::Asset>>(assets)) {
         LOG_INFO("ParseObjectValue, Assets");
-        objValue = asset;
+        objValue = assets;
     } else if (accessor.IsInstanceOf("std.core.Object")) {
         LOG_INFO("ParseObjectValue, Object");
         std::string strobj = JsonStringify(aniEnv, valueRef);
@@ -184,10 +184,83 @@ NativeObjectValueType DataObjectImpl::ParseObjectValue(ani_env *aniEnv, ani_ref 
     return objValue;
 }
 
+bool DataObjectImpl::ParseRecord(ani_env* env, ani_ref recordRef,
+    std::map<std::string, NativeObjectValueType> &resultMap)
+{
+    if (env == nullptr || recordRef == nullptr) {
+        return false;
+    }
+    ani_boolean boolValue = false;
+    env->Reference_IsNull(recordRef, &boolValue);
+    if (boolValue) {
+        LOG_ERROR("ParseRecord, Reference_IsNull");
+        return false;
+    }
+    env->Reference_IsUndefined(recordRef, &boolValue);
+    if (boolValue) {
+        LOG_ERROR("ParseRecord, Reference_IsNull");
+        return false;
+    }
+    ani_method entryMethod = ani_utils::AniGetClassMethod(env,
+        "escompat.Record", "entries", ":C{std.core.IterableIterator}");
+    ani_method iterNextMethod = ani_utils::AniGetClassMethod(env,
+        "std.core.Iterator", "next", ":C{std.core.IteratorResult}");
+    ani_class iterResultClass = ani_utils::AniGetClass(env, "std.core.IteratorResult");
+
+    ani_object ani_iter = {};
+    env->Object_CallMethod_Ref(static_cast<ani_object>(recordRef), entryMethod, reinterpret_cast<ani_ref*>(&ani_iter));
+    while (true) {
+        ani_object temp_ani_next = {};
+        ani_boolean temp_ani_done = {};
+        env->Object_CallMethod_Ref(ani_iter, iterNextMethod, reinterpret_cast<ani_ref*>(&temp_ani_next));
+        ani_field fieldTmp = ani_utils::AniFindClassField(env, iterResultClass, "done");
+        env->Object_GetField_Boolean(temp_ani_next, fieldTmp, &temp_ani_done);
+        if (temp_ani_done) {
+            break;
+        }
+        ani_tuple_value temp_ani_item = {};
+        fieldTmp = ani_utils::AniFindClassField(env, iterResultClass, "value");
+        env->Object_GetField_Ref(temp_ani_next, fieldTmp, reinterpret_cast<ani_ref*>(&temp_ani_item));
+        ani_ref temp_ani_key = {};
+        env->TupleValue_GetItem_Ref(temp_ani_item, 0, &temp_ani_key);
+        ani_ref temp_ani_val = {};
+        env->TupleValue_GetItem_Ref(temp_ani_item, 1, &temp_ani_val);
+        ani_size temp_cpp_key_ani_size = {};
+        env->String_GetUTF8Size(static_cast<ani_string>(temp_ani_key), &temp_cpp_key_ani_size);
+        TString temp_cpp_key_cpp_tstr;
+        char* temp_cpp_key_cpp_buff = tstr_initialize(&temp_cpp_key_cpp_tstr, temp_cpp_key_ani_size + 1);
+        env->String_GetUTF8(static_cast<ani_string>(temp_ani_key), temp_cpp_key_cpp_buff, temp_cpp_key_ani_size + 1, &temp_cpp_key_ani_size);
+        temp_cpp_key_cpp_buff[temp_cpp_key_ani_size] = '\0';
+        temp_cpp_key_cpp_tstr.length = temp_cpp_key_ani_size;
+        ::taihe::string temp_cpp_key = ::taihe::string(temp_cpp_key_cpp_tstr);
+        NativeObjectValueType parseResult = ParseObjectValue(env, temp_ani_val);
+        resultMap[std::string(temp_cpp_key)] = parseResult;
+        LOG_INFO("ParseRecord, temp_cpp_key %{public}s", std::string(temp_cpp_key).c_str());
+    }
+    return true;
+}
+
 void DataObjectImpl::ParseObject(ani_object sourceObj, ::taihe::array_view<::taihe::string> const& keys)
 {
     ani_env *aniEnv = taihe::get_env();
-    if (aniEnv == nullptr) {
+    if (aniEnv == nullptr || sourceObj == nullptr) {
+        return;
+    }
+    ani_utils::UnionAccessor accessor(aniEnv, sourceObj);
+    std::vector<ani_ref> aniRefArray;
+    bool result = accessor.TryConvertArray(aniRefArray);
+    if (result) {
+        LOG_INFO("ParseObject, sourceObj is Array");
+        for (size_t k = 0; k < aniRefArray.size(); k++) {
+            ani_ref item = aniRefArray[k];
+            NativeObjectValueType parseResult = ParseObjectValue(aniEnv, item);
+            sourceDataMap_[std::to_string(k)] = parseResult;
+        }
+        return;
+    }
+    if (accessor.IsInstanceOf("escompat.Record")) {
+        LOG_INFO("ParseObject, sourceObj Record");
+        ParseRecord(aniEnv, sourceObj, sourceDataMap_);
         return;
     }
     for (auto itemKey : keys) {
@@ -869,7 +942,7 @@ void DataObjectImpl::BindAssetStoreSync(::taihe::string_view assetKey,
         auto pvalAsset = std::get_if<OHOS::CommonType::AssetValue>(&result);
         auto pvalAssets = std::get_if<std::vector<OHOS::CommonType::AssetValue>>(&result);
         if (pvalAsset != nullptr) {
-            std::string keytmp = std::string(key) + "0";
+            std::string keytmp = std::string(key);
             result = session_->GetAssetValueFromStore(keytmp.c_str());
         } else if (pvalAssets != nullptr) {
             LOG_INFO("DataObjectImpl::GetValueImpl, is assets");
@@ -882,7 +955,7 @@ void DataObjectImpl::BindAssetStoreSync(::taihe::string_view assetKey,
             result = session_->GetValueFromStore(std::string(key).c_str());
         }
     }
-    return ObjectValueTypeToTaihe(aniEnv, result);
+    return ObjectValueTypeToTaihe(aniEnv, std::string(key), result);
 }
 
 void DataObjectImpl::SetValueImpl(::taihe::string_view key, uintptr_t valueRef)
@@ -907,6 +980,17 @@ void DataObjectImpl::SetValueImpl(::taihe::string_view key, uintptr_t valueRef)
         return;
     }
 
+    NativeObjectValueType oldValue = iter->second;
+    bool oldIsAsset = std::holds_alternative<OHOS::CommonType::AssetValue>(oldValue);
+    bool oldIsAssets = std::holds_alternative<std::vector<OHOS::CommonType::AssetValue>>(oldValue);
+    bool newIsAsset = std::holds_alternative<OHOS::CommonType::AssetValue>(parseResult);
+    bool newIsAssets = std::holds_alternative<std::vector<OHOS::CommonType::AssetValue>>(parseResult);
+    if (oldIsAsset != newIsAsset) {
+        LOG_ERROR("DataObjectImpl::SetValueImpl, asset value not matched");
+    }
+    if (oldIsAssets != newIsAssets) {
+        LOG_ERROR("DataObjectImpl::SetValueImpl, asset[] value not matched");
+    }
     std::lock_guard<std::mutex> guard(sessionInfoMutex_);
     sourceDataMap_[std::string(key)] = parseResult;
     if (session_ != nullptr && !session_->GetSessionId().empty()) {
@@ -915,13 +999,68 @@ void DataObjectImpl::SetValueImpl(::taihe::string_view key, uintptr_t valueRef)
     version_ ++;
 }
 
-uintptr_t DataObjectImpl::GetAssetValue(::taihe::string_view key, ::taihe::string_view attr)
+void DataObjectImpl::SetAssetItemValue(::taihe::string_view key, ::taihe::string_view attr,
+    ::ohos::data::distributedDataObject::AssetValueType const& value)
 {
-    return 0;
+    LOG_INFO("DataObjectImpl::SetAssetItemValue, key %{public}s, attr %{public}s", key.c_str(), attr.c_str());
+    auto iter = sourceDataMap_.find(std::string(key));
+    if (iter == sourceDataMap_.end()) {
+        LOG_ERROR("DataObjectImpl::SetAssetItemValue, no key matched");
+        ani_errorutils::ThrowError(ani_errorutils::AniError_ParameterCheck, "Parameter error. Incorrect key to set.");
+        return;
+    }
+    auto existedValue = iter->second;
+    auto pvalAsset = std::get_if<OHOS::CommonType::AssetValue>(&existedValue);
+    if (pvalAsset == nullptr) {
+        LOG_ERROR("DataObjectImpl::SetAssetItemValue, target is not Asset");
+        ani_errorutils::ThrowError(ani_errorutils::AniError_ParameterCheck, "Parameter error. target is not Asset.");
+        return;
+    }
+    auto &asset = *pvalAsset;
+    UpdateAssetAttr(asset, std::string(key), std::string(attr), value);
+    version_ ++;
 }
 
-void DataObjectImpl::SetAssetValue(::taihe::string_view key, ::taihe::string_view attr, uintptr_t value)
+void DataObjectImpl::UpdateAssetAttr(OHOS::CommonType::AssetValue &asset, std::string const& externalKey,
+    std::string const& attr, ::ohos::data::distributedDataObject::AssetValueType const& value)
 {
+    std::string paraStr;
+    uint32_t paraStatus = OHOS::CommonType::AssetValue::Status::STATUS_UNKNOWN;
+    if (value.get_tag() == ::ohos::data::distributedDataObject::AssetValueType::tag_t::STR) {
+        paraStr = value.get_STR_ref();
+    } else {
+        auto taiheStatus = value.get_STATUS_ref();
+        paraStatus = TaiheStatusToNative(taiheStatus);
+    }
+    LOG_INFO("DataObjectImpl::UpdateAssetAttr, attr %{public}s, paraStr %{public}s", attr.c_str(), paraStr.c_str());
+    if (attr == "id") {
+        asset.id = paraStr;
+    } else if (attr == "name") {
+        asset.name = paraStr;
+    } else if (attr == "uri") {
+        asset.uri = paraStr;
+    } else if (attr == "createTime") {
+        asset.createTime = paraStr;
+    } else if (attr == "modifyTime") {
+        asset.modifyTime = paraStr;
+    } else if (attr == "size") {
+        asset.size = paraStr;
+    } else if (attr == "hash") {
+        asset.hash = paraStr;
+    } else if (attr == "path") {
+        asset.path = paraStr;
+    } else if (attr == "status") {
+        asset.status = paraStatus;
+    } else {
+        return;
+    }
+    if (session_ != nullptr && !session_->GetSessionId().empty()) {
+        if (attr == "status") {
+            session_->SyncAssetAttrToStore(externalKey, attr, paraStatus);
+        } else {
+            session_->SyncAssetAttrToStore(externalKey, attr, paraStr);
+        }
+    }
 }
 
 ani_ref DataObjectImpl::GetAssetsRefFromStore(ani_env* aniEnv, std::string assetsKey)
@@ -973,6 +1112,32 @@ ani_ref DataObjectImpl::GetAssetsRefFromStore(ani_env* aniEnv, std::string asset
     return commonType::AssetStatus(resultKey);
 }
 
+uint32_t DataObjectImpl::TaiheStatusToNative(::ohos::data::commonType::AssetStatus status)
+{
+    using namespace ::ohos::data;
+    uint32_t result = OHOS::CommonType::AssetValue::Status::STATUS_UNKNOWN;
+    switch (status.get_key()) {
+        case commonType::AssetStatus::key_t::ASSET_NORMAL:
+            result = OHOS::CommonType::AssetValue::Status::STATUS_NORMAL;
+            break;
+        case commonType::AssetStatus::key_t::ASSET_INSERT:
+            result = OHOS::CommonType::AssetValue::Status::STATUS_INSERT;
+            break;
+        case commonType::AssetStatus::key_t::ASSET_UPDATE:
+            result = OHOS::CommonType::AssetValue::Status::STATUS_UPDATE;
+            break;
+        case commonType::AssetStatus::key_t::ASSET_DELETE:
+            result = OHOS::CommonType::AssetValue::Status::STATUS_DELETE;
+            break;
+        case commonType::AssetStatus::key_t::ASSET_DOWNLOADING:
+            result = OHOS::CommonType::AssetValue::Status::STATUS_DOWNLOADING;
+            break;
+        default:
+            break;
+    }
+    return result;
+}
+
 ::ohos::data::commonType::Asset DataObjectImpl::AssetToTaihe(OHOS::CommonType::AssetValue const& value)
 {
     ::ohos::data::commonType::Asset asset = {};
@@ -997,7 +1162,7 @@ ani_ref DataObjectImpl::GetAssetsRefFromStore(ani_env* aniEnv, std::string asset
 }
 
 ::ohos::data::distributedDataObject::ObjectValueType DataObjectImpl::ObjectValueTypeToTaihe(
-    ani_env* aniEnv, NativeObjectValueType const &valueObj)
+    ani_env* aniEnv, std::string const& externalKey, NativeObjectValueType const &valueObj)
 {
     using namespace ::ohos::data;
     if (aniEnv == nullptr) {
@@ -1022,8 +1187,9 @@ ani_ref DataObjectImpl::GetAssetsRefFromStore(ani_env* aniEnv, std::string asset
     }
     auto pvalAsset = std::get_if<OHOS::CommonType::AssetValue>(&valueObj);
     if (pvalAsset != nullptr) {
-        auto taiheAsset = AssetToTaihe(*pvalAsset);
-        return distributedDataObject::ObjectValueType::make_ASSET(taiheAsset);
+        LOG_INFO("DataObjectImpl::ObjectValueTypeToTaihe, create DdoAssetProxy");
+        ani_object aniAssetProxy = ani_utils::AniCreateProxyAsset(aniEnv, externalKey, *pvalAsset);
+        return distributedDataObject::ObjectValueType::make_OPAQUE(reinterpret_cast<uintptr_t>(aniAssetProxy));
     }
     auto pvalAssets = std::get_if<std::vector<OHOS::CommonType::AssetValue>>(&valueObj);
     if (pvalAssets != nullptr) {

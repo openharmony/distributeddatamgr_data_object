@@ -58,6 +58,8 @@ public:
     uint32_t BindAssetStore(std::string key, OHOS::ObjectStore::AssetBindInfo &nativeBindInfo);
     uint32_t SyncDataToStore(std::string const& key, NativeObjectValueType const& objValue, bool withPrefix);
     uint32_t SyncAssetToStore(std::string const& key, OHOS::CommonType::AssetValue const& asset);
+    uint32_t SyncAssetAttrToStore(std::string const& key, std::string const& attr, uint32_t value);
+    uint32_t SyncAssetAttrToStore(std::string const& key, std::string const& attr, std::string const& value);
     uint32_t SyncAssetsToStore(std::string const& key, std::vector<OHOS::CommonType::AssetValue> const& assets);
     uint32_t FlushCachedData(std::map<std::string, NativeObjectValueType> const& dataMap);
 
