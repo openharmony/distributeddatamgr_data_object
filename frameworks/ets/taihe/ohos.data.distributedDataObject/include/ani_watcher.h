@@ -205,9 +205,7 @@ public:
     explicit WatcherImpl(std::weak_ptr<AniWatcher> watcher) : watcher_(watcher)
     {
     }
-
     virtual ~WatcherImpl();
-
     void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override;
 
 private:

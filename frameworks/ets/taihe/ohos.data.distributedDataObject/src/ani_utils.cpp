@@ -347,6 +347,68 @@ ani_object AniCreateArray(ani_env *env, std::vector<ani_object> const& objectArr
     return array;
 }
 
+void AniExecuteFunc(ani_vm* vm, const std::function<void(ani_env*)> func)
+{
+    LOG_INFO("AniExecutePromise");
+    if (vm == nullptr) {
+        LOG_ERROR("AniExecutePromise, vm error");
+        return;
+    }
+    ani_env *currentEnv = nullptr;
+    ani_status aniResult = vm->GetEnv(ANI_VERSION_1, &currentEnv);
+    if (ANI_OK == aniResult && currentEnv != nullptr) {
+        LOG_INFO("AniExecutePromise, env exist");
+        func(currentEnv);
+        return;
+    }
+
+    ani_env* newEnv = nullptr;
+    ani_options aniArgs { 0, nullptr };
+    aniResult = vm->AttachCurrentThread(&aniArgs, ANI_VERSION_1, &newEnv);
+    if (ANI_OK != aniResult || newEnv == nullptr) {
+        LOG_ERROR("AniExecutePromise, AttachCurrentThread error");
+        return;
+    }
+    func(newEnv);
+    aniResult = vm->DetachCurrentThread();
+    if (ANI_OK != aniResult) {
+        LOG_ERROR("AniExecutePromise, DetachCurrentThread error");
+        return;
+    }
+}
+
+UnionAccessor::UnionAccessor(ani_env *env, ani_object &obj)
+    :env_(env), obj_(obj)
+{
+    if (!IsInstanceOf("std.core.Object")) {
+        LOG_ERROR("obj is not Object");
+        obj_ = nullptr;
+    }
+}
+
+bool UnionAccessor::IsInstanceOf(const std::string& cls_name)
+{
+    if (env_ == nullptr || obj_ == nullptr) {
+        return false;
+    }
+    ani_boolean isNull = false;
+    ani_boolean isUndefined = false;
+    env_->Reference_IsNull(obj_, &isNull);
+    env_->Reference_IsUndefined(obj_, &isUndefined);
+    if (isNull || isUndefined) {
+        return false;
+    }
+    ani_class cls;
+    if (ANI_OK != env_->FindClass(cls_name.c_str(), &cls) || cls == nullptr) {
+        return false;
+    }
+    ani_boolean ret;
+    if (ANI_OK != env_->Object_InstanceOf(obj_, cls, &ret)) {
+        return false;
+    }
+    return ret;
+}
+
 template<>
 bool UnionAccessor::IsInstanceOfType<bool>()
 {
@@ -354,7 +416,19 @@ bool UnionAccessor::IsInstanceOfType<bool>()
 }
 
 template<>
-bool UnionAccessor::IsInstanceOfType<int>()
+bool UnionAccessor::IsInstanceOfType<int8_t>()
+{
+    return IsInstanceOf("std.core.Byte");
+}
+
+template<>
+bool UnionAccessor::IsInstanceOfType<int16_t>()
+{
+    return IsInstanceOf("std.core.Short");
+}
+
+template<>
+bool UnionAccessor::IsInstanceOfType<int32_t>()
 {
     return IsInstanceOf("std.core.Int");
 }
@@ -363,6 +437,12 @@ template<>
 bool UnionAccessor::IsInstanceOfType<int64_t>()
 {
     return IsInstanceOf("std.core.Long");
+}
+
+template<>
+bool UnionAccessor::IsInstanceOfType<float>()
+{
+    return IsInstanceOf("std.core.Float");
 }
 
 template<>
@@ -375,6 +455,26 @@ template<>
 bool UnionAccessor::IsInstanceOfType<std::string>()
 {
     return IsInstanceOf("std.core.String");
+}
+
+bool UnionAccessor::TryConvertToNumber(double &value)
+{
+    if (IsInstanceOfType<int8_t>() ||
+        IsInstanceOfType<int16_t>() ||
+        IsInstanceOfType<int32_t>() ||
+        IsInstanceOfType<int64_t>() ||
+        IsInstanceOfType<float>() ||
+        IsInstanceOfType<double>()) {
+        ani_double aniValue;
+        auto ret = env_->Object_CallMethodByName_Double(obj_, "toDouble", nullptr, &aniValue);
+        if (ret != ANI_OK) {
+            LOG_ERROR("TryConvertToNumber, toDouble failed");
+            return false;
+        }
+        value = static_cast<int>(aniValue);
+        return true;
+    }
+    return false;
 }
 
 template<>
@@ -718,36 +818,6 @@ bool UnionAccessor::TryConvert<std::vector<OHOS::CommonType::Asset>>(std::vector
     return true;
 }
 
-void AniExecuteFunc(ani_vm* vm, const std::function<void(ani_env*)> func)
-{
-    LOG_INFO("AniExecutePromise");
-    if (vm == nullptr) {
-        LOG_ERROR("AniExecutePromise, vm error");
-        return;
-    }
-    ani_env *currentEnv = nullptr;
-    ani_status aniResult = vm->GetEnv(ANI_VERSION_1, &currentEnv);
-    if (ANI_OK == aniResult && currentEnv != nullptr) {
-        LOG_INFO("AniExecutePromise, env exist");
-        func(currentEnv);
-        return;
-    }
-
-    ani_env* newEnv = nullptr;
-    ani_options aniArgs { 0, nullptr };
-    aniResult = vm->AttachCurrentThread(&aniArgs, ANI_VERSION_1, &newEnv);
-    if (ANI_OK != aniResult || newEnv == nullptr) {
-        LOG_ERROR("AniExecutePromise, AttachCurrentThread error");
-        return;
-    }
-    func(newEnv);
-    aniResult = vm->DetachCurrentThread();
-    if (ANI_OK != aniResult) {
-        LOG_ERROR("AniExecutePromise, DetachCurrentThread error");
-        return;
-    }
-}
-
 ani_object AniCreateProxyAsset(ani_env *env, std::string const& externalKey, OHOS::CommonType::AssetValue const& asset)
 {
     if (env == nullptr) {
@@ -781,9 +851,8 @@ ani_object AniCreateProxyAsset(ani_env *env, std::string const& externalKey, OHO
     }
     ani_method method = AniGetMethod(env, assetProxyClass, "<ctor>", nullptr);
     ani_object ani_obj = {};
-    auto status = env->Object_New(assetProxyClass, method, &ani_obj, ani_field_externalkey, ani_field_name, ani_field_uri, ani_field_path,
-        ani_field_createTime, ani_field_modifyTime, ani_field_size, ani_field_status);
-    LOG_INFO("AniCreateProxyAsset, ret %{public}d", status);
+    env->Object_New(assetProxyClass, method, &ani_obj, ani_field_externalkey, ani_field_name,
+        ani_field_uri, ani_field_path, ani_field_createTime, ani_field_modifyTime, ani_field_size, ani_field_status);
     return ani_obj;
 }
 
@@ -818,9 +887,8 @@ ani_object AniCreateAsset(ani_env *env, OHOS::CommonType::AssetValue const& asse
     }
     ani_method method = AniGetMethod(env, assetClass, "<ctor>", nullptr);
     ani_object ani_obj = {};
-    auto status = env->Object_New(assetClass, method, &ani_obj, ani_field_name, ani_field_uri, ani_field_path,
+    env->Object_New(assetClass, method, &ani_obj, ani_field_name, ani_field_uri, ani_field_path,
         ani_field_createTime, ani_field_modifyTime, ani_field_size, ani_field_status);
-    LOG_INFO("AniCreateAsset, ret %{public}d", status);
     return ani_obj;
 }
 
@@ -837,6 +905,59 @@ ani_object AniCreateAssets(ani_env *env, std::vector<OHOS::CommonType::AssetValu
     return AniCreateArray(env, objectArray);
 }
 
+::ohos::data::commonType::AssetStatus AssetStatusToTaihe(uint32_t status)
+{
+    using namespace ::ohos::data;
+    commonType::AssetStatus::key_t resultKey = commonType::AssetStatus::key_t::ASSET_ABNORMAL;
+    switch (status) {
+        case OHOS::CommonType::AssetValue::Status::STATUS_NORMAL:
+            resultKey = commonType::AssetStatus::key_t::ASSET_NORMAL;
+            break;
+        case OHOS::CommonType::AssetValue::Status::STATUS_INSERT:
+            resultKey = commonType::AssetStatus::key_t::ASSET_INSERT;
+            break;
+        case OHOS::CommonType::AssetValue::Status::STATUS_UPDATE:
+            resultKey = commonType::AssetStatus::key_t::ASSET_UPDATE;
+            break;
+        case OHOS::CommonType::AssetValue::Status::STATUS_DELETE:
+            resultKey = commonType::AssetStatus::key_t::ASSET_DELETE;
+            break;
+        case OHOS::CommonType::AssetValue::Status::STATUS_DOWNLOADING:
+            resultKey = commonType::AssetStatus::key_t::ASSET_DOWNLOADING;
+            break;
+        default:
+            resultKey = commonType::AssetStatus::key_t::ASSET_ABNORMAL;
+            break;
+    }
+    return commonType::AssetStatus(resultKey);
+}
+
+uint32_t TaiheStatusToNative(::ohos::data::commonType::AssetStatus status)
+{
+    using namespace ::ohos::data;
+    uint32_t result = OHOS::CommonType::AssetValue::Status::STATUS_UNKNOWN;
+    switch (status.get_key()) {
+        case commonType::AssetStatus::key_t::ASSET_NORMAL:
+            result = OHOS::CommonType::AssetValue::Status::STATUS_NORMAL;
+            break;
+        case commonType::AssetStatus::key_t::ASSET_INSERT:
+            result = OHOS::CommonType::AssetValue::Status::STATUS_INSERT;
+            break;
+        case commonType::AssetStatus::key_t::ASSET_UPDATE:
+            result = OHOS::CommonType::AssetValue::Status::STATUS_UPDATE;
+            break;
+        case commonType::AssetStatus::key_t::ASSET_DELETE:
+            result = OHOS::CommonType::AssetValue::Status::STATUS_DELETE;
+            break;
+        case commonType::AssetStatus::key_t::ASSET_DOWNLOADING:
+            result = OHOS::CommonType::AssetValue::Status::STATUS_DOWNLOADING;
+            break;
+        default:
+            break;
+    }
+    return result;
+}
+
 OHOS::CommonType::Asset AssetToNative(::ohos::data::commonType::Asset const &asset)
 {
     OHOS::CommonType::Asset value;
@@ -847,7 +968,7 @@ OHOS::CommonType::Asset AssetToNative(::ohos::data::commonType::Asset const &ass
     value.size = std::string(asset.size);
     value.path = std::string(asset.path);
     if (asset.status.has_value()) {
-        value.status = (OHOS::CommonType::Asset::Status)((int32_t)(asset.status.value()));
+        value.status = TaiheStatusToNative(asset.status.value());
     }
     return value;
 }
@@ -861,6 +982,29 @@ std::vector<OHOS::CommonType::Asset> AssetsToNative(
         return value;
     });
     return result;
+}
+
+::ohos::data::commonType::Asset AssetToTaihe(OHOS::CommonType::AssetValue const& value)
+{
+    ::ohos::data::commonType::Asset asset = {};
+    asset.name = value.name;
+    asset.uri = value.uri;
+    asset.createTime = value.createTime;
+    asset.modifyTime = value.modifyTime;
+    asset.size = value.size;
+    asset.path = value.path;
+    asset.status = ::taihe::optional<::ohos::data::commonType::AssetStatus>::make(AssetStatusToTaihe(value.status));
+    return asset;
+}
+
+::taihe::array<::ohos::data::commonType::Asset> AssetsToTaihe(
+    std::vector<OHOS::CommonType::AssetValue> const& values)
+{
+    std::vector<::ohos::data::commonType::Asset> assets;
+    for (const auto &val : values) {
+        assets.emplace_back(AssetToTaihe(val));
+    }
+    return ::taihe::array<::ohos::data::commonType::Asset>(::taihe::copy_data_t{}, assets.data(), assets.size());
 }
 
 OHOS::CommonType::Value ValueTypeToNative(::ohos::data::commonType::ValueType const &taiheValue)

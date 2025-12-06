@@ -19,17 +19,17 @@
 @!sts_inject_into_module("""
 import BaseContext from 'application.BaseContext';
 import { AsyncCallback, Callback, BusinessError } from '@ohos.base';
-import commonTypeTemp from './@ohos.data.commonType';
+import commonTypeOrigin from './@ohos.data.commonType';
 """)
 
 use ohos.data.commonType as commonType;
 
 @!sts_inject("""
-const COMPLEX_TYPE : string = '[COMPLEX]';
-const STRING_TYPE : string = '[STRING]';
-const NULL_TYPE : string = '[NULL]';
+const COMPLEX_TYPE: string = '[COMPLEX]';
+const STRING_TYPE: string = '[STRING]';
+const NULL_TYPE: string = '[NULL]';
 
-static { loadLibrary("distributed_dataobject_ani.z");}
+static { loadLibrary("distributed_dataobject_ani.z"); }
 
 function create(context: BaseContext, source: object): DataObject
 {
@@ -37,12 +37,12 @@ function create(context: BaseContext, source: object): DataObject
         let err : BusinessError = { code: 401, message :"Parameter error. The type of context must be object."}
         throw err;
     };
-    if (typeof context !== 'object') {
-        let err : BusinessError = { code: 401, message :"Parameter error. The type of source must be object."}
+    if (typeof source !== 'object') {
+        let err: BusinessError = { code: 401, message :"Parameter error. The type of source must be object."}
         throw err;
     };
-    console.info("DDo, source type is,", JSON.stringify(Type.of(source)))
-    let keys : Array<string> = [];
+    console.info("DDo, source type is ", JSON.stringify(Type.of(source)))
+    let keys: Array<string> = [];
     try {
         keys = Object.keys(source);
     } catch (err) {
@@ -51,25 +51,25 @@ function create(context: BaseContext, source: object): DataObject
     return createImpl(context, source, keys)
 }
 
-function jsonStringify(para : Object) : string
+function jsonStringify(para: Object) : string
 {
     return JSON.stringify(para);
 }
 
-function jsonParseJsonElement(para : string) : Object
+function jsonParseJsonElement(para: string) : Object
 {
-    let result : jsonx.JsonElement = JSON.parseJsonElement(para);
+    let result: jsonx.JsonElement = JSON.parseJsonElement(para);
     return result;
 }
 
-export class DdoAssetProxy implements commonTypeTemp.Asset {
+export class DdoAssetProxy implements commonTypeOrigin.Asset {
     nameProxy: string;
     uriProxy: string;
     pathProxy: string;
     createTimeProxy: string;
     modifyTimeProxy: string;
     sizeProxy: string;
-    statusProxy: (commonTypeTemp.AssetStatus | undefined);
+    statusProxy: (commonTypeOrigin.AssetStatus | undefined);
     ddoExternalKey: string;
     ddoManager: DataObject | undefined;
     constructor(
@@ -80,7 +80,7 @@ export class DdoAssetProxy implements commonTypeTemp.Asset {
         createTime: string,
         modifyTime: string,
         size: string,
-        status: (commonTypeTemp.AssetStatus | undefined),
+        status: (commonTypeOrigin.AssetStatus | undefined),
     )
     {
         this.nameProxy = name;
@@ -154,21 +154,20 @@ export class DdoAssetProxy implements commonTypeTemp.Asset {
     {
         return this.sizeProxy;
     }
-    set status(newValue: commonTypeTemp.AssetStatus | undefined)
+    set status(newValue: commonTypeOrigin.AssetStatus | undefined)
     {
         if (this.ddoManager == undefined || this.ddoManager == null || newValue == undefined) {
             return;
         }
-        let tempStatus = newValue as commonTypeTemp.AssetStatus;
+        let tempStatus = newValue as commonTypeOrigin.AssetStatus;
         this.ddoManager!.setAssetItemValue(this.ddoExternalKey, "status", tempStatus);
     }
-    get status(): commonTypeTemp.AssetStatus | undefined
+    get status(): commonTypeOrigin.AssetStatus | undefined
     {
         return this.statusProxy;
     }
-    setExtraData(ddoManager: DataObject) : void
+    setDdoManager(ddoManager: DataObject) : void
     {
-        console.info("DDO, setExtraData");
         this.ddoManager = ddoManager;
     }
 }
@@ -236,54 +235,56 @@ interface DataObject {
     @gen_promise("setAssets")
     SetAssetsSync(assetsKey: String, uris: Array<String>): void;
 
-    OnChange(callback: (sessionId: String, fields: Array<String>) => void) : void;
-    OffChange(callback: Optional<(sessionId: String, fields: Array<String>) => void>) : void;
+    OnChange(callback: (sessionId: String, fields: Array<String>) => void): void;
+    OffChange(callback: Optional<(sessionId: String, fields: Array<String>) => void>): void;
 
-    OnStatus(callback: (sessionId: String, networkId: String, status: String) => void) : void;
-    OffStatus(callback: Optional<(sessionId: String, networkId: String, status: String) => void>) : void;
+    OnStatus(callback: (sessionId: String, networkId: String, status: String) => void): void;
+    OffStatus(callback: Optional<(sessionId: String, networkId: String, status: String) => void>): void;
 
-    OnProgressChanged(callback: (sessionId: String, progress: i32) => void) : void;
-    OffProgressChanged(callback: Optional<(sessionId: String, progress: i32) => void>) : void;
+    OnProgressChanged(callback: (sessionId: String, progress: i32) => void): void;
+    OffProgressChanged(callback: Optional<(sessionId: String, progress: i32) => void>): void;
 
-    GetValueImpl(key : String) : ObjectValueType;
-    SetValueImpl(key : String, value : Opaque) : void;
-    SetAssetItemValue(key : String, attr : String, value : AssetValueType) : void;
+    GetValueImpl(key: String): ObjectValueType;
+    SetValueImpl(key: String, value: Opaque): void;
+    SetAssetItemValue(key: String, attr: String, value: AssetValueType): void;
 
     @!sts_inject_into_interface("""
-    getValue(key : String) : Object | null | undefined;
-    setValue(key : String, value : Object) : void;
+    $_get(key: string): Object | null | undefined;
+    $_set(key: string, value: Object): void;
+    getValue(key: String): Object | null | undefined;
+    setValue(key: String, value: Object): void;
     on(type: string, callback: (p1 : object, p2 : object) => void): void;
     off(type: string, callback?: (p1 : object, p2 : object) => void): void;
     on(type: string, callback: (p1 : object, p2 : object, p3 : object) => void): void;
     off(type: string, callback?: (p1 : object, p2 : object, p3 : object) => void): void;
     """)
     @!sts_inject_into_class("""
-    $_get(key : string) : Object | null | undefined
+    $_get(key: string): Object | null | undefined
     {
         return this.getValue(key);
     }
-    $_set(key : string, value: Object) : void
+    $_set(key: string, value: Object): void
     {
         this.setValue(key, value);
     }
-    setValue(key : String, newValue : Object) : void
+    setValue(key: String, newValue: Object): void
     {
         this.setValueImpl(key, newValue)
     }
-    getValue(key : String) : Object | null | undefined
+    getValue(key: String): Object | null | undefined
     {
         let tempResult = this.getValueImpl(key);
         if (tempResult != null && tempResult != undefined && tempResult instanceof DdoAssetProxy) {
-            console.info("DDo, getValue, ret DdoAssetProxy");
             try {
                 let assetProxy = tempResult as DdoAssetProxy;
-                assetProxy.setExtraData(this);
+                assetProxy.setDdoManager(this);
             } catch (err) {
             }
         }
         return tempResult;
     }
-    on(type: string, callback: Object): void {
+    on(type: string, callback: Object): void
+    {
         if (type === "change") {
             this.onChange(callback as (sessionId: string, fields: Array<string>) => void);
         } else if (type === "status") {
@@ -294,7 +295,8 @@ interface DataObject {
             throw new Error(`Unknown type: ${type}`);
         }
     }
-    off(type: string, callback?: Object): void {
+    off(type: string, callback?: Object): void
+    {
         if (type === "change") {
             this.offChange(callback as (sessionId: string, fields: Array<string>) => void);
         } else if (type === "status") {

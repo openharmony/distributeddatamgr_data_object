@@ -51,7 +51,7 @@ ani_class AniGetClass(ani_env *env, const char* className);
 ani_method AniGetClassMethod(ani_env *env, const char* className, const char* methodName, const char* signature);
 ani_field AniFindClassField(ani_env *env, ani_class cls, char const *name);
 
-bool AniMapSet(ani_env *env, ani_object map, ani_method mapSetMethod, const char* key, std::string const& valueStr);
+void AniExecuteFunc(ani_vm* vm, const std::function<void(ani_env*)> func);
 
 class AniObjectUtils {
 public:
@@ -80,22 +80,14 @@ public:
 
 class UnionAccessor {
 public:
-    UnionAccessor(ani_env *env, ani_object &obj) : env_(env), obj_(obj)
-    {
-    }
+    UnionAccessor(ani_env *env, ani_object &obj);
 
-    bool IsInstanceOf(const std::string& cls_name)
-    {
-        ani_class cls;
-        env_->FindClass(cls_name.c_str(), &cls);
-
-        ani_boolean ret;
-        env_->Object_InstanceOf(obj_, cls, &ret);
-        return ret;
-    }
+    bool IsInstanceOf(const std::string& cls_name);
 
     template<typename T>
     bool IsInstanceOfType();
+
+    bool TryConvertToNumber(double &value);
 
     template<typename T>
     bool TryConvert(T &value);
@@ -128,15 +120,16 @@ public:
     bool TryConvertArray(std::vector<T> &value);
 
 private:
-    ani_env *env_;
-    ani_object obj_;
+    ani_env *env_ = nullptr;
+    ani_object obj_ = nullptr;
 };
 
-void AniExecuteFunc(ani_vm* vm, const std::function<void(ani_env*)> func);
 ani_object AniCreateProxyAsset(ani_env *env, std::string const& externalKey, OHOS::CommonType::AssetValue const& asset);
 ani_object AniCreateAsset(ani_env *env, OHOS::CommonType::AssetValue const& asset);
 ani_object AniCreateAssets(ani_env *env, std::vector<OHOS::CommonType::AssetValue> const& assets);
 OHOS::ObjectStore::AssetBindInfo BindInfoToNative(::ohos::data::distributedDataObject::BindInfo const& taiheBindInfo);
+uint32_t TaiheStatusToNative(::ohos::data::commonType::AssetStatus status);
+::taihe::array<::ohos::data::commonType::Asset> AssetsToTaihe(std::vector<OHOS::CommonType::AssetValue> const& values);
 
 } //namespace ani_utils
 #endif

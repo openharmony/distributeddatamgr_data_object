@@ -34,7 +34,7 @@ ani_object ToBusinessError(ani_env *env, int32_t code, const std::string &messag
 #define CHECK_AND_RETURN_RET_LOG(cond, ret, fmt, ...) \
     do {                                              \
         if (!(cond)) {                                \
-            LOG_INFO(fmt, ##__VA_ARGS__);           \
+            LOG_INFO(fmt, ##__VA_ARGS__);             \
             return ret;                               \
         }                                             \
     } while (0)

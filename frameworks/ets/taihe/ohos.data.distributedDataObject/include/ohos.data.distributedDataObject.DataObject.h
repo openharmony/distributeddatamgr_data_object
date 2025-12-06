@@ -86,17 +86,12 @@ public:
         std::string const& attr, ::ohos::data::distributedDataObject::AssetValueType const& value);
 
     ani_ref GetAssetsRefFromStore(ani_env* aniEnv, std::string assetsKey);
-    ::ohos::data::commonType::AssetStatus AssetStatusToTaihe(int32_t status);
-    uint32_t TaiheStatusToNative(::ohos::data::commonType::AssetStatus status);
-    ::ohos::data::commonType::Asset AssetToTaihe(OHOS::CommonType::AssetValue const& value);
-    ::taihe::array<::ohos::data::commonType::Asset> AssetsToTaihe(
-        std::vector<OHOS::CommonType::AssetValue> const& values);
     ::ohos::data::distributedDataObject::ObjectValueType ObjectValueTypeToTaihe(
-        ani_env* aniEnv, std::string const& externalKey, NativeObjectValueType const &valueObj);
+        ani_env* aniEnv, std::string const& externalKey, NativeObjectValueType const& valueObj);
 
 protected:
     static ani_vm* vm_;
-    ani_ref globalSourceObj_;
+    ani_ref globalSourceObj_ = nullptr;
     std::string bundleName_;
     std::string distributedDir_;
     std::map<std::string, NativeObjectValueType> sourceDataMap_;
