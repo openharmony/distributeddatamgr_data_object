@@ -13,25 +13,26 @@
  * limitations under the License.
  */
 
-#include "ohos.data.distributedDataObject.proj.hpp"
-#include "ohos.data.distributedDataObject.impl.hpp"
 #include "ohos.data.distributedDataObject.DataObject.h"
-#include <random>
-#include <regex>
-#include <mutex>
+
 #include <sys/stat.h>
 #include <unistd.h>
+
+#include <mutex>
+#include <random>
+#include <regex>
 
 #include "accesstoken_kit.h"
 #include "ani_base_context.h"
 #include "ani_error_utils.h"
+#include "ani_utils.h"
 #include "application_context.h"
 #include "context.h"
-#include "ani_error_utils.h"
-#include "ani_utils.h"
 #include "logger.h"
 #include "object_error.h"
 #include "objectstore_errors.h"
+#include "ohos.data.distributedDataObject.impl.hpp"
+#include "ohos.data.distributedDataObject.proj.hpp"
 
 namespace OHOS::ObjectStore {
 using namespace OHOS;
@@ -39,10 +40,9 @@ using namespace OHOS;
 static const int32_t SESSION_ID_MAX_LENGTH = 128;
 static const int32_t ASSETS_MAX_NUMBER = 50;
 
-ani_vm* DataObjectImpl::vm_ = nullptr;
+ani_vm *DataObjectImpl::vm_ = nullptr;
 
-DataObjectImpl::DataObjectImpl(ani_object context, ani_object sourceObj,
-    ::taihe::array_view<::taihe::string> keys)
+DataObjectImpl::DataObjectImpl(ani_object context, ani_object sourceObj, ::taihe::array_view<::taihe::string> keys)
 {
     objectId_ = GenerateRandomNum();
     UpdateBundleInfoWithContext(context);
@@ -62,7 +62,7 @@ DataObjectImpl::~DataObjectImpl()
     LeaveSession();
 }
 
-std::string DataObjectImpl::JsonStringify(ani_env* aniEnv, ani_ref sourceObj)
+std::string DataObjectImpl::JsonStringify(ani_env *aniEnv, ani_ref sourceObj)
 {
     if (aniEnv == nullptr || sourceObj == nullptr) {
         LOG_ERROR("aniEnv = nullptr || sourceObj = nullptr");
@@ -76,8 +76,8 @@ std::string DataObjectImpl::JsonStringify(ani_env* aniEnv, ani_ref sourceObj)
     }
 
     ani_function funcStringify = {};
-    aniRet = aniEnv->Namespace_FindFunction(doSpace,
-        "jsonStringify", "C{std.core.Object}:C{std.core.String}", &funcStringify);
+    aniRet = aniEnv->Namespace_FindFunction(
+        doSpace, "jsonStringify", "C{std.core.Object}:C{std.core.String}", &funcStringify);
     if (aniRet != ANI_OK) {
         LOG_ERROR("Namespace_FindFunction jsonStringify failed %{public}d", aniRet);
         return {};
@@ -89,10 +89,10 @@ std::string DataObjectImpl::JsonStringify(ani_env* aniEnv, ani_ref sourceObj)
         LOG_ERROR("Function_Call_Ref jsonStringify failed %{public}d", aniRet);
         return {};
     }
-    return ani_utils::AniStringUtils::ToStd(aniEnv, (ani_string)result);
+    return AniUtils::AniStringUtils::ToStd(aniEnv, (ani_string)result);
 }
 
-ani_ref DataObjectImpl::JsonParseToJsonElement(ani_env* aniEnv, std::string const& str)
+ani_ref DataObjectImpl::JsonParseToJsonElement(ani_env *aniEnv, std::string const &str)
 {
     if (aniEnv == nullptr) {
         LOG_ERROR("aniEnv = nullptr");
@@ -100,7 +100,7 @@ ani_ref DataObjectImpl::JsonParseToJsonElement(ani_env* aniEnv, std::string cons
     }
     ani_ref nullref = nullptr;
     auto aniRet = aniEnv->GetNull(&nullref);
-    
+
     ani_namespace doSpace = {};
     aniRet = aniEnv->FindNamespace("@ohos.data.distributedDataObject.distributedDataObject", &doSpace);
     if (aniRet != ANI_OK) {
@@ -108,17 +108,48 @@ ani_ref DataObjectImpl::JsonParseToJsonElement(ani_env* aniEnv, std::string cons
         return nullref;
     }
     ani_function funcToObj = {};
-    aniRet = aniEnv->Namespace_FindFunction(doSpace,
-        "jsonParseJsonElement", "C{std.core.String}:C{std.core.Object}", &funcToObj);
+    aniRet = aniEnv->Namespace_FindFunction(
+        doSpace, "jsonParseJsonElement", "C{std.core.String}:C{std.core.Object}", &funcToObj);
     if (aniRet != ANI_OK) {
         LOG_ERROR("Namespace_FindFunction jsonParseJsonElement failed %{public}d", aniRet);
         return nullref;
     }
-    ani_string aniStr = ani_utils::AniCreateString(aniEnv, str);
+    ani_string aniStr = AniUtils::AniCreateString(aniEnv, str);
     ani_ref result = nullptr;
     aniRet = aniEnv->Function_Call_Ref(funcToObj, &result, aniStr);
     if (aniRet != ANI_OK) {
         LOG_ERROR("Function_Call_Ref jsonParseJsonElement failed %{public}d", aniRet);
+        return nullref;
+    }
+    return result;
+}
+
+ani_ref DataObjectImpl::ConvertSetToArray(ani_env *aniEnv, ani_ref setRef)
+{
+    if (aniEnv == nullptr) {
+        LOG_ERROR("aniEnv = nullptr");
+        return {};
+    }
+    ani_ref nullref = nullptr;
+    auto aniRet = aniEnv->GetNull(&nullref);
+
+    ani_namespace doSpace = {};
+    aniRet = aniEnv->FindNamespace("@ohos.data.distributedDataObject.distributedDataObject", &doSpace);
+    if (aniRet != ANI_OK) {
+        LOG_ERROR("ConvertSetToArray, FindNamespace failed %{public}d", aniRet);
+        return nullref;
+    }
+    ani_function funcToObj = {};
+    aniRet = aniEnv->Namespace_FindFunction(
+        doSpace, "convertSetToArray", "C{std.core.Object}:C{std.core.Object}", &funcToObj);
+    if (aniRet != ANI_OK) {
+        LOG_ERROR("Namespace_FindFunction convertSetToArray failed %{public}d", aniRet);
+        return nullref;
+    }
+    ani_ref result = nullptr;
+    aniRet = aniEnv->Function_Call_Ref(funcToObj, &result, setRef);
+    if (aniRet != ANI_OK) {
+        LOG_ERROR("Function_Call_Ref convertSetToArray failed %{public}d", aniRet);
         return nullref;
     }
     return result;
@@ -131,7 +162,7 @@ NativeObjectValueType DataObjectImpl::ParseObjectValue(ani_env *aniEnv, ani_ref 
         return objValue;
     }
     ani_object objRef = reinterpret_cast<ani_object>(valueRef);
-    ani_utils::UnionAccessor accessor(aniEnv, objRef);
+    AniUtils::UnionAccessor accessor(aniEnv, objRef);
     std::string strValue;
     bool boolValue = false;
     double doubleValue = 0;
@@ -150,66 +181,60 @@ NativeObjectValueType DataObjectImpl::ParseObjectValue(ani_env *aniEnv, ani_ref 
     } else if (isUndefined) {
         LOG_INFO("ParseObjectValue, isUndefined");
     } else if (accessor.TryConvert<std::string>(strValue)) {
-        LOG_INFO("ParseObjectValue, string");
         objValue = STRING_TYPE + strValue;
     } else if (accessor.TryConvertToNumber(doubleValue)) {
-        LOG_INFO("ParseObjectValue, number");
         objValue = doubleValue;
     } else if (accessor.TryConvert<bool>(boolValue)) {
-        LOG_INFO("ParseObjectValue, bool");
         objValue = boolValue;
     } else if (accessor.TryConvert<std::vector<uint8_t>>(uint8Array)) {
-        LOG_INFO("ParseObjectValue, uint8Array");
         objValue = uint8Array;
     } else if (accessor.TryConvert<OHOS::CommonType::Asset>(asset)) {
-        LOG_INFO("ParseObjectValue, Asset");
         objValue = asset;
     } else if (accessor.TryConvert<std::vector<OHOS::CommonType::Asset>>(assets)) {
-        LOG_INFO("ParseObjectValue, Assets");
         objValue = assets;
     } else if (accessor.IsInstanceOf("std.core.Object")) {
         std::string strobj = JsonStringify(aniEnv, valueRef);
-        LOG_INFO("ParseObjectValue, Object JsonStringify, %{public}s", strobj.c_str());
         objValue = COMPLEX_TYPE + strobj;
     }
     return objValue;
 }
 
-bool DataObjectImpl::ParseRecord(ani_env* env, ani_ref recordRef,
-    std::map<std::string, NativeObjectValueType> &resultMap)
+bool DataObjectImpl::ParseRecord(
+    ani_env *env, ani_ref recordRef, std::map<std::string, NativeObjectValueType> &resultMap)
 {
     if (env == nullptr || recordRef == nullptr) {
         return false;
     }
 
-    ani_method entryMethod = ani_utils::AniGetClassMethod(env,
-        "escompat.Record", "entries", ":C{std.core.IterableIterator}");
-    ani_method iterNextMethod = ani_utils::AniGetClassMethod(env,
-        "std.core.Iterator", "next", ":C{std.core.IteratorResult}");
-    ani_class iterResultClass = ani_utils::AniGetClass(env, "std.core.IteratorResult");
+    ani_method entryMethod =
+        AniUtils::AniGetClassMethod(env, "escompat.Record", "entries", ":C{std.core.IterableIterator}");
+    ani_method iterNextMethod =
+        AniUtils::AniGetClassMethod(env, "std.core.Iterator", "next", ":C{std.core.IteratorResult}");
+    ani_class iterResultClass = AniUtils::AniGetClass(env, "std.core.IteratorResult");
     if (entryMethod == nullptr || iterNextMethod == nullptr || iterResultClass == nullptr) {
         LOG_ERROR("ParseRecord, get iter failed");
         return false;
     }
-    ani_object ani_iter = {};
-    env->Object_CallMethod_Ref(static_cast<ani_object>(recordRef), entryMethod, reinterpret_cast<ani_ref*>(&ani_iter));
+    ani_object entryIterator = {};
+    env->Object_CallMethod_Ref(static_cast<ani_object>(recordRef),
+        entryMethod, reinterpret_cast<ani_ref *>(&entryIterator));
     ani_boolean iter_done = false;
     while (!iter_done) {
-        ani_object temp_ani_next = {};
-        env->Object_CallMethod_Ref(ani_iter, iterNextMethod, reinterpret_cast<ani_ref*>(&temp_ani_next));
-        ani_field fieldTmp = ani_utils::AniFindClassField(env, iterResultClass, "done");
-        env->Object_GetField_Boolean(temp_ani_next, fieldTmp, &iter_done);
+        ani_object iteratorNextResult = {};
+        env->Object_CallMethod_Ref(entryIterator, iterNextMethod, reinterpret_cast<ani_ref *>(&iteratorNextResult));
+        ani_field fieldTmp = AniUtils::AniFindClassField(env, iterResultClass, "done");
+        env->Object_GetField_Boolean(iteratorNextResult, fieldTmp, &iter_done);
         if (iter_done) {
             break;
         }
         ani_tuple_value temp_ani_item = {};
-        fieldTmp = ani_utils::AniFindClassField(env, iterResultClass, "value");
-        env->Object_GetField_Ref(temp_ani_next, fieldTmp, reinterpret_cast<ani_ref*>(&temp_ani_item));
+        fieldTmp = AniUtils::AniFindClassField(env, iterResultClass, "value");
+        env->Object_GetField_Ref(iteratorNextResult, fieldTmp, reinterpret_cast<ani_ref *>(&temp_ani_item));
         ani_ref temp_ani_key = {};
         env->TupleValue_GetItem_Ref(temp_ani_item, 0, &temp_ani_key);
         std::string stdkey;
         ani_object keyobj = reinterpret_cast<ani_object>(temp_ani_key);
-        ani_utils::UnionAccessor acessor(env, keyobj);
+        AniUtils::UnionAccessor acessor(env, keyobj);
         if (!acessor.TryConvert(stdkey) || stdkey.size() == 0) {
             break;
         }
@@ -222,15 +247,26 @@ bool DataObjectImpl::ParseRecord(ani_env* env, ani_ref recordRef,
     return true;
 }
 
-void DataObjectImpl::ParseObject(ani_object sourceObj, ::taihe::array_view<::taihe::string> const& keys)
+void DataObjectImpl::ParseObject(ani_object sourceObj, ::taihe::array_view<::taihe::string> const &keys)
 {
     ani_env *aniEnv = taihe::get_env();
     if (aniEnv == nullptr || sourceObj == nullptr) {
         return;
     }
-    ani_utils::UnionAccessor accessor(aniEnv, sourceObj);
+    auto accessor = std::make_shared<AniUtils::UnionAccessor>(aniEnv, sourceObj);
+    if (accessor->IsInstanceOf("escompat.Set")) {
+        LOG_INFO("ParseObject, sourceObj is Set");
+        ani_ref tempRef = ConvertSetToArray(aniEnv, sourceObj);
+        ani_object tempObj = reinterpret_cast<ani_object>(tempRef);
+        auto accessorSet = std::make_shared<AniUtils::UnionAccessor>(aniEnv, tempObj);
+        if (!accessorSet->IsInstanceOf("std.core.Object")) {
+            LOG_INFO("ParseObject, sourceObj converted to array failed.");
+            return;
+        }
+        accessor = accessorSet;
+    }
     std::vector<ani_ref> aniRefArray;
-    bool result = accessor.TryConvertArray(aniRefArray);
+    bool result = accessor->TryConvertArray(aniRefArray);
     if (result) {
         LOG_INFO("ParseObject, sourceObj is Array");
         for (size_t k = 0; k < aniRefArray.size(); k++) {
@@ -240,7 +276,7 @@ void DataObjectImpl::ParseObject(ani_object sourceObj, ::taihe::array_view<::tai
         }
         return;
     }
-    if (accessor.IsInstanceOf("escompat.Record")) {
+    if (accessor->IsInstanceOf("escompat.Record")) {
         LOG_INFO("ParseObject, sourceObj Record");
         ParseRecord(aniEnv, sourceObj, sourceDataMap_);
         return;
@@ -261,7 +297,7 @@ std::string DataObjectImpl::GenerateRandomNum()
     std::random_device randomDevice;
     std::uniform_int_distribution<uint32_t> distribution(0, std::numeric_limits<uint32_t>::max());
     std::string randomStr = std::to_string(distribution(randomDevice));
-    return randomStr;
+    return std::to_string(distribution(randomDevice));
 }
 
 void DataObjectImpl::UpdateBundleInfo()
@@ -291,7 +327,7 @@ void DataObjectImpl::UpdateBundleInfoWithContext(ani_object context)
     distributedDir_ = abilityContext->GetDistributedFilesDir();
 }
 
-DistributedObjectStore* DataObjectImpl::GetObjectStore()
+DistributedObjectStore *DataObjectImpl::GetObjectStore()
 {
     DistributedObjectStore *objectInfo = DistributedObjectStore::GetInstance(bundleName_);
     return objectInfo;
@@ -301,32 +337,36 @@ bool DataObjectImpl::IsSandBox()
 {
     int32_t dlpFlag = Security::AccessToken::AccessTokenKit::GetHapDlpFlag(
         AbilityRuntime::Context::GetApplicationContext()->GetApplicationInfo()->accessTokenId);
-    if (dlpFlag != 0) {
-        return true;
-    }
-    return false;
+
+    return dlpFlag != 0;
 }
 
 bool DataObjectImpl::IsSameTaiheCallback(VarCallbackType p1, VarCallbackType p2)
 {
-    if (std::holds_alternative<std::monostate>(p1) &&
-        std::holds_alternative<std::monostate>(p2)) {
+    if (std::holds_alternative<std::monostate>(p1) && std::holds_alternative<std::monostate>(p2)) {
         return true;
     }
-    if (std::holds_alternative<AniChangeCallbackType>(p1) &&
-        std::holds_alternative<AniChangeCallbackType>(p2)) {
-        AniChangeCallbackType* p1val = std::get_if<AniChangeCallbackType>(&p1);
-        AniChangeCallbackType* p2val = std::get_if<AniChangeCallbackType>(&p2);
+    if (std::holds_alternative<AniChangeCallbackType>(p1) && std::holds_alternative<AniChangeCallbackType>(p2)) {
+        AniChangeCallbackType *p1val = std::get_if<AniChangeCallbackType>(&p1);
+        AniChangeCallbackType *p2val = std::get_if<AniChangeCallbackType>(&p2);
         if (p1val != nullptr && p2val != nullptr) {
             return (p1val == p2val);
         } else {
             return false;
         }
     }
-    if (std::holds_alternative<AniStatusCallbackType>(p1) &&
-        std::holds_alternative<AniStatusCallbackType>(p2)) {
-        AniStatusCallbackType* p1val = std::get_if<AniStatusCallbackType>(&p1);
-        AniStatusCallbackType* p2val = std::get_if<AniStatusCallbackType>(&p2);
+    if (std::holds_alternative<AniStatusCallbackType>(p1) && std::holds_alternative<AniStatusCallbackType>(p2)) {
+        AniStatusCallbackType *p1val = std::get_if<AniStatusCallbackType>(&p1);
+        AniStatusCallbackType *p2val = std::get_if<AniStatusCallbackType>(&p2);
+        if (p1val != nullptr && p2val != nullptr) {
+            return (p1val == p2val);
+        } else {
+            return false;
+        }
+    }
+    if (std::holds_alternative<AniProgressCallbackType>(p1) && std::holds_alternative<AniProgressCallbackType>(p2)) {
+        AniProgressCallbackType *p1val = std::get_if<AniProgressCallbackType>(&p1);
+        AniProgressCallbackType *p2val = std::get_if<AniProgressCallbackType>(&p2);
         if (p1val != nullptr && p2val != nullptr) {
             return (p1val == p2val);
         } else {
@@ -340,7 +380,7 @@ bool DataObjectImpl::AddChangeCallback(AniChangeCallbackType taiheCallback)
 {
     std::lock_guard<std::mutex> guard(changeCallBacksMutex_);
     for (auto &item : changeCallBacks_) {
-        AniChangeCallbackType* pval = std::get_if<AniChangeCallbackType>(&item);
+        AniChangeCallbackType *pval = std::get_if<AniChangeCallbackType>(&item);
         if (pval == nullptr) {
             continue;
         }
@@ -357,7 +397,7 @@ bool DataObjectImpl::AddStatusCallback(AniStatusCallbackType taiheCallback)
 {
     std::lock_guard<std::mutex> guard(statusCallBacksMutex_);
     for (auto &item : statusCallBacks_) {
-        AniStatusCallbackType* pval = std::get_if<AniStatusCallbackType>(&item);
+        AniStatusCallbackType *pval = std::get_if<AniStatusCallbackType>(&item);
         if (pval == nullptr) {
             continue;
         }
@@ -374,7 +414,7 @@ bool DataObjectImpl::AddProgressCallback(AniProgressCallbackType taiheCallback)
 {
     std::lock_guard<std::mutex> guard(progressCallBacksMutex_);
     for (auto &item : progressCallBacks_) {
-        AniProgressCallbackType* pval = std::get_if<AniProgressCallbackType>(&item);
+        AniProgressCallbackType *pval = std::get_if<AniProgressCallbackType>(&item);
         if (pval == nullptr) {
             continue;
         }
@@ -397,7 +437,7 @@ bool DataObjectImpl::DeleteChangeCallback(VarCallbackType taiheCallback)
     }
 
     for (auto iter = changeCallBacks_.begin(); iter != changeCallBacks_.end(); ++iter) {
-        AniChangeCallbackType* pval = std::get_if<AniChangeCallbackType>(&(*iter));
+        AniChangeCallbackType *pval = std::get_if<AniChangeCallbackType>(&(*iter));
         if (pval == nullptr) {
             continue;
         }
@@ -420,7 +460,7 @@ bool DataObjectImpl::DeleteStatusCallback(VarCallbackType taiheCallback)
     }
 
     for (auto iter = statusCallBacks_.begin(); iter != statusCallBacks_.end(); ++iter) {
-        AniStatusCallbackType* pval = std::get_if<AniStatusCallbackType>(&(*iter));
+        AniStatusCallbackType *pval = std::get_if<AniStatusCallbackType>(&(*iter));
         if (pval == nullptr) {
             continue;
         }
@@ -443,7 +483,7 @@ bool DataObjectImpl::DeleteProgressCallback(VarCallbackType taiheCallback)
     }
 
     for (auto iter = progressCallBacks_.begin(); iter != progressCallBacks_.end(); ++iter) {
-        AniProgressCallbackType* pval = std::get_if<AniProgressCallbackType>(&(*iter));
+        AniProgressCallbackType *pval = std::get_if<AniProgressCallbackType>(&(*iter));
         if (pval == nullptr) {
             continue;
         }
@@ -459,18 +499,17 @@ bool DataObjectImpl::DeleteProgressCallback(VarCallbackType taiheCallback)
 void DataObjectImpl::RestoreWatchers(const std::string &objectId)
 {
     LOG_INFO("DataObjectImpl::RestoreWatchers %{public}s", objectId.c_str());
-    std::lock_guard<std::mutex> guard(sessionInfoMutex_);
     if (session_ == nullptr) {
         return;
     }
-    if (objectId.size() == 0) {
+    if (objectId.empty()) {
         LOG_ERROR("DataObjectImpl::RestoreWatchers, objectId empty");
         return;
     }
     {
         std::lock_guard<std::mutex> guard(changeCallBacksMutex_);
         for (auto &item : changeCallBacks_) {
-            AniChangeCallbackType* pval = std::get_if<AniChangeCallbackType>(&item);
+            AniChangeCallbackType *pval = std::get_if<AniChangeCallbackType>(&item);
             if (pval == nullptr) {
                 continue;
             }
@@ -480,7 +519,7 @@ void DataObjectImpl::RestoreWatchers(const std::string &objectId)
     {
         std::lock_guard<std::mutex> guard(statusCallBacksMutex_);
         for (auto &item : statusCallBacks_) {
-            AniStatusCallbackType* pval = std::get_if<AniStatusCallbackType>(&item);
+            AniStatusCallbackType *pval = std::get_if<AniStatusCallbackType>(&item);
             if (pval == nullptr) {
                 continue;
             }
@@ -490,7 +529,7 @@ void DataObjectImpl::RestoreWatchers(const std::string &objectId)
     {
         std::lock_guard<std::mutex> guard(progressCallBacksMutex_);
         for (auto &item : progressCallBacks_) {
-            AniProgressCallbackType* pval = std::get_if<AniProgressCallbackType>(&item);
+            AniProgressCallbackType *pval = std::get_if<AniProgressCallbackType>(&item);
             if (pval == nullptr) {
                 continue;
             }
@@ -502,48 +541,48 @@ void DataObjectImpl::RestoreWatchers(const std::string &objectId)
 bool DataObjectImpl::JoinSession(std::string sessionId)
 {
     LOG_INFO("DataObjectImpl::JoinSession, called");
-    if (sourceDataMap_.size() == 0) {
-        LOG_INFO("DataObjectImpl::JoinSession, sourceObj_ nullptr");
-        return false;
+    std::map<std::string, NativeObjectValueType> copyedMap;
+    {
+        std::lock_guard<std::mutex> guard(sourceDataMapMutex_);
+        if (sourceDataMap_.empty()) {
+            LOG_INFO("DataObjectImpl::JoinSession, sourceObj_ nullptr");
+            return false;
+        }
+        copyedMap = sourceDataMap_;
     }
     if (IsSandBox()) {
         LOG_INFO("DataObjectImpl::JoinSession, IsSandBox");
         auto innerError = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(innerError->GetCode(), innerError->GetMessage());
+        AniErrorUtils::ThrowError(innerError->GetCode(), innerError->GetMessage());
         return false;
     }
     OHOS::ObjectStore::DistributedObjectStore *objectStore = GetObjectStore();
     if (objectStore == nullptr) {
         auto innerError = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(innerError->GetCode(), innerError->GetMessage());
+        AniErrorUtils::ThrowError(innerError->GetCode(), innerError->GetMessage());
         return false;
     }
     uint32_t result = 0;
     OHOS::ObjectStore::DistributedObject *object = objectStore->CreateObject(sessionId, result);
     if (result == ERR_EXIST) {
         auto err = std::make_shared<DatabaseError>();
-        ani_errorutils::ThrowError(err->GetCode(), err->GetMessage());
+        AniErrorUtils::ThrowError(err->GetCode(), err->GetMessage());
         return false;
     } else if (result == ERR_NO_PERMISSION) {
         auto err = std::make_shared<PermissionError>();
-        ani_errorutils::ThrowError(err->GetCode(), err->GetMessage());
+        AniErrorUtils::ThrowError(err->GetCode(), err->GetMessage());
         return false;
     } else if (result != SUCCESS || object == nullptr) {
         auto err = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(err->GetCode(), err->GetMessage());
+        AniErrorUtils::ThrowError(err->GetCode(), err->GetMessage());
         return false;
     }
-    {
-        std::lock_guard<std::mutex> guard(sessionInfoMutex_);
-        session_ = std::make_shared<AniDataobjectSession>(object, sessionId);
-    }
+    std::lock_guard<std::mutex> guard(sessionInfoMutex_);
+    session_ = std::make_shared<AniDataobjectSession>(object, sessionId);
     RestoreWatchers(objectId_);
     objectStore->NotifyCachedStatus(object->GetSessionId());
     objectStore->NotifyProgressStatus(object->GetSessionId());
-    {
-        std::lock_guard<std::mutex> guard(sessionInfoMutex_);
-        session_->FlushCachedData(sourceDataMap_);
-    }
+    session_->FlushCachedData(copyedMap);
     return true;
 }
 
@@ -559,25 +598,18 @@ void DataObjectImpl::LeaveSession()
     session_ = nullptr;
 }
 
-void DataObjectImpl::SetSessionIdSync(::taihe::optional_view<::taihe::string> sessionId)
+void DataObjectImpl::SetSessionIdWithCallbackSync(::taihe::string_view sessionId)
 {
-    if (!sessionId.has_value() || sessionId.value().size() == 0) {
-        LOG_INFO("DataObjectImpl::SetSessionIdSync, sessionId empty");
+    if (sessionId.empty()) {
+        LOG_INFO("DataObjectImpl::SetSessionIdWithCallbackSync, sessionId empty");
         LeaveSession();
         return;
     }
-    std::string paraSessionId = std::string(sessionId.value());
-    LOG_INFO("DataObjectImpl::SetSessionIdSync, paraSessionId %{public}s", paraSessionId.c_str());
-
+    std::string paraSessionId(sessionId);
     {
-        if (session_ != nullptr) {
-            LOG_INFO("DataObjectImpl::SetSessionIdSync, session_ %{public}p, %{public}s",
-                session_.get(), session_->GetSessionId().c_str());
-        }
-
         std::lock_guard<std::mutex> guard(sessionInfoMutex_);
         if (session_ != nullptr && paraSessionId == session_->GetSessionId()) {
-            LOG_INFO("DataObjectImpl::SetSessionIdSync, same sessionid, skip");
+            LOG_INFO("DataObjectImpl::SetSessionIdWithCallbackSync, same sessionid, skip");
             return;
         }
     }
@@ -585,12 +617,29 @@ void DataObjectImpl::SetSessionIdSync(::taihe::optional_view<::taihe::string> se
     LeaveSession();
     std::regex pattern(SESSION_ID_REGEX);
     if (paraSessionId.size() > SESSION_ID_MAX_LENGTH || !std::regex_match(paraSessionId, pattern)) {
-        LOG_INFO("DataObjectImpl::SetSessionIdSync, invalid sessionid");
-        ani_errorutils::ThrowError(ani_errorutils::AniError_ParameterCheck,
-            "The sessionId allows only letters, digits, and underscores(_), and cannot exceed 128 in length.");
+        LOG_INFO("DataObjectImpl::SetSessionIdWithCallbackSync, invalid sessionid");
+        AniErrorUtils::ThrowError(AniErrorUtils::AniError_ParameterCheck, "The sessionId allows only letters, "
+                                                                            "digits, and underscores(_), and cannot "
+                                                                            "exceed 128 in length.");
         return;
     }
     JoinSession(paraSessionId);
+}
+
+void DataObjectImpl::SetSessionIdPromiseSync(::taihe::optional_view<::taihe::string> sessionIdOpt)
+{
+    if (!sessionIdOpt.has_value() || sessionIdOpt.value().size() == 0) {
+        LOG_INFO("DataObjectImpl::SetSessionIdPromiseSync, sessionId empty");
+        LeaveSession();
+        return;
+    }
+    SetSessionIdWithCallbackSync(sessionIdOpt.value());
+}
+
+void DataObjectImpl::LeaveAllSessionWithCallbackSync()
+{
+    LOG_INFO("DataObjectImpl::LeaveAllSessionWithCallbackSync");
+    LeaveSession();
 }
 
 ::ohos::data::distributedDataObject::SaveSuccessResponse DataObjectImpl::SaveSync(::taihe::string_view deviceId)
@@ -599,7 +648,7 @@ void DataObjectImpl::SetSessionIdSync(::taihe::optional_view<::taihe::string> se
     std::lock_guard<std::mutex> guard(sessionInfoMutex_);
     if (session_ == nullptr) {
         auto err = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(err->GetCode(), "object is null");
+        AniErrorUtils::ThrowError(err->GetCode(), "object is null");
         return {};
     }
     auto result = session_->Save(std::string(deviceId), version_);
@@ -612,7 +661,7 @@ void DataObjectImpl::SetSessionIdSync(::taihe::optional_view<::taihe::string> se
     std::lock_guard<std::mutex> guard(sessionInfoMutex_);
     if (session_ == nullptr) {
         auto err = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(err->GetCode(), "object is null");
+        AniErrorUtils::ThrowError(err->GetCode(), "object is null");
         return {};
     }
     auto result = session_->RevokeSave();
@@ -638,8 +687,8 @@ bool DataObjectImpl::GetFileAttribute(const std::string &pathName, size_t &size,
     return true;
 }
 
-OHOS::CommonType::AssetValue DataObjectImpl::GetDefaultAsset(OHOS::CommonType::AssetValue initValue,
-    const std::string &uri)
+OHOS::CommonType::AssetValue DataObjectImpl::GetDefaultAsset(
+    OHOS::CommonType::AssetValue initValue, const std::string &uri)
 {
     LOG_INFO("DataObjectImpl::GetDefaultAsset, distributedDir_ %{public}s", distributedDir_.c_str());
     OHOS::CommonType::AssetValue assetRet = initValue;
@@ -672,22 +721,24 @@ OHOS::CommonType::AssetValue DataObjectImpl::GetDefaultAsset(OHOS::CommonType::A
 void DataObjectImpl::SetAssetSync(::taihe::string_view assetKey, ::taihe::string_view uri)
 {
     LOG_INFO("DataObjectImpl::SetAssetSync");
-    std::lock_guard<std::mutex> guard(sessionInfoMutex_);
-    if (session_ != nullptr) {
-        ani_errorutils::ThrowError(ani_errorutils::AniError_SessionJoined,
-            "SessionId has been set, and asset cannot be set.");
+    {
+        std::lock_guard<std::mutex> guard(sessionInfoMutex_);
+        if (session_ != nullptr) {
+            AniErrorUtils::ThrowError(AniErrorUtils::AniError_SessionJoined, "SessionId has been set, and asset cannot "
+                                                                            "be set.");
+            return;
+        }
+    }
+    if (uri.empty()) {
+        AniErrorUtils::ThrowError(AniErrorUtils::AniError_ParameterError, "The asset uri to be set is null.");
         return;
     }
-    if (uri.size() == 0) {
-        ani_errorutils::ThrowError(ani_errorutils::AniError_ParameterError,
-            "The asset uri to be set is null.");
+    if (assetKey.empty()) {
+        AniErrorUtils::ThrowError(AniErrorUtils::AniError_ParameterError, "The property or uri of the asset is "
+                                                                            "invalid.");
         return;
     }
-    if (assetKey.size() == 0 || uri.size() == 0) {
-        ani_errorutils::ThrowError(ani_errorutils::AniError_ParameterError,
-            "The property or uri of the asset is invalid.");
-        return;
-    }
+    std::lock_guard<std::mutex> guard(sourceDataMapMutex_);
     OHOS::CommonType::AssetValue initValue;
     if (sourceDataMap_.find(std::string(assetKey)) != sourceDataMap_.end()) {
         auto tmp = sourceDataMap_[std::string(assetKey)];
@@ -706,37 +757,40 @@ void DataObjectImpl::SetAssetSync(::taihe::string_view assetKey, ::taihe::string
 void DataObjectImpl::SetAssetsSync(::taihe::string_view assetsKey, ::taihe::array_view<::taihe::string> uris)
 {
     LOG_INFO("DataObjectImpl::SetAssetsSync");
-    std::lock_guard<std::mutex> guard(sessionInfoMutex_);
-    if (session_ != nullptr) {
-        ani_errorutils::ThrowError(ani_errorutils::AniError_SessionJoined,
-            "SessionId has been set, and asset cannot be set.");
-        return;
+    {
+        std::lock_guard<std::mutex> guard(sessionInfoMutex_);
+        if (session_ != nullptr) {
+            AniErrorUtils::ThrowError(AniErrorUtils::AniError_SessionJoined, "SessionId has been set, and asset cannot "
+                                                                            "be set.");
+            return;
+        }
     }
     if (uris.size() == 0 || uris.size() > ASSETS_MAX_NUMBER) {
-        ani_errorutils::ThrowError(ani_errorutils::AniError_ParameterError,
-            "The uri array of the set assets is not an array or the length is invalid.");
+        AniErrorUtils::ThrowError(AniErrorUtils::AniError_ParameterError, "The uri array of the set assets is not "
+                                                                            "an array or the length is invalid.");
         return;
     }
     for (auto uri : uris) {
         if (uri.size() == 0) {
-            ani_errorutils::ThrowError(ani_errorutils::AniError_ParameterError, "Uri in assets array is invalid.");
+            AniErrorUtils::ThrowError(AniErrorUtils::AniError_ParameterError, "Uri in assets array is invalid.");
             return;
         }
     }
+    std::lock_guard<std::mutex> guard(sourceDataMapMutex_);
     std::vector<OHOS::CommonType::AssetValue> assets;
     int32_t assetIndex = 0;
     for (auto uri : uris) {
         auto asset = GetDefaultAsset({}, std::string(uri));
         assets.emplace_back(asset);
         sourceDataMap_[std::string(assetsKey) + std::to_string(assetIndex)] = asset;
-        assetIndex ++;
+        assetIndex++;
     }
     NativeObjectValueType objValue = assets;
     sourceDataMap_[std::string(assetsKey)] = objValue;
 }
 
-void DataObjectImpl::OnChange(::taihe::callback_view<void(::taihe::string_view sessionId,
-    ::taihe::array_view<::taihe::string> fields)> callback)
+void DataObjectImpl::OnChange(
+    ::taihe::callback_view<void(::taihe::string_view sessionId, ::taihe::array_view<::taihe::string> fields)> callback)
 {
     VarCallbackType varCallback = callback;
     {
@@ -750,20 +804,21 @@ void DataObjectImpl::OnChange(::taihe::callback_view<void(::taihe::string_view s
     if (objectId_.size() <= 0) {
         LOG_ERROR("DataObjectImpl::OnChange, objectId invalid");
         auto innerError = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(innerError->GetCode(), innerError->GetMessage());
+        AniErrorUtils::ThrowError(innerError->GetCode(), innerError->GetMessage());
         return;
     }
     bool addResult = AddChangeCallback(callback);
     if (!addResult) {
         LOG_ERROR("DataObjectImpl::OnChange, AddCallback failed");
         auto innerError = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(innerError->GetCode(), innerError->GetMessage());
+        AniErrorUtils::ThrowError(innerError->GetCode(), innerError->GetMessage());
         return;
     }
 }
 
-void DataObjectImpl::OffChange(::taihe::optional_view<
-    ::taihe::callback<void(::taihe::string_view, ::taihe::array_view<::taihe::string>)>> callback)
+void DataObjectImpl::OffChange(
+    ::taihe::optional_view<::taihe::callback<void(::taihe::string_view, ::taihe::array_view<::taihe::string>)>>
+        callback)
 {
     VarCallbackType varCallback;
     if (callback.has_value()) {
@@ -781,13 +836,13 @@ void DataObjectImpl::OffChange(::taihe::optional_view<
     if (!delResult) {
         LOG_ERROR("DataObjectImpl::OffChange, DeleteChangeCallback failed");
         auto innerError = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(innerError->GetCode(), innerError->GetMessage());
+        AniErrorUtils::ThrowError(innerError->GetCode(), innerError->GetMessage());
         return;
     }
 }
 
-void DataObjectImpl::OnStatus(::taihe::callback_view<
-    void(::taihe::string_view, ::taihe::string_view, ::taihe::string_view)> callback)
+void DataObjectImpl::OnStatus(
+    ::taihe::callback_view<void(::taihe::string_view, ::taihe::string_view, ::taihe::string_view)> callback)
 {
     VarCallbackType varCallback = callback;
     {
@@ -801,20 +856,21 @@ void DataObjectImpl::OnStatus(::taihe::callback_view<
     if (objectId_.size() <= 0) {
         LOG_ERROR("DataObjectImpl::OnStatus, objectId invalid");
         auto innerError = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(innerError->GetCode(), innerError->GetMessage());
+        AniErrorUtils::ThrowError(innerError->GetCode(), innerError->GetMessage());
         return;
     }
     bool addResult = AddStatusCallback(callback);
     if (!addResult) {
         LOG_ERROR("DataObjectImpl::OnStatus, AddCallback failed");
         auto innerError = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(innerError->GetCode(), innerError->GetMessage());
+        AniErrorUtils::ThrowError(innerError->GetCode(), innerError->GetMessage());
         return;
     }
 }
 
-void DataObjectImpl::OffStatus(::taihe::optional_view<
-    ::taihe::callback<void(::taihe::string_view, ::taihe::string_view, ::taihe::string_view)>> callback)
+void DataObjectImpl::OffStatus(
+    ::taihe::optional_view<::taihe::callback<void(::taihe::string_view, ::taihe::string_view, ::taihe::string_view)>>
+        callback)
 {
     VarCallbackType varCallback;
     if (callback.has_value()) {
@@ -832,13 +888,13 @@ void DataObjectImpl::OffStatus(::taihe::optional_view<
     if (!delResult) {
         LOG_ERROR("DataObjectImpl::OffStatus, DeleteStatusCallback failed");
         auto innerError = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(innerError->GetCode(), innerError->GetMessage());
+        AniErrorUtils::ThrowError(innerError->GetCode(), innerError->GetMessage());
         return;
     }
 }
 
-void DataObjectImpl::OnProgressChanged(::taihe::callback_view<
-    void(::taihe::string_view sessionId, int32_t progress)> callback)
+void DataObjectImpl::OnProgressChanged(
+    ::taihe::callback_view<void(::taihe::string_view sessionId, int32_t progress)> callback)
 {
     VarCallbackType varCallback = callback;
     {
@@ -852,20 +908,20 @@ void DataObjectImpl::OnProgressChanged(::taihe::callback_view<
     if (objectId_.size() <= 0) {
         LOG_ERROR("DataObjectImpl::OnProgressChanged, objectId invalid");
         auto innerError = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(innerError->GetCode(), innerError->GetMessage());
+        AniErrorUtils::ThrowError(innerError->GetCode(), innerError->GetMessage());
         return;
     }
     bool addResult = AddProgressCallback(callback);
     if (!addResult) {
         LOG_ERROR("DataObjectImpl::OnProgressChanged, AddCallback failed");
         auto innerError = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(innerError->GetCode(), innerError->GetMessage());
+        AniErrorUtils::ThrowError(innerError->GetCode(), innerError->GetMessage());
         return;
     }
 }
 
-void DataObjectImpl::OffProgressChanged(::taihe::optional_view<
-    ::taihe::callback<void(::taihe::string_view sessionId, int32_t progress)>> callback)
+void DataObjectImpl::OffProgressChanged(
+    ::taihe::optional_view<::taihe::callback<void(::taihe::string_view sessionId, int32_t progress)>> callback)
 {
     VarCallbackType varCallback;
     if (callback.has_value()) {
@@ -883,41 +939,67 @@ void DataObjectImpl::OffProgressChanged(::taihe::optional_view<
     if (!delResult) {
         LOG_ERROR("DataObjectImpl::OffProgressChanged, DeleteProgressCallback failed");
         auto innerError = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(innerError->GetCode(), innerError->GetMessage());
+        AniErrorUtils::ThrowError(innerError->GetCode(), innerError->GetMessage());
         return;
     }
 }
 
-void DataObjectImpl::BindAssetStoreSync(::taihe::string_view assetKey,
-    ::ohos::data::distributedDataObject::BindInfo const& bindInfo)
+void DataObjectImpl::BindAssetStoreSync(
+    ::taihe::string_view assetKey, ::ohos::data::distributedDataObject::BindInfo const &bindInfo)
 {
     LOG_INFO("DataObjectImpl::BindAssetStoreSync");
     std::lock_guard<std::mutex> guard(sessionInfoMutex_);
     if (session_ == nullptr || session_->GetSessionId().empty()) {
         auto innerError = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(innerError->GetCode(), "not join a session, can not do bindAssetStore");
+        AniErrorUtils::ThrowError(innerError->GetCode(), "not join a session, can not do bindAssetStore");
         return;
     }
-    OHOS::ObjectStore::AssetBindInfo nativeBindInfo = ani_utils::BindInfoToNative(bindInfo);
+    OHOS::ObjectStore::AssetBindInfo nativeBindInfo = AniUtils::BindInfoToNative(bindInfo);
     session_->BindAssetStore(std::string(assetKey), nativeBindInfo);
+}
+
+::ohos::data::distributedDataObject::ObjectValueType DataObjectImpl::HandleGetSessionId(
+    ani_env* aniEnv, ::taihe::string_view key)
+{
+    std::string result = "";
+    std::lock_guard<std::mutex> guard(sessionInfoMutex_);
+    if (session_ != nullptr) {
+        result = session_->GetSessionId();
+    }
+    return ::ohos::data::distributedDataObject::ObjectValueType::make_STRING(result);
+}
+
+::ohos::data::distributedDataObject::ObjectValueType DataObjectImpl::HandleGetVersion(
+    ani_env* aniEnv, ::taihe::string_view key)
+{
+    NativeObjectValueType result = (double)version_;
+    return ObjectValueTypeToTaihe(aniEnv, std::string(key), result);
 }
 
 ::ohos::data::distributedDataObject::ObjectValueType DataObjectImpl::GetValueImpl(::taihe::string_view key)
 {
     using namespace ::ohos::data;
-    LOG_INFO("DataObjectImpl::GetValueImpl");
     ani_env *aniEnv = taihe::get_env();
     if (aniEnv == nullptr) {
         LOG_INFO("DataObjectImpl::GetValueImpl, aniEnv null");
         return distributedDataObject::ObjectValueType::make_OPAQUE(0);
     }
     NativeObjectValueType result;
-    auto iter = sourceDataMap_.find(std::string(key));
-    if (iter == sourceDataMap_.end()) {
-        LOG_ERROR("DataObjectImpl::GetValueImpl, no key matched");
-        return distributedDataObject::ObjectValueType::make_UNDEFINED();
+    std::string paraKey(key);
+    if (paraKey == "__sessionId") {
+        return HandleGetSessionId(aniEnv, std::string(key));
+    } else if (paraKey == "__version") {
+        return HandleGetVersion(aniEnv, std::string(key));
     }
-    result = iter->second;
+    {
+        std::lock_guard<std::mutex> guard(sourceDataMapMutex_);
+        auto iter = sourceDataMap_.find(std::string(key));
+        if (iter == sourceDataMap_.end()) {
+            LOG_ERROR("DataObjectImpl::GetValueImpl, no key matched");
+            return distributedDataObject::ObjectValueType::make_UNDEFINED();
+        }
+        result = iter->second;
+    }
 
     std::lock_guard<std::mutex> guard(sessionInfoMutex_);
     if (session_ != nullptr && !session_->GetSessionId().empty()) {
@@ -940,71 +1022,62 @@ void DataObjectImpl::BindAssetStoreSync(::taihe::string_view assetKey,
     return ObjectValueTypeToTaihe(aniEnv, std::string(key), result);
 }
 
-void DataObjectImpl::SetValueImpl(::taihe::string_view key, uintptr_t valueRef)
+void DataObjectImpl::SetValueImpl(
+    ::taihe::string_view key, ::ohos::data::distributedDataObject::TempAnyType const &paraValue)
 {
-    LOG_INFO("DataObjectImpl::SetValueImpl, key %{public}s", key.c_str());
     ani_env *aniEnv = taihe::get_env();
     if (aniEnv == nullptr) {
         LOG_INFO("DataObjectImpl::SetValueImpl, aniEnv null");
         return;
     }
-    auto iter = sourceDataMap_.find(std::string(key));
-    if (iter == sourceDataMap_.end()) {
-        LOG_ERROR("DataObjectImpl::SetValueImpl, no key matched");
-        ani_errorutils::ThrowError(ani_errorutils::AniError_ParameterCheck, "Parameter error. Incorrect key to set.");
-        return;
-    }
-    ani_object aniObj = reinterpret_cast<ani_object>(valueRef);
-    auto parseResult = ParseObjectValue(aniEnv, aniObj);
-    if (std::holds_alternative<std::monostate>(parseResult)) {
-        LOG_INFO("ParseObjectValue ret, monostate");
-        ani_errorutils::ThrowError(ani_errorutils::AniError_ParameterCheck, "Parameter error. Incorrect value to set.");
-        return;
+    NativeObjectValueType parseResult;
+    {
+        std::lock_guard<std::mutex> guard(sourceDataMapMutex_);
+        if (paraValue.get_tag() == ohos::data::distributedDataObject::TempAnyType::tag_t::EMPTY) {
+            parseResult = NULL_TYPE;
+        } else if (paraValue.get_tag() == ohos::data::distributedDataObject::TempAnyType::tag_t::OPAQUE) {
+            uintptr_t valueRef = paraValue.get_OPAQUE_ref();
+            ani_object aniObj = reinterpret_cast<ani_object>(valueRef);
+            parseResult = ParseObjectValue(aniEnv, aniObj);
+        }
+        sourceDataMap_[std::string(key)] = parseResult;
     }
 
-    NativeObjectValueType oldValue = iter->second;
-    bool oldIsAsset = std::holds_alternative<OHOS::CommonType::AssetValue>(oldValue);
-    bool oldIsAssets = std::holds_alternative<std::vector<OHOS::CommonType::AssetValue>>(oldValue);
-    bool newIsAsset = std::holds_alternative<OHOS::CommonType::AssetValue>(parseResult);
-    bool newIsAssets = std::holds_alternative<std::vector<OHOS::CommonType::AssetValue>>(parseResult);
-    if (oldIsAsset != newIsAsset) {
-        LOG_ERROR("DataObjectImpl::SetValueImpl, asset value not matched");
-    }
-    if (oldIsAssets != newIsAssets) {
-        LOG_ERROR("DataObjectImpl::SetValueImpl, asset[] value not matched");
-    }
     std::lock_guard<std::mutex> guard(sessionInfoMutex_);
-    sourceDataMap_[std::string(key)] = parseResult;
     if (session_ != nullptr && !session_->GetSessionId().empty()) {
         session_->SyncDataToStore(std::string(key), parseResult, true);
     }
-    version_ ++;
+    version_++;
 }
 
 void DataObjectImpl::SetAssetItemValue(::taihe::string_view key, ::taihe::string_view attr,
-    ::ohos::data::distributedDataObject::AssetValueType const& value)
+    ::ohos::data::distributedDataObject::AssetValueType const &value)
 {
-    LOG_INFO("DataObjectImpl::SetAssetItemValue, key %{public}s, attr %{public}s", key.c_str(), attr.c_str());
-    auto iter = sourceDataMap_.find(std::string(key));
-    if (iter == sourceDataMap_.end()) {
-        LOG_ERROR("DataObjectImpl::SetAssetItemValue, no key matched");
-        ani_errorutils::ThrowError(ani_errorutils::AniError_ParameterCheck, "Parameter error. Incorrect key to set.");
-        return;
+    NativeObjectValueType matchedValue;
+    OHOS::CommonType::AssetValue matchedAsset;
+    {
+        std::lock_guard<std::mutex> guard(sourceDataMapMutex_);
+        auto iter = sourceDataMap_.find(std::string(key));
+        if (iter == sourceDataMap_.end()) {
+            LOG_ERROR("DataObjectImpl::SetAssetItemValue, no key matched");
+            AniErrorUtils::ThrowError(AniErrorUtils::AniError_ParameterCheck, "Parameter error. Incorrect key to set.");
+            return;
+        }
+        matchedValue = iter->second;
+        auto pvalAsset = std::get_if<OHOS::CommonType::AssetValue>(&matchedValue);
+        if (pvalAsset == nullptr) {
+            LOG_ERROR("DataObjectImpl::SetAssetItemValue, target is not Asset");
+            AniErrorUtils::ThrowError(AniErrorUtils::AniError_ParameterCheck, "Parameter error. target is not Asset.");
+            return;
+        }
+        matchedAsset = *pvalAsset;
     }
-    auto existedValue = iter->second;
-    auto pvalAsset = std::get_if<OHOS::CommonType::AssetValue>(&existedValue);
-    if (pvalAsset == nullptr) {
-        LOG_ERROR("DataObjectImpl::SetAssetItemValue, target is not Asset");
-        ani_errorutils::ThrowError(ani_errorutils::AniError_ParameterCheck, "Parameter error. target is not Asset.");
-        return;
-    }
-    auto &asset = *pvalAsset;
-    UpdateAssetAttr(asset, std::string(key), std::string(attr), value);
-    version_ ++;
+    UpdateAssetAttribute(matchedAsset, std::string(key), std::string(attr), value);
+    version_++;
 }
 
-void DataObjectImpl::UpdateAssetAttr(OHOS::CommonType::AssetValue &asset, std::string const& externalKey,
-    std::string const& attr, ::ohos::data::distributedDataObject::AssetValueType const& value)
+void DataObjectImpl::UpdateAssetAttribute(OHOS::CommonType::AssetValue &asset, std::string const &externalKey,
+    std::string const &attr, ::ohos::data::distributedDataObject::AssetValueType const &value)
 {
     std::string paraStr;
     uint32_t paraStatus = OHOS::CommonType::AssetValue::Status::STATUS_UNKNOWN;
@@ -1012,63 +1085,76 @@ void DataObjectImpl::UpdateAssetAttr(OHOS::CommonType::AssetValue &asset, std::s
         paraStr = value.get_STR_ref();
     } else {
         auto taiheStatus = value.get_STATUS_ref();
-        paraStatus = ani_utils::TaiheStatusToNative(taiheStatus);
+        paraStatus = AniUtils::TaiheStatusToNative(taiheStatus);
     }
-    LOG_INFO("DataObjectImpl::UpdateAssetAttr, attr %{public}s, paraStr %{public}s", attr.c_str(), paraStr.c_str());
-    if (attr == "id") {
-        asset.id = paraStr;
-    } else if (attr == "name") {
-        asset.name = paraStr;
-    } else if (attr == "uri") {
-        asset.uri = paraStr;
-    } else if (attr == "createTime") {
-        asset.createTime = paraStr;
-    } else if (attr == "modifyTime") {
-        asset.modifyTime = paraStr;
-    } else if (attr == "size") {
-        asset.size = paraStr;
-    } else if (attr == "hash") {
-        asset.hash = paraStr;
-    } else if (attr == "path") {
-        asset.path = paraStr;
-    } else if (attr == "status") {
+
+    static const std::unordered_map<std::string,
+        std::function<void(OHOS::CommonType::AssetValue&, const std::string&)>> attrUpdaters = {
+        {"id", [](OHOS::CommonType::AssetValue& asset, const std::string& value)
+            { asset.id = value; }},
+        {"name", [](OHOS::CommonType::AssetValue& asset, const std::string& value)
+            { asset.name = value; }},
+        {"uri", [](OHOS::CommonType::AssetValue& asset, const std::string& value)
+            { asset.uri = value; }},
+        {"createTime", [](OHOS::CommonType::AssetValue& asset, const std::string& value)
+            {asset.createTime = value; }},
+        {"modifyTime", [](OHOS::CommonType::AssetValue& asset, const std::string& value)
+            { asset.modifyTime = value; }},
+        {"size", [](OHOS::CommonType::AssetValue& asset, const std::string& value)
+            { asset.size = value; }},
+        {"hash", [](OHOS::CommonType::AssetValue& asset, const std::string& value)
+            { asset.hash = value; }},
+        {"path", [](OHOS::CommonType::AssetValue& asset, const std::string& value)
+            { asset.path = value; }}
+    };
+
+    if (attr == "status") {
         asset.status = paraStatus;
     } else {
-        return;
+        auto it = attrUpdaters.find(attr);
+        if (it != attrUpdaters.end()) {
+            it->second(asset, paraStr);
+        } else {
+            return;
+        }
     }
+
+    std::lock_guard<std::mutex> guard(sessionInfoMutex_);
     if (session_ != nullptr && !session_->GetSessionId().empty()) {
         if (attr == "status") {
-            session_->SyncAssetAttrToStore(externalKey, attr, paraStatus);
+            session_->SyncAssetPropertyToStore(externalKey, attr, paraStatus);
         } else {
-            session_->SyncAssetAttrToStore(externalKey, attr, paraStr);
+            session_->SyncAssetPropertyToStore(externalKey, attr, paraStr);
         }
     }
 }
 
-ani_ref DataObjectImpl::GetAssetsRefFromStore(ani_env* aniEnv, std::string assetsKey)
+ani_ref DataObjectImpl::GetAssetsRefFromStore(ani_env *aniEnv, std::string assetsKey)
 {
     LOG_INFO("DataObjectImpl::GetAssetsRefFromStore");
-    if (session_ == nullptr) {
-        return nullptr;
+    NativeObjectValueType result;
+    {
+        std::lock_guard<std::mutex> guard(sessionInfoMutex_);
+        if (session_ == nullptr) {
+            return nullptr;
+        }
+        result = session_->GetValueFromStore(assetsKey.c_str());
     }
-    NativeObjectValueType result = session_->GetValueFromStore(assetsKey.c_str());
     auto pvalString = std::get_if<std::string>(&result);
     if (pvalString == nullptr) {
         return nullptr;
     }
     std::string strtemp = *pvalString;
-    LOG_INFO("DataObjectImpl::GetAssetsRefFromStore, strtemp %{public}s", strtemp.c_str());
     if (strtemp.find(COMPLEX_TYPE) == 0) {
         strtemp = strtemp.substr(COMPLEX_TYPE.length());
         ani_ref aniRef = DataObjectImpl::JsonParseToJsonElement(aniEnv, strtemp);
-        LOG_INFO("DataObjectImpl::GetAssetsRefFromStore, JsonParse %{public}p", aniRef);
         return aniRef;
     }
     return nullptr;
 }
 
 ::ohos::data::distributedDataObject::ObjectValueType DataObjectImpl::ObjectValueTypeToTaihe(
-    ani_env* aniEnv, std::string const& externalKey, NativeObjectValueType const &valueObj)
+    ani_env *aniEnv, std::string const &externalKey, NativeObjectValueType const &valueObj)
 {
     using namespace ::ohos::data;
     if (aniEnv == nullptr) {
@@ -1085,38 +1171,46 @@ ani_ref DataObjectImpl::GetAssetsRefFromStore(ani_env* aniEnv, std::string asset
     if (pvalDouble != nullptr) {
         return distributedDataObject::ObjectValueType::make_F64(*pvalDouble);
     }
+    auto pvalString = std::get_if<std::string>(&valueObj);
+    if (pvalString != nullptr) {
+        return ProcessStringValue(aniEnv, *pvalString);
+    }
     auto pvalUint8Array = std::get_if<std::vector<uint8_t>>(&valueObj);
     if (pvalUint8Array != nullptr) {
-        auto stdArray =  *pvalUint8Array;
+        auto stdArray = *pvalUint8Array;
         auto taiheArray = ::taihe::array<uint8_t>(::taihe::copy_data_t{}, stdArray.data(), stdArray.size());
         return distributedDataObject::ObjectValueType::make_Uint8Array(taiheArray);
     }
     auto pvalAsset = std::get_if<OHOS::CommonType::AssetValue>(&valueObj);
     if (pvalAsset != nullptr) {
         LOG_INFO("DataObjectImpl::ObjectValueTypeToTaihe, create DdoAssetProxy");
-        ani_object aniAssetProxy = ani_utils::AniCreateProxyAsset(aniEnv, externalKey, *pvalAsset);
+        ani_object aniAssetProxy = AniUtils::AniCreateProxyAsset(aniEnv, externalKey, *pvalAsset);
         return distributedDataObject::ObjectValueType::make_OPAQUE(reinterpret_cast<uintptr_t>(aniAssetProxy));
     }
     auto pvalAssets = std::get_if<std::vector<OHOS::CommonType::AssetValue>>(&valueObj);
     if (pvalAssets != nullptr) {
-        auto taiheAssets = ani_utils::AssetsToTaihe(*pvalAssets);
+        auto taiheAssets = AniUtils::AssetsToTaihe(*pvalAssets);
         return distributedDataObject::ObjectValueType::make_ASSETS(taiheAssets);
-    }
-    auto pvalString = std::get_if<std::string>(&valueObj);
-    if (pvalString != nullptr) {
-        std::string strtemp = *pvalString;
-        if (strtemp.find(STRING_TYPE) == 0) {
-            strtemp = strtemp.substr(STRING_TYPE.length());
-            return distributedDataObject::ObjectValueType::make_STRING(strtemp);
-        } else if (strtemp.find(NULL_TYPE) == 0) {
-            return distributedDataObject::ObjectValueType::make_EMPTY();
-        } else if (strtemp.find(COMPLEX_TYPE) == 0) {
-            strtemp = strtemp.substr(COMPLEX_TYPE.length());
-            ani_ref aniRef = JsonParseToJsonElement(aniEnv, strtemp);
-            return distributedDataObject::ObjectValueType::make_OPAQUE(reinterpret_cast<uintptr_t>(aniRef));
-        }
     }
     return distributedDataObject::ObjectValueType::make_UNDEFINED();
 }
 
+::ohos::data::distributedDataObject::ObjectValueType DataObjectImpl::ProcessStringValue(
+    ani_env *aniEnv, const std::string& stringValue)
+{
+    using namespace ::ohos::data;
+    
+    if (stringValue.find(STRING_TYPE) == 0) {
+        std::string strtemp = stringValue.substr(STRING_TYPE.length());
+        return distributedDataObject::ObjectValueType::make_STRING(strtemp);
+    } else if (stringValue.find(NULL_TYPE) == 0) {
+        return distributedDataObject::ObjectValueType::make_EMPTY();
+    } else if (stringValue.find(COMPLEX_TYPE) == 0) {
+        std::string strtemp = stringValue.substr(COMPLEX_TYPE.length());
+        ani_ref aniRef = JsonParseToJsonElement(aniEnv, strtemp);
+        return distributedDataObject::ObjectValueType::make_OPAQUE(reinterpret_cast<uintptr_t>(aniRef));
+    }
+
+    return distributedDataObject::ObjectValueType::make_UNDEFINED();
+}
 } //namespace OHOS::ObjectStore

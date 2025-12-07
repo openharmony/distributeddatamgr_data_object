@@ -24,7 +24,7 @@
 #include "ohos.data.distributedDataObject.proj.hpp"
 #include "ohos.data.distributedDataObject.impl.hpp"
 
-namespace ani_utils {
+namespace AniUtils {
 
 int32_t AniGetProperty(const ani_env *env, ani_object ani_obj, const char *property, std::string &result,
     bool optional = false);
@@ -41,7 +41,7 @@ ani_status AniCreateBool(ani_env* env, bool value, ani_object& result);
 ani_ref AniCreateByte(ani_env *env, uint8_t para);
 ani_status AniCreateInt(ani_env* env, int32_t value, ani_object& result);
 ani_status AniCreateDouble(ani_env* env, double value, ani_object& result);
-ani_string AniCreateString(ani_env *env, std::string const& para);
+ani_string AniCreateString(ani_env *env, const std::string &para);
 
 ani_object AniCreateArray(ani_env *env, std::vector<ani_object> const& objectArray);
 ani_object AniCreatEmptyRecord(ani_env* env, ani_method& setMethod);
@@ -124,13 +124,13 @@ private:
     ani_object obj_ = nullptr;
 };
 
-ani_object AniCreateProxyAsset(ani_env *env, std::string const& externalKey, OHOS::CommonType::AssetValue const& asset);
+ani_object AniCreateProxyAsset(ani_env *env, const std::string &externalKey, OHOS::CommonType::AssetValue const& asset);
 ani_object AniCreateAsset(ani_env *env, OHOS::CommonType::AssetValue const& asset);
 ani_object AniCreateAssets(ani_env *env, std::vector<OHOS::CommonType::AssetValue> const& assets);
 OHOS::ObjectStore::AssetBindInfo BindInfoToNative(::ohos::data::distributedDataObject::BindInfo const& taiheBindInfo);
 uint32_t TaiheStatusToNative(::ohos::data::commonType::AssetStatus status);
 ::taihe::array<::ohos::data::commonType::Asset> AssetsToTaihe(std::vector<OHOS::CommonType::AssetValue> const& values);
 
-} //namespace ani_utils
+} //namespace AniUtils
 #endif
 

@@ -22,7 +22,7 @@ import { AsyncCallback, Callback, BusinessError } from '@ohos.base';
 import commonTypeOrigin from './@ohos.data.commonType';
 """)
 
-use ohos.data.commonType as commonType;
+use ohos.data.commonType as commonTypeTaihe;
 
 @!sts_inject("""
 const COMPLEX_TYPE: string = '[COMPLEX]';
@@ -41,12 +41,12 @@ function create(context: BaseContext, source: object): DataObject
         let err: BusinessError = { code: 401, message :"Parameter error. The type of source must be object."}
         throw err;
     };
-    console.info("DDo, source type is ", JSON.stringify(Type.of(source)))
+    console.info("create source type is ", JSON.stringify(Type.of(source)))
     let keys: Array<string> = [];
     try {
         keys = Object.keys(source);
     } catch (err) {
-        console.error("DDo, Object.keys err, ", JSON.stringify(err));
+        console.error("create Object.keys err, ", JSON.stringify(err));
     }
     return createImpl(context, source, keys)
 }
@@ -60,6 +60,23 @@ function jsonParseJsonElement(para: string) : Object
 {
     let result: jsonx.JsonElement = JSON.parseJsonElement(para);
     return result;
+}
+
+function convertSetToArray(para: Object): Object | undefined
+{
+    try {
+        if (para instanceof Set) {
+            let arrRet = new Array<Any>();
+            para.forEach((item: Any) => {
+                console.log("convertSetToArray get item ", JSON.stringify(item));
+                arrRet.push(item);
+            })
+            return arrRet;
+        }
+    } catch (err) {
+        console.error("convert set to array err, ", JSON.stringify(err));
+    }
+    return undefined;
 }
 
 export class DdoAssetProxy implements commonTypeOrigin.Asset {
@@ -176,26 +193,32 @@ export class DdoAssetProxy implements commonTypeOrigin.Asset {
 struct BindInfo {
     storeName: String;
     tableName: String;
-    primaryKey: @record Map<String, commonType.ValueType>;
+    primaryKey: @record Map<String, commonTypeTaihe.ValueType>;
     field: String;
     assetName: String;
 }
 
 union ObjectValueType {
-    @null EMPTY;
     @undefined UNDEFINED;
+    @null EMPTY;
     OPAQUE: Opaque;
     BOOL: bool;
     F64: f64;
     STRING: String;
     Uint8Array: @typedarray Array<u8>;
-    ASSET: commonType.Asset;
-    ASSETS: Array<commonType.Asset>;
+    ASSET: commonTypeTaihe.Asset;
+    ASSETS: Array<commonTypeTaihe.Asset>;
 }
 
 union AssetValueType {
     STR: String;
-    STATUS: commonType.AssetStatus;
+    STATUS: commonTypeTaihe.AssetStatus;
+}
+
+union TempAnyType {
+    @undefined UNDEFINED;
+    @null EMPTY;
+    OPAQUE: Opaque;
 }
 
 function CreateImpl(context: @sts_type("BaseContext") Opaque, source: Opaque, keys: Array<String>): DataObject;
@@ -214,8 +237,13 @@ struct RevokeSaveSuccessResponse {
 
 interface DataObject {
     @gen_async("setSessionId")
+    SetSessionIdWithCallbackSync(sessionId: String): void;
+
+    @gen_async("setSessionId")
+    LeaveAllSessionWithCallbackSync(): void;
+
     @gen_promise("setSessionId")
-    SetSessionIdSync(sessionId: Optional<String>): void;
+    SetSessionIdPromiseSync(sessionId: Optional<String>): void;
 
     @gen_async("save")
     @gen_promise("save")
@@ -245,14 +273,14 @@ interface DataObject {
     OffProgressChanged(callback: Optional<(sessionId: String, progress: i32) => void>): void;
 
     GetValueImpl(key: String): ObjectValueType;
-    SetValueImpl(key: String, value: Opaque): void;
+    SetValueImpl(key: String, value: TempAnyType): void;
     SetAssetItemValue(key: String, attr: String, value: AssetValueType): void;
 
     @!sts_inject_into_interface("""
     $_get(key: string): Object | null | undefined;
-    $_set(key: string, value: Object): void;
+    $_set(key: string, value: Object | null | undefined): void;
     getValue(key: String): Object | null | undefined;
-    setValue(key: String, value: Object): void;
+    setValue(key: String, value: Object | null | undefined): void;
     on(type: string, callback: (p1 : object, p2 : object) => void): void;
     off(type: string, callback?: (p1 : object, p2 : object) => void): void;
     on(type: string, callback: (p1 : object, p2 : object, p3 : object) => void): void;
@@ -263,11 +291,11 @@ interface DataObject {
     {
         return this.getValue(key);
     }
-    $_set(key: string, value: Object): void
+    $_set(key: string, value: Object | null | undefined): void
     {
         this.setValue(key, value);
     }
-    setValue(key: String, newValue: Object): void
+    setValue(key: String, newValue: Object | null | undefined): void
     {
         this.setValueImpl(key, newValue)
     }
@@ -279,6 +307,7 @@ interface DataObject {
                 let assetProxy = tempResult as DdoAssetProxy;
                 assetProxy.setDdoManager(this);
             } catch (err) {
+                console.error("get value err, ", JSON.stringify(err));
             }
         }
         return tempResult;

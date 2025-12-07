@@ -17,7 +17,7 @@
 #include "taihe/runtime.hpp"
 #include "logger.h"
 
-namespace ani_utils {
+namespace AniUtils {
 using namespace OHOS::ObjectStore;
 
 using TaiheValueType = ::ohos::data::commonType::ValueType;
@@ -29,7 +29,10 @@ int32_t AniGetProperty(const ani_env *env, ani_object ani_obj, const char *prope
     }
     ani_object object = nullptr;
     int32_t status = AniGetProperty(env, ani_obj, property, object, optional);
-    if (status == ANI_OK && object != nullptr) {
+    if (status == ANI_OK) {
+        if (object == nullptr) {
+            return ANI_INVALID_ARGS;
+        }
         result = AniStringUtils::ToStd(env, reinterpret_cast<ani_string>(object));
     }
     return status;
@@ -235,7 +238,7 @@ ani_status AniCreateDouble(ani_env* env, double value, ani_object& result)
     return state;
 }
 
-ani_string AniCreateString(ani_env *env, std::string const& para)
+ani_string AniCreateString(ani_env *env, const std::string &para)
 {
     if (env == nullptr) {
         return {};
@@ -284,7 +287,7 @@ ani_method AniGetClassMethod(ani_env *env, const char* className, const char* me
     return retMethod;
 }
 
-ani_field AniFindClassField(ani_env *env, ani_class cls, char const *name)
+ani_field AniFindClassField(ani_env *env, ani_class cls, const char* name)
 {
     ani_field fld;
     if (cls == nullptr) {
@@ -298,14 +301,14 @@ ani_field AniFindClassField(ani_env *env, ani_class cls, char const *name)
 
 ani_object AniCreatEmptyRecord(ani_env* env, ani_method& setMethod)
 {
-    ani_method constructor = ani_utils::AniGetClassMethod(env, "escompat.Record", "<ctor>", ":");
-    ani_method mapSetMethod = ani_utils::AniGetClassMethod(env, "escompat.Record", "$_set", nullptr);
+    ani_method constructor = AniUtils::AniGetClassMethod(env, "escompat.Record", "<ctor>", ":");
+    ani_method mapSetMethod = AniUtils::AniGetClassMethod(env, "escompat.Record", "$_set", nullptr);
     if (constructor == nullptr || mapSetMethod == nullptr) {
         LOG_ERROR("AniGetClassMethod escompat.Record find method failed");
         return nullptr;
     }
     ani_object ani_record_result = nullptr;
-    if (ANI_OK != env->Object_New(ani_utils::AniGetClass(env, "escompat.Record"), constructor, &ani_record_result)) {
+    if (ANI_OK != env->Object_New(AniUtils::AniGetClass(env, "escompat.Record"), constructor, &ani_record_result)) {
         LOG_ERROR("escompat.Record Object_New failed");
         return nullptr;
     }
@@ -328,7 +331,7 @@ ani_array AniCreateEmptyAniArray(ani_env *env, uint32_t size)
     return resultArray;
 }
 
-ani_object AniCreateArray(ani_env *env, std::vector<ani_object> const& objectArray)
+ani_object AniCreateArray(ani_env *env, const std::vector<ani_object> &objectArray)
 {
     ani_array array = AniCreateEmptyAniArray(env, objectArray.size());
     if (array == nullptr) {
@@ -391,11 +394,14 @@ bool UnionAccessor::IsInstanceOf(const std::string& cls_name)
     if (env_ == nullptr || obj_ == nullptr) {
         return false;
     }
-    ani_boolean isNull = false;
     ani_boolean isUndefined = false;
-    env_->Reference_IsNull(obj_, &isNull);
     env_->Reference_IsUndefined(obj_, &isUndefined);
-    if (isNull || isUndefined) {
+    if (isUndefined) {
+        return false;
+    }
+    ani_boolean isNull = false;
+    env_->Reference_IsNull(obj_, &isNull);
+    if (isNull) {
         return false;
     }
     ani_class cls;
@@ -471,7 +477,7 @@ bool UnionAccessor::TryConvertToNumber(double &value)
             LOG_ERROR("TryConvertToNumber, toDouble failed");
             return false;
         }
-        value = static_cast<int>(aniValue);
+        value = aniValue;
         return true;
     }
     return false;
@@ -818,12 +824,12 @@ bool UnionAccessor::TryConvert<std::vector<OHOS::CommonType::Asset>>(std::vector
     return true;
 }
 
-ani_object AniCreateProxyAsset(ani_env *env, std::string const& externalKey, OHOS::CommonType::AssetValue const& asset)
+ani_object AniCreateProxyAsset(ani_env *env, const std::string &externalKey, const OHOS::CommonType::AssetValue &asset)
 {
     if (env == nullptr) {
         return {};
     }
-    ani_class assetProxyClass = ani_utils::AniGetClass(env,
+    ani_class assetProxyClass = AniUtils::AniGetClass(env,
         "@ohos.data.distributedDataObject.distributedDataObject.DdoAssetProxy");
     if (assetProxyClass == nullptr) {
         return {};
@@ -856,12 +862,12 @@ ani_object AniCreateProxyAsset(ani_env *env, std::string const& externalKey, OHO
     return ani_obj;
 }
 
-ani_object AniCreateAsset(ani_env *env, OHOS::CommonType::AssetValue const& asset)
+ani_object AniCreateAsset(ani_env *env, const OHOS::CommonType::AssetValue &asset)
 {
     if (env == nullptr) {
         return {};
     }
-    ani_class assetClass = ani_utils::AniGetClass(env, "@ohos.data.commonType.commonType._taihe_Asset_inner");
+    ani_class assetClass = AniUtils::AniGetClass(env, "@ohos.data.commonType.commonType._taihe_Asset_inner");
     if (assetClass == nullptr) {
         return {};
     }
@@ -892,7 +898,7 @@ ani_object AniCreateAsset(ani_env *env, OHOS::CommonType::AssetValue const& asse
     return ani_obj;
 }
 
-ani_object AniCreateAssets(ani_env *env, std::vector<OHOS::CommonType::AssetValue> const& assets)
+ani_object AniCreateAssets(ani_env *env, const std::vector<OHOS::CommonType::AssetValue> &assets)
 {
     if (env == nullptr) {
         return {};
@@ -958,7 +964,7 @@ uint32_t TaiheStatusToNative(::ohos::data::commonType::AssetStatus status)
     return result;
 }
 
-OHOS::CommonType::Asset AssetToNative(::ohos::data::commonType::Asset const &asset)
+OHOS::CommonType::Asset AssetToNative(const ::ohos::data::commonType::Asset &asset)
 {
     OHOS::CommonType::Asset value;
     value.name = std::string(asset.name);
@@ -973,8 +979,8 @@ OHOS::CommonType::Asset AssetToNative(::ohos::data::commonType::Asset const &ass
     return value;
 }
 
-std::vector<OHOS::CommonType::Asset> AssetsToNative(
-    ::taihe::array<::ohos::data::commonType::Asset> const &assets)
+std::vector<OHOS::CommonType::Asset> AssetsToNative(const
+    ::taihe::array<::ohos::data::commonType::Asset> &assets)
 {
     std::vector<OHOS::CommonType::Asset> result(assets.size());
     std::transform(assets.begin(), assets.end(), result.begin(), [](::ohos::data::commonType::Asset c) {
@@ -984,7 +990,7 @@ std::vector<OHOS::CommonType::Asset> AssetsToNative(
     return result;
 }
 
-::ohos::data::commonType::Asset AssetToTaihe(OHOS::CommonType::AssetValue const& value)
+::ohos::data::commonType::Asset AssetToTaihe(const OHOS::CommonType::AssetValue &value)
 {
     ::ohos::data::commonType::Asset asset = {};
     asset.name = value.name;
@@ -997,8 +1003,8 @@ std::vector<OHOS::CommonType::Asset> AssetsToNative(
     return asset;
 }
 
-::taihe::array<::ohos::data::commonType::Asset> AssetsToTaihe(
-    std::vector<OHOS::CommonType::AssetValue> const& values)
+::taihe::array<::ohos::data::commonType::Asset> AssetsToTaihe(const
+    std::vector<OHOS::CommonType::AssetValue> &values)
 {
     std::vector<::ohos::data::commonType::Asset> assets;
     for (const auto &val : values) {
@@ -1007,7 +1013,7 @@ std::vector<OHOS::CommonType::Asset> AssetsToNative(
     return ::taihe::array<::ohos::data::commonType::Asset>(::taihe::copy_data_t{}, assets.data(), assets.size());
 }
 
-OHOS::CommonType::Value ValueTypeToNative(::ohos::data::commonType::ValueType const &taiheValue)
+OHOS::CommonType::Value ValueTypeToNative(const ::ohos::data::commonType::ValueType &taiheValue)
 {
     OHOS::CommonType::Value valueVar;
     auto tag = taiheValue.get_tag();
@@ -1047,8 +1053,8 @@ OHOS::CommonType::Value ValueTypeToNative(::ohos::data::commonType::ValueType co
     return valueVar;
 }
 
-OHOS::CommonType::ValuesBucket ValuesBucketToNative(
-    ::taihe::map<::taihe::string, ::ohos::data::commonType::ValueType> const &taiheValues)
+OHOS::CommonType::ValuesBucket ValuesBucketToNative(const
+    ::taihe::map<::taihe::string, ::ohos::data::commonType::ValueType> &taiheValues)
 {
     OHOS::CommonType::ValuesBucket bucket;
     for (auto it = taiheValues.begin(); it != taiheValues.end(); ++it) {
@@ -1059,7 +1065,7 @@ OHOS::CommonType::ValuesBucket ValuesBucketToNative(
     return bucket;
 }
 
-OHOS::ObjectStore::AssetBindInfo BindInfoToNative(::ohos::data::distributedDataObject::BindInfo const& taiheBindInfo)
+OHOS::ObjectStore::AssetBindInfo BindInfoToNative(const ::ohos::data::distributedDataObject::BindInfo &taiheBindInfo)
 {
     OHOS::ObjectStore::AssetBindInfo nativeBindInfo;
     nativeBindInfo.storeName = std::string(taiheBindInfo.storeName);
@@ -1070,4 +1076,4 @@ OHOS::ObjectStore::AssetBindInfo BindInfoToNative(::ohos::data::distributedDataO
     return nativeBindInfo;
 }
 
-} //namespace ani_utils
+} //namespace AniUtils

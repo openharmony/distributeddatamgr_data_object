@@ -106,10 +106,10 @@ public:
 
     void Clear() override;
 private:
-    bool isWatched_ = false;
-    DistributedObjectStore *objectStore_;
-    DistributedObject *object_;
-    std::weak_ptr<AniWatcher> watcher_;
+    bool isWatched_{false};
+    DistributedObjectStore *objectStore_{nullptr};
+    DistributedObject *object_{nullptr};
+    std::weak_ptr<AniWatcher> watcher_{};
 };
 
 class StatusEventListener : public EventListener {
@@ -121,7 +121,7 @@ public:
 
     void Clear() override;
 private:
-    std::weak_ptr<AniWatcher> watcher_;
+    std::weak_ptr<AniWatcher> watcher_{};
     std::string sessionId_;
 };
 
@@ -135,7 +135,7 @@ public:
     void Clear() override;
 
 private:
-    std::weak_ptr<AniWatcher> watcher_;
+    std::weak_ptr<AniWatcher> watcher_{};
     std::string sessionId_;
 };
 
@@ -144,15 +144,16 @@ public:
     AniWatcher(DistributedObjectStore *objectStore, DistributedObject *object);
     ~AniWatcher();
 
-    bool On(std::string type, VarCallbackType handler);
+    bool On(const std::string &type, VarCallbackType handler);
 
-    void Off(std::string type, VarCallbackType optHandler);
+    void Off(const std::string &type, VarCallbackType optHandler);
 
-    void Emit(std::string type, const std::string &sessionId, const std::vector<std::string> &changeData);
+    void Emit(const std::string &type, const std::string &sessionId, const std::vector<std::string> &changeData);
 
-    void Emit(std::string type, const std::string &sessionId, const std::string &networkId, const std::string &status);
+    void Emit(const std::string &type, const std::string &sessionId,
+        const std::string &networkId, const std::string &status);
 
-    void Emit(std::string type, const std::string &sessionId, const int32_t progress);
+    void Emit(const std::string &type, const std::string &sessionId, const int32_t progress);
 
     bool IsEmpty();
 
@@ -186,7 +187,7 @@ private:
             const int32_t progress_;
     };
 
-    EventListener *Find(std::string type);
+    EventListener *Find(const std::string &type);
 
     ChangeEventListener* changeEventListener_ = nullptr;
     StatusEventListener* statusEventListener_ = nullptr;
@@ -209,7 +210,7 @@ public:
     void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override;
 
 private:
-    std::weak_ptr<AniWatcher> watcher_;
+    std::weak_ptr<AniWatcher> watcher_{};
 };
 } // namespace OHOS::ObjectStore
 

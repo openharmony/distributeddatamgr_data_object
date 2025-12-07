@@ -48,19 +48,19 @@ public:
     std::string GetSessionId() { return sessionId_; }
     void LeaveSession(OHOS::ObjectStore::DistributedObjectStore *objectInfo);
 
-    ::ohos::data::distributedDataObject::SaveSuccessResponse Save(std::string deviceId, unsigned long version);
+    ::ohos::data::distributedDataObject::SaveSuccessResponse Save(const std::string &deviceId, unsigned long version);
     ::ohos::data::distributedDataObject::RevokeSaveSuccessResponse RevokeSave();
 
     bool AddWatch(OHOS::ObjectStore::DistributedObjectStore *objectStore,
         std::string type, VarCallbackType taiheCallback);
     void DeleteWatch(std::string type, VarCallbackType taiheCallback);
-    
-    uint32_t BindAssetStore(std::string key, OHOS::ObjectStore::AssetBindInfo &nativeBindInfo);
-    uint32_t SyncDataToStore(std::string const& key, NativeObjectValueType const& objValue, bool withPrefix);
-    uint32_t SyncAssetToStore(std::string const& key, OHOS::CommonType::AssetValue const& asset);
-    uint32_t SyncAssetAttrToStore(std::string const& key, std::string const& attr, uint32_t value);
-    uint32_t SyncAssetAttrToStore(std::string const& key, std::string const& attr, std::string const& value);
-    uint32_t SyncAssetsToStore(std::string const& key, std::vector<OHOS::CommonType::AssetValue> const& assets);
+
+    uint32_t BindAssetStore(const std::string &key, OHOS::ObjectStore::AssetBindInfo &nativeBindInfo);
+    uint32_t SyncDataToStore(const std::string &key, NativeObjectValueType const& objValue, bool withPrefix);
+    uint32_t SyncAssetToStore(const std::string &key, OHOS::CommonType::AssetValue const& asset);
+    uint32_t SyncAssetPropertyToStore(const std::string &key, const std::string &property, uint32_t value);
+    uint32_t SyncAssetPropertyToStore(const std::string &key, const std::string &property, const std::string &value);
+    uint32_t SyncAssetsToStore(const std::string &key, std::vector<OHOS::CommonType::AssetValue> const& assets);
     uint32_t FlushCachedData(std::map<std::string, NativeObjectValueType> const& dataMap);
 
     NativeObjectValueType GetValueFromStore(const char *key);
@@ -73,6 +73,11 @@ protected:
     std::string distributedDir_;
     OHOS::ObjectStore::DistributedObject* distributedObj_ = nullptr;
     std::string sessionId_;
+private:
+    NativeObjectValueType HandleStringType(const char* key);
+    NativeObjectValueType HandleDoubleType(const char* key);
+    NativeObjectValueType HandleBooleanType(const char* key);
+    NativeObjectValueType HandleComplexType(const char* key);
 };
 
 } //namespace OHOS::ObjectStore

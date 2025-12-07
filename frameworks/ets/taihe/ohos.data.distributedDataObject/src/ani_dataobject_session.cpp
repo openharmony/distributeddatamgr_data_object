@@ -14,21 +14,22 @@
  */
 #define LOG_TAG "AniDataObjectSession"
 #include "ani_dataobject_session.h"
-#include "ohos.data.distributedDataObject.DataObject.h"
-#include "logger.h"
-#include "ani_utils.h"
+
+#include <chrono>
+#include <thread>
+
 #include "ani_error_utils.h"
+#include "ani_utils.h"
+#include "logger.h"
 #include "object_error.h"
 #include "objectstore_errors.h"
-#include <thread>
-#include <chrono>
+#include "ohos.data.distributedDataObject.DataObject.h"
 
 namespace OHOS::ObjectStore {
 
 const std::string ASSET_KEY_SEPARATOR = ".";
 
-AniDataobjectSession::AniDataobjectSession(OHOS::ObjectStore::DistributedObject* obj,
-    std::string sessionId)
+AniDataobjectSession::AniDataobjectSession(OHOS::ObjectStore::DistributedObject *obj, std::string sessionId)
 {
     distributedObj_ = obj;
     sessionId_ = sessionId;
@@ -42,8 +43,9 @@ void AniDataobjectSession::LeaveSession(OHOS::ObjectStore::DistributedObjectStor
 {
     LOG_INFO("AniDataobjectSession::LeaveSession, called");
     if (objectInfo == nullptr || distributedObj_ == nullptr) {
+        LOG_ERROR("leave seession err");
         auto innerError = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(innerError->GetCode(), innerError->GetMessage());
+        AniErrorUtils::ThrowError(innerError->GetCode(), innerError->GetMessage());
         return;
     }
     VarCallbackType emptyCallback;
@@ -55,11 +57,12 @@ void AniDataobjectSession::LeaveSession(OHOS::ObjectStore::DistributedObjectStor
     sessionId_.clear();
 }
 
-bool AniDataobjectSession::AddWatch(OHOS::ObjectStore::DistributedObjectStore *objectStore,
-    std::string type, VarCallbackType taiheCallback)
+bool AniDataobjectSession::AddWatch(
+    OHOS::ObjectStore::DistributedObjectStore *objectStore, std::string type, VarCallbackType taiheCallback)
 {
     LOG_INFO("AniDataobjectSession::AddWatch, called");
-    if (type.size() == 0) {
+    if (type.size() == 0 || objectStore == nullptr) {
+        LOG_ERROR("AddWatch err,type = %{public}s", type.c_str());
         return false;
     }
     std::unique_lock<std::shared_mutex> cacheLock(watchMutex_);
@@ -69,17 +72,17 @@ bool AniDataobjectSession::AddWatch(OHOS::ObjectStore::DistributedObjectStore *o
         auto changeEventListener = new (std::nothrow) ChangeEventListener(watcher, objectStore, distributedObj_);
         auto statusEventListener = new (std::nothrow) StatusEventListener(watcher, distributedObj_->GetSessionId());
         auto progressEventListener = new (std::nothrow) ProgressEventListener(watcher, distributedObj_->GetSessionId());
-        LOG_INFO("AniDataobjectSession::AddWatch, SetListener");
+        LOG_DEBUG("AniDataobjectSession::AddWatch, SetListener");
         watcher_->SetListener(changeEventListener, statusEventListener, progressEventListener);
     }
-    LOG_INFO("AniDataobjectSession::AddWatch, watcher_->On");
     return watcher_->On(type, taiheCallback);
 }
 
 void AniDataobjectSession::DeleteWatch(std::string type, VarCallbackType taiheCallback)
 {
-    LOG_INFO("AniDataobjectSession::DeleteWatch, called");
-    if (type.size() == 0) {
+    LOG_INFO("AniDataobjectSession::DeleteWatch, called type %{public}s", type.c_str());
+    if (type.empty()) {
+        LOG_ERROR("delete watch err");
         return;
     }
     std::unique_lock<std::shared_mutex> cacheLock(watchMutex_);
@@ -87,7 +90,7 @@ void AniDataobjectSession::DeleteWatch(std::string type, VarCallbackType taiheCa
         watcher_->Off(type, taiheCallback);
         LOG_INFO("DataObjectImpl::DeleteWatch %{public}s", type.c_str());
         if (watcher_->IsEmpty()) {
-            LOG_DEBUG("delete AniWatcher");
+            LOG_ERROR("delete AniWatcher");
             watcher_ = nullptr;
         }
     } else {
@@ -96,26 +99,27 @@ void AniDataobjectSession::DeleteWatch(std::string type, VarCallbackType taiheCa
 }
 
 ::ohos::data::distributedDataObject::SaveSuccessResponse AniDataobjectSession::Save(
-    std::string deviceId, unsigned long version)
+    const std::string &deviceId, unsigned long version)
 {
     LOG_INFO("AniDataobjectSession::Save, called");
     if (distributedObj_ == nullptr) {
+        LOG_ERROR("AniDataobjectSession::Save, distributedObj_ == nullptr");
         auto err = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(err->GetCode(), "object is null");
+        AniErrorUtils::ThrowError(err->GetCode(), "object is null");
         return {};
     }
 
-    uint32_t status = distributedObj_->Save(std::string(deviceId));
+    uint32_t status = distributedObj_->Save(deviceId);
     if (status == ERR_PROCESSING) {
         auto err = std::make_shared<DeviceNotSupportedError>();
-        ani_errorutils::ThrowError(err->GetCode(), err->GetMessage());
+        AniErrorUtils::ThrowError(err->GetCode(), err->GetMessage());
         return {};
     } else if (status != SUCCESS) {
         auto err = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(err->GetCode(), "operation failed");
+        AniErrorUtils::ThrowError(err->GetCode(), "operation failed");
         return {};
     }
-    return { ::taihe::string(sessionId_), version, deviceId};
+    return { ::taihe::string(sessionId_), version, deviceId };
 }
 
 ::ohos::data::distributedDataObject::RevokeSaveSuccessResponse AniDataobjectSession::RevokeSave()
@@ -123,45 +127,46 @@ void AniDataobjectSession::DeleteWatch(std::string type, VarCallbackType taiheCa
     LOG_INFO("AniDataobjectSession::RevokeSave, called");
     if (distributedObj_ == nullptr) {
         auto err = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(err->GetCode(), "object is null");
+        AniErrorUtils::ThrowError(err->GetCode(), "object is null");
         return {};
     }
     uint32_t status = distributedObj_->RevokeSave();
     if (status == ERR_PROCESSING) {
         auto err = std::make_shared<DeviceNotSupportedError>();
-        ani_errorutils::ThrowError(err->GetCode(), err->GetMessage());
+        AniErrorUtils::ThrowError(err->GetCode(), err->GetMessage());
         return {};
     } else if (status != SUCCESS) {
         auto err = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(err->GetCode(), "operation failed");
+        AniErrorUtils::ThrowError(err->GetCode(), "operation failed");
         return {};
     }
     return { ::taihe::string(sessionId_) };
 }
 
-uint32_t AniDataobjectSession::BindAssetStore(std::string key, OHOS::ObjectStore::AssetBindInfo &nativeBindInfo)
+uint32_t AniDataobjectSession::BindAssetStore(const std::string &key, OHOS::ObjectStore::AssetBindInfo &nativeBindInfo)
 {
     LOG_INFO("AniDataobjectSession::BindAssetStore, called");
     if (distributedObj_ == nullptr) {
         auto err = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(err->GetCode(), "object is null");
+        AniErrorUtils::ThrowError(err->GetCode(), "object is null");
         return ERR_NULL_OBJECT;
     }
     uint32_t status = distributedObj_->BindAssetStore(key, nativeBindInfo);
+    LOG_INFO("AniDataobjectSession::BindAssetStore, ret %{public}d", status);
     if (status == ERR_PROCESSING) {
         auto err = std::make_shared<DeviceNotSupportedError>();
-        ani_errorutils::ThrowError(err->GetCode(), err->GetMessage());
+        AniErrorUtils::ThrowError(err->GetCode(), err->GetMessage());
         return {};
     } else if (status != SUCCESS) {
         auto err = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(err->GetCode(), "operation failed");
+        AniErrorUtils::ThrowError(err->GetCode(), "operation failed");
         return {};
     }
     return status;
 }
 
-uint32_t AniDataobjectSession::SyncDataToStore(std::string const& key, NativeObjectValueType const& objValue,
-    bool withPrefix)
+uint32_t AniDataobjectSession::SyncDataToStore(
+    std::string const &key, NativeObjectValueType const &objValue, bool withPrefix)
 {
     if (distributedObj_ == nullptr) {
         LOG_ERROR("distributedObj_ nullptr");
@@ -205,21 +210,12 @@ uint32_t AniDataobjectSession::SyncDataToStore(std::string const& key, NativeObj
     return 0;
 }
 
-uint32_t AniDataobjectSession::SyncAssetToStore(std::string const& key, OHOS::CommonType::AssetValue const& asset)
+uint32_t AniDataobjectSession::SyncAssetToStore(std::string const &key, OHOS::CommonType::AssetValue const &asset)
 {
     if (distributedObj_ == nullptr) {
         LOG_ERROR("distributedObj_ nullptr");
         return 0;
     }
-    LOG_INFO("AniDataobjectSession::SyncAssetToStore, PutString id %{public}s", asset.id.c_str());
-    LOG_INFO("AniDataobjectSession::SyncAssetToStore, PutString name %{public}s", asset.name.c_str());
-    LOG_INFO("AniDataobjectSession::SyncAssetToStore, PutString uri %{public}s", asset.uri.c_str());
-    LOG_INFO("AniDataobjectSession::SyncAssetToStore, PutString createTime %{public}s", asset.createTime.c_str());
-    LOG_INFO("AniDataobjectSession::SyncAssetToStore, PutString modifyTime %{public}s", asset.modifyTime.c_str());
-    LOG_INFO("AniDataobjectSession::SyncAssetToStore, PutString size %{public}s", asset.size.c_str());
-    LOG_INFO("AniDataobjectSession::SyncAssetToStore, PutString hash %{public}s", asset.hash.c_str());
-    LOG_INFO("AniDataobjectSession::SyncAssetToStore, PutString path %{public}s", asset.path.c_str());
-    LOG_INFO("AniDataobjectSession::SyncAssetToStore, PutDouble status %{public}d", asset.status);
 
     distributedObj_->PutString(key + ASSET_KEY_SEPARATOR + "id", STRING_TYPE + asset.id);
     distributedObj_->PutString(key + ASSET_KEY_SEPARATOR + "name", STRING_TYPE + asset.name);
@@ -233,51 +229,50 @@ uint32_t AniDataobjectSession::SyncAssetToStore(std::string const& key, OHOS::Co
     return 0;
 }
 
-uint32_t AniDataobjectSession::SyncAssetAttrToStore(std::string const& key,
-    std::string const& attr, uint32_t value)
+uint32_t AniDataobjectSession::SyncAssetPropertyToStore(
+    const std::string &key, const std::string &property, uint32_t value)
 {
     if (distributedObj_ == nullptr) {
         LOG_ERROR("distributedObj_ nullptr");
         return 0;
     }
-    distributedObj_->PutDouble(key + ASSET_KEY_SEPARATOR + attr, value);
+    distributedObj_->PutDouble(key + ASSET_KEY_SEPARATOR + property, value);
     return 0;
 }
 
-uint32_t AniDataobjectSession::SyncAssetAttrToStore(std::string const& key,
-    std::string const& attr, std::string const& value)
+uint32_t AniDataobjectSession::SyncAssetPropertyToStore(
+    const std::string &key, const std::string &property, const std::string &value)
 {
     if (distributedObj_ == nullptr) {
         LOG_ERROR("distributedObj_ nullptr");
         return 0;
     }
-    distributedObj_->PutString(key + ASSET_KEY_SEPARATOR + attr, STRING_TYPE + value);
+    distributedObj_->PutString(key + ASSET_KEY_SEPARATOR + property, STRING_TYPE + value);
     return 0;
 }
 
-uint32_t AniDataobjectSession::SyncAssetsToStore(std::string const& key,
-    std::vector<OHOS::CommonType::AssetValue> const& assets)
+uint32_t AniDataobjectSession::SyncAssetsToStore(
+    const std::string &key, const std::vector<OHOS::CommonType::AssetValue> &assets)
 {
     LOG_INFO("AniDataobjectSession::SyncAssetsToStore, called");
-    ani_vm* vm = DataObjectImpl::GetVm();
-    if (vm == nullptr) {
+    ani_vm *vm = DataObjectImpl::GetVm();
+    if (vm == nullptr || distributedObj_ == nullptr) {
         return 0;
     }
-    ani_utils::AniExecuteFunc(vm, [&] (ani_env* newEnv) {
-        ani_object aniobj = ani_utils::AniCreateAssets(newEnv, assets);
+    AniUtils::AniExecuteFunc(vm, [&](ani_env *newEnv) {
+        ani_object aniobj = AniUtils::AniCreateAssets(newEnv, assets);
         std::string str = DataObjectImpl::JsonStringify(newEnv, aniobj);
-        LOG_INFO("AniDataobjectSession::SyncAssetsToStore, Json %{public}s", str.c_str());
         distributedObj_->PutString(key, COMPLEX_TYPE + str);
     });
     return 0;
 }
 
-uint32_t AniDataobjectSession::FlushCachedData(std::map<std::string, NativeObjectValueType> const& dataMap)
+uint32_t AniDataobjectSession::FlushCachedData(const std::map<std::string, NativeObjectValueType> &dataMap)
 {
     LOG_INFO("AniDataobjectSession::FLushCachedData, called");
     if (distributedObj_ == nullptr) {
         auto err = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(err->GetCode(), "object is null");
+        AniErrorUtils::ThrowError(err->GetCode(), "object is null");
         return ERR_NULL_OBJECT;
     }
     for (const auto &[key, value] : dataMap) {
@@ -286,67 +281,81 @@ uint32_t AniDataobjectSession::FlushCachedData(std::map<std::string, NativeObjec
     return 0;
 }
 
+NativeObjectValueType AniDataobjectSession::HandleStringType(const char* key)
+{
+    NativeObjectValueType resultValueType;
+    std::string result;
+    uint32_t ret = distributedObj_->GetString(key, result);
+    if (ret == SUCCESS) {
+        resultValueType = result;
+        LOG_INFO("DataObjectImpl::GetValueFromStore, result %{public}s", result.c_str());
+    }
+    return resultValueType;
+}
+
+NativeObjectValueType AniDataobjectSession::HandleDoubleType(const char* key)
+{
+    NativeObjectValueType resultValueType;
+    double result = 0;
+    uint32_t ret = distributedObj_->GetDouble(key, result);
+    if (ret == SUCCESS) {
+        resultValueType = result;
+        LOG_INFO("DataObjectImpl::GetValueFromStore, result %{public}f", result);
+    }
+    return resultValueType;
+}
+
+NativeObjectValueType AniDataobjectSession::HandleBooleanType(const char* key)
+{
+    NativeObjectValueType resultValueType;
+    bool result;
+    uint32_t ret = distributedObj_->GetBoolean(key, result);
+    if (ret == SUCCESS) {
+        resultValueType = result;
+        LOG_INFO("DataObjectImpl::GetValueFromStore, result %{public}d", result);
+    }
+    return resultValueType;
+}
+
+NativeObjectValueType AniDataobjectSession::HandleComplexType(const char* key)
+{
+    NativeObjectValueType resultValueType;
+    std::vector<uint8_t> result;
+    uint32_t ret = distributedObj_->GetComplex(key, result);
+    if (ret == SUCCESS) {
+        resultValueType = result;
+        LOG_INFO("DataObjectImpl::GetValueFromStore, TYPE_COMPLEX, result %{public}zu", result.size());
+    }
+    return resultValueType;
+}
+
 NativeObjectValueType AniDataobjectSession::GetValueFromStore(const char *key)
 {
     LOG_INFO("AniDataobjectSession::GetValueFromStore, called");
-    NativeObjectValueType resultValueType;
-    ani_env *aniEnv = taihe::get_env();
-    if (aniEnv == nullptr) {
-        LOG_INFO("DataObjectImpl::GetValueFromStore, aniEnv null");
-        return resultValueType;
-    }
     if (distributedObj_ == nullptr) {
         auto err = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(err->GetCode(), "object is null");
-        return resultValueType;
+        AniErrorUtils::ThrowError(err->GetCode(), "object is null");
+        return std::monostate();
     }
 
-    std::string keyString = key;
     Type type = TYPE_STRING;
-    distributedObj_->GetType(keyString, type);
+    distributedObj_->GetType(std::string(key), type);
+    
     switch (type) {
-        case TYPE_STRING: {
-            std::string result;
-            uint32_t ret = distributedObj_->GetString(keyString, result);
-            if (ret == SUCCESS) {
-                resultValueType = result;
-                LOG_INFO("DataObjectImpl::GetValueFromStore, result %{public}s", result.c_str());
-            }
-            break;
-        }
-        case TYPE_DOUBLE: {
-            double result = 0;
-            uint32_t ret = distributedObj_->GetDouble(keyString, result);
-            if (ret == SUCCESS) {
-                resultValueType = result;
-                LOG_INFO("DataObjectImpl::GetValueFromStore, result %{public}f", result);
-            }
-            break;
-        }
-        case TYPE_BOOLEAN: {
-            bool result;
-            uint32_t ret = distributedObj_->GetBoolean(keyString, result);
-            if (ret == SUCCESS) {
-                resultValueType = result;
-                LOG_INFO("DataObjectImpl::GetValueFromStore, result %{public}d", result);
-            }
-            break;
-        }
-        case TYPE_COMPLEX: {
-            std::vector<uint8_t> result;
-            uint32_t ret = distributedObj_->GetComplex(keyString, result);
-            if (ret == SUCCESS) {
-                resultValueType = result;
-                LOG_INFO("DataObjectImpl::GetValueFromStore, TYPE_COMPLEX, result %{public}zu", result.size());
-            }
-            break;
-        }
-        default: {
+        case TYPE_STRING:
+            return HandleStringType(key);
+        case TYPE_DOUBLE:
+            return HandleDoubleType(key);
+        case TYPE_BOOLEAN:
+            return HandleBooleanType(key);
+        case TYPE_COMPLEX:
+            return HandleComplexType(key);
+        default:
             LOG_ERROR("error type! %{public}d", type);
             break;
-        }
     }
-    return resultValueType;
+
+    return std::monostate();
 }
 
 NativeObjectValueType AniDataobjectSession::GetAssetValueFromStore(const char *key)
@@ -355,12 +364,12 @@ NativeObjectValueType AniDataobjectSession::GetAssetValueFromStore(const char *k
     NativeObjectValueType resultEmpty;
     if (distributedObj_ == nullptr) {
         auto err = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(err->GetCode(), "object is null");
+        AniErrorUtils::ThrowError(err->GetCode(), "object is null");
         return resultEmpty;
     }
     if (key == nullptr) {
         auto err = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(err->GetCode(), "key is null");
+        AniErrorUtils::ThrowError(err->GetCode(), "key is null");
         return resultEmpty;
     }
     std::string stdkey(key);
@@ -401,16 +410,15 @@ NativeObjectValueType AniDataobjectSession::GetAssetValueFromStore(const char *k
 NativeObjectValueType AniDataobjectSession::GetAssetsValueFromStore(const char *key, size_t size)
 {
     LOG_INFO("AniDataobjectSession::GetAssetsValueFromStore, called");
-    NativeObjectValueType temp;
     if (distributedObj_ == nullptr) {
         auto err = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(err->GetCode(), "object is null");
-        return temp;
+        AniErrorUtils::ThrowError(err->GetCode(), "object is null");
+        return std::monostate{};
     }
     if (key == nullptr) {
         auto err = std::make_shared<InnerError>();
-        ani_errorutils::ThrowError(err->GetCode(), "key is null");
-        return temp;
+        AniErrorUtils::ThrowError(err->GetCode(), "key is null");
+        return std::monostate{};
     }
     std::vector<OHOS::CommonType::AssetValue> assets;
     for (size_t k = 0; k < size; k++) {
@@ -421,37 +429,25 @@ NativeObjectValueType AniDataobjectSession::GetAssetsValueFromStore(const char *
             assets.push_back(*pvalAsset);
         }
     }
-    temp = assets;
-    return temp;
+    return assets;
 }
 
 void AniDataobjectSession::RemoveTypePrefixForAsset(OHOS::CommonType::AssetValue &asset)
 {
     LOG_INFO("AniDataobjectSession::RemoveTypePrefixForAsset, called");
-    if (asset.id.find(STRING_TYPE) == 0) {
-        asset.id = asset.id.substr(STRING_TYPE.length());
-    }
-    if (asset.name.find(STRING_TYPE) == 0) {
-        asset.name = asset.name.substr(STRING_TYPE.length());
-    }
-    if (asset.uri.find(STRING_TYPE) == 0) {
-        asset.uri = asset.uri.substr(STRING_TYPE.length());
-    }
-    if (asset.createTime.find(STRING_TYPE) == 0) {
-        asset.createTime = asset.createTime.substr(STRING_TYPE.length());
-    }
-    if (asset.modifyTime.find(STRING_TYPE) == 0) {
-        asset.modifyTime = asset.modifyTime.substr(STRING_TYPE.length());
-    }
-    if (asset.size.find(STRING_TYPE) == 0) {
-        asset.size = asset.size.substr(STRING_TYPE.length());
-    }
-    if (asset.hash.find(STRING_TYPE) == 0) {
-        asset.hash = asset.hash.substr(STRING_TYPE.length());
-    }
-    if (asset.path.find(STRING_TYPE) == 0) {
-        asset.path = asset.path.substr(STRING_TYPE.length());
-    }
-}
+    auto removePrefixIfNeeded = [](std::string &str) {
+        if (str.find(STRING_TYPE) == 0) {
+            str = str.substr(STRING_TYPE.length());
+        }
+    };
 
+    removePrefixIfNeeded(asset.id);
+    removePrefixIfNeeded(asset.name);
+    removePrefixIfNeeded(asset.uri);
+    removePrefixIfNeeded(asset.createTime);
+    removePrefixIfNeeded(asset.modifyTime);
+    removePrefixIfNeeded(asset.size);
+    removePrefixIfNeeded(asset.hash);
+    removePrefixIfNeeded(asset.path);
+}
 }

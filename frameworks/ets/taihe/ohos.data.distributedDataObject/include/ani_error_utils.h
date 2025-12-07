@@ -19,7 +19,7 @@
 #include <optional>
 #include "taihe/runtime.hpp"
 
-namespace ani_errorutils {
+namespace AniErrorUtils {
 
 enum AniError : int32_t {
     AniError_ParameterCheck = 401,
@@ -39,5 +39,5 @@ ani_object ToBusinessError(ani_env *env, int32_t code, const std::string &messag
         }                                             \
     } while (0)
 
-}  // namespace ani_errorutils
+}  // namespace AniErrorUtils
 #endif  // OHOS_ANI_ERROR_UTILS_H

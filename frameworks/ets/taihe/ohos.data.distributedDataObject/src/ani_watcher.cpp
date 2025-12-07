@@ -61,6 +61,7 @@ AniWatcher::AniWatcher(DistributedObjectStore *objectStore, DistributedObject *o
 
 AniWatcher::~AniWatcher()
 {
+    LOG_INFO("~AniWatcher");
     if (changeEventListener_) {
         delete changeEventListener_;
         changeEventListener_ = nullptr;
@@ -75,7 +76,7 @@ AniWatcher::~AniWatcher()
     }
 }
 
-bool AniWatcher::On(std::string type, VarCallbackType handler)
+bool AniWatcher::On(const std::string &type, VarCallbackType handler)
 {
     if (std::holds_alternative<std::monostate>(handler)) {
         LOG_WARN("VarCallbackType empty");
@@ -89,7 +90,7 @@ bool AniWatcher::On(std::string type, VarCallbackType handler)
     return listener->Add(handler);
 }
 
-void AniWatcher::Off(std::string type, VarCallbackType handler)
+void AniWatcher::Off(const std::string &type, VarCallbackType handler)
 {
     EventListener *listener = Find(type);
     if (listener == nullptr) {
@@ -103,7 +104,7 @@ void AniWatcher::Off(std::string type, VarCallbackType handler)
     }
 }
 
-EventListener *AniWatcher::Find(std::string type)
+EventListener *AniWatcher::Find(const std::string &type)
 {
     if (type.empty()) {
         LOG_ERROR("type null");
@@ -121,10 +122,10 @@ EventListener *AniWatcher::Find(std::string type)
     return nullptr;
 }
 
-void AniWatcher::Emit(std::string type, const std::string &sessionId, const std::vector<std::string> &changeData)
+void AniWatcher::Emit(const std::string &type, const std::string &sessionId, const std::vector<std::string> &changeData)
 {
     if (changeData.empty()) {
-        LOG_ERROR("empty change");
+        LOG_ERROR("empty change for type %{public}s, sessionId %{public}s", type.c_str(), sessionId.c_str());
         return;
     }
     LOG_INFO("start %{public}s, %{public}s", sessionId.c_str(), changeData.at(0).c_str());
@@ -146,7 +147,6 @@ void AniWatcher::Emit(std::string type, const std::string &sessionId, const std:
     }
     auto sharedThis = shared_from_this();
     AsyncUtilBase::AsyncExecueInMainThread([ sharedThis ] {
-        LOG_INFO("AniWatcher::Emit, change, AsyncExecueInMainThread!");
         ani_env *aniEnv = taihe::get_env();
         if (aniEnv == nullptr) {
             LOG_ERROR("aniEnv null, clear");
@@ -161,7 +161,6 @@ void AniWatcher::Emit(std::string type, const std::string &sessionId, const std:
             auto taiheStringList = ::taihe::array<::taihe::string>(
                 ::taihe::copy_data_t{}, itemPtr->changeData_.data(), itemPtr->changeData_.size());
             auto taiheSessionId = ::taihe::string(itemPtr->sessionId_);
-            LOG_INFO("AniWatcher::Emit, change, AsyncExecueInMainThread! exec");
             itemPtr->callback_(taiheSessionId, taiheStringList);
         }
         sharedThis->cachedChangeEventList_.clear();
@@ -169,15 +168,12 @@ void AniWatcher::Emit(std::string type, const std::string &sessionId, const std:
 }
 
 void AniWatcher::Emit(
-    std::string type, const std::string &sessionId, const std::string &networkId, const std::string &status)
+    const std::string &type, const std::string &sessionId, const std::string &networkId, const std::string &status)
 {
-    LOG_INFO("AniWatcher::Emit 1");
-
     if (sessionId.empty() || networkId.empty()) {
         LOG_ERROR("empty %{public}s  %{public}s", sessionId.c_str(), Anonymous::Change(networkId).c_str());
         return;
     }
-    LOG_INFO("AniWatcher::Emit 2");
     LOG_INFO("status change %{public}s  %{public}s", sessionId.c_str(), Anonymous::Change(networkId).c_str());
     EventListener *listener = Find(type);
     if (listener == nullptr) {
@@ -196,10 +192,8 @@ void AniWatcher::Emit(
         }
     }
 
-    LOG_INFO("AniWatcher::Emit AsyncExecueInMainThread");
     auto sharedThis = shared_from_this();
     AsyncUtilBase::AsyncExecueInMainThread([sharedThis] {
-        LOG_INFO("AniWatcher::Emit, status, AsyncExecueInMainThread!");
         ani_env *aniEnv = taihe::get_env();
         if (aniEnv == nullptr) {
             LOG_ERROR("aniEnv null, clear");
@@ -221,7 +215,7 @@ void AniWatcher::Emit(
 }
 
 void AniWatcher::Emit(
-    std::string type, const std::string &sessionId, const int32_t progress)
+    const std::string &type, const std::string &sessionId, const int32_t progress)
 {
     if (sessionId.empty()) {
         LOG_ERROR("empty %{public}s", sessionId.c_str());
@@ -247,7 +241,6 @@ void AniWatcher::Emit(
 
     auto sharedThis = shared_from_this();
     AsyncUtilBase::AsyncExecueInMainThread([sharedThis] {
-        LOG_INFO("AniWatcher::Emit, status, AsyncExecueInMainThread!");
         ani_env *aniEnv = taihe::get_env();
         if (aniEnv == nullptr) {
             LOG_ERROR("aniEnv null, clear");
@@ -384,7 +377,7 @@ void WatcherImpl::OnChanged(const std::string &sessionid, const std::vector<std:
 
 WatcherImpl::~WatcherImpl()
 {
-    LOG_ERROR("destroy");
+    LOG_INFO("~WatcherImpl");
 }
 
 bool ChangeEventListener::Add(VarCallbackType handler)

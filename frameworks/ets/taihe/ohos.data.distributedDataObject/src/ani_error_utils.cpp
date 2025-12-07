@@ -18,7 +18,7 @@
 #include "ani_error_utils.h"
 #include "logger.h"
 
-namespace ani_errorutils {
+namespace AniErrorUtils {
 using namespace OHOS::ObjectStore;
 
 constexpr char CLASS_NAME_BUSINESSERROR[] = "@ohos.base.BusinessError";
@@ -74,4 +74,4 @@ ani_object ToBusinessError(ani_env *env, int32_t code, const std::string &messag
     return error;
 }
 
-} // namespace ani_errorutils
+} // namespace AniErrorUtils

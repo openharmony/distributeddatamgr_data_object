@@ -27,13 +27,25 @@ using namespace OHOS::ObjectStore;
 
 ANI_EXPORT ani_status ANI_Constructor(ani_vm *vm, uint32_t *result)
 {
-    ani_env *env;
-    if (ANI_OK != vm->GetEnv(ANI_VERSION_1, &env)) {
+    if (vm == nullptr) {
+        LOG_ERROR("vm is null");
         return ANI_ERROR;
     }
-    ani_status status = ANI_OK;
-    if (ANI_OK != ohos::data::distributedDataObject::ANIRegister(env)) {
-        LOG_ERROR("Error from ohos::data::distributedDataObject::ANIRegister");
+    ani_env *env;
+    ani_status status = vm->GetEnv(ANI_VERSION_1, &env);
+    if (status != ANI_OK) {
+        LOG_ERROR("Error from GetEnv, status=%{public}d", static_cast<int>(status));
+        return ANI_ERROR;
+    }
+    status = ohos::data::commonType::ANIRegister(env);
+    if (status != ANI_OK) {
+        LOG_ERROR("Error from ohos::data::commonType::ANIRegister, status=%{public}d", static_cast<int>(status));
+        return ANI_ERROR;
+    }
+    status = ohos::data::distributedDataObject::ANIRegister(env);
+    if (status != ANI_OK) {
+        LOG_ERROR("Error from ohos::data::distributedDataObject::ANIRegister, status=%{public}d",
+            static_cast<int>(status));
         status = ANI_ERROR;
     }
     *result = ANI_VERSION_1;
