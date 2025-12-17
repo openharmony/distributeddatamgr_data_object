@@ -59,7 +59,9 @@
                 "libuv",
                 "common_event_service",
                 "dmsfwk",
-                "hisysevent"
+                "hisysevent",
+                "runtime_core",
+                "eventhandler"
             ],
             "third_party": [
                 "ffmpeg",
@@ -68,7 +70,8 @@
         },
         "build": {
             "sub_component": [
-                "//foundation/distributeddatamgr/data_object/interfaces/jskits:build_module"
+                "//foundation/distributeddatamgr/data_object/interfaces/jskits:build_module",
+                "//foundation/distributeddatamgr/data_object/frameworks/ets/taihe/ohos.data.distributedDataObject:distributed_dataobject_ani_pack"
             ],
             "inner_kits": [
                 {
