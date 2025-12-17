@@ -1,0 +1,108 @@
+# Copyright (c) 2025 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/config/components/ets_frontend/ets2abc_config.gni")
+import("//build/ohos.gni")
+import("//build/ohos/taihe_idl/taihe.gni")
+import("//foundation/distributeddatamgr/data_object/data_object.gni")
+
+subsystem_name = "distributeddatamgr"
+part_name = "data_object"
+taihe_generated_file_path = "$taihe_file_path/out/$subsystem_name/$part_name"
+
+copy_taihe_idl("copy_taihe") {
+  sources = [
+    "${data_object_base_path}/frameworks/ets/taihe/ohos.data.distributedDataObject/idl/ohos.data.commonType.taihe",
+  ]
+}
+
+ohos_taihe("run_taihe") {
+  taihe_generated_file_path = "$taihe_generated_file_path"
+  deps = [ ":copy_taihe" ]
+  outputs = [
+    "$taihe_generated_file_path/src/ohos.data.commonType.ani.cpp",
+    "$taihe_generated_file_path/src/ohos.data.commonType.abi.c",
+  ]
+}
+
+generate_static_abc("distributeddata_object") {
+  base_url = "$taihe_generated_file_path"
+  files = [
+    "$taihe_generated_file_path/@ohos.data.commonType.ets",
+  ]
+  is_boot_abc = "True"
+  device_dst_file = "/system/framework/distributeddata_object.abc"
+  dependencies = [ ":run_taihe" ]
+}
+
+ohos_prebuilt_etc("ohos_distributeddata_object_etc") {
+  source = "$target_out_dir/distributeddata_object.abc"
+  module_install_dir = "framework"
+  part_name = "$part_name"
+  subsystem_name = "$subsystem_name"
+  deps = [ ":distributeddata_object" ]
+}
+
+taihe_shared_library("distributed_dataobject_ani") {
+  sanitize = {
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
+  taihe_generated_file_path = "$taihe_generated_file_path"
+  subsystem_name = "$subsystem_name"
+  part_name = "$part_name"
+
+  include_dirs = [
+    "include",
+    "${data_object_base_path}/frameworks/innerkitsimpl/include/common",
+    "${data_object_base_path}/interfaces/innerkits",
+    "${data_object_base_path}/frameworks/jskitsimpl/include/common",
+    "${data_object_base_path}/frameworks/jskitsimpl/include/adaptor"
+  ]
+
+  defines = [
+    "HILOG_ENABLE",
+    "DH_LOG_TAG=\"distributed_dataobject\"",
+  ]
+
+  sources = get_target_outputs(":run_taihe")
+
+  deps = [
+    ":run_taihe",
+    "${data_object_base_path}/interfaces/innerkits:distributeddataobject_impl"
+  ]
+
+  external_deps = [
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:ani_base_context",
+    "ability_runtime:ani_common",
+    "ability_runtime:app_context",
+    "access_token:libaccesstoken_sdk",
+    "eventhandler:libeventhandler",
+    "hilog:libhilog",
+    "kv_store:distributeddata_inner",
+    "kv_store:distributeddb",
+  ]
+}
+
+group("distributed_dataobject_ani_pack") {
+  deps = [
+    ":distributed_dataobject_ani",
+    ":ohos_distributeddata_object_etc",
+  ]
+}
