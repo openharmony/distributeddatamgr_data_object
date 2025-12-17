@@ -18,13 +18,14 @@
 
 #include "ani_watcher.h"
 #include <mutex>
+#include <memory>
 
 namespace OHOS::ObjectStore {
 class AniProgressNotifierImpl : public ProgressNotifier {
 public:
-    static std::shared_ptr<AniProgressNotifierImpl> GetInstance();
     virtual ~AniProgressNotifierImpl();
-    
+    static std::shared_ptr<AniProgressNotifierImpl> GetInstance();
+
     void AddWatcher(const std::string &sessionId, std::weak_ptr<AniWatcher> watcher);
     void DelWatcher(const std::string &sessionId);
     void OnChanged(const std::string &sessionId, int32_t progress) override;

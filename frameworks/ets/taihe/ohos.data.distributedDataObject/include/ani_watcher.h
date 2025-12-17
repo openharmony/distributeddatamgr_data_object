@@ -35,9 +35,9 @@ using AniProgressCallbackType = ::taihe::callback<void(::taihe::string_view, int
 using VarCallbackType = std::variant<std::monostate,
     AniChangeCallbackType, AniStatusCallbackType, AniProgressCallbackType>;
 
-const std::string EVENT_CHANGE = "change";
-const std::string EVENT_STATUS = "status";
-const std::string EVENT_PROGRESS = "progressChanged";
+constexpr const char* EVENT_CHANGE = "change";
+constexpr const char* EVENT_STATUS = "status";
+constexpr const char* EVENT_PROGRESS = "progressChanged";
 
 namespace OHOS::ObjectStore {
 class AniWatcher;

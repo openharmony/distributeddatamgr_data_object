@@ -92,30 +92,6 @@ public:
     template<typename T>
     bool TryConvert(T &value);
 
-    template<typename... Types>
-    bool TryConvertVariant(std::variant<Types...> &value)
-    {
-        return GetNativeValue<decltype(value), Types...>(value);
-    }
-
-    template<typename T>
-    bool GetNativeValue(T &value)
-    {
-        return false;
-    }
-
-    template<typename T, typename First, typename... Types>
-    bool GetNativeValue(T &value)
-    {
-        First cValue;
-        auto ret = TryConvert(cValue);
-        if (ret == true) {
-            value = cValue;
-            return ret;
-        }
-        return GetNativeValue<T, Types...>(value);
-    }
-
     template<typename T>
     bool TryConvertArray(std::vector<T> &value);
 

@@ -52,22 +52,22 @@ ani_object ToBusinessError(ani_env *env, int32_t code, const std::string &messag
         return {};
     }
     ani_class cls {};
-    CHECK_AND_RETURN_RET_LOG(env->FindClass(CLASS_NAME_BUSINESSERROR, &cls) == ANI_OK, nullptr,
+    ASSERT_WITH_RET_LOG(env->FindClass(CLASS_NAME_BUSINESSERROR, &cls) == ANI_OK, nullptr,
         "find class %{public}s failed", CLASS_NAME_BUSINESSERROR);
     ani_method ctor {};
-    CHECK_AND_RETURN_RET_LOG(env->Class_FindMethod(cls, "<ctor>", ":", &ctor) == ANI_OK, nullptr,
+    ASSERT_WITH_RET_LOG(env->Class_FindMethod(cls, "<ctor>", ":", &ctor) == ANI_OK, nullptr,
         "find method BusinessError constructor failed");
     ani_object error {};
-    CHECK_AND_RETURN_RET_LOG(env->Object_New(cls, ctor, &error) == ANI_OK, nullptr,
+    ASSERT_WITH_RET_LOG(env->Object_New(cls, ctor, &error) == ANI_OK, nullptr,
         "new object %{public}s failed", CLASS_NAME_BUSINESSERROR);
-    CHECK_AND_RETURN_RET_LOG(
+    ASSERT_WITH_RET_LOG(
         env->Object_SetPropertyByName_Int(error, "code", static_cast<ani_int>(code)) == ANI_OK, nullptr,
         "set property BusinessError.code failed");
     if (message.size() > 0) {
         ani_string messageRef {};
-        CHECK_AND_RETURN_RET_LOG(env->String_NewUTF8(message.c_str(), message.size(), &messageRef) == ANI_OK, nullptr,
+        ASSERT_WITH_RET_LOG(env->String_NewUTF8(message.c_str(), message.size(), &messageRef) == ANI_OK, nullptr,
             "new message string failed");
-        CHECK_AND_RETURN_RET_LOG(
+        ASSERT_WITH_RET_LOG(
             env->Object_SetPropertyByName_Ref(error, "message", static_cast<ani_ref>(messageRef)) == ANI_OK, nullptr,
             "set property BusinessError.message failed");
     }

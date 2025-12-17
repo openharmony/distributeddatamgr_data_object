@@ -108,7 +108,7 @@ protected:
     std::string distributedDir_;
     std::map<std::string, NativeObjectValueType> sourceDataMap_;
     std::string objectId_;
-    unsigned long version_ = 0;
+    int32_t version_ = 0;
     int sdkVersion_ = SDK_VERSION_9;
 
     std::shared_ptr<OHOS::ObjectStore::AniDataobjectSession> session_;

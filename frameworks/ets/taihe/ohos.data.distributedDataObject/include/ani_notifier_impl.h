@@ -17,12 +17,14 @@
 #define ANI_NOTIFIER_IMPL_H
 
 #include "ani_watcher.h"
+#include <memory>
+#include <mutex>
 
 namespace OHOS::ObjectStore {
 class AniNotifierImpl : public StatusNotifier {
 public:
-    static std::shared_ptr<AniNotifierImpl> GetInstance();
     virtual ~AniNotifierImpl();
+    static std::shared_ptr<AniNotifierImpl> GetInstance();
     void AddWatcher(const std::string &sessionId, std::weak_ptr<AniWatcher> watcher);
     void DelWatcher(const std::string &sessionId);
     void OnChanged(

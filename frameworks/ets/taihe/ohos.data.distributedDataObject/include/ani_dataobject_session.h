@@ -31,10 +31,10 @@ using NativeObjectValueType = std::variant<std::monostate, bool, double,
     std::string, std::vector<uint8_t>, OHOS::CommonType::AssetValue, std::vector<OHOS::CommonType::AssetValue>>;
 
 const int32_t SDK_VERSION_9 = 9;
-const std::string SESSION_ID_REGEX = "^\\w+$";
-const std::string COMPLEX_TYPE = "[COMPLEX]";
-const std::string STRING_TYPE = "[STRING]";
-const std::string NULL_TYPE = "[NULL]";
+constexpr const char* SESSION_ID_REGEX = "^\\w+$";
+constexpr const char* COMPLEX_TYPE = "[COMPLEX]";
+constexpr const char* STRING_TYPE = "[STRING]";
+constexpr const char* NULL_TYPE = "[NULL]";
 
 class AniDataobjectSession {
 public:
@@ -48,7 +48,7 @@ public:
     std::string GetSessionId() { return sessionId_; }
     void LeaveSession(OHOS::ObjectStore::DistributedObjectStore *objectInfo);
 
-    ::ohos::data::distributedDataObject::SaveSuccessResponse Save(const std::string &deviceId, unsigned long version);
+    ::ohos::data::distributedDataObject::SaveSuccessResponse Save(const std::string &deviceId, int32_t version);
     ::ohos::data::distributedDataObject::RevokeSaveSuccessResponse RevokeSave();
 
     bool AddWatch(OHOS::ObjectStore::DistributedObjectStore *objectStore,
@@ -57,17 +57,17 @@ public:
 
     uint32_t BindAssetStore(const std::string &key, OHOS::ObjectStore::AssetBindInfo &nativeBindInfo);
     uint32_t SyncDataToStore(const std::string &key, NativeObjectValueType const& objValue, bool withPrefix);
-    uint32_t SyncAssetToStore(const std::string &key, OHOS::CommonType::AssetValue const& asset);
-    uint32_t SyncAssetPropertyToStore(const std::string &key, const std::string &property, uint32_t value);
-    uint32_t SyncAssetPropertyToStore(const std::string &key, const std::string &property, const std::string &value);
-    uint32_t SyncAssetsToStore(const std::string &key, std::vector<OHOS::CommonType::AssetValue> const& assets);
+    bool SyncAssetToStore(const std::string &key, OHOS::CommonType::AssetValue const& asset);
+    bool SyncAssetPropertyToStore(const std::string &key, const std::string &property, uint32_t value);
+    bool SyncAssetPropertyToStore(const std::string &key, const std::string &property, const std::string &value);
+    bool SyncAssetsToStore(const std::string &key, std::vector<OHOS::CommonType::AssetValue> const& assets);
     uint32_t FlushCachedData(std::map<std::string, NativeObjectValueType> const& dataMap);
 
     NativeObjectValueType GetValueFromStore(const char *key);
     NativeObjectValueType GetAssetValueFromStore(const char *key);
     NativeObjectValueType GetAssetsValueFromStore(const char *key, size_t size);
     void RemoveTypePrefixForAsset(OHOS::CommonType::AssetValue &asset);
-protected:
+private:
     std::shared_mutex watchMutex_{};
     std::shared_ptr<OHOS::ObjectStore::AniWatcher> watcher_ = nullptr;
     std::string distributedDir_;
