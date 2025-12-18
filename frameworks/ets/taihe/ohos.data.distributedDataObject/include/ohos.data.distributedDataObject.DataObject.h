@@ -38,11 +38,11 @@ public:
         return vm_;
     }
     static std::string JsonStringify(ani_env *aniEnv, ani_ref sourceObj);
-    static ani_ref JsonParseToJsonElement(ani_env *aniEnv, std::string const &str);
+    static ani_ref JsonParseToJsonElement(ani_env *aniEnv, const std::string &str);
     static ani_ref ConvertSetToArray(ani_env *aniEnv, ani_ref setRef);
     NativeObjectValueType ParseObjectValue(ani_env *aniEnv, ani_ref valueRef);
     bool ParseRecord(ani_env *env, ani_ref recordRef, std::map<std::string, NativeObjectValueType> &resultMap);
-    void ParseObject(ani_object sourceObj, ::taihe::array_view<::taihe::string> const &keys);
+    void ParseObject(ani_object sourceObj, const ::taihe::array_view<::taihe::string> &keys);
 
     static std::string GenerateRandomNum();
     void UpdateBundleInfo();
@@ -58,7 +58,7 @@ public:
     bool DeleteProgressCallback(VarCallbackType taiheCallback);
     void RestoreWatchers(const std::string &objectId);
 
-    bool JoinSession(std::string sessionId);
+    bool JoinSession(const std::string &sessionId);
     void LeaveSession();
     void SetSessionIdWithCallbackSync(::taihe::string_view sessionId);
     void LeaveAllSessionWithCallbackSync();
@@ -97,19 +97,17 @@ public:
 
     ani_ref GetAssetsRefFromStore(ani_env *aniEnv, std::string assetsKey);
     ::ohos::data::distributedDataObject::ObjectValueType ObjectValueTypeToTaihe(
-        ani_env *aniEnv, std::string const &externalKey, NativeObjectValueType const &valueObj);
+        ani_env *aniEnv, const std::string &externalKey, const NativeObjectValueType &valueObj);
 
     ::ohos::data::distributedDataObject::ObjectValueType ProcessStringValue(ani_env *aniEnv,
         const std::string& stringValue);
-protected:
+private:
     static ani_vm *vm_;
-    ani_ref globalSourceObj_ = nullptr;
     std::string bundleName_;
     std::string distributedDir_;
     std::map<std::string, NativeObjectValueType> sourceDataMap_;
     std::string objectId_;
     int32_t version_ = 0;
-    int sdkVersion_ = SDK_VERSION_9;
 
     std::shared_ptr<OHOS::ObjectStore::AniDataobjectSession> session_;
     std::mutex sourceDataMapMutex_;

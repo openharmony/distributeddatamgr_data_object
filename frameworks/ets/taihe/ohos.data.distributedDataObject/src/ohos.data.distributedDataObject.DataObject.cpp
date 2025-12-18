@@ -92,7 +92,7 @@ std::string DataObjectImpl::JsonStringify(ani_env *aniEnv, ani_ref sourceObj)
     return AniUtils::AniStringUtils::ToStd(aniEnv, (ani_string)result);
 }
 
-ani_ref DataObjectImpl::JsonParseToJsonElement(ani_env *aniEnv, std::string const &str)
+ani_ref DataObjectImpl::JsonParseToJsonElement(ani_env *aniEnv, const std::string &str)
 {
     if (aniEnv == nullptr) {
         LOG_ERROR("aniEnv = nullptr");
@@ -247,7 +247,7 @@ bool DataObjectImpl::ParseRecord(
     return true;
 }
 
-void DataObjectImpl::ParseObject(ani_object sourceObj, ::taihe::array_view<::taihe::string> const &keys)
+void DataObjectImpl::ParseObject(ani_object sourceObj, const ::taihe::array_view<::taihe::string> &keys)
 {
     ani_env *aniEnv = taihe::get_env();
     if (aniEnv == nullptr || sourceObj == nullptr) {
@@ -538,7 +538,7 @@ void DataObjectImpl::RestoreWatchers(const std::string &objectId)
     }
 }
 
-bool DataObjectImpl::JoinSession(std::string sessionId)
+bool DataObjectImpl::JoinSession(const std::string &sessionId)
 {
     LOG_INFO("JoinSession, called");
     std::map<std::string, NativeObjectValueType> copyedMap;
@@ -1154,7 +1154,7 @@ ani_ref DataObjectImpl::GetAssetsRefFromStore(ani_env *aniEnv, std::string asset
 }
 
 ::ohos::data::distributedDataObject::ObjectValueType DataObjectImpl::ObjectValueTypeToTaihe(
-    ani_env *aniEnv, std::string const &externalKey, NativeObjectValueType const &valueObj)
+    ani_env *aniEnv, const std::string &externalKey, const NativeObjectValueType &valueObj)
 {
     using namespace ::ohos::data;
     if (aniEnv == nullptr) {

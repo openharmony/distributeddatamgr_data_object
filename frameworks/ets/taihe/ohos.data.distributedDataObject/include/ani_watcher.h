@@ -49,7 +49,7 @@ public:
     static bool AsyncExecue(const std::function<void()> func);
     static bool AsyncExecueInMainThread(const std::function<void()> func);
 
-protected:
+private:
     std::mutex jsCallbackMutex_;
     static std::shared_ptr<OHOS::AppExecFwk::EventHandler> mainHandler_;
 };
@@ -107,8 +107,8 @@ public:
     void Clear() override;
 private:
     bool isWatched_{false};
-    DistributedObjectStore *objectStore_{nullptr};
-    DistributedObject *object_{nullptr};
+    DistributedObjectStore *objectStore_ = nullptr;
+    DistributedObject *object_ = nullptr;
     std::weak_ptr<AniWatcher> watcher_{};
 };
 

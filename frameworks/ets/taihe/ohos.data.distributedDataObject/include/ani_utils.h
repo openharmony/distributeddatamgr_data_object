@@ -43,7 +43,7 @@ ani_status AniCreateInt(ani_env* env, int32_t value, ani_object& result);
 ani_status AniCreateDouble(ani_env* env, double value, ani_object& result);
 ani_string AniCreateString(ani_env *env, const std::string &para);
 
-ani_object AniCreateArray(ani_env *env, std::vector<ani_object> const& objectArray);
+ani_object AniCreateArray(ani_env *env, const std::vector<ani_object> &objectArray);
 ani_object AniCreatEmptyRecord(ani_env* env, ani_method& setMethod);
 
 ani_method AniGetMethod(ani_env *env, ani_class cls, const char* methodName, const char* signature);
@@ -52,25 +52,6 @@ ani_method AniGetClassMethod(ani_env *env, const char* className, const char* me
 ani_field AniFindClassField(ani_env *env, ani_class cls, char const *name);
 
 void AniExecuteFunc(ani_vm* vm, const std::function<void(ani_env*)> func);
-
-class AniObjectUtils {
-public:
-    template<typename T>
-    static ani_status Wrap(ani_env *env, ani_object object, T *nativePtr, const char *propName = "nativePtr")
-    {
-        return env->Object_SetFieldByName_Long(object, propName, reinterpret_cast<ani_long>(nativePtr));
-    }
-
-    template<typename T>
-    static T* Unwrap(ani_env *env, ani_object object, const char *propName = "nativePtr")
-    {
-        ani_long nativePtr;
-        if (ANI_OK != env->Object_GetFieldByName_Long(object, propName, &nativePtr)) {
-            return nullptr;
-        }
-        return reinterpret_cast<T*>(nativePtr);
-    }
-};
 
 class AniStringUtils {
 public:
@@ -82,7 +63,7 @@ class UnionAccessor {
 public:
     UnionAccessor(ani_env *env, ani_object &obj);
 
-    bool IsInstanceOf(const std::string& cls_name);
+    bool IsInstanceOf(const std::string& className);
 
     template<typename T>
     bool IsInstanceOfType();
@@ -100,12 +81,12 @@ private:
     ani_object obj_ = nullptr;
 };
 
-ani_object AniCreateProxyAsset(ani_env *env, const std::string &externalKey, OHOS::CommonType::AssetValue const& asset);
-ani_object AniCreateAsset(ani_env *env, OHOS::CommonType::AssetValue const& asset);
-ani_object AniCreateAssets(ani_env *env, std::vector<OHOS::CommonType::AssetValue> const& assets);
-OHOS::ObjectStore::AssetBindInfo BindInfoToNative(::ohos::data::distributedDataObject::BindInfo const& taiheBindInfo);
+ani_object AniCreateProxyAsset(ani_env *env, const std::string &externalKey, const OHOS::CommonType::AssetValue &asset);
+ani_object AniCreateAsset(ani_env *env, const OHOS::CommonType::AssetValue &asset);
+ani_object AniCreateAssets(ani_env *env, const std::vector<OHOS::CommonType::AssetValue> &assets);
+OHOS::ObjectStore::AssetBindInfo BindInfoToNative(const ::ohos::data::distributedDataObject::BindInfo &taiheBindInfo);
 uint32_t TaiheStatusToNative(::ohos::data::commonType::AssetStatus status);
-::taihe::array<::ohos::data::commonType::Asset> AssetsToTaihe(std::vector<OHOS::CommonType::AssetValue> const& values);
+::taihe::array<::ohos::data::commonType::Asset> AssetsToTaihe(const std::vector<OHOS::CommonType::AssetValue> &values);
 
 } //namespace AniUtils
 #endif

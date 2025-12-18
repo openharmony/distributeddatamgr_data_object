@@ -38,7 +38,7 @@ constexpr const char* NULL_TYPE = "[NULL]";
 
 class AniDataobjectSession {
 public:
-    AniDataobjectSession(OHOS::ObjectStore::DistributedObject* obj, std::string sessionId);
+    AniDataobjectSession(OHOS::ObjectStore::DistributedObject* obj, const std::string &sessionId);
     ~AniDataobjectSession();
 
     void SetDistributedDir(const std::string &dir)
@@ -52,32 +52,34 @@ public:
     ::ohos::data::distributedDataObject::RevokeSaveSuccessResponse RevokeSave();
 
     bool AddWatch(OHOS::ObjectStore::DistributedObjectStore *objectStore,
-        std::string type, VarCallbackType taiheCallback);
-    void DeleteWatch(std::string type, VarCallbackType taiheCallback);
+        const std::string &type, VarCallbackType taiheCallback);
+    void DeleteWatch(const std::string &type, VarCallbackType taiheCallback);
 
     uint32_t BindAssetStore(const std::string &key, OHOS::ObjectStore::AssetBindInfo &nativeBindInfo);
-    uint32_t SyncDataToStore(const std::string &key, NativeObjectValueType const& objValue, bool withPrefix);
-    bool SyncAssetToStore(const std::string &key, OHOS::CommonType::AssetValue const& asset);
+    uint32_t SyncDataToStore(const std::string &key, const NativeObjectValueType &objValue, bool withPrefix);
+    bool SyncAssetToStore(const std::string &key, const OHOS::CommonType::AssetValue &asset);
     bool SyncAssetPropertyToStore(const std::string &key, const std::string &property, uint32_t value);
     bool SyncAssetPropertyToStore(const std::string &key, const std::string &property, const std::string &value);
-    bool SyncAssetsToStore(const std::string &key, std::vector<OHOS::CommonType::AssetValue> const& assets);
-    uint32_t FlushCachedData(std::map<std::string, NativeObjectValueType> const& dataMap);
+    bool SyncAssetsToStore(const std::string &key, const std::vector<OHOS::CommonType::AssetValue> &assets);
+    uint32_t FlushCachedData(const std::map<std::string, NativeObjectValueType> &dataMap);
 
     NativeObjectValueType GetValueFromStore(const char *key);
     NativeObjectValueType GetAssetValueFromStore(const char *key);
     NativeObjectValueType GetAssetsValueFromStore(const char *key, size_t size);
     void RemoveTypePrefixForAsset(OHOS::CommonType::AssetValue &asset);
+
+private:
+    NativeObjectValueType HandleStringType(const char* key);
+    NativeObjectValueType HandleDoubleType(const char* key);
+    NativeObjectValueType HandleBooleanType(const char* key);
+    NativeObjectValueType HandleComplexType(const char* key);
+
 private:
     std::shared_mutex watchMutex_{};
     std::shared_ptr<OHOS::ObjectStore::AniWatcher> watcher_ = nullptr;
     std::string distributedDir_;
     OHOS::ObjectStore::DistributedObject* distributedObj_ = nullptr;
     std::string sessionId_;
-private:
-    NativeObjectValueType HandleStringType(const char* key);
-    NativeObjectValueType HandleDoubleType(const char* key);
-    NativeObjectValueType HandleBooleanType(const char* key);
-    NativeObjectValueType HandleComplexType(const char* key);
 };
 
 } //namespace OHOS::ObjectStore

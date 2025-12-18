@@ -29,7 +29,7 @@ namespace OHOS::ObjectStore {
 
 constexpr const char* ASSET_KEY_SEPARATOR = ".";
 
-AniDataobjectSession::AniDataobjectSession(OHOS::ObjectStore::DistributedObject *obj, std::string sessionId)
+AniDataobjectSession::AniDataobjectSession(OHOS::ObjectStore::DistributedObject *obj, const std::string &sessionId)
 {
     distributedObj_ = obj;
     sessionId_ = sessionId;
@@ -58,7 +58,7 @@ void AniDataobjectSession::LeaveSession(OHOS::ObjectStore::DistributedObjectStor
 }
 
 bool AniDataobjectSession::AddWatch(
-    OHOS::ObjectStore::DistributedObjectStore *objectStore, std::string type, VarCallbackType taiheCallback)
+    OHOS::ObjectStore::DistributedObjectStore *objectStore, const std::string &type, VarCallbackType taiheCallback)
 {
     LOG_INFO("AddWatch, called");
     if (type.size() == 0 || objectStore == nullptr) {
@@ -78,7 +78,7 @@ bool AniDataobjectSession::AddWatch(
     return watcher_->On(type, taiheCallback);
 }
 
-void AniDataobjectSession::DeleteWatch(std::string type, VarCallbackType taiheCallback)
+void AniDataobjectSession::DeleteWatch(const std::string &type, VarCallbackType taiheCallback)
 {
     LOG_INFO("DeleteWatch, called type %{public}s", type.c_str());
     if (type.empty()) {
@@ -166,7 +166,7 @@ uint32_t AniDataobjectSession::BindAssetStore(const std::string &key, OHOS::Obje
 }
 
 uint32_t AniDataobjectSession::SyncDataToStore(
-    std::string const &key, NativeObjectValueType const &objValue, bool withPrefix)
+    const std::string &key, const NativeObjectValueType &objValue, bool withPrefix)
 {
     if (distributedObj_ == nullptr) {
         LOG_ERROR("distributedObj_ nullptr");
@@ -210,7 +210,7 @@ uint32_t AniDataobjectSession::SyncDataToStore(
     return 0;
 }
 
-bool AniDataobjectSession::SyncAssetToStore(std::string const &key, OHOS::CommonType::AssetValue const &asset)
+bool AniDataobjectSession::SyncAssetToStore(const std::string &key, const OHOS::CommonType::AssetValue &asset)
 {
     if (distributedObj_ == nullptr) {
         LOG_ERROR("distributedObj_ nullptr");

@@ -389,7 +389,7 @@ UnionAccessor::UnionAccessor(ani_env *env, ani_object &obj)
     }
 }
 
-bool UnionAccessor::IsInstanceOf(const std::string& cls_name)
+bool UnionAccessor::IsInstanceOf(const std::string& className)
 {
     if (env_ == nullptr || obj_ == nullptr) {
         return false;
@@ -405,7 +405,7 @@ bool UnionAccessor::IsInstanceOf(const std::string& cls_name)
         return false;
     }
     ani_class cls;
-    if (ANI_OK != env_->FindClass(cls_name.c_str(), &cls) || cls == nullptr) {
+    if (ANI_OK != env_->FindClass(className.c_str(), &cls) || cls == nullptr) {
         return false;
     }
     ani_boolean ret;
