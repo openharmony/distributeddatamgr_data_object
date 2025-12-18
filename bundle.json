@@ -102,6 +102,9 @@
                             "//foundation/distributeddatamgr/data_object/frameworks/innerkitsimpl/include/common"
                         ]
                     }
+                },
+                {
+                    "name": "//foundation/distributeddatamgr/data_object/frameworks/ets/taihe/ohos.data.distributedDataObject:copy_taihe"
                 }
             ],
             "test": [
