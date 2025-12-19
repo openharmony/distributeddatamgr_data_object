@@ -1,0 +1,340 @@
+/*
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@!namespace("@ohos.data.distributedDataObject", "distributedDataObject")
+@!sts_export_default
+
+@!sts_inject_into_module("""
+import BaseContext from 'application.BaseContext';
+import { AsyncCallback, Callback, BusinessError } from '@ohos.base';
+import commonTypeOrigin from './@ohos.data.commonType';
+""")
+
+use ohos.data.commonType as commonTypeTaihe;
+
+@!sts_inject("""
+const COMPLEX_TYPE: string = '[COMPLEX]';
+const STRING_TYPE: string = '[STRING]';
+const NULL_TYPE: string = '[NULL]';
+
+static { loadLibrary("distributed_dataobject_ani.z"); }
+
+function create(context: BaseContext, source: object): DataObject
+{
+    if (typeof context !== 'object') {
+        let err : BusinessError = { code: 401, message :"Parameter error. The type of context must be object."}
+        throw err;
+    };
+    if (typeof source !== 'object') {
+        let err: BusinessError = { code: 401, message :"Parameter error. The type of source must be object."}
+        throw err;
+    };
+    console.info("create source type is ", JSON.stringify(Type.of(source)))
+    let keys: Array<string> = [];
+    try {
+        keys = Object.keys(source);
+    } catch (err) {
+        console.error("create Object.keys err, ", JSON.stringify(err));
+    }
+    return createImpl(context, source, keys)
+}
+
+function jsonStringify(para: Object) : string
+{
+    return JSON.stringify(para);
+}
+
+function jsonParseJsonElement(para: string) : Object
+{
+    let result: jsonx.JsonElement = JSON.parseJsonElement(para);
+    return result;
+}
+
+function convertSetToArray(para: Object): Object | undefined
+{
+    try {
+        if (para instanceof Set) {
+            let arrRet = new Array<Any>();
+            para.forEach((item: Any) => {
+                console.log("convertSetToArray get item ", JSON.stringify(item));
+                arrRet.push(item);
+            })
+            return arrRet;
+        }
+    } catch (err) {
+        console.error("convert set to array err, ", JSON.stringify(err));
+    }
+    return undefined;
+}
+
+export class DdoAssetProxy implements commonTypeOrigin.Asset {
+    nameProxy: string;
+    uriProxy: string;
+    pathProxy: string;
+    createTimeProxy: string;
+    modifyTimeProxy: string;
+    sizeProxy: string;
+    statusProxy: (commonTypeOrigin.AssetStatus | undefined);
+    ddoExternalKey: string;
+    ddoManager: DataObject | undefined;
+    constructor(
+        externalKey: string,
+        name: string,
+        uri: string,
+        path: string,
+        createTime: string,
+        modifyTime: string,
+        size: string,
+        status: (commonTypeOrigin.AssetStatus | undefined),
+    )
+    {
+        this.nameProxy = name;
+        this.uriProxy = uri;
+        this.pathProxy = path;
+        this.createTimeProxy = createTime;
+        this.modifyTimeProxy = modifyTime;
+        this.sizeProxy = size;
+        this.statusProxy = status;
+        this.ddoManager = undefined;
+        this.ddoExternalKey = externalKey;
+    }
+    setStrValue(attrkey: string, value: string): void
+    {
+        if (this.ddoManager == undefined || this.ddoManager == null) {
+            return;
+        }
+        this.ddoManager!.setAssetItemValue(this.ddoExternalKey, attrkey, value);
+    }
+    set name(newValue: string)
+    {
+        this.nameProxy = newValue;
+        this.setStrValue("name", newValue);
+    }
+    get name(): string
+    {
+        return this.nameProxy;
+    }
+    set uri(newValue: string)
+    {
+        this.uriProxy = newValue;
+        this.setStrValue("uri", newValue);
+    }
+    get uri(): string
+    {
+        return this.uriProxy;
+    }
+    set path(newValue: string)
+    {
+        this.pathProxy = newValue;
+        this.setStrValue("path", newValue);
+    }
+    get path(): string
+    {
+        return this.pathProxy;
+    }
+    set createTime(newValue: string)
+    {
+        this.createTimeProxy = newValue;
+        this.setStrValue("createTime", newValue);
+    }
+    get createTime(): string
+    {
+        return this.createTimeProxy;
+    }
+    set modifyTime(newValue: string)
+    {
+        this.modifyTimeProxy = newValue;
+        this.setStrValue("modifyTime", newValue);
+    }
+    get modifyTime(): string
+    {
+        return this.modifyTimeProxy;
+    }
+    set size(newValue: string)
+    {
+        this.sizeProxy = newValue;
+        this.setStrValue("size", newValue);
+    }
+    get size(): string
+    {
+        return this.sizeProxy;
+    }
+    set status(newValue: commonTypeOrigin.AssetStatus | undefined)
+    {
+        if (this.ddoManager == undefined || this.ddoManager == null || newValue == undefined) {
+            return;
+        }
+        let tempStatus = newValue as commonTypeOrigin.AssetStatus;
+        this.ddoManager!.setAssetItemValue(this.ddoExternalKey, "status", tempStatus);
+    }
+    get status(): commonTypeOrigin.AssetStatus | undefined
+    {
+        return this.statusProxy;
+    }
+    setDdoManager(ddoManager: DataObject) : void
+    {
+        this.ddoManager = ddoManager;
+    }
+}
+""")
+
+struct BindInfo {
+    storeName: String;
+    tableName: String;
+    primaryKey: @record Map<String, commonTypeTaihe.ValueType>;
+    field: String;
+    assetName: String;
+}
+
+union ObjectValueType {
+    @undefined UNDEFINED;
+    @null EMPTY;
+    OPAQUE: Opaque;
+    BOOL: bool;
+    F64: f64;
+    STRING: String;
+    Uint8Array: @typedarray Array<u8>;
+    ASSET: commonTypeTaihe.Asset;
+    ASSETS: Array<commonTypeTaihe.Asset>;
+}
+
+union AssetValueType {
+    STR: String;
+    STATUS: commonTypeTaihe.AssetStatus;
+}
+
+union TempAnyType {
+    @undefined UNDEFINED;
+    @null EMPTY;
+    OPAQUE: Opaque;
+}
+
+function CreateImpl(context: @sts_type("BaseContext") Opaque, source: Opaque, keys: Array<String>): DataObject;
+
+function GenSessionId(): String;
+
+struct SaveSuccessResponse {
+    sessionId: String;
+    version: i32;
+    deviceId: String;
+}
+
+struct RevokeSaveSuccessResponse {
+    sessionId: String;
+}
+
+interface DataObject {
+    @gen_async("setSessionId")
+    SetSessionIdWithCallbackSync(sessionId: String): void;
+
+    @gen_async("setSessionId")
+    LeaveAllSessionWithCallbackSync(): void;
+
+    @gen_promise("setSessionId")
+    SetSessionIdPromiseSync(sessionId: Optional<String>): void;
+
+    @gen_async("save")
+    @gen_promise("save")
+    SaveSync(deviceId: String): SaveSuccessResponse;
+
+    @gen_async("revokeSave")
+    @gen_promise("revokeSave")
+    RevokeSaveSync(): RevokeSaveSuccessResponse;
+
+    @gen_async("bindAssetStore")
+    @gen_promise("bindAssetStore")
+    BindAssetStoreSync(assetKey: String, bindInfo: BindInfo): void;
+
+    @gen_promise("setAsset")
+    SetAssetSync(assetKey: String, uri: String): void;
+
+    @gen_promise("setAssets")
+    SetAssetsSync(assetsKey: String, uris: Array<String>): void;
+
+    OnChange(callback: (sessionId: String, fields: Array<String>) => void): void;
+    OffChange(callback: Optional<(sessionId: String, fields: Array<String>) => void>): void;
+
+    OnStatus(callback: (sessionId: String, networkId: String, status: String) => void): void;
+    OffStatus(callback: Optional<(sessionId: String, networkId: String, status: String) => void>): void;
+
+    OnProgressChanged(callback: (sessionId: String, progress: i32) => void): void;
+    OffProgressChanged(callback: Optional<(sessionId: String, progress: i32) => void>): void;
+
+    GetValueImpl(key: String): ObjectValueType;
+    SetValueImpl(key: String, value: TempAnyType): void;
+    SetAssetItemValue(key: String, attr: String, value: AssetValueType): void;
+
+    @!sts_inject_into_interface("""
+    $_get(key: string): Object | null | undefined;
+    $_set(key: string, value: Object | null | undefined): void;
+    getValue(key: String): Object | null | undefined;
+    setValue(key: String, value: Object | null | undefined): void;
+    on(type: string, callback: (p1 : object, p2 : object) => void): void;
+    off(type: string, callback?: (p1 : object, p2 : object) => void): void;
+    on(type: string, callback: (p1 : object, p2 : object, p3 : object) => void): void;
+    off(type: string, callback?: (p1 : object, p2 : object, p3 : object) => void): void;
+    """)
+    @!sts_inject_into_class("""
+    $_get(key: string): Object | null | undefined
+    {
+        return this.getValue(key);
+    }
+    $_set(key: string, value: Object | null | undefined): void
+    {
+        this.setValue(key, value);
+    }
+    setValue(key: String, newValue: Object | null | undefined): void
+    {
+        this.setValueImpl(key, newValue)
+    }
+    getValue(key: String): Object | null | undefined
+    {
+        let tempResult = this.getValueImpl(key);
+        if (tempResult != null && tempResult != undefined && tempResult instanceof DdoAssetProxy) {
+            try {
+                let assetProxy = tempResult as DdoAssetProxy;
+                assetProxy.setDdoManager(this);
+            } catch (err) {
+                console.error("get value err, ", JSON.stringify(err));
+            }
+        }
+        return tempResult;
+    }
+    on(type: string, callback: Object): void
+    {
+        if (type === "change") {
+            this.onChange(callback as (sessionId: string, fields: Array<string>) => void);
+        } else if (type === "status") {
+            this.onStatus(callback as (sessionId: string, networkId: string, status: string) => void);
+        } else if (type === "progressChanged") {
+            this.onProgressChanged(callback as (sessionId: string, progress: int) => void);
+        } else {
+            throw new Error(`Unknown type: ${type}`);
+        }
+    }
+    off(type: string, callback?: Object): void
+    {
+        if (type === "change") {
+            this.offChange(callback as (sessionId: string, fields: Array<string>) => void);
+        } else if (type === "status") {
+            this.offStatus(callback as ((sessionId: string, networkId: string, status: string) => void));
+        } else if (type === "progressChanged") {
+            this.offProgressChanged(callback as ((sessionId: string, progress: int) => void));
+        } else {
+            throw new Error(`Unknown type: ${type}`);
+        }
+    }
+    """)
+}

@@ -22,23 +22,24 @@ taihe_generated_file_path = "$taihe_file_path/out/$subsystem_name/$part_name"
 
 copy_taihe_idl("copy_taihe") {
   sources = [
-    "${data_object_base_path}/frameworks/ets/taihe/ohos.data.distributedDataObject/idl/ohos.data.commonType.taihe",
+    "${data_object_base_path}/frameworks/ets/taihe/ohos.data.distributedDataObject/idl/ohos.data.distributedDataObject.taihe",
   ]
+  external_deps = [ "relational_store:common_type_taihe_idl" ]
 }
 
 ohos_taihe("run_taihe") {
   taihe_generated_file_path = "$taihe_generated_file_path"
   deps = [ ":copy_taihe" ]
   outputs = [
-    "$taihe_generated_file_path/src/ohos.data.commonType.ani.cpp",
-    "$taihe_generated_file_path/src/ohos.data.commonType.abi.c",
+    "$taihe_generated_file_path/src/ohos.data.distributedDataObject.ani.cpp",
+    "$taihe_generated_file_path/src/ohos.data.distributedDataObject.abi.c",
   ]
 }
 
 generate_static_abc("distributeddata_object") {
   base_url = "$taihe_generated_file_path"
   files = [
-    "$taihe_generated_file_path/@ohos.data.commonType.ets",
+    "$taihe_generated_file_path/@ohos.data.distributedDataObject.ets",
   ]
   is_boot_abc = "True"
   device_dst_file = "/system/framework/distributeddata_object.abc"
@@ -81,6 +82,18 @@ taihe_shared_library("distributed_dataobject_ani") {
   ]
 
   sources = get_target_outputs(":run_taihe")
+  sources += [
+    "src/ani_constructor.cpp",
+    "src/ani_dataobject_session.cpp",
+    "src/ani_error_utils.cpp",
+    "src/ani_notifier_impl.cpp",
+    "src/ani_progress_notifier_impl.cpp",
+    "src/ani_utils.cpp",
+    "src/ani_watcher.cpp",
+    "src/ohos.data.distributedDataObject.DataObject.cpp",
+    "src/ohos.data.distributedDataObject.impl.cpp",
+    "${data_object_base_path}/frameworks/jskitsimpl/src/common/object_error.cpp",
+  ]
 
   deps = [
     ":run_taihe",

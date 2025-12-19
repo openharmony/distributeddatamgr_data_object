@@ -61,7 +61,8 @@
                 "dmsfwk",
                 "hisysevent",
                 "runtime_core",
-                "eventhandler"
+                "eventhandler",
+                "relational_store"
             ],
             "third_party": [
                 "ffmpeg",
@@ -102,9 +103,6 @@
                             "//foundation/distributeddatamgr/data_object/frameworks/innerkitsimpl/include/common"
                         ]
                     }
-                },
-                {
-                    "name": "//foundation/distributeddatamgr/data_object/frameworks/ets/taihe/ohos.data.distributedDataObject:copy_taihe"
                 }
             ],
             "test": [
