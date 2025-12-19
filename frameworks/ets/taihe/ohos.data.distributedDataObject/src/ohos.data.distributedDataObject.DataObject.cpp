@@ -350,7 +350,7 @@ bool DataObjectImpl::IsSameTaiheCallback(VarCallbackType p1, VarCallbackType p2)
         AniChangeCallbackType *p1val = std::get_if<AniChangeCallbackType>(&p1);
         AniChangeCallbackType *p2val = std::get_if<AniChangeCallbackType>(&p2);
         if (p1val != nullptr && p2val != nullptr) {
-            return (p1val == p2val);
+            return (*p1val == *p2val);
         } else {
             return false;
         }
@@ -359,7 +359,7 @@ bool DataObjectImpl::IsSameTaiheCallback(VarCallbackType p1, VarCallbackType p2)
         AniStatusCallbackType *p1val = std::get_if<AniStatusCallbackType>(&p1);
         AniStatusCallbackType *p2val = std::get_if<AniStatusCallbackType>(&p2);
         if (p1val != nullptr && p2val != nullptr) {
-            return (p1val == p2val);
+            return (*p1val == *p2val);
         } else {
             return false;
         }
@@ -368,7 +368,7 @@ bool DataObjectImpl::IsSameTaiheCallback(VarCallbackType p1, VarCallbackType p2)
         AniProgressCallbackType *p1val = std::get_if<AniProgressCallbackType>(&p1);
         AniProgressCallbackType *p2val = std::get_if<AniProgressCallbackType>(&p2);
         if (p1val != nullptr && p2val != nullptr) {
-            return (p1val == p2val);
+            return (*p1val == *p2val);
         } else {
             return false;
         }

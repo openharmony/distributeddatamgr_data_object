@@ -24,7 +24,7 @@ namespace OHOS::ObjectStore {
 class AniNotifierImpl : public StatusNotifier {
 public:
     virtual ~AniNotifierImpl();
-    static std::shared_ptr<AniNotifierImpl> GetInstance();
+
     void AddWatcher(const std::string &sessionId, std::weak_ptr<AniWatcher> watcher);
     void DelWatcher(const std::string &sessionId);
     void OnChanged(

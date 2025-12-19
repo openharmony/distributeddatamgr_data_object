@@ -258,10 +258,10 @@ bool AniDataobjectSession::SyncAssetsToStore(
     if (vm == nullptr || distributedObj_ == nullptr) {
         return false;
     }
-    AniUtils::AniExecuteFunc(vm, [&](ani_env *newEnv) {
+    AniUtils::AniExecuteFunc(vm, [&assets, &key, distributedObj = distributedObj_](ani_env *newEnv) {
         ani_object aniobj = AniUtils::AniCreateAssets(newEnv, assets);
         std::string str = DataObjectImpl::JsonStringify(newEnv, aniobj);
-        distributedObj_->PutString(key, std::string(COMPLEX_TYPE) + str);
+        distributedObj->PutString(key, std::string(COMPLEX_TYPE) + str);
     });
     return true;
 }
@@ -330,7 +330,6 @@ NativeObjectValueType AniDataobjectSession::HandleComplexType(const char* key)
 
 NativeObjectValueType AniDataobjectSession::GetValueFromStore(const char *key)
 {
-    LOG_INFO("GetValueFromStore, called");
     if (distributedObj_ == nullptr) {
         auto err = std::make_shared<InnerError>();
         AniErrorUtils::ThrowError(err->GetCode(), "object is null");
@@ -359,7 +358,6 @@ NativeObjectValueType AniDataobjectSession::GetValueFromStore(const char *key)
 
 NativeObjectValueType AniDataobjectSession::GetAssetValueFromStore(const char *key)
 {
-    LOG_INFO("GetAssetValueFromStore, called");
     NativeObjectValueType resultEmpty;
     if (distributedObj_ == nullptr) {
         auto err = std::make_shared<InnerError>();
@@ -373,42 +371,41 @@ NativeObjectValueType AniDataobjectSession::GetAssetValueFromStore(const char *k
     }
     std::string stdkey(key);
     OHOS::CommonType::AssetValue assetResult;
-    if (SUCCESS != distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "id", assetResult.id)) {
+    if (distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "id", assetResult.id) != SUCCESS) {
         return resultEmpty;
     }
-    if (SUCCESS != distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "name", assetResult.name)) {
+    if (distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "name", assetResult.name) != SUCCESS) {
         return resultEmpty;
     }
-    if (SUCCESS != distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "uri", assetResult.uri)) {
+    if (distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "uri", assetResult.uri) != SUCCESS) {
         return resultEmpty;
     }
-    if (SUCCESS != distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "createTime", assetResult.createTime)) {
+    if (distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "createTime", assetResult.createTime) != SUCCESS) {
         return resultEmpty;
     }
-    if (SUCCESS != distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "modifyTime", assetResult.modifyTime)) {
+    if (distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "modifyTime", assetResult.modifyTime) != SUCCESS) {
         return resultEmpty;
     }
-    if (SUCCESS != distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "size", assetResult.size)) {
+    if (distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "size", assetResult.size) != SUCCESS) {
         return resultEmpty;
     }
-    if (SUCCESS != distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "hash", assetResult.hash)) {
+    if (distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "hash", assetResult.hash) != SUCCESS) {
         return resultEmpty;
     }
-    if (SUCCESS != distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "path", assetResult.path)) {
+    if (distributedObj_->GetString(stdkey + ASSET_KEY_SEPARATOR + "path", assetResult.path) != SUCCESS) {
         return resultEmpty;
     }
     double status = 0;
-    if (SUCCESS != distributedObj_->GetDouble(stdkey + ASSET_KEY_SEPARATOR + "status", status)) {
+    if (distributedObj_->GetDouble(stdkey + ASSET_KEY_SEPARATOR + "status", status) != SUCCESS) {
         return resultEmpty;
     }
-    assetResult.status = (uint32_t)(status);
+    assetResult.status = static_cast<uint32_t>(status);
     RemoveTypePrefixForAsset(assetResult);
     return assetResult;
 }
 
 NativeObjectValueType AniDataobjectSession::GetAssetsValueFromStore(const char *key, size_t size)
 {
-    LOG_INFO("GetAssetsValueFromStore, called");
     if (distributedObj_ == nullptr) {
         auto err = std::make_shared<InnerError>();
         AniErrorUtils::ThrowError(err->GetCode(), "object is null");
@@ -433,7 +430,6 @@ NativeObjectValueType AniDataobjectSession::GetAssetsValueFromStore(const char *
 
 void AniDataobjectSession::RemoveTypePrefixForAsset(OHOS::CommonType::AssetValue &asset)
 {
-    LOG_INFO("RemoveTypePrefixForAsset, called");
     auto removePrefixIfNeeded = [](std::string &str) {
         if (str.find(STRING_TYPE) == 0) {
             str = str.substr(std::string(STRING_TYPE).length());

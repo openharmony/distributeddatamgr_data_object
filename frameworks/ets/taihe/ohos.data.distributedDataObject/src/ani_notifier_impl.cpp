@@ -21,30 +21,6 @@
 
 namespace OHOS::ObjectStore {
 
-std::shared_ptr<AniNotifierImpl> AniNotifierImpl::GetInstance()
-{
-    static std::shared_ptr<AniNotifierImpl> instance;
-    static std::mutex instanceLock;
-    std::lock_guard<std::mutex> lockGuard(instanceLock);
-    if (instance == nullptr) {
-        if (instance == nullptr) {
-            instance = std::make_shared<AniNotifierImpl>();
-            DistributedObjectStore *storeInstance = DistributedObjectStore::GetInstance();
-            if (storeInstance == nullptr) {
-                LOG_ERROR("Get store instance nullptr");
-                return instance;
-            }
-            auto ret = storeInstance->SetStatusNotifier(instance);
-            if (ret != SUCCESS) {
-                LOG_ERROR("SetStatusNotifier %{public}d error", ret);
-            } else {
-                LOG_INFO("SetStatusNotifier success");
-            }
-        }
-    }
-    return instance;
-}
-
 void AniNotifierImpl::AddWatcher(const std::string &sessionId, std::weak_ptr<AniWatcher> watcher)
 {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -60,8 +36,6 @@ void AniNotifierImpl::DelWatcher(const std::string &sessionId)
 void AniNotifierImpl::OnChanged(
     const std::string &sessionId, const std::string &networkId, const std::string &onlineStatus)
 {
-    LOG_INFO("status changed %{public}s %{public}s %{public}s", sessionId.c_str(), Anonymous::Change(networkId).c_str(),
-        onlineStatus.c_str());
     std::lock_guard<std::mutex> lock(mutex_);
     if (watchers_.count(sessionId) != 0) {
         std::shared_ptr<AniWatcher> lockedWatcher = watchers_.at(sessionId).lock();

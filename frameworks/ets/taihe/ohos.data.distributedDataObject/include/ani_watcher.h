@@ -23,7 +23,6 @@
 #include <ani.h>
 #include "event_handler.h"
 #include "event_runner.h"
-
 #include "taihe/runtime.hpp"
 #include "taihe/callback.hpp"
 #include "taihe/array.hpp"
@@ -35,12 +34,14 @@ using AniProgressCallbackType = ::taihe::callback<void(::taihe::string_view, int
 using VarCallbackType = std::variant<std::monostate,
     AniChangeCallbackType, AniStatusCallbackType, AniProgressCallbackType>;
 
-constexpr const char* EVENT_CHANGE = "change";
-constexpr const char* EVENT_STATUS = "status";
-constexpr const char* EVENT_PROGRESS = "progressChanged";
+static constexpr const char* EVENT_CHANGE = "change";
+static constexpr const char* EVENT_STATUS = "status";
+static constexpr const char* EVENT_PROGRESS = "progressChanged";
 
 namespace OHOS::ObjectStore {
 class AniWatcher;
+class AniNotifierImpl;
+class AniProgressNotifierImpl;
 
 class AsyncUtilBase {
 public:
@@ -123,6 +124,7 @@ public:
 private:
     std::weak_ptr<AniWatcher> watcher_{};
     std::string sessionId_;
+    std::shared_ptr<AniNotifierImpl> notifyImpl_;
 };
 
 class ProgressEventListener : public EventListener {
@@ -137,6 +139,7 @@ public:
 private:
     std::weak_ptr<AniWatcher> watcher_{};
     std::string sessionId_;
+    std::shared_ptr<AniProgressNotifierImpl> progressNotifyImpl_;
 };
 
 class AniWatcher : public std::enable_shared_from_this<AniWatcher> {

@@ -18,9 +18,9 @@
 #include <thread>
 
 #include "anonymous.h"
+#include "ani_watcher.h"
 #include "ani_notifier_impl.h"
 #include "ani_progress_notifier_impl.h"
-#include "ani_watcher.h"
 #include "logger.h"
 #include "objectstore_errors.h"
 
@@ -380,6 +380,12 @@ WatcherImpl::~WatcherImpl()
     LOG_INFO("~WatcherImpl");
 }
 
+ChangeEventListener::ChangeEventListener(
+    std::weak_ptr<AniWatcher> watcher, DistributedObjectStore *objectStore, DistributedObject *object)
+    : objectStore_(objectStore), object_(object), watcher_(watcher)
+{
+}
+
 bool ChangeEventListener::Add(VarCallbackType handler)
 {
     if (!isWatched_ && object_ != nullptr) {
@@ -424,16 +430,25 @@ void ChangeEventListener::Clear()
     }
 }
 
-ChangeEventListener::ChangeEventListener(
-    std::weak_ptr<AniWatcher> watcher, DistributedObjectStore *objectStore, DistributedObject *object)
-    : objectStore_(objectStore), object_(object), watcher_(watcher)
+StatusEventListener::StatusEventListener(std::weak_ptr<AniWatcher> watcher, const std::string &sessionId)
+    : watcher_(watcher), sessionId_(sessionId)
 {
+    notifyImpl_ = std::make_shared<AniNotifierImpl>();
+    DistributedObjectStore *storeInstance = DistributedObjectStore::GetInstance();
+    if (storeInstance != nullptr) {
+        auto ret = storeInstance->SetStatusNotifier(notifyImpl_);
+        if (ret != SUCCESS) {
+            LOG_ERROR("SetStatusNotifier %{public}d error", ret);
+        } else {
+            LOG_INFO("SetStatusNotifier success");
+        }
+    }
 }
 
 bool StatusEventListener::Add(VarCallbackType handler)
 {
     LOG_INFO("Add status watch %{public}s", sessionId_.c_str());
-    AniNotifierImpl::GetInstance()->AddWatcher(sessionId_, watcher_);
+    notifyImpl_->AddWatcher(sessionId_, watcher_);
     return EventListener::Add(handler);
 }
 
@@ -441,7 +456,7 @@ bool StatusEventListener::Del(VarCallbackType handler)
 {
     if (EventListener::Del(handler)) {
         LOG_INFO("Del status watch %{public}s", sessionId_.c_str());
-        AniNotifierImpl::GetInstance()->DelWatcher(sessionId_);
+        notifyImpl_->DelWatcher(sessionId_);
         return true;
     }
     return false;
@@ -449,19 +464,29 @@ bool StatusEventListener::Del(VarCallbackType handler)
 
 void StatusEventListener::Clear()
 {
-    AniNotifierImpl::GetInstance()->DelWatcher(sessionId_);
+    notifyImpl_->DelWatcher(sessionId_);
     EventListener::Clear();
 }
 
-StatusEventListener::StatusEventListener(std::weak_ptr<AniWatcher> watcher, const std::string &sessionId)
+ProgressEventListener::ProgressEventListener(std::weak_ptr<AniWatcher> watcher, const std::string &sessionId)
     : watcher_(watcher), sessionId_(sessionId)
 {
+    progressNotifyImpl_ = std::make_shared<AniProgressNotifierImpl>();
+    DistributedObjectStore *storeInstance = DistributedObjectStore::GetInstance();
+    if (storeInstance != nullptr) {
+        auto ret = storeInstance->SetProgressNotifier(progressNotifyImpl_);
+        if (ret != SUCCESS) {
+            LOG_ERROR("SetProgressNotifier %{public}d error", ret);
+        } else {
+            LOG_INFO("SetProgressNotifier success");
+        }
+    }
 }
 
 bool ProgressEventListener::Add(VarCallbackType handler)
 {
     LOG_INFO("Add progress watch %{public}s", Anonymous::Change(sessionId_).c_str());
-    AniProgressNotifierImpl::GetInstance()->AddWatcher(sessionId_, watcher_);
+    progressNotifyImpl_->AddWatcher(sessionId_, watcher_);
     return EventListener::Add(handler);
 }
 
@@ -469,7 +494,7 @@ bool ProgressEventListener::Del(VarCallbackType handler)
 {
     if (EventListener::Del(handler)) {
         LOG_INFO("Del progress watch %{public}s", Anonymous::Change(sessionId_).c_str());
-        AniProgressNotifierImpl::GetInstance()->DelWatcher(sessionId_);
+        progressNotifyImpl_->DelWatcher(sessionId_);
         return true;
     }
     return false;
@@ -477,13 +502,8 @@ bool ProgressEventListener::Del(VarCallbackType handler)
 
 void ProgressEventListener::Clear()
 {
-    AniProgressNotifierImpl::GetInstance()->DelWatcher(sessionId_);
+    progressNotifyImpl_->DelWatcher(sessionId_);
     EventListener::Clear();
-}
-
-ProgressEventListener::ProgressEventListener(std::weak_ptr<AniWatcher> watcher, const std::string &sessionId)
-    : watcher_(watcher), sessionId_(sessionId)
-{
 }
 
 AniWatcher::ChangeArgs::ChangeArgs(

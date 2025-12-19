@@ -37,11 +37,6 @@ ANI_EXPORT ani_status ANI_Constructor(ani_vm *vm, uint32_t *result)
         LOG_ERROR("Error from GetEnv, status=%{public}d", static_cast<int>(status));
         return ANI_ERROR;
     }
-    status = ohos::data::commonType::ANIRegister(env);
-    if (status != ANI_OK) {
-        LOG_ERROR("Error from ohos::data::commonType::ANIRegister, status=%{public}d", static_cast<int>(status));
-        return ANI_ERROR;
-    }
     status = ohos::data::distributedDataObject::ANIRegister(env);
     if (status != ANI_OK) {
         LOG_ERROR("Error from ohos::data::distributedDataObject::ANIRegister, status=%{public}d",

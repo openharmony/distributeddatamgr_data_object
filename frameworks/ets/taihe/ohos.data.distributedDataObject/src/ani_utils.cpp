@@ -22,7 +22,7 @@ using namespace OHOS::ObjectStore;
 
 using TaiheValueType = ::ohos::data::commonType::ValueType;
 
-int32_t AniGetProperty(const ani_env *env, ani_object ani_obj, const char *property, std::string &result, bool optional)
+int32_t AniGetProperty(ani_env *env, ani_object ani_obj, const char *property, std::string &result, bool optional)
 {
     if (env == nullptr || ani_obj == nullptr || property == nullptr) {
         return ANI_INVALID_ARGS;
@@ -38,7 +38,7 @@ int32_t AniGetProperty(const ani_env *env, ani_object ani_obj, const char *prope
     return status;
 }
 
-int32_t AniGetProperty(const ani_env *env, ani_object ani_obj, const char *property, bool &result, bool optional)
+int32_t AniGetProperty(ani_env *env, ani_object ani_obj, const char *property, bool &result, bool optional)
 {
     if (env == nullptr || ani_obj == nullptr || property == nullptr) {
         return ANI_INVALID_ARGS;
@@ -56,7 +56,7 @@ int32_t AniGetProperty(const ani_env *env, ani_object ani_obj, const char *prope
     return ANI_OK;
 }
 
-int32_t AniGetProperty(const ani_env *env, ani_object ani_obj, const char *property, int32_t &result, bool optional)
+int32_t AniGetProperty(ani_env *env, ani_object ani_obj, const char *property, int32_t &result, bool optional)
 {
     if (env == nullptr || ani_obj == nullptr || property == nullptr) {
         return ANI_INVALID_ARGS;
@@ -70,11 +70,11 @@ int32_t AniGetProperty(const ani_env *env, ani_object ani_obj, const char *prope
         }
         return status;
     }
-    result = (int32_t)ani_field_value;
+    result = static_cast<int32_t>(ani_field_value);
     return ANI_OK;
 }
 
-int32_t AniGetProperty(const ani_env *env, ani_object ani_obj, const char *property, uint32_t &result, bool optional)
+int32_t AniGetProperty(ani_env *env, ani_object ani_obj, const char *property, uint32_t &result, bool optional)
 {
     if (env == nullptr || ani_obj == nullptr || property == nullptr) {
         return ANI_INVALID_ARGS;
@@ -88,11 +88,11 @@ int32_t AniGetProperty(const ani_env *env, ani_object ani_obj, const char *prope
         }
         return status;
     }
-    result = (uint32_t)ani_field_value;
+    result = static_cast<uint32_t>(ani_field_value);
     return ANI_OK;
 }
 
-int32_t AniGetProperty(const ani_env *env, ani_object ani_obj, const char *property, ani_object &result, bool optional)
+int32_t AniGetProperty(ani_env *env, ani_object ani_obj, const char *property, ani_object &result, bool optional)
 {
     if (env == nullptr || ani_obj == nullptr || property == nullptr) {
         return ANI_INVALID_ARGS;
@@ -108,13 +108,13 @@ int32_t AniGetProperty(const ani_env *env, ani_object ani_obj, const char *prope
     return ANI_OK;
 }
 
-std::string AniStringUtils::ToStd(const ani_env *env, ani_string ani_str)
+std::string AniStringUtils::ToStd(ani_env *env, ani_string ani_str)
 {
     if (env == nullptr) {
         return std::string();
     }
     ani_size strSize = 0;
-    auto status = const_cast<ani_env*>(env)->String_GetUTF8Size(ani_str, &strSize);
+    auto status = env->String_GetUTF8Size(ani_str, &strSize);
     if (ANI_OK != status) {
         LOG_INFO("String_GetUTF8Size failed");
         return std::string();
@@ -124,7 +124,7 @@ std::string AniStringUtils::ToStd(const ani_env *env, ani_string ani_str)
     char *utf8Buffer = buffer.data();
 
     ani_size bytesWritten = 0;
-    status = const_cast<ani_env*>(env)->String_GetUTF8(ani_str, utf8Buffer, strSize + 1, &bytesWritten);
+    status = env->String_GetUTF8(ani_str, utf8Buffer, strSize + 1, &bytesWritten);
     if (ANI_OK != status) {
         LOG_INFO("String_GetUTF8Size failed");
         return std::string();
@@ -135,7 +135,7 @@ std::string AniStringUtils::ToStd(const ani_env *env, ani_string ani_str)
     return content;
 }
 
-ani_string AniStringUtils::ToAni(const ani_env *env, const std::string& str)
+ani_string AniStringUtils::ToAni(ani_env *env, const std::string& str)
 {
     if (env == nullptr) {
         return nullptr;
@@ -844,7 +844,7 @@ ani_object AniCreateProxyAsset(ani_env *env, const std::string &externalKey, con
     ani_ref ani_field_status;
     env->GetUndefined(&ani_field_status);
     if (asset.status != OHOS::CommonType::AssetValue::Status::STATUS_UNKNOWN) {
-        int32_t status = (int32_t)asset.status;
+        int32_t status = static_cast<int32_t>(asset.status);
         ani_enum enumType;
         ani_enum_item enumItem = nullptr;
         bool ret = false;
@@ -880,7 +880,7 @@ ani_object AniCreateAsset(ani_env *env, const OHOS::CommonType::AssetValue &asse
     ani_ref ani_field_status;
     env->GetUndefined(&ani_field_status);
     if (asset.status != OHOS::CommonType::AssetValue::Status::STATUS_UNKNOWN) {
-        int32_t status = (int32_t)asset.status;
+        int32_t status = static_cast<int32_t>(asset.status);
         ani_enum enumType;
         ani_enum_item enumItem = nullptr;
         bool ret = false;

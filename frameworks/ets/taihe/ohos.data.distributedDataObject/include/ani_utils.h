@@ -26,15 +26,15 @@
 
 namespace AniUtils {
 
-int32_t AniGetProperty(const ani_env *env, ani_object ani_obj, const char *property, std::string &result,
+int32_t AniGetProperty(ani_env *env, ani_object ani_obj, const char *property, std::string &result,
     bool optional = false);
-int32_t AniGetProperty(const ani_env *env, ani_object ani_obj, const char *property, bool &result,
+int32_t AniGetProperty(ani_env *env, ani_object ani_obj, const char *property, bool &result,
     bool optional = false);
-int32_t AniGetProperty(const ani_env *env, ani_object ani_obj, const char *property, int32_t &result,
+int32_t AniGetProperty(ani_env *env, ani_object ani_obj, const char *property, int32_t &result,
     bool optional = false);
-int32_t AniGetProperty(const ani_env *env, ani_object ani_obj, const char *property, uint32_t &result,
+int32_t AniGetProperty(ani_env *env, ani_object ani_obj, const char *property, uint32_t &result,
     bool optional = false);
-int32_t AniGetProperty(const ani_env *env, ani_object ani_obj, const char *property, ani_object &result,
+int32_t AniGetProperty(ani_env *env, ani_object ani_obj, const char *property, ani_object &result,
     bool optional = false);
 
 ani_status AniCreateBool(ani_env* env, bool value, ani_object& result);
@@ -55,8 +55,8 @@ void AniExecuteFunc(ani_vm* vm, const std::function<void(ani_env*)> func);
 
 class AniStringUtils {
 public:
-    static std::string ToStd(const ani_env *env, ani_string ani_str);
-    static ani_string ToAni(const ani_env *env, const std::string& str);
+    static std::string ToStd(ani_env *env, ani_string ani_str);
+    static ani_string ToAni(ani_env *env, const std::string& str);
 };
 
 class UnionAccessor {

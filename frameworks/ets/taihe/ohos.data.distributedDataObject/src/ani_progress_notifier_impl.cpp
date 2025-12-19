@@ -21,28 +21,6 @@
 
 namespace OHOS::ObjectStore {
 
-std::shared_ptr<AniProgressNotifierImpl> AniProgressNotifierImpl::GetInstance()
-{
-    static std::shared_ptr<AniProgressNotifierImpl> instance;
-    static std::mutex instanceLock;
-    std::lock_guard<std::mutex> lockGuard(instanceLock);
-    if (instance == nullptr) {
-        instance = std::make_shared<AniProgressNotifierImpl>();
-        DistributedObjectStore *storeInstance = DistributedObjectStore::GetInstance();
-        if (storeInstance == nullptr) {
-            LOG_ERROR("Get store instance nullptr");
-            return instance;
-        }
-        auto ret = storeInstance->SetProgressNotifier(instance);
-        if (ret != SUCCESS) {
-            LOG_ERROR("SetProgressNotifier %{public}d error", ret);
-        } else {
-            LOG_INFO("SetProgressNotifier success");
-        }
-    }
-    return instance;
-}
-
 void AniProgressNotifierImpl::AddWatcher(const std::string &sessionId, std::weak_ptr<AniWatcher> watcher)
 {
     std::lock_guard<std::mutex> lock(mutex_);
