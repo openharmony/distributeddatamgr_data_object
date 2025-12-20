@@ -207,7 +207,7 @@ bool DataObjectImpl::ParseRecord(
     }
 
     ani_method entryMethod =
-        AniUtils::AniGetClassMethod(env, "escompat.Record", "entries", ":C{std.core.IterableIterator}");
+        AniUtils::AniGetClassMethod(env, "std.core.Record", "entries", ":C{std.core.IterableIterator}");
     ani_method iterNextMethod =
         AniUtils::AniGetClassMethod(env, "std.core.Iterator", "next", ":C{std.core.IteratorResult}");
     ani_class iterResultClass = AniUtils::AniGetClass(env, "std.core.IteratorResult");
@@ -254,7 +254,7 @@ void DataObjectImpl::ParseObject(ani_object sourceObj, const ::taihe::array_view
         return;
     }
     auto accessor = std::make_shared<AniUtils::UnionAccessor>(aniEnv, sourceObj);
-    if (accessor->IsInstanceOf("escompat.Set")) {
+    if (accessor->IsInstanceOf("std.core.Set")) {
         LOG_INFO("ParseObject, sourceObj is Set");
         ani_ref tempRef = ConvertSetToArray(aniEnv, sourceObj);
         ani_object tempObj = reinterpret_cast<ani_object>(tempRef);
@@ -276,7 +276,7 @@ void DataObjectImpl::ParseObject(ani_object sourceObj, const ::taihe::array_view
         }
         return;
     }
-    if (accessor->IsInstanceOf("escompat.Record")) {
+    if (accessor->IsInstanceOf("std.core.Record")) {
         LOG_INFO("ParseObject, sourceObj Record");
         ParseRecord(aniEnv, sourceObj, sourceDataMap_);
         return;
