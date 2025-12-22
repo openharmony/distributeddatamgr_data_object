@@ -301,15 +301,15 @@ ani_field AniFindClassField(ani_env *env, ani_class cls, const char* name)
 
 ani_object AniCreatEmptyRecord(ani_env* env, ani_method& setMethod)
 {
-    ani_method constructor = AniUtils::AniGetClassMethod(env, "escompat.Record", "<ctor>", ":");
-    ani_method mapSetMethod = AniUtils::AniGetClassMethod(env, "escompat.Record", "$_set", nullptr);
+    ani_method constructor = AniUtils::AniGetClassMethod(env, "std.core.Record", "<ctor>", ":");
+    ani_method mapSetMethod = AniUtils::AniGetClassMethod(env, "std.core.Record", "$_set", nullptr);
     if (constructor == nullptr || mapSetMethod == nullptr) {
-        LOG_ERROR("AniGetClassMethod escompat.Record find method failed");
+        LOG_ERROR("AniGetClassMethod std.core.Record find method failed");
         return nullptr;
     }
     ani_object ani_record_result = nullptr;
-    if (ANI_OK != env->Object_New(AniUtils::AniGetClass(env, "escompat.Record"), constructor, &ani_record_result)) {
-        LOG_ERROR("escompat.Record Object_New failed");
+    if (ANI_OK != env->Object_New(AniUtils::AniGetClass(env, "std.core.Record"), constructor, &ani_record_result)) {
+        LOG_ERROR("std.core.Record Object_New failed");
         return nullptr;
     }
     setMethod = mapSetMethod;
@@ -486,7 +486,7 @@ bool UnionAccessor::TryConvertToNumber(double &value)
 template<>
 bool UnionAccessor::TryConvertArray<ani_ref>(std::vector<ani_ref> &value)
 {
-    if (!IsInstanceOf("A{C{std.core.Object}}") && !IsInstanceOf("escompat.Array")) {
+    if (!IsInstanceOf("A{C{std.core.Object}}") && !IsInstanceOf("std.core.Array")) {
         return false;
     }
     ani_size arrayLength = 0;
@@ -752,7 +752,7 @@ bool UnionAccessor::TryConvert<std::vector<float>>(std::vector<float> &value)
 template<>
 bool UnionAccessor::TryConvert<std::vector<ani_ref>>(std::vector<ani_ref> &value)
 {
-    if (!IsInstanceOf("escompat.Array")) {
+    if (!IsInstanceOf("std.core.Array")) {
         return false;
     }
     return TryConvertArray(value);
@@ -796,7 +796,7 @@ bool UnionAccessor::TryConvert<OHOS::CommonType::Asset>(OHOS::CommonType::Asset 
 template<>
 bool UnionAccessor::TryConvert<std::vector<OHOS::CommonType::Asset>>(std::vector<OHOS::CommonType::Asset> &value)
 {
-    if (!IsInstanceOf("A{C{std.core.Object}}") && !IsInstanceOf("escompat.Array")) {
+    if (!IsInstanceOf("A{C{std.core.Object}}") && !IsInstanceOf("std.core.Array")) {
         return false;
     }
     ani_size arrayLength = 0;
