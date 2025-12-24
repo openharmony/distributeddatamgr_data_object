@@ -25,6 +25,7 @@
 #include "flat_object_store.h"
 #include "mock_flat_object_watcher.h"
 #include "mock_object_watcher.h"
+#include "mock_permission_utils.h"
 #include "nativetoken_kit.h"
 #include "object_storage_engine.h"
 #include "objectstore_errors.h"
@@ -44,6 +45,8 @@ enum Status : int32_t {
     OBJECT_STORE_NOT_FOUND
 };
 constexpr static double SALARY = 100.5;
+static MockNativeToken *g_mock = nullptr;
+uint64_t g_selfTokenId = 0;
 class TableWatcherImpl : public TableWatcher {
 public:
     explicit TableWatcherImpl(const std::string &sessionId) : TableWatcher(sessionId) {}
@@ -98,8 +101,7 @@ void GrantPermissionNative()
         .processName = "distributed_object",
         .aplStr = "system_basic",
     };
-    uint64_t tokenId = GetAccessTokenId(&infoInstance);
-    SetSelfTokenID(tokenId);
+    GetAccessTokenId(&infoInstance);
     AccessTokenKit::ReloadNativeTokenInfo();
 }
 
@@ -114,11 +116,19 @@ public:
 void NativeObjectStoreTest::SetUpTestCase(void)
 {
     // input testsuit setup step，setup invoked before all testcases
+    g_selfTokenId = GetSelfTokenID();
+    ObjectStoreTestUtils::SetTestEvironment(g_selfTokenId);
+    g_mock = new (std::nothrow) MockNativeToken("foundation");
 }
 
 void NativeObjectStoreTest::TearDownTestCase(void)
 {
     // input testsuit teardown step，teardown invoked after all testcases
+    if (g_mock != nullptr) {
+        delete g_mock;
+        g_mock = nullptr;
+    }
+    ObjectStoreTestUtils::ResetTestEvironment();
 }
 
 void NativeObjectStoreTest::SetUp(void)

@@ -40,6 +40,7 @@ common_external_deps = [
   "access_token:libaccesstoken_sdk",
   "access_token:libnativetoken_shared",
   "access_token:libtoken_setproc",
+  "access_token:libnativetoken",
   "bundle_framework:appexecfwk_core",
   "c_utils:utils",
   "cJSON:cjson",
@@ -76,6 +77,7 @@ ohos_unittest("NativeObjectStoreTest") {
 
   sources = [
     "mock/src/mock_soft_bus.cpp",
+    "mock/src/mock_permission_utils.cpp",
     "src/app_pipe_mgr_test.cpp",
     "src/communicator_test.cpp",
     "src/object_store_test.cpp",

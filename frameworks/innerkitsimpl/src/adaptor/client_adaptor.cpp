@@ -78,9 +78,6 @@ std::shared_ptr<ObjectStoreDataServiceProxy> ClientAdaptor::GetDistributedDataMa
         LOG_ERROR("Add death recipient fail!");
     }
     return std::shared_ptr<ObjectStoreDataServiceProxy>(proxy.GetRefPtr(), [holder = proxy](const auto *) {});
-
-    LOG_ERROR("get distributed data manager failed");
-    return nullptr;
 }
 
 ClientAdaptor::ServiceDeathRecipient::ServiceDeathRecipient()

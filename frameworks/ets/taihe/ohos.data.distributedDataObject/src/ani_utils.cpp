@@ -346,7 +346,6 @@ ani_object AniCreateArray(ani_env *env, const std::vector<ani_object> &objectArr
         }
         index++;
     }
-    LOG_ERROR("AniCreateArray, ret %{public}p", array);
     return array;
 }
 
