@@ -681,7 +681,7 @@ bool DataObjectImpl::GetFileAttribute(const std::string &pathName, size_t &size,
         LOG_ERROR("GetFileSize, GetFileAttribute failed, ret:%{public}d, errno:%{public}d.", ret, errno);
         return false;
     }
-    size = statbuf.st_size;
+    size = static_cast<size_t>(statbuf.st_size);
     ctime = std::to_string(statbuf.st_ctim.tv_sec);
     mtime = std::to_string(statbuf.st_mtim.tv_sec);
     return true;
