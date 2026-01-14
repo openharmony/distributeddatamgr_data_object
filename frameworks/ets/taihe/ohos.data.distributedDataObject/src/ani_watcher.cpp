@@ -147,13 +147,13 @@ void AniWatcher::Emit(const std::string &type, const std::string &sessionId, con
     }
     auto sharedThis = shared_from_this();
     AsyncUtilBase::AsyncExecueInMainThread([ sharedThis ] {
+        std::unique_lock<std::shared_mutex> cacheLock(sharedThis->cachedChangeEventMutex_);
         ani_env *aniEnv = taihe::get_env();
         if (aniEnv == nullptr) {
             LOG_ERROR("aniEnv null, clear");
             sharedThis->cachedChangeEventList_.clear();
             return;
         }
-        std::unique_lock<std::shared_mutex> cacheLock(sharedThis->cachedChangeEventMutex_);
         for (auto &itemPtr : sharedThis->cachedChangeEventList_) {
             if (itemPtr == nullptr) {
                 continue;
@@ -194,13 +194,13 @@ void AniWatcher::Emit(
 
     auto sharedThis = shared_from_this();
     AsyncUtilBase::AsyncExecueInMainThread([sharedThis] {
+        std::unique_lock<std::shared_mutex> cacheLock(sharedThis->cachedStatusEventMutex_);
         ani_env *aniEnv = taihe::get_env();
         if (aniEnv == nullptr) {
             LOG_ERROR("aniEnv null, clear");
             sharedThis->cachedStatusEventList_.clear();
             return;
         }
-        std::unique_lock<std::shared_mutex> cacheLock(sharedThis->cachedStatusEventMutex_);
         for (auto &itemPtr : sharedThis->cachedStatusEventList_) {
             if (itemPtr == nullptr) {
                 continue;
@@ -241,13 +241,13 @@ void AniWatcher::Emit(
 
     auto sharedThis = shared_from_this();
     AsyncUtilBase::AsyncExecueInMainThread([sharedThis] {
+        std::unique_lock<std::shared_mutex> cacheLock(sharedThis->cachedProgressEventMutex_);
         ani_env *aniEnv = taihe::get_env();
         if (aniEnv == nullptr) {
             LOG_ERROR("aniEnv null, clear");
             sharedThis->cachedProgressEventList_.clear();
             return;
         }
-        std::unique_lock<std::shared_mutex> cacheLock(sharedThis->cachedProgressEventMutex_);
         for (auto &itemPtr : sharedThis->cachedProgressEventList_) {
             if (itemPtr == nullptr) {
                 continue;

@@ -267,6 +267,7 @@ void DataObjectImpl::ParseObject(ani_object sourceObj, const ::taihe::array_view
     }
     std::vector<ani_ref> aniRefArray;
     bool result = accessor->TryConvertArray(aniRefArray);
+    std::lock_guard<std::mutex> guard(sourceDataMapMutex_);
     if (result) {
         LOG_INFO("ParseObject, sourceObj is Array");
         for (size_t k = 0; k < aniRefArray.size(); k++) {
