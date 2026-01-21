@@ -68,7 +68,7 @@ constexpr char DOMAIN[] = "DISTDATAMGR";
 constexpr char EVENT_NAME[] = "DISTRIBUTED_DATA_OBJECT_BEHAVIOR";
 constexpr char ORG_PKG[] = "distributeddata";
 
-class API_EXPORT RadarReporter {
+class RadarReporter {
 public:
     static void ReportStateStart(std::string func, int32_t scene, int32_t stage, int32_t stageRes,
         int32_t state, std::string appCaller);
