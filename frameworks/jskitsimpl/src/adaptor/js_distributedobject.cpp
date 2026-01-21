@@ -165,50 +165,78 @@ void JSDistributedObject::DoPut(
 
 void JSDistributedObject::DoGet(napi_env env, JSObjectWrapper *wrapper, char *key, napi_value &value)
 {
+    if (wrapper == nullptr) {
+        LOG_ERROR("wrapper is nullptr");
+        return;
+    }
+    DistributedObject *object = wrapper->GetObject();
+    if (object == nullptr) {
+        LOG_ERROR("object is nullptr");
+        return;
+    }
     std::string keyString = key;
     Type type = TYPE_STRING;
-    wrapper->GetObject()->GetType(keyString, type);
+    object->GetType(keyString, type);
     LOG_DEBUG("get type %{public}s %{public}d", key, type);
     switch (type) {
-        case TYPE_STRING: {
-            std::string result;
-            uint32_t ret = wrapper->GetObject()->GetString(keyString, result);
-            NOT_MATCH_RETURN_VOID(ret == SUCCESS);
-            napi_status status = JSUtil::SetValue(env, result, value);
-            NOT_MATCH_RETURN_VOID(status == napi_ok);
+        case TYPE_STRING:
+            HandleStringType(env, object, keyString, value);
             break;
-        }
-        case TYPE_DOUBLE: {
-            double result;
-            uint32_t ret = wrapper->GetObject()->GetDouble(keyString, result);
-            LOG_DEBUG("%{public}f", result);
-            NOT_MATCH_RETURN_VOID(ret == SUCCESS);
-            napi_status status = JSUtil::SetValue(env, result, value);
-            NOT_MATCH_RETURN_VOID(status == napi_ok);
+        case TYPE_DOUBLE:
+            HandleDoubleType(env, object, keyString, value);
             break;
-        }
-        case TYPE_BOOLEAN: {
-            bool result;
-            uint32_t ret = wrapper->GetObject()->GetBoolean(keyString, result);
-            LOG_DEBUG("%{public}d", result);
-            NOT_MATCH_RETURN_VOID(ret == SUCCESS);
-            napi_status status = JSUtil::SetValue(env, result, value);
-            NOT_MATCH_RETURN_VOID(status == napi_ok);
+        case TYPE_BOOLEAN:
+            HandleBooleanType(env, object, keyString, value);
             break;
-        }
-        case TYPE_COMPLEX: {
-            std::vector<uint8_t> result;
-            uint32_t ret = wrapper->GetObject()->GetComplex(keyString, result);
-            NOT_MATCH_RETURN_VOID(ret == SUCCESS);
-            napi_status status = JSUtil::SetValue(env, result, value);
-            NOT_MATCH_RETURN_VOID(status == napi_ok);
+        case TYPE_COMPLEX:
+            HandleComplexType(env, object, keyString, value);
             break;
-        }
-        default: {
+        default:
             LOG_ERROR("error type! %{public}d", type);
             break;
-        }
     }
+}
+
+void JSDistributedObject::HandleStringType(
+    napi_env env, DistributedObject *object, const std::string &keyString, napi_value &value)
+{
+    std::string result;
+    uint32_t ret = object->GetString(keyString, result);
+    NOT_MATCH_RETURN_VOID(ret == SUCCESS);
+    napi_status status = JSUtil::SetValue(env, result, value);
+    NOT_MATCH_RETURN_VOID(status == napi_ok);
+}
+
+void JSDistributedObject::HandleDoubleType(
+    napi_env env, DistributedObject *object, const std::string &keyString, napi_value &value)
+{
+    double result;
+    uint32_t ret = object->GetDouble(keyString, result);
+    LOG_DEBUG("%{public}f", result);
+    NOT_MATCH_RETURN_VOID(ret == SUCCESS);
+    napi_status status = JSUtil::SetValue(env, result, value);
+    NOT_MATCH_RETURN_VOID(status == napi_ok);
+}
+
+void JSDistributedObject::HandleBooleanType(
+    napi_env env, DistributedObject *object, const std::string &keyString, napi_value &value)
+{
+    bool result;
+    uint32_t ret = object->GetBoolean(keyString, result);
+    LOG_DEBUG("%{public}d", result);
+    NOT_MATCH_RETURN_VOID(ret == SUCCESS);
+    napi_status status = JSUtil::SetValue(env, result, value);
+    NOT_MATCH_RETURN_VOID(status == napi_ok);
+}
+
+void JSDistributedObject::HandleComplexType(
+    napi_env env, DistributedObject *object, const std::string &keyString, napi_value &value)
+{
+    std::vector<uint8_t> result;
+    uint32_t ret = object->GetComplex(keyString, result);
+    NOT_MATCH_RETURN_VOID(ret == SUCCESS);
+    napi_status status = JSUtil::SetValue(env, result, value);
+    NOT_MATCH_RETURN_VOID(status == napi_ok);
 }
 
 // save(deviceId: string, version: number, callback?:AsyncCallback<SaveSuccessResponse>): void;
