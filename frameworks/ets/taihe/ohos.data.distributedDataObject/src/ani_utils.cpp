@@ -485,7 +485,7 @@ bool UnionAccessor::TryConvertToNumber(double &value)
 template<>
 bool UnionAccessor::TryConvertArray<ani_ref>(std::vector<ani_ref> &value)
 {
-    if (!IsInstanceOf("A{C{std.core.Object}}") && !IsInstanceOf("std.core.Array")) {
+    if (!IsInstanceOf("A{Y}") && !IsInstanceOf("std.core.Array")) {
         return false;
     }
     ani_size arrayLength = 0;
@@ -795,7 +795,7 @@ bool UnionAccessor::TryConvert<OHOS::CommonType::Asset>(OHOS::CommonType::Asset 
 template<>
 bool UnionAccessor::TryConvert<std::vector<OHOS::CommonType::Asset>>(std::vector<OHOS::CommonType::Asset> &value)
 {
-    if (!IsInstanceOf("A{C{std.core.Object}}") && !IsInstanceOf("std.core.Array")) {
+    if (!IsInstanceOf("A{Y}") && !IsInstanceOf("std.core.Array")) {
         return false;
     }
     ani_size arrayLength = 0;
