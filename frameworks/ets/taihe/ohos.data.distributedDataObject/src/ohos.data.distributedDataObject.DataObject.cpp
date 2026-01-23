@@ -652,6 +652,10 @@ void DataObjectImpl::LeaveAllSessionWithCallbackSync()
         AniErrorUtils::ThrowError(err->GetCode(), "object is null");
         return {};
     }
+    if (deviceId.empty()) {
+        AniErrorUtils::ThrowError(AniErrorUtils::AniError_ParameterCheck, "The device id is empty.");
+        return {};
+    }
     auto result = session_->Save(std::string(deviceId), version_);
     return result;
 }
@@ -765,6 +769,11 @@ void DataObjectImpl::SetAssetsSync(::taihe::string_view assetsKey, ::taihe::arra
                                                                             "be set.");
             return;
         }
+    }
+    if (assetsKey.empty()) {
+        AniErrorUtils::ThrowError(AniErrorUtils::AniError_ParameterError, "The property or uri of the asset is "
+                                                                            "invalid.");
+        return;
     }
     if (uris.size() == 0 || uris.size() > ASSETS_MAX_NUMBER) {
         AniErrorUtils::ThrowError(AniErrorUtils::AniError_ParameterError, "The uri array of the set assets is not "

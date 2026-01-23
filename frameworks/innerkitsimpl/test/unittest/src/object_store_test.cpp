@@ -46,7 +46,7 @@ enum Status : int32_t {
 };
 constexpr static double SALARY = 100.5;
 static MockNativeToken *g_mock = nullptr;
-uint64_t g_selfTokenId = 0;
+static uint64_t g_selfTokenId = 0;
 class TableWatcherImpl : public TableWatcher {
 public:
     explicit TableWatcherImpl(const std::string &sessionId) : TableWatcher(sessionId) {}
