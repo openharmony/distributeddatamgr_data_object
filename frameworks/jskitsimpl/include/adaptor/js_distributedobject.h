@@ -38,6 +38,14 @@ private:
     static void DoGet(napi_env env, JSObjectWrapper *wrapper, char *key, napi_value &value);
     static napi_value GetSaveResultCons(napi_env env, std::string &sessionId, double version, std::string deviceId);
     static napi_value GetRevokeSaveResultCons(napi_env env, std::string &sessionId);
+    static void HandleStringType(
+        napi_env env, DistributedObject *object, const std::string &keyString, napi_value &value);
+    static void HandleDoubleType(
+        napi_env env, DistributedObject *object, const std::string &keyString, napi_value &value);
+    static void HandleBooleanType(
+        napi_env env, DistributedObject *object, const std::string &keyString, napi_value &value);
+    static void HandleComplexType(
+        napi_env env, DistributedObject *object, const std::string &keyString, napi_value &value);
 };
 } // namespace OHOS::ObjectStore
 
