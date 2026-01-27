@@ -47,12 +47,17 @@ TableWatcherImpl::~TableWatcherImpl()
 void TableWatcherImpl::OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData,
     bool enableTransfer)
 {
+    (void)sessionid;
+    (void)changedData;
+    (void)enableTransfer;
 }
 
 class TestObjectWatcher : public ObjectWatcher {
 public:
     void OnChanged(const std::string &sessionid, const std::vector<std::string> &changedData) override
     {
+        (void)sessionid;
+        (void)changedData;
     }
     virtual ~TestObjectWatcher()
     {
@@ -63,6 +68,9 @@ class TestStatusNotifier : public StatusNotifier {
 public:
     void OnChanged(const std::string &sessionId, const std::string &networkId, const std::string &onlineStatus) override
     {
+        (void)sessionId;
+        (void)networkId;
+        (void)onlineStatus;
     }
     virtual ~TestStatusNotifier()
     {
@@ -113,6 +121,8 @@ bool RandomSessionIdFuzz(FuzzedDataProvider &provider)
 extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv)
 {
     OHOS::FuzzTestGetPermission();
+    (void)argc;
+    (void)argv;
     return 0;
 }
 
