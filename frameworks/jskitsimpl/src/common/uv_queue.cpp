@@ -44,7 +44,7 @@ void UvQueue::ExecUvWork(UvEntry *entry)
     entry = nullptr;
 }
 
-bool UvQueue::CallFunction(Process process, void *argv)
+bool UvQueue::CallFunction(Process process, void *argv, const char *type)
 {
     if (process == nullptr || argv == nullptr) {
         LOG_ERROR("nullptr");
@@ -72,7 +72,8 @@ bool UvQueue::CallFunction(Process process, void *argv)
     }
 
     auto task = [uvEntry]() { UvQueue::ExecUvWork(uvEntry); };
-    auto ret = napi_send_event(env_, task, napi_eprio_high);
+    std::string taskName = (type == nullptr) ? "data_object.unknown" : std::string("data_object.") + type;
+    auto ret = napi_send_event(env_, task, napi_eprio_high, taskName.c_str());
     if (ret != 0) {
         LOG_ERROR("napi_send_event failed, ret: %{public}d.", ret);
         rollbackAddition();

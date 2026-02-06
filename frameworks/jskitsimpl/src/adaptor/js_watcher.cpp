@@ -111,7 +111,7 @@ void JSWatcher::Emit(const char *type, const std::string &sessionId, const std::
             LOG_ERROR("JSWatcher::Emit no memory for changeArgs malloc!");
             return;
         }
-        if (!CallFunction(ProcessChange, changeArgs)) {
+        if (!CallFunction(ProcessChange, changeArgs, type)) {
             delete changeArgs;
             changeArgs = nullptr;
         }
@@ -189,7 +189,7 @@ void JSWatcher::Emit(
             LOG_ERROR("JSWatcher::Emit no memory for StatusArgs malloc!");
             return;
         }
-        if (!CallFunction(ProcessStatus, changeArgs)) {
+        if (!CallFunction(ProcessStatus, changeArgs, type)) {
             delete changeArgs;
             changeArgs = nullptr;
         }
@@ -249,7 +249,7 @@ void JSWatcher::Emit(const char *type, const std::string &sessionId, int32_t pro
             LOG_ERROR("JSWatcher::Emit no memory for ProgressArgs malloc!");
             return;
         }
-        if (!CallFunction(ProcessProgress, progressArgs)) {
+        if (!CallFunction(ProcessProgress, progressArgs, type)) {
             delete progressArgs;
             progressArgs = nullptr;
         }

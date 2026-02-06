@@ -27,7 +27,7 @@ public:
     UvQueue(napi_env env);
     virtual ~UvQueue();
 
-    bool CallFunction(Process process, void *argv);
+    bool CallFunction(Process process, void *argv, const char *type);
 
 private:
     struct UvEntry {
