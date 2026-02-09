@@ -121,13 +121,15 @@ napi_value JSDistributedObjectStore::NewDistributedObject(
             JSDistributedObjectStore::DelCallback(env, g_changeCallBacks, objectWrapper->GetObjectId());
             JSDistributedObjectStore::DelCallback(env, g_statusCallBacks, objectWrapper->GetObjectId());
 
-            if (objectWrapper->GetObject() == nullptr) {
+            DistributedObject *object = objectWrapper->GetObject();
+            DistributedObjectStore *objectStore =
+                DistributedObjectStore::GetInstance(JSDistributedObjectStore::GetBundleName(env));
+            if (objectStore == nullptr || object == nullptr) {
                 delete objectWrapper;
                 return;
             }
             LOG_INFO("start delete object");
-            DistributedObjectStore::GetInstance(JSDistributedObjectStore::GetBundleName(env))
-                ->DeleteObject(objectWrapper->GetObject()->GetSessionId());
+            objectStore->DeleteObject(object->GetSessionId());
             delete objectWrapper;
         },
         nullptr, nullptr);
