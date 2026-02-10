@@ -81,18 +81,22 @@ void FuzzTestGetPermission()
 {
     if (!g_hasPermission) {
         uint64_t tokenId;
-        constexpr int perNum = 1;
-        const char *perms[perNum] = { "ohos.permission.DISTRIBUTED_DATASYNC" };
+        constexpr int perNum = 3;
+        const char *perms[perNum] = {
+            "ohos.permission.DISTRIBUTED_DATASYNC",
+            "ohos.permission.DISTRIBUTED_SOFTBUS_CENTER",
+            "ohos.permission.MONITOR_DEVICE_NETWORK_STATE"
+        };
 
         NativeTokenInfoParams infoInstance = {
             .dcapsNum = 0,
-            .permsNum = 1,
+            .permsNum = 3,
             .aclsNum = 0,
             .dcaps = nullptr,
             .perms = perms,
             .acls = nullptr,
             .processName = "objectfuzztest",
-            .aplStr = "normal",
+            .aplStr = "system_basic",
         };
         tokenId = GetAccessTokenId(&infoInstance);
         SetSelfTokenID(tokenId);
