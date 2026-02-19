@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -227,11 +227,11 @@ bool DataObjectImpl::ParseRecord(
         if (iter_done) {
             break;
         }
-        ani_tuple_value temp_ani_item = {};
+        ani_object temp_ani_item = {};
         fieldTmp = AniUtils::AniFindClassField(env, iterResultClass, "value");
         env->Object_GetField_Ref(iteratorNextResult, fieldTmp, reinterpret_cast<ani_ref *>(&temp_ani_item));
         ani_ref temp_ani_key = {};
-        env->TupleValue_GetItem_Ref(temp_ani_item, 0, &temp_ani_key);
+        env->Object_GetFieldByName_Ref(temp_ani_item, "$0", &temp_ani_key);
         std::string stdkey;
         ani_object keyobj = reinterpret_cast<ani_object>(temp_ani_key);
         AniUtils::UnionAccessor acessor(env, keyobj);
@@ -239,7 +239,7 @@ bool DataObjectImpl::ParseRecord(
             break;
         }
         ani_ref temp_ani_val = {};
-        env->TupleValue_GetItem_Ref(temp_ani_item, 1, &temp_ani_val);
+        env->Object_GetFieldByName_Ref(temp_ani_item, "$1", &temp_ani_val);
         NativeObjectValueType parseResult = ParseObjectValue(env, temp_ani_val);
         resultMap[stdkey] = parseResult;
         LOG_INFO("ParseRecord, stdkey %{public}s", stdkey.c_str());
