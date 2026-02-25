@@ -107,4 +107,36 @@ HWTEST_F(ClientAdaptorTest, RegisterClientDeathListener_002, TestSize.Level1)
     uint32_t ret = clientAdaptor.RegisterClientDeathListener(appId, remoteObject);
     EXPECT_EQ(ret, SUCCESS);
 }
+
+/**
+ * @tc.name: ObjectStoreDataServiceProxy_GetFeatureInterface_001
+ * @tc.desc: Test GetFeatureInterface with empty name
+ * @tc.type: FUNC
+ */
+HWTEST_F(ClientAdaptorTest, ObjectStoreDataServiceProxy_GetFeatureInterface_001, TestSize.Level1)
+{
+    string name = "";
+    sptr<IRemoteObject> impl = sptr<IPCObjectStub>(new (std::nothrow) IPCObjectStub());
+    ASSERT_NE(impl, nullptr);
+    ObjectStoreDataServiceProxy proxy(impl);
+    auto ret = proxy.GetFeatureInterface(name);
+    EXPECT_EQ(ret, nullptr);
+}
+
+/**
+ * @tc.name: ObjectStoreDataServiceProxy_RegisterClientDeathObserver_001
+ * @tc.desc: Test RegisterClientDeathObserver with empty appId
+ * @tc.type: FUNC
+ */
+HWTEST_F(ClientAdaptorTest, ObjectStoreDataServiceProxy_RegisterClientDeathObserver_001, TestSize.Level1)
+{
+    string appId = "";
+    sptr<IRemoteObject> impl = sptr<IPCObjectStub>(new (std::nothrow) IPCObjectStub());
+    ASSERT_NE(impl, nullptr);
+    ObjectStoreDataServiceProxy proxy(impl);
+    sptr<IRemoteObject> observer = sptr<IPCObjectStub>(new (std::nothrow) IPCObjectStub());
+    ASSERT_NE(observer, nullptr);
+    auto ret = proxy.RegisterClientDeathObserver(appId, observer);
+    EXPECT_EQ(ret, OHOS::ObjectStore::ERR_IPC);
+}
 }

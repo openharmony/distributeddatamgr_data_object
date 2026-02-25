@@ -119,4 +119,160 @@ HWTEST_F(FlatObjectStoreTest, GetBundleName_001, TestSize.Level0)
     std::string ret = flatObjectStore.GetBundleName();
     EXPECT_EQ(ret, bundleName);
 }
+
+/**
+ * @tc.name: CreateObject_001
+ * @tc.desc: Test CreateObject when storage engine open fails
+ * @tc.type: FUNC
+ */
+HWTEST_F(FlatObjectStoreTest, CreateObject_001, TestSize.Level1)
+{
+    string sessionId = "sessionId1";
+    std::string bundleName = "default";
+    FlatObjectStore flatObjectStore(bundleName);
+    flatObjectStore.storageEngine_->isOpened_ = false;
+    auto ret = flatObjectStore.CreateObject(sessionId);
+    EXPECT_EQ(ret, ERR_NO_PERMISSION);
+}
+
+/**
+ * @tc.name: Delete_001
+ * @tc.desc: Test Delete when storage engine is not opened
+ * @tc.type: FUNC
+ */
+HWTEST_F(FlatObjectStoreTest, Delete_001, TestSize.Level1)
+{
+    string sessionId = "sessionId1";
+    std::string bundleName = "default";
+    FlatObjectStore flatObjectStore(bundleName);
+    flatObjectStore.storageEngine_->isOpened_ = false;
+    auto ret = flatObjectStore.Delete(sessionId);
+    EXPECT_EQ(ret, ERR_DB_NOT_EXIST);
+}
+
+/**
+ * @tc.name: Watch_001
+ * @tc.desc: Test Watch when storage engine is not opened
+ * @tc.type: FUNC
+ */
+HWTEST_F(FlatObjectStoreTest, Watch_001, TestSize.Level1)
+{
+    string sessionId = "sessionId1";
+    std::shared_ptr<FlatObjectWatcher> watcher = nullptr;
+    std::string bundleName = "default";
+    FlatObjectStore flatObjectStore(bundleName);
+    flatObjectStore.storageEngine_->isOpened_ = false;
+    auto ret = flatObjectStore.Watch(sessionId, watcher);
+    EXPECT_EQ(ret, ERR_DB_NOT_EXIST);
+}
+
+/**
+ * @tc.name: UnWatch_001
+ * @tc.desc: Test UnWatch when storage engine is not opened
+ * @tc.type: FUNC
+ */
+HWTEST_F(FlatObjectStoreTest, UnWatch_001, TestSize.Level1)
+{
+    string sessionId = "sessionId1";
+    std::string bundleName = "default";
+    FlatObjectStore flatObjectStore(bundleName);
+    flatObjectStore.storageEngine_->isOpened_ = false;
+    auto ret = flatObjectStore.UnWatch(sessionId);
+    EXPECT_EQ(ret, ERR_DB_NOT_EXIST);
+}
+
+/**
+ * @tc.name: Put_001
+ * @tc.desc: Test Put when storage engine is not opened
+ * @tc.type: FUNC
+ */
+HWTEST_F(FlatObjectStoreTest, Put_001, TestSize.Level1)
+{
+    string sessionId = "sessionId1";
+    string key = "key1";
+    std::vector<uint8_t> value = {1, 2, 3};
+    std::string bundleName = "default";
+    FlatObjectStore flatObjectStore(bundleName);
+    flatObjectStore.storageEngine_->isOpened_ = false;
+    auto ret = flatObjectStore.Put(sessionId, key, value);
+    EXPECT_EQ(ret, ERR_DB_NOT_EXIST);
+}
+
+/**
+ * @tc.name: Get_001
+ * @tc.desc: Test Get when storage engine is not opened
+ * @tc.type: FUNC
+ */
+HWTEST_F(FlatObjectStoreTest, Get_001, TestSize.Level1)
+{
+    string sessionId = "sessionId1";
+    string key = "key1";
+    Bytes value;
+    std::string bundleName = "default";
+    FlatObjectStore flatObjectStore(bundleName);
+    flatObjectStore.storageEngine_->isOpened_ = false;
+    auto ret = flatObjectStore.Get(sessionId, key, value);
+    EXPECT_EQ(ret, ERR_DB_NOT_EXIST);
+}
+
+/**
+ * @tc.name: SetStatusNotifier_001
+ * @tc.desc: Test SetStatusNotifier when storage engine is not opened
+ * @tc.type: FUNC
+ */
+HWTEST_F(FlatObjectStoreTest, SetStatusNotifier_001, TestSize.Level1)
+{
+    std::shared_ptr<StatusWatcher> notifier = nullptr;
+    std::string bundleName = "default";
+    FlatObjectStore flatObjectStore(bundleName);
+    flatObjectStore.storageEngine_->isOpened_ = false;
+    auto ret = flatObjectStore.SetStatusNotifier(notifier);
+    EXPECT_EQ(ret, SUCCESS);
+}
+
+/**
+ * @tc.name: SetProgressNotifier_001
+ * @tc.desc: Test SetProgressNotifier when storage engine is not opened
+ * @tc.type: FUNC
+ */
+HWTEST_F(FlatObjectStoreTest, SetProgressNotifier_001, TestSize.Level1)
+{
+    std::shared_ptr<ProgressWatcher> notifier = nullptr;
+    std::string bundleName = "default";
+    FlatObjectStore flatObjectStore(bundleName);
+    flatObjectStore.storageEngine_->isOpened_ = false;
+    auto ret = flatObjectStore.SetProgressNotifier(notifier);
+    EXPECT_EQ(ret, SUCCESS);
+}
+
+/**
+ * @tc.name: Save_001
+ * @tc.desc: Test Save when cacheManager is null
+ * @tc.type: FUNC
+ */
+HWTEST_F(FlatObjectStoreTest, Save_001, TestSize.Level1)
+{
+    string sessionId = "sessionId1";
+    string deviceId = "deviceId1";
+    std::string bundleName = "default";
+    FlatObjectStore flatObjectStore(bundleName);
+    flatObjectStore.cacheManager_ = nullptr;
+    auto ret = flatObjectStore.Save(sessionId, deviceId);
+    EXPECT_EQ(ret, ERR_NULL_PTR);
+}
+
+/**
+ * @tc.name: RevokeSave_001
+ * @tc.desc: Test RevokeSave when cacheManager is null
+ * @tc.type: FUNC
+ */
+HWTEST_F(FlatObjectStoreTest, RevokeSave_001, TestSize.Level1)
+{
+    string sessionId = "sessionId1";
+    std::string bundleName = "default";
+    FlatObjectStore flatObjectStore(bundleName);
+    flatObjectStore.cacheManager_ = nullptr;
+    auto ret = flatObjectStore.RevokeSave(sessionId);
+    EXPECT_EQ(ret, ERR_NULL_PTR);
+}
 }
