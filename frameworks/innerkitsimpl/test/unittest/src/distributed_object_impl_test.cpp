@@ -24,39 +24,76 @@
 #include "dev_manager.h"
 #include "bytes_utils.h"
 #include "object_radar_reporter.h"
+#include "mock_permission_utils.h"
+#include "accesstoken_kit.h"
+#include "nativetoken_kit.h"
+#include "token_setproc.h"
 
 using namespace testing::ext;
 using namespace OHOS::ObjectStore;
 using namespace OHOS;
+using namespace OHOS::Security::AccessToken;
 using namespace std;
 
 namespace {
+static ObjectStore::MockNativeToken *g_mock = nullptr;
+static uint64_t g_selfTokenId = 0;
+
+void GrantPermissionNative()
+{
+    const char *perms[] = {"ohos.permission.DISTRIBUTED_DATASYNC"};
+    TokenInfoParams infoInstance = {
+        .dcapsNum = 0,
+        .permsNum = 1,
+        .aclsNum = 0,
+        .dcaps = nullptr,
+        .perms = perms,
+        .acls = nullptr,
+        .processName = "distributed_object",
+        .aplStr = "system_basic",
+    };
+    auto tokenId = GetAccessTokenId(&infoInstance);
+    SetSelfTokenID(tokenId);
+    AccessTokenKit::ReloadNativeTokenInfo();
+}
+
 class DistributedObjectImplTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
     static void TearDownTestCase(void);
     void SetUp();
     void TearDown();
+    FlatObjectStore *flatObjectStore_;
 };
 
 void DistributedObjectImplTest::SetUpTestCase(void)
 {
-    // input testsuit setup step，setup invoked before all testcases
+    g_selfTokenId = GetSelfTokenID();
+    ObjectStoreTestUtils::SetTestEvironment(g_selfTokenId);
+    g_mock = new (std::nothrow) MockNativeToken("foundation");
 }
 
 void DistributedObjectImplTest::TearDownTestCase(void)
 {
-    // input testsuit teardown step，teardown invoked after all testcases
+    if (g_mock != nullptr) {
+        delete g_mock;
+        g_mock = nullptr;
+    }
+    ObjectStoreTestUtils::ResetTestEvironment();
 }
 
 void DistributedObjectImplTest::SetUp(void)
 {
-    // input testcase setup step，setup invoked before each testcases
+    GrantPermissionNative();
+    flatObjectStore_ = new FlatObjectStore("default");
 }
 
 void DistributedObjectImplTest::TearDown(void)
 {
-    // input testcase teardown step，teardown invoked after each testcases
+    if (flatObjectStore_ != nullptr) {
+        delete flatObjectStore_;
+        flatObjectStore_ = nullptr;
+    }
 }
 
 /**
@@ -85,5 +122,292 @@ HWTEST_F(DistributedObjectImplTest, BindAssetStore_001, TestSize.Level0)
     uint32_t ret = distributedObjectImpl.BindAssetStore(assetKey, bindInfo);
     EXPECT_NE(ret, SUCCESS);
     delete flatObjectStore;
+}
+
+/**
+ * @tc.name: GetDouble_001
+ * @tc.desc: Normal test for GetDouble
+ * @tc.type: FUNC
+ */
+HWTEST_F(DistributedObjectImplTest, GetDouble_001, TestSize.Level1)
+{
+    string sessionId = "sessionIdGetDouble";
+    string key = "keyGetDouble";
+    double putValue = 123.456;
+    double getValue;
+    flatObjectStore_->CreateObject(sessionId);
+    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
+    auto putRet = distributedObjectImpl.PutDouble(key, putValue);
+    EXPECT_EQ(putRet, SUCCESS);
+    auto getRet = distributedObjectImpl.GetDouble(key, getValue);
+    EXPECT_EQ(getRet, SUCCESS);
+    EXPECT_EQ(getValue, putValue);
+}
+
+/**
+ * @tc.name: GetBoolean_001
+ * @tc.desc: Normal test for GetBoolean
+ * @tc.type: FUNC
+ */
+HWTEST_F(DistributedObjectImplTest, GetBoolean_001, TestSize.Level1)
+{
+    string sessionId = "sessionIdGetBoolean";
+    string key = "keyGetBoolean";
+    bool putValue = true;
+    bool getValue;
+    flatObjectStore_->CreateObject(sessionId);
+    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
+    auto putRet = distributedObjectImpl.PutBoolean(key, putValue);
+    EXPECT_EQ(putRet, SUCCESS);
+    auto getRet = distributedObjectImpl.GetBoolean(key, getValue);
+    EXPECT_EQ(getRet, SUCCESS);
+    EXPECT_EQ(getValue, putValue);
+}
+
+/**
+ * @tc.name: GetString_001
+ * @tc.desc: Normal test for GetString
+ * @tc.type: FUNC
+ */
+HWTEST_F(DistributedObjectImplTest, GetString_001, TestSize.Level1)
+{
+    string sessionId = "sessionIdGetString";
+    string key = "keyGetString";
+    string putValue = "testValueString";
+    string getValue;
+    flatObjectStore_->CreateObject(sessionId);
+    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
+    auto putRet = distributedObjectImpl.PutString(key, putValue);
+    EXPECT_EQ(putRet, SUCCESS);
+    auto getRet = distributedObjectImpl.GetString(key, getValue);
+    EXPECT_EQ(getRet, SUCCESS);
+    EXPECT_EQ(getValue, putValue);
+}
+
+/**
+ * @tc.name: GetType_001
+ * @tc.desc: Normal test for GetType
+ * @tc.type: FUNC
+ */
+HWTEST_F(DistributedObjectImplTest, GetType_001, TestSize.Level1)
+{
+    string sessionId = "sessionIdGetType";
+    string key = "keyGetType";
+    Type type;
+    flatObjectStore_->CreateObject(sessionId);
+    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
+    auto ret = distributedObjectImpl.GetType(key, type);
+    EXPECT_NE(ret, SUCCESS);
+}
+
+/**
+ * @tc.name: GetSessionId_001
+ * @tc.desc: Normal test for GetSessionId
+ * @tc.type: FUNC
+ */
+HWTEST_F(DistributedObjectImplTest, GetSessionId_001, TestSize.Level1)
+{
+    string sessionId = "sessionIdGetSessionId";
+    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
+    auto ret = distributedObjectImpl.GetSessionId();
+    EXPECT_EQ(ret, sessionId);
+}
+
+/**
+ * @tc.name: GetComplex_001
+ * @tc.desc: Normal test for GetComplex
+ * @tc.type: FUNC
+ */
+HWTEST_F(DistributedObjectImplTest, GetComplex_001, TestSize.Level1)
+{
+    string sessionId = "sessionIdGetComplex";
+    string key = "keyGetComplex";
+    std::vector<uint8_t> putValue = {1, 2, 3, 4, 5};
+    std::vector<uint8_t> getValue;
+    flatObjectStore_->CreateObject(sessionId);
+    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
+    auto putRet = distributedObjectImpl.PutComplex(key, putValue);
+    EXPECT_EQ(putRet, SUCCESS);
+    auto getRet = distributedObjectImpl.GetComplex(key, getValue);
+    EXPECT_EQ(getRet, SUCCESS);
+    EXPECT_EQ(getValue, putValue);
+}
+
+/**
+ * @tc.name: Save_001
+ * @tc.desc: Normal test for Save
+ * @tc.type: FUNC
+ */
+HWTEST_F(DistributedObjectImplTest, Save_001, TestSize.Level1)
+{
+    string sessionId = "sessionIdSave";
+    string deviceId = "deviceIdSave";
+    flatObjectStore_->CreateObject(sessionId);
+    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
+    auto ret = distributedObjectImpl.Save(deviceId);
+    EXPECT_NE(ret, SUCCESS);
+}
+
+/**
+ * @tc.name: RevokeSave_001
+ * @tc.desc: Normal test for RevokeSave
+ * @tc.type: FUNC
+ */
+HWTEST_F(DistributedObjectImplTest, RevokeSave_001, TestSize.Level1)
+{
+    string sessionId = "sessionIdRevokeSave";
+    flatObjectStore_->CreateObject(sessionId);
+    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
+    auto ret = distributedObjectImpl.RevokeSave();
+    EXPECT_EQ(ret, SUCCESS);
+}
+
+/**
+ * @tc.name: GetAssetValue_001
+ * @tc.desc: Test GetAssetValue when asset key does not exist
+ * @tc.type: FUNC
+ */
+HWTEST_F(DistributedObjectImplTest, GetAssetValue_001, TestSize.Level1)
+{
+    string sessionId = "sessionIdGetAssetValue";
+    string assetKey = "assetKeyGetAssetValue";
+    Asset assetValue;
+    flatObjectStore_->CreateObject(sessionId);
+    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
+    auto ret = distributedObjectImpl.GetAssetValue(assetKey, assetValue);
+    EXPECT_NE(ret, SUCCESS);
+}
+
+/**
+ * @tc.name: RemovePrefix_001
+ * @tc.desc: Test RemovePrefix function
+ * @tc.type: FUNC
+ */
+HWTEST_F(DistributedObjectImplTest, RemovePrefix_001, TestSize.Level1)
+{
+    Asset assetValue;
+    assetValue.name = "[STRING]test.txt";
+    assetValue.uri = "[STRING]file://test.txt";
+    assetValue.path = "[STRING]/test/test.txt";
+    assetValue.createTime = "[STRING]2024-01-01 00:00:00";
+    assetValue.modifyTime = "[STRING]2024-01-01 00:00:01";
+    assetValue.size = "[STRING]1024";
+    
+    flatObjectStore_->CreateObject("sessionIdRemovePrefix");
+    DistributedObjectImpl distributedObjectImpl("sessionIdRemovePrefix", flatObjectStore_);
+    distributedObjectImpl.RemovePrefix(assetValue);
+    
+    EXPECT_EQ(assetValue.name, "test.txt");
+    EXPECT_EQ(assetValue.uri, "file://test.txt");
+    EXPECT_EQ(assetValue.path, "/test/test.txt");
+    EXPECT_EQ(assetValue.createTime, "2024-01-01 00:00:00");
+    EXPECT_EQ(assetValue.modifyTime, "2024-01-01 00:00:01");
+    EXPECT_EQ(assetValue.size, "1024");
+    EXPECT_EQ(assetValue.hash, "2024-01-01 00:00:01_1024");
+}
+
+/**
+ * @tc.name: PutDouble_002
+ * @tc.desc: Test PutDouble with negative value
+ * @tc.type: FUNC
+ */
+HWTEST_F(DistributedObjectImplTest, PutDouble_002, TestSize.Level1)
+{
+    string sessionId = "sessionIdPutDoubleNegative";
+    string key = "keyPutDoubleNegative";
+    double value = -123.456;
+    flatObjectStore_->CreateObject(sessionId);
+    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
+    auto ret = distributedObjectImpl.PutDouble(key, value);
+    EXPECT_EQ(ret, SUCCESS);
+}
+
+/**
+ * @tc.name: PutDouble_003
+ * @tc.desc: Test PutDouble with zero value
+ * @tc.type: FUNC
+ */
+HWTEST_F(DistributedObjectImplTest, PutDouble_003, TestSize.Level1)
+{
+    string sessionId = "sessionIdPutDoubleZero";
+    string key = "keyPutDoubleZero";
+    double value = 0;
+    flatObjectStore_->CreateObject(sessionId);
+    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
+    auto ret = distributedObjectImpl.PutDouble(key, value);
+    EXPECT_EQ(ret, SUCCESS);
+}
+
+/**
+ * @tc.name: PutString_002
+ * @tc.desc: Test PutString with empty value
+ * @tc.type: FUNC
+ */
+HWTEST_F(DistributedObjectImplTest, PutString_002, TestSize.Level1)
+{
+    string sessionId = "sessionIdPutStringEmpty";
+    string key = "keyPutStringEmpty";
+    string value = "";
+    flatObjectStore_->CreateObject(sessionId);
+    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
+    auto ret = distributedObjectImpl.PutString(key, value);
+    EXPECT_EQ(ret, SUCCESS);
+}
+
+/**
+ * @tc.name: PutComplex_002
+ * @tc.desc: Test PutComplex with empty vector
+ * @tc.type: FUNC
+ */
+HWTEST_F(DistributedObjectImplTest, PutComplex_002, TestSize.Level1)
+{
+    string sessionId = "sessionIdPutComplexEmpty";
+    string key = "keyPutComplexEmpty";
+    std::vector<uint8_t> value;
+    flatObjectStore_->CreateObject(sessionId);
+    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
+    auto ret = distributedObjectImpl.PutComplex(key, value);
+    EXPECT_EQ(ret, SUCCESS);
+}
+
+/**
+ * @tc.name: GetComplex_002
+ * @tc.desc: Test GetComplex returns empty vector
+ * @tc.type: FUNC
+ */
+HWTEST_F(DistributedObjectImplTest, GetComplex_002, TestSize.Level1)
+{
+    string sessionId = "sessionIdGetComplexEmpty";
+    string key = "keyGetComplexEmpty";
+    std::vector<uint8_t> putValue;
+    std::vector<uint8_t> getValue;
+    flatObjectStore_->CreateObject(sessionId);
+    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
+    auto putRet = distributedObjectImpl.PutComplex(key, putValue);
+    EXPECT_EQ(putRet, SUCCESS);
+    auto getRet = distributedObjectImpl.GetComplex(key, getValue);
+    EXPECT_EQ(getRet, SUCCESS);
+    EXPECT_EQ(getValue, putValue);
+}
+
+/**
+ * @tc.name: BindAssetStore_002
+ * @tc.desc: Test BindAssetStore with empty fields
+ * @tc.type: FUNC
+ */
+HWTEST_F(DistributedObjectImplTest, BindAssetStore_002, TestSize.Level1)
+{
+    string assetKey = "assetKeyBindAssetStore002";
+    string sessionId = "sessionIdBindAssetStore002";
+    AssetBindInfo bindInfo = {
+        .storeName = "",
+        .tableName = "",
+        .primaryKey = {},
+        .field = "",
+        .assetName = ""
+    };
+    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
+    auto ret = distributedObjectImpl.BindAssetStore(assetKey, bindInfo);
+    EXPECT_NE(ret, SUCCESS);
 }
 }

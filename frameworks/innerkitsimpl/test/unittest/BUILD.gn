@@ -117,6 +117,7 @@ ohos_unittest("ObjectServiceProxyTest") {
     "${data_object_base_path}/frameworks/innerkitsimpl/src/object_service_proxy.cpp",
     "${data_object_base_path}/frameworks/innerkitsimpl/src/object_types_util.cpp",
     "${data_object_base_path}/frameworks/innerkitsimpl/test/unittest/src/object_service_proxy_test.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/test/unittest/src/object_service_proxy_additional_test.cpp",
   ]
 
   configs = [ ":module_private_config" ]
@@ -265,6 +266,7 @@ ohos_unittest("DistributedObjectImplTest") {
   module_out_path = module_output_path
 
   sources = [
+    "mock/src/mock_permission_utils.cpp",
     "${data_object_base_path}/frameworks/innerkitsimpl/src/adaptor/distributed_object_impl.cpp",
     "${data_object_base_path}/frameworks/innerkitsimpl/test/unittest/src/distributed_object_impl_test.cpp",
   ]

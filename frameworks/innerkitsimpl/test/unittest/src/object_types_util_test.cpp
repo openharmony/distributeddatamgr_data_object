@@ -145,4 +145,75 @@ HWTEST_F(ObjectTypesUtilTest, Unmarshalling_002, TestSize.Level1)
     bool ret = ITypesUtil::Unmarshalling(output, data);
     EXPECT_TRUE(ret);
 }
+
+/**
+ * @tc.name: Marshalling_003
+ * @tc.desc: Test Marshalling with empty AssetBind fanc
+ * @tc.type: FUNC
+ */
+HWTEST_F(ObjectTypesUtilTest, Marshalling_003, TestSize.Level1)
+{
+    AssetBindInfo input = {
+        .storeName = "",
+        .tableName = "",
+        .primaryKey = {},
+        .field = "",
+        .assetName = ""
+    };
+    MessageParcel data;
+    auto ret = ITypesUtil::Marshalling(input, data);
+    EXPECT_TRUE(ret);
+}
+
+/**
+ * @tc.name: Marshalling_004
+ * @tc.desc: Test Marshalling with very long strings
+ * @tc.type: FUNC
+ */
+HWTEST_F(ObjectTypesUtilTest, Marshalling_004, TestSize.Level1)
+{
+    AssetBindInfo input = {
+        .storeName = std::string(256, 'a'),
+        .tableName = std::string(256, 'b'),
+        .primaryKey = {
+            {std::string(128, 'c'), 123},
+            {std::string(128, 'd'), "test1"}
+        },
+        .field = std::string(256, 'e'),
+        .assetName = std::string(256, 'f')
+    };
+    MessageParcel data;
+    auto ret = ITypesUtil::Marshalling(input, data);
+    EXPECT_TRUE(ret);
+}
+
+/**
+ * @tc.name: Marshalling_005
+ * @tc.desc: Test Marshalling with special characters
+ * @tc.type: FUNC
+ */
+HWTEST_F(ObjectTypesUtilTest, Marshalling_005, TestSize.Level1)
+{
+    AssetBindInfo input = {
+        .storeName = "store@name#with$special%chars",
+        .tableName = "table@name#with$special%chars",
+        .primaryKey = {
+            {"key@1#with$special%chars", 123},
+            {"key@2#with$special%chars", "test1"}
+        },
+        .field = "field@name#with$special%chars",
+        .assetName = "asset@name#with$special%chars"
+    };
+    MessageParcel data;
+    auto ret = ITypesUtil::Marshalling(input, data);
+    EXPECT_TRUE(ret);
+    AssetBindInfo output;
+    data.RewindRead(0);
+    auto unmarshalRet = ITypesUtil::Unmarshalling(output, data);
+    EXPECT_TRUE(unmarshalRet);
+    EXPECT_EQ(output.storeName, "store@name#with$special%chars");
+    EXPECT_EQ(output.tableName, "table@name#with$special%chars");
+    EXPECT_EQ(output.field, "field@name#with$special%chars");
+    EXPECT_EQ(output.assetName, "asset@name#with$special%chars");
+}
 }
