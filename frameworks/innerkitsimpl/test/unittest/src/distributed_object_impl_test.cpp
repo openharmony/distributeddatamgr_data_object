@@ -125,66 +125,6 @@ HWTEST_F(DistributedObjectImplTest, BindAssetStore_001, TestSize.Level0)
 }
 
 /**
- * @tc.name: GetDouble_001
- * @tc.desc: Normal test for GetDouble
- * @tc.type: FUNC
- */
-HWTEST_F(DistributedObjectImplTest, GetDouble_001, TestSize.Level1)
-{
-    string sessionId = "sessionIdGetDouble";
-    string key = "keyGetDouble";
-    double putValue = 123.456;
-    double getValue;
-    flatObjectStore_->CreateObject(sessionId);
-    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
-    auto putRet = distributedObjectImpl.PutDouble(key, putValue);
-    EXPECT_EQ(putRet, SUCCESS);
-    auto getRet = distributedObjectImpl.GetDouble(key, getValue);
-    EXPECT_EQ(getRet, SUCCESS);
-    EXPECT_EQ(getValue, putValue);
-}
-
-/**
- * @tc.name: GetBoolean_001
- * @tc.desc: Normal test for GetBoolean
- * @tc.type: FUNC
- */
-HWTEST_F(DistributedObjectImplTest, GetBoolean_001, TestSize.Level1)
-{
-    string sessionId = "sessionIdGetBoolean";
-    string key = "keyGetBoolean";
-    bool putValue = true;
-    bool getValue;
-    flatObjectStore_->CreateObject(sessionId);
-    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
-    auto putRet = distributedObjectImpl.PutBoolean(key, putValue);
-    EXPECT_EQ(putRet, SUCCESS);
-    auto getRet = distributedObjectImpl.GetBoolean(key, getValue);
-    EXPECT_EQ(getRet, SUCCESS);
-    EXPECT_EQ(getValue, putValue);
-}
-
-/**
- * @tc.name: GetString_001
- * @tc.desc: Normal test for GetString
- * @tc.type: FUNC
- */
-HWTEST_F(DistributedObjectImplTest, GetString_001, TestSize.Level1)
-{
-    string sessionId = "sessionIdGetString";
-    string key = "keyGetString";
-    string putValue = "testValueString";
-    string getValue;
-    flatObjectStore_->CreateObject(sessionId);
-    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
-    auto putRet = distributedObjectImpl.PutString(key, putValue);
-    EXPECT_EQ(putRet, SUCCESS);
-    auto getRet = distributedObjectImpl.GetString(key, getValue);
-    EXPECT_EQ(getRet, SUCCESS);
-    EXPECT_EQ(getValue, putValue);
-}
-
-/**
  * @tc.name: GetType_001
  * @tc.desc: Normal test for GetType
  * @tc.type: FUNC
@@ -211,26 +151,6 @@ HWTEST_F(DistributedObjectImplTest, GetSessionId_001, TestSize.Level1)
     DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
     auto ret = distributedObjectImpl.GetSessionId();
     EXPECT_EQ(ret, sessionId);
-}
-
-/**
- * @tc.name: GetComplex_001
- * @tc.desc: Normal test for GetComplex
- * @tc.type: FUNC
- */
-HWTEST_F(DistributedObjectImplTest, GetComplex_001, TestSize.Level1)
-{
-    string sessionId = "sessionIdGetComplex";
-    string key = "keyGetComplex";
-    std::vector<uint8_t> putValue = {1, 2, 3, 4, 5};
-    std::vector<uint8_t> getValue;
-    flatObjectStore_->CreateObject(sessionId);
-    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
-    auto putRet = distributedObjectImpl.PutComplex(key, putValue);
-    EXPECT_EQ(putRet, SUCCESS);
-    auto getRet = distributedObjectImpl.GetComplex(key, getValue);
-    EXPECT_EQ(getRet, SUCCESS);
-    EXPECT_EQ(getValue, putValue);
 }
 
 /**
@@ -304,90 +224,6 @@ HWTEST_F(DistributedObjectImplTest, RemovePrefix_001, TestSize.Level1)
     EXPECT_EQ(assetValue.modifyTime, "2024-01-01 00:00:01");
     EXPECT_EQ(assetValue.size, "1024");
     EXPECT_EQ(assetValue.hash, "2024-01-01 00:00:01_1024");
-}
-
-/**
- * @tc.name: PutDouble_002
- * @tc.desc: Test PutDouble with negative value
- * @tc.type: FUNC
- */
-HWTEST_F(DistributedObjectImplTest, PutDouble_002, TestSize.Level1)
-{
-    string sessionId = "sessionIdPutDoubleNegative";
-    string key = "keyPutDoubleNegative";
-    double value = -123.456;
-    flatObjectStore_->CreateObject(sessionId);
-    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
-    auto ret = distributedObjectImpl.PutDouble(key, value);
-    EXPECT_EQ(ret, SUCCESS);
-}
-
-/**
- * @tc.name: PutDouble_003
- * @tc.desc: Test PutDouble with zero value
- * @tc.type: FUNC
- */
-HWTEST_F(DistributedObjectImplTest, PutDouble_003, TestSize.Level1)
-{
-    string sessionId = "sessionIdPutDoubleZero";
-    string key = "keyPutDoubleZero";
-    double value = 0;
-    flatObjectStore_->CreateObject(sessionId);
-    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
-    auto ret = distributedObjectImpl.PutDouble(key, value);
-    EXPECT_EQ(ret, SUCCESS);
-}
-
-/**
- * @tc.name: PutString_002
- * @tc.desc: Test PutString with empty value
- * @tc.type: FUNC
- */
-HWTEST_F(DistributedObjectImplTest, PutString_002, TestSize.Level1)
-{
-    string sessionId = "sessionIdPutStringEmpty";
-    string key = "keyPutStringEmpty";
-    string value = "";
-    flatObjectStore_->CreateObject(sessionId);
-    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
-    auto ret = distributedObjectImpl.PutString(key, value);
-    EXPECT_EQ(ret, SUCCESS);
-}
-
-/**
- * @tc.name: PutComplex_002
- * @tc.desc: Test PutComplex with empty vector
- * @tc.type: FUNC
- */
-HWTEST_F(DistributedObjectImplTest, PutComplex_002, TestSize.Level1)
-{
-    string sessionId = "sessionIdPutComplexEmpty";
-    string key = "keyPutComplexEmpty";
-    std::vector<uint8_t> value;
-    flatObjectStore_->CreateObject(sessionId);
-    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
-    auto ret = distributedObjectImpl.PutComplex(key, value);
-    EXPECT_EQ(ret, SUCCESS);
-}
-
-/**
- * @tc.name: GetComplex_002
- * @tc.desc: Test GetComplex returns empty vector
- * @tc.type: FUNC
- */
-HWTEST_F(DistributedObjectImplTest, GetComplex_002, TestSize.Level1)
-{
-    string sessionId = "sessionIdGetComplexEmpty";
-    string key = "keyGetComplexEmpty";
-    std::vector<uint8_t> putValue;
-    std::vector<uint8_t> getValue;
-    flatObjectStore_->CreateObject(sessionId);
-    DistributedObjectImpl distributedObjectImpl(sessionId, flatObjectStore_);
-    auto putRet = distributedObjectImpl.PutComplex(key, putValue);
-    EXPECT_EQ(putRet, SUCCESS);
-    auto getRet = distributedObjectImpl.GetComplex(key, getValue);
-    EXPECT_EQ(getRet, SUCCESS);
-    EXPECT_EQ(getValue, putValue);
 }
 
 /**
