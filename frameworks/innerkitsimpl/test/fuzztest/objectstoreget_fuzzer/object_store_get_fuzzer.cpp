@@ -19,6 +19,9 @@
 #include <fuzzer/FuzzedDataProvider.h>
 #include <string>
 #include <vector>
+#include <iostream>
+#include <thread>
+#include <chrono>
 
 #include "accesstoken_kit.h"
 #include "distributed_object.h"
@@ -80,26 +83,6 @@ public:
     }
 };
 
-uint32_t SetUpTestCase()
-{
-    std::string bundleName = BUNDLENAME;
-    DistributedObjectStore *objectStore = nullptr;
-    DistributedObject *object = nullptr;
-    objectStore = DistributedObjectStore::GetInstance(bundleName);
-    if (objectStore != nullptr) {
-        objectStore_ = objectStore;
-        object = objectStore_->CreateObject(SESSIONID);
-        if (object != nullptr) {
-            object_ = object;
-            return SUCCESS;
-        } else {
-            return ERR_EXIST;
-        }
-    } else {
-        return ERR_EXIST;
-    }
-}
-
 void FuzzTestGetPermission()
 {
     if (!g_hasPermission) {
@@ -130,7 +113,7 @@ void FuzzTestGetPermission()
 
 bool GetDoubleFuzz(FuzzedDataProvider &provider)
 {
-    if (SUCCESS != SetUpTestCase()) {
+    if (objectStore_ == nullptr || object_ == nullptr) {
         return false;
     }
     double sval = provider.ConsumeFloatingPoint<double>();
@@ -144,7 +127,7 @@ bool GetDoubleFuzz(FuzzedDataProvider &provider)
 
 bool GetBooleanFuzz(FuzzedDataProvider &provider)
 {
-    if (SUCCESS != SetUpTestCase()) {
+    if (objectStore_ == nullptr || object_ == nullptr) {
         return false;
     }
     std::string skey = provider.ConsumeRandomLengthString(10);
@@ -158,7 +141,7 @@ bool GetBooleanFuzz(FuzzedDataProvider &provider)
 
 bool GetStringFuzz(FuzzedDataProvider &provider)
 {
-    if (SUCCESS != SetUpTestCase()) {
+    if (objectStore_ == nullptr || object_ == nullptr) {
         return false;
     }
     std::string skey = provider.ConsumeRandomLengthString(10);
@@ -172,7 +155,7 @@ bool GetStringFuzz(FuzzedDataProvider &provider)
 
 bool GetComplexFuzz(FuzzedDataProvider &provider)
 {
-    if (SUCCESS != SetUpTestCase()) {
+    if (objectStore_ == nullptr || object_ == nullptr) {
         return false;
     }
 
@@ -194,6 +177,11 @@ bool GetComplexFuzz(FuzzedDataProvider &provider)
 extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv)
 {
     OHOS::FuzzTestGetPermission();
+    OHOS::objectStore_ = DistributedObjectStore::GetInstance(OHOS::BUNDLENAME);
+    if (OHOS::objectStore_ != nullptr) {
+        OHOS::object_ = OHOS::objectStore_->CreateObject(OHOS::SESSIONID);
+    }
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     (void)argc;
     (void)argv;
     return 0;
