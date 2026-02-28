@@ -19,6 +19,9 @@
 #include <fuzzer/FuzzedDataProvider.h>
 #include <string>
 #include <vector>
+#include <iostream>
+#include <thread>
+#include <chrono>
 
 #include "accesstoken_kit.h"
 #include "distributed_object.h"
@@ -120,8 +123,6 @@ void FuzzTestGetPermission()
 
 bool BindAssetStoreFuzz(FuzzedDataProvider &provider)
 {
-    std::string bundleName = provider.ConsumeRandomLengthString(10);
-    objectStore_ = DistributedObjectStore::GetInstance(bundleName);
     if (objectStore_ == nullptr) {
         return false;
     }
@@ -143,8 +144,6 @@ bool BindAssetStoreFuzz(FuzzedDataProvider &provider)
 
 bool GetSessionIdFuzz(FuzzedDataProvider &provider)
 {
-    std::string bundleName = provider.ConsumeRandomLengthString(10);
-    objectStore_ = DistributedObjectStore::GetInstance(bundleName);
     if (objectStore_ == nullptr) {
         return false;
     }
@@ -160,8 +159,6 @@ bool GetSessionIdFuzz(FuzzedDataProvider &provider)
 
 bool WatchAndUnWatchFuzz(FuzzedDataProvider &provider)
 {
-    std::string bundleName = provider.ConsumeRandomLengthString(10);
-    objectStore_ = DistributedObjectStore::GetInstance(bundleName);
     if (objectStore_ == nullptr) {
         return false;
     }
@@ -180,8 +177,6 @@ bool WatchAndUnWatchFuzz(FuzzedDataProvider &provider)
 
 bool StatusNotifierFuzz(FuzzedDataProvider &provider)
 {
-    std::string bundleName = provider.ConsumeRandomLengthString(10);
-    objectStore_ = DistributedObjectStore::GetInstance(bundleName);
     if (objectStore_ == nullptr) {
         return false;
     }
@@ -200,6 +195,8 @@ bool StatusNotifierFuzz(FuzzedDataProvider &provider)
 extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv)
 {
     OHOS::FuzzTestGetPermission();
+    OHOS::objectStore_ = DistributedObjectStore::GetInstance("com.example.myapplication");
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     (void)argc;
     (void)argv;
     return 0;
