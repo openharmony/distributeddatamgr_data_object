@@ -136,7 +136,10 @@ ohos_unittest("ObjectCallbackStubTest") {
     "${data_object_base_path}/frameworks/innerkitsimpl/test/unittest/src/object_callback_stub_test.cpp",
   ]
 
-  cflags_cc = [ "-DHILOG_ENABLE" ]
+  cflags_cc = [
+    "-DHILOG_ENABLE",
+    "-Werror=vla",
+  ]
 
   configs = [ ":module_private_config" ]
 
@@ -166,7 +169,10 @@ ohos_unittest("AssetChangeTimerTest") {
     "${data_object_base_path}/frameworks/jskitsimpl/src/adaptor/progress_notifier_impl.cpp",
   ]
 
-  cflags_cc = [ "-DHILOG_ENABLE" ]
+  cflags_cc = [
+    "-DHILOG_ENABLE",
+    "-Werror=vla",
+  ]
 
   configs = [ ":module_private_config" ]
 
@@ -189,7 +195,10 @@ ohos_unittest("ClientAdaptorTest") {
     "${data_object_base_path}/frameworks/innerkitsimpl/test/unittest/src/client_adaptor_test.cpp",
   ]
 
-  cflags_cc = [ "-DHILOG_ENABLE" ]
+  cflags_cc = [
+    "-DHILOG_ENABLE",
+    "-Werror=vla",
+  ]
 
   configs = [ ":module_private_config" ]
 
@@ -228,7 +237,10 @@ ohos_unittest("DistributedObjectStoreImplTest") {
     "${data_object_base_path}/frameworks/innerkitsimpl/test/unittest/src/distributed_object_store_impl_test.cpp",
   ]
 
-  cflags_cc = [ "-DHILOG_ENABLE" ]
+  cflags_cc = [
+    "-DHILOG_ENABLE",
+    "-Werror=vla",
+  ]
 
   configs = [ ":module_private_config" ]
 
@@ -249,7 +261,10 @@ ohos_unittest("FlatObjectStoreTest") {
     "${data_object_base_path}/frameworks/innerkitsimpl/test/unittest/src/flat_object_store_test.cpp",
   ]
 
-  cflags_cc = [ "-DHILOG_ENABLE" ]
+  cflags_cc = [
+    "-DHILOG_ENABLE",
+    "-Werror=vla",
+  ]
 
   configs = [ ":module_private_config" ]
 
@@ -271,7 +286,10 @@ ohos_unittest("DistributedObjectImplTest") {
     "${data_object_base_path}/frameworks/innerkitsimpl/test/unittest/src/distributed_object_impl_test.cpp",
   ]
 
-  cflags_cc = [ "-DHILOG_ENABLE" ]
+  cflags_cc = [
+    "-DHILOG_ENABLE",
+    "-Werror=vla",
+  ]
 
   configs = [ ":module_private_config" ]
 
@@ -292,7 +310,10 @@ ohos_unittest("AppDeviceHandlerTest") {
     "${data_object_base_path}/frameworks/innerkitsimpl/test/unittest/src/app_device_handler_test.cpp",
   ]
 
-  cflags_cc = [ "-DHILOG_ENABLE" ]
+  cflags_cc = [
+    "-DHILOG_ENABLE",
+    "-Werror=vla",
+  ]
 
   configs = [ ":module_private_config" ]
 
