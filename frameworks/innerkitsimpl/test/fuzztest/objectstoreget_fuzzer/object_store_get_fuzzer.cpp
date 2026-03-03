@@ -83,6 +83,18 @@ public:
     }
 };
 
+uint32_t SetUpTestCase()
+{
+    if (objectStore_ == nullptr) {
+        return ERR_EXIST;
+    }
+    object_ = objectStore_->CreateObject(SESSIONID);
+    if (object_ == nullptr) {
+        return ERR_EXIST;
+    }
+    return SUCCESS;
+}
+
 void FuzzTestGetPermission()
 {
     if (!g_hasPermission) {
@@ -113,7 +125,7 @@ void FuzzTestGetPermission()
 
 bool GetDoubleFuzz(FuzzedDataProvider &provider)
 {
-    if (objectStore_ == nullptr || object_ == nullptr) {
+    if (SUCCESS != SetUpTestCase()) {
         return false;
     }
     double sval = provider.ConsumeFloatingPoint<double>();
@@ -127,7 +139,7 @@ bool GetDoubleFuzz(FuzzedDataProvider &provider)
 
 bool GetBooleanFuzz(FuzzedDataProvider &provider)
 {
-    if (objectStore_ == nullptr || object_ == nullptr) {
+    if (SUCCESS != SetUpTestCase()) {
         return false;
     }
     std::string skey = provider.ConsumeRandomLengthString(10);
@@ -141,7 +153,7 @@ bool GetBooleanFuzz(FuzzedDataProvider &provider)
 
 bool GetStringFuzz(FuzzedDataProvider &provider)
 {
-    if (objectStore_ == nullptr || object_ == nullptr) {
+    if (SUCCESS != SetUpTestCase()) {
         return false;
     }
     std::string skey = provider.ConsumeRandomLengthString(10);
@@ -155,7 +167,7 @@ bool GetStringFuzz(FuzzedDataProvider &provider)
 
 bool GetComplexFuzz(FuzzedDataProvider &provider)
 {
-    if (objectStore_ == nullptr || object_ == nullptr) {
+    if (SUCCESS != SetUpTestCase()) {
         return false;
     }
 
@@ -178,9 +190,6 @@ extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv)
 {
     OHOS::FuzzTestGetPermission();
     OHOS::objectStore_ = DistributedObjectStore::GetInstance(OHOS::BUNDLENAME);
-    if (OHOS::objectStore_ != nullptr) {
-        OHOS::object_ = OHOS::objectStore_->CreateObject(OHOS::SESSIONID);
-    }
     std::this_thread::sleep_for(std::chrono::seconds(1));
     (void)argc;
     (void)argv;
