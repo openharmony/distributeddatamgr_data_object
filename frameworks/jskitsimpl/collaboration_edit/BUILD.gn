@@ -20,6 +20,7 @@ config("collaboration_edit_config") {
     "-DHILOG_ENABLE",
     "-fvisibility=hidden",
     "-Oz",
+    "-Werror=vla",
   ]
 
   include_dirs = [
