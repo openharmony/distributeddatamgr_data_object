@@ -341,6 +341,29 @@ ohos_unittest("ObjectTaskSchedulerTest") {
 
 }
 
+ohos_unittest("ObjectRadarReporterTest") {
+  module_out_path = module_output_path
+
+  sources = [
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/object_radar_reporter.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/test/unittest/src/object_radar_reporter_test.cpp",
+  ]
+
+  cflags_cc = [
+    "-DHILOG_ENABLE",
+    "-Werror=vla",
+  ]
+
+  configs = [ ":module_private_config" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gtest",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+  ]
+}
+
 group("unittest") {
   testonly = true
   deps = []
@@ -353,6 +376,7 @@ group("unittest") {
     ":FlatObjectStoreTest",
     ":NativeObjectStoreTest",
     ":ObjectCallbackStubTest",
+    ":ObjectRadarReporterTest",
     ":ObjectServiceProxyTest",
     ":ObjectTypesUtilTest",
     ":ObjectTaskSchedulerTest",
