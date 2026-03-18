@@ -41,6 +41,7 @@ common_external_deps = [
   "access_token:libnativetoken_shared",
   "access_token:libtoken_setproc",
   "access_token:libnativetoken",
+  "bundle_framework:appexecfwk_base",
   "bundle_framework:appexecfwk_core",
   "c_utils:utils",
   "cJSON:cjson",

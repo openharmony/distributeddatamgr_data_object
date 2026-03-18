@@ -45,6 +45,7 @@
         "deps": {
             "components": [
                 "ability_runtime",
+                "bundle_framework",
                 "hitrace",
                 "dsoftbus",
                 "bounds_checking_function",

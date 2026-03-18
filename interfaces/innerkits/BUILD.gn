@@ -63,6 +63,8 @@ object_deps_config = []
 object_external_deps_config = [
   "access_token:libaccesstoken_sdk",
   "bounds_checking_function:libsec_shared",
+  "bundle_framework:appexecfwk_base",
+  "bundle_framework:appexecfwk_core",
   "c_utils:utils",
   "device_manager:devicemanagersdk",
   "dmsfwk:distributed_sdk",
