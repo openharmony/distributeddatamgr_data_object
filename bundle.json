@@ -36,7 +36,9 @@
         "syscap": [
             "SystemCapability.DistributedDataManager.DataObject.DistributedObject"
         ],
-        "features": [],
+        "features": [
+            "disable_distributed_data_obejct"
+        ],
         "adapted_system_type": [
             "standard"
         ],
