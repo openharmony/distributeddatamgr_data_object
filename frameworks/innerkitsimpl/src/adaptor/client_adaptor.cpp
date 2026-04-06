@@ -21,13 +21,23 @@
 #include "itypes_util.h"
 #include "logger.h"
 #include "objectstore_errors.h"
+#include "system_ability_load_callback_stub.h"
 
 namespace OHOS::ObjectStore {
+constexpr int32_t DISTRIBUTED_KV_DATA_SERVICE_ABILITY_ID = 1301;
 std::shared_ptr<ObjectStoreDataServiceProxy> ClientAdaptor::distributedDataMgr_ = nullptr;
 std::mutex ClientAdaptor::mutex_;
 
 using KvStoreCode = OHOS::DistributedObject::ObjectStoreService::KvStoreServiceInterfaceCode;
 
+class ServiceProxyLoadCallback : public SystemAbilityLoadCallbackStub {
+public:
+    ServiceProxyLoadCallback() = default;
+    virtual ~ServiceProxyLoadCallback() = default;
+
+    void OnLoadSystemAbilitySuccess(int32_t systemAbilityId, const sptr<IRemoteObject> &remoteObject) override;
+    void OnLoadSystemAbilityFail(int32_t systemAbilityId) override;
+};
 sptr<OHOS::DistributedObject::IObjectService> ClientAdaptor::GetObjectService()
 {
     std::lock_guard<decltype(mutex_)> lockGuard(mutex_);
@@ -56,11 +66,21 @@ std::shared_ptr<ObjectStoreDataServiceProxy> ClientAdaptor::GetDistributedDataMa
     }
     auto remoteObject = manager->CheckSystemAbility(DISTRIBUTED_KV_DATA_SERVICE_ABILITY_ID);
     if (remoteObject == nullptr) {
-        LOG_WARN("check distributed data manager failed");
-        remoteObject = manager->LoadSystemAbility(DISTRIBUTED_KV_DATA_SERVICE_ABILITY_ID, LOAD_SA_TIMEOUT_SECONDS);
-    }
-    if (remoteObject == nullptr) {
-        LOG_ERROR("get system ability manager LoadSystemAbility failed");
+        // check SA failed, try load SA
+        LOG_ERROR("Get distributed data manager CheckSystemAbility failed.");
+        // callback of load
+        sptr<ServiceProxyLoadCallback> loadCallback = new (std::nothrow) ServiceProxyLoadCallback();
+        if (loadCallback == nullptr) {
+            LOG_ERROR("Create load callback failed.");
+            return nullptr;
+        }
+        // The data management service process is asynchronously invoked, but the handle cannot be returned normally
+        // Therefore, the handle in the callback is not processed
+        int32_t errCode = manager->LoadSystemAbility(DISTRIBUTED_KV_DATA_SERVICE_ABILITY_ID, loadCallback);
+        // start load failed
+        if (errCode != ERR_OK) {
+            LOG_ERROR("Get distributed data manager LoadSystemAbility failed, err: %{public}d", errCode);
+        }
         return nullptr;
     }
     LOG_INFO("get distributed data manager success");
@@ -185,5 +205,23 @@ uint32_t ObjectStoreDataServiceProxy::RegisterClientDeathObserver(
         return ERR_IPC;
     }
     return static_cast<uint32_t>(reply.ReadInt32());
+}
+
+void ServiceProxyLoadCallback::OnLoadSystemAbilitySuccess(
+    int32_t systemAbilityId, const sptr<IRemoteObject> &remoteObject)
+{
+    if (systemAbilityId != DISTRIBUTED_KV_DATA_SERVICE_ABILITY_ID) {
+        LOG_ERROR("Incorrect SA Id: %{public}d", systemAbilityId);
+        return;
+    }
+    if (remoteObject == nullptr) {
+        LOG_ERROR("remote object is nullptr");
+        return;
+    }
+}
+
+void ServiceProxyLoadCallback::OnLoadSystemAbilityFail(int32_t systemAbilityId)
+{
+    LOG_ERROR("Load SA: %{public}d failed", systemAbilityId);
 }
 }
