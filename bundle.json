@@ -37,7 +37,7 @@
             "SystemCapability.DistributedDataManager.DataObject.DistributedObject"
         ],
         "features": [
-            "disable_distributed_data_obejct"
+            "data_object_feature_L1"
         ],
         "adapted_system_type": [
             "standard"

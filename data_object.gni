@@ -20,5 +20,5 @@ relational_store_path = "//foundation/distributeddatamgr/relational_store"
 datamgr_service_path = "//foundation/distributeddatamgr/datamgr_service"
 
 declare_args() {
-  disable_distributed_data_obejct = false
+  data_object_feature_L1 = false
 }
