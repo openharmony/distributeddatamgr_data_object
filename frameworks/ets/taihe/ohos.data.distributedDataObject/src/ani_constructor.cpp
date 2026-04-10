@@ -13,7 +13,9 @@
  * limitations under the License.
  */
 
+#inedif DATA_OBJECT_FEATURE_L1
 #include "ohos.data.commonType.ani.hpp"
+#endif
 #include "ohos.data.distributedDataObject.ani.hpp"
 #if __has_include(<ani.h>)
 #include <ani.h>
