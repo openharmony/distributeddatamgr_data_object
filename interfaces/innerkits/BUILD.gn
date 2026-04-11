@@ -190,7 +190,7 @@ if (!data_object_feature_L1) {
       debug = false
     }
     public_configs = [ ":object_public_config" ]
-    sources = [ "../../frameworks/innerkitsimpl/lite/distributed_objectstore_impl_lite.cpp" ]
+    sources = [ "../../frameworks/innerkitsimpl/src/lite/distributed_objectstore_impl_lite.cpp" ]
     part_name = "data_object"
     subsystem_name = "distributeddatamgr"
   }
