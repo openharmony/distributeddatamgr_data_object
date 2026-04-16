@@ -20,103 +20,174 @@ subsystem_name = "distributeddatamgr"
 part_name = "data_object"
 taihe_generated_file_path = "$taihe_file_path/out/$subsystem_name/$part_name"
 
-copy_taihe_idl("copy_taihe") {
-  sources = [
-    "${data_object_base_path}/frameworks/ets/taihe/ohos.data.distributedDataObject/idl/ohos.data.distributedDataObject.taihe",
-  ]
-  external_deps = [ "relational_store:common_type_taihe_idl" ]
-}
-
-ohos_taihe("run_taihe") {
-  taihe_generated_file_path = "$taihe_generated_file_path"
-  deps = [ ":copy_taihe" ]
-  outputs = [
-    "$taihe_generated_file_path/src/ohos.data.distributedDataObject.ani.cpp",
-    "$taihe_generated_file_path/src/ohos.data.distributedDataObject.abi.c",
-  ]
-}
-
-generate_static_abc("distributeddata_object") {
-  base_url = "$taihe_generated_file_path"
-  files = [
-    "$taihe_generated_file_path/@ohos.data.distributedDataObject.ets",
-  ]
-  is_boot_abc = "True"
-  device_dst_file = "/system/framework/distributeddata_object.abc"
-  dependencies = [ ":run_taihe" ]
-}
-
-ohos_prebuilt_etc("ohos_distributeddata_object_etc") {
-  source = "$target_out_dir/distributeddata_object.abc"
-  module_install_dir = "framework"
-  part_name = "$part_name"
-  subsystem_name = "$subsystem_name"
-  deps = [ ":distributeddata_object" ]
-}
-
-taihe_shared_library("distributed_dataobject_ani") {
-  sanitize = {
-    integer_overflow = true
-    ubsan = true
-    boundary_sanitize = true
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
+if(!data_object_feature_L1){
+  copy_taihe_idl("copy_taihe") {
+    sources = [
+      "${data_object_base_path}/frameworks/ets/taihe/ohos.data.distributedDataObject/idl/ohos.data.distributedDataObject.taihe",
+    ]
+    external_deps = [ "relational_store:common_type_taihe_idl" ]
+  }
+  
+  ohos_taihe("run_taihe") {
+    taihe_generated_file_path = "$taihe_generated_file_path"
+    deps = [ ":copy_taihe" ]
+    outputs = [
+      "$taihe_generated_file_path/src/ohos.data.distributedDataObject.ani.cpp",
+      "$taihe_generated_file_path/src/ohos.data.distributedDataObject.abi.c",
+    ]
+  }
+  
+  generate_static_abc("distributeddata_object") {
+    base_url = "$taihe_generated_file_path"
+    files = [
+      "$taihe_generated_file_path/@ohos.data.distributedDataObject.ets",
+    ]
+    is_boot_abc = "True"
+    device_dst_file = "/system/framework/distributeddata_object.abc"
+    dependencies = [ ":run_taihe" ]
+  }
+  
+  ohos_prebuilt_etc("ohos_distributeddata_object_etc") {
+    source = "$target_out_dir/distributeddata_object.abc"
+    module_install_dir = "framework"
+    part_name = "$part_name"
+    subsystem_name = "$subsystem_name"
+    deps = [ ":distributeddata_object" ]
+  }
+  
+  taihe_shared_library("distributed_dataobject_ani") {
+    sanitize = {
+      integer_overflow = true
+      ubsan = true
+      boundary_sanitize = true
+      cfi = true
+      cfi_cross_dso = true
+      debug = false
+    }
+  
+    taihe_generated_file_path = "$taihe_generated_file_path"
+    subsystem_name = "$subsystem_name"
+    part_name = "$part_name"
+  
+    include_dirs = [
+      "include",
+      "${data_object_base_path}/frameworks/innerkitsimpl/include/common",
+      "${data_object_base_path}/interfaces/innerkits",
+      "${data_object_base_path}/frameworks/jskitsimpl/include/common",
+      "${data_object_base_path}/frameworks/jskitsimpl/include/adaptor"
+    ]
+  
+    defines = [
+      "HILOG_ENABLE",
+      "DH_LOG_TAG=\"distributed_dataobject\"",
+    ]
+  
+    sources = get_target_outputs(":run_taihe")
+    sources += [
+      "src/ani_constructor.cpp",
+      "src/ani_dataobject_session.cpp",
+      "src/ani_error_utils.cpp",
+      "src/ani_notifier_impl.cpp",
+      "src/ani_progress_notifier_impl.cpp",
+      "src/ani_utils.cpp",
+      "src/ani_watcher.cpp",
+      "src/ohos.data.distributedDataObject.DataObject.cpp",
+      "src/ohos.data.distributedDataObject.impl.cpp",
+      "${data_object_base_path}/frameworks/jskitsimpl/src/common/object_error.cpp",
+    ]
+  
+    deps = [
+      ":run_taihe",
+      "${data_object_base_path}/interfaces/innerkits:distributeddataobject_impl"
+    ]
+  
+    external_deps = [
+      "ability_runtime:abilitykit_native",
+      "ability_runtime:ani_base_context",
+      "ability_runtime:ani_common",
+      "ability_runtime:app_context",
+      "access_token:libaccesstoken_sdk",
+      "eventhandler:libeventhandler",
+      "hilog:libhilog",
+      "ipc:ipc_single",
+      "kv_store:distributeddata_inner",
+      "kv_store:distributeddb",
+    ]
+  }
+  
+  group("distributed_dataobject_ani_pack") {
+    deps = [
+      ":distributed_dataobject_ani",
+      ":ohos_distributeddata_object_etc",
+    ]
+  }
+} else {
+  copy_taihe_idl("copy_taihe") {
+    sources = [ "${data_object_base_path}/frameworks/ets/taihe/ohos.data.distributedDataObject/idl_lite/ohos.data.distributedDataObject.taihe" ]
   }
 
-  taihe_generated_file_path = "$taihe_generated_file_path"
-  subsystem_name = "$subsystem_name"
-  part_name = "$part_name"
+  ohos_taihe("run_taihe") {
+    taihe_generated_file_path = "$taihe_generated_file_path"
+    deps = [ ":copy_taihe" ]
+    outputs = [
+      "$taihe_generated_file_path/src/ohos.data.distributedDataObject.ani.cpp",
+      "$taihe_generated_file_path/src/ohos.data.distributedDataObject.abi.c",
+    ]
+  }
 
-  include_dirs = [
-    "include",
-    "${data_object_base_path}/frameworks/innerkitsimpl/include/common",
-    "${data_object_base_path}/interfaces/innerkits",
-    "${data_object_base_path}/frameworks/jskitsimpl/include/common",
-    "${data_object_base_path}/frameworks/jskitsimpl/include/adaptor"
-  ]
+  generate_static_abc("distributeddata_object") {
+    base_url = "$taihe_generated_file_path"
+    files =
+        [ "$taihe_generated_file_path/@ohos.data.distributedDataObject.ets" ]
+    is_boot_abc = "True"
+    device_dst_file = "/system/framework/distributeddata_object.abc"
+    dependencies = [ ":run_taihe" ]
+  }
 
-  defines = [
-    "HILOG_ENABLE",
-    "DH_LOG_TAG=\"distributed_dataobject\"",
-  ]
+  ohos_prebuilt_etc("ohos_distributeddata_object_etc") {
+    source = "$target_out_dir/distributeddata_object.abc"
+    module_install_dir = "framework"
+    part_name = "$part_name"
+    subsystem_name = "$subsystem_name"
+    deps = [ ":distributeddata_object" ]
+  }
 
-  sources = get_target_outputs(":run_taihe")
-  sources += [
-    "src/ani_constructor.cpp",
-    "src/ani_dataobject_session.cpp",
-    "src/ani_error_utils.cpp",
-    "src/ani_notifier_impl.cpp",
-    "src/ani_progress_notifier_impl.cpp",
-    "src/ani_utils.cpp",
-    "src/ani_watcher.cpp",
-    "src/ohos.data.distributedDataObject.DataObject.cpp",
-    "src/ohos.data.distributedDataObject.impl.cpp",
-    "${data_object_base_path}/frameworks/jskitsimpl/src/common/object_error.cpp",
-  ]
+  taihe_shared_library("distributed_dataobject_ani") {
+    sanitize = {
+      integer_overflow = true
+      ubsan = true
+      boundary_sanitize = true
+      cfi = true
+      cfi_cross_dso = true
+      debug = false
+    }
 
-  deps = [
-    ":run_taihe",
-    "${data_object_base_path}/interfaces/innerkits:distributeddataobject_impl"
-  ]
+    taihe_generated_file_path = "$taihe_generated_file_path"
+    subsystem_name = "$subsystem_name"
+    part_name = "$part_name"
 
-  external_deps = [
-    "ability_runtime:abilitykit_native",
-    "ability_runtime:ani_base_context",
-    "ability_runtime:ani_common",
-    "ability_runtime:app_context",
-    "access_token:libaccesstoken_sdk",
-    "eventhandler:libeventhandler",
-    "hilog:libhilog",
-    "ipc:ipc_single",
-    "kv_store:distributeddata_inner",
-    "kv_store:distributeddb",
-  ]
+    include_dirs = [ "${data_object_base_path}/frameworks/innerkitsimpl/include/common" ]
+
+    defines = [
+      "HILOG_ENABLE",
+      "DH_LOG_TAG=\"distributed_dataobject\"",
+      "DATA_OBJECT_FEATURE_L1",
+    ]
+
+    sources = get_target_outputs(":run_taihe")
+    sources += [ "src/ani_constructor.cpp" ]
+
+    deps = [ ":run_taihe" ]
+
+    external_deps = [ "hilog:libhilog" ]
+  }
+
+  group("distributed_dataobject_ani_pack") {
+    deps = [
+      ":distributed_dataobject_ani",
+      ":ohos_distributeddata_object_etc",
+    ]
+  }
 }
 
-group("distributed_dataobject_ani_pack") {
-  deps = [
-    ":distributed_dataobject_ani",
-    ":ohos_distributeddata_object_etc",
-  ]
-}
+
