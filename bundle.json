@@ -65,7 +65,8 @@
                 "hisysevent",
                 "runtime_core",
                 "eventhandler",
-                "relational_store"
+                "relational_store",
+                "ets_frontend"
             ],
             "third_party": [
                 "ffmpeg",
