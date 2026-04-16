@@ -371,18 +371,20 @@ ohos_unittest("ObjectTaskSchedulerTest") {
 group("unittest") {
   testonly = true
   deps = []
-  deps += [
-    ":AppDeviceHandlerTest",
-    ":AssetChangeTimerTest",
-    ":ClientAdaptorMockTest",
-    ":ClientAdaptorTest",
-    ":DistributedObjectImplTest",
-    ":DistributedObjectStoreImplTest",
-    ":FlatObjectStoreTest",
-    ":NativeObjectStoreTest",
-    ":ObjectCallbackStubTest",
-    ":ObjectServiceProxyTest",
-    ":ObjectTypesUtilTest",
-    ":ObjectTaskSchedulerTest",
-  ]
+  if (!data_object_feature_L1) {
+    deps += [
+      ":AppDeviceHandlerTest",
+      ":AssetChangeTimerTest",
+      ":ClientAdaptorMockTest",
+      ":ClientAdaptorTest",
+      ":DistributedObjectImplTest",
+      ":DistributedObjectStoreImplTest",
+      ":FlatObjectStoreTest",
+      ":NativeObjectStoreTest",
+      ":ObjectCallbackStubTest",
+      ":ObjectServiceProxyTest",
+      ":ObjectTypesUtilTest",
+      ":ObjectTaskSchedulerTest",
+    ]
+  }
 }

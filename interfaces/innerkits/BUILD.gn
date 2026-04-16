@@ -12,143 +12,200 @@
 # limitations under the License.
 import("//build/ohos.gni")
 import("//foundation/distributeddatamgr/data_object/data_object.gni")
-config("objectstore_config") {
-  visibility = [ ":*" ]
 
-  cflags = [
-    "-DHILOG_ENABLE",
-    "-Werror=vla",
-  ]
+if (!data_object_feature_L1) {
+  config("objectstore_config") {
+    visibility = [ ":*" ]
 
-  include_dirs = [
-    "../../frameworks/innerkitsimpl/include/adaptor",
-    "../../frameworks/innerkitsimpl/include/common",
-    "../../frameworks/innerkitsimpl/include/communicator",
-    "../../frameworks/innerkitsimpl/include",
-    "../../interfaces/innerkits",
-  ]
+    cflags = [
+      "-DHILOG_ENABLE",
+      "-Werror=vla",
+    ]
 
-  ldflags = [ "-Wl,--exclude-libs,ALL" ]
-}
+    include_dirs = [
+      "../../frameworks/innerkitsimpl/include/adaptor",
+      "../../frameworks/innerkitsimpl/include/common",
+      "../../frameworks/innerkitsimpl/include/communicator",
+      "../../frameworks/innerkitsimpl/include",
+      "../../interfaces/innerkits",
+    ]
 
-config("objectstore_public_config") {
-  visibility = [ ":*" ]
-
-  include_dirs = [ "." ]
-}
-
-object_source_config = [
-  "../../frameworks/innerkitsimpl/src/adaptor/client_adaptor.cpp",
-  "../../frameworks/innerkitsimpl/src/adaptor/distributed_object_impl.cpp",
-  "../../frameworks/innerkitsimpl/src/adaptor/distributed_object_store_impl.cpp",
-  "../../frameworks/innerkitsimpl/src/adaptor/flat_object_storage_engine.cpp",
-  "../../frameworks/innerkitsimpl/src/adaptor/flat_object_store.cpp",
-  "../../frameworks/innerkitsimpl/src/adaptor/asset_change_timer.cpp",
-  "../../frameworks/innerkitsimpl/src/adaptor/object_callback_impl.cpp",
-  "../../frameworks/innerkitsimpl/src/communicator/app_device_handler.cpp",
-  "../../frameworks/innerkitsimpl/src/communicator/app_pipe_handler.cpp",
-  "../../frameworks/innerkitsimpl/src/communicator/app_pipe_mgr.cpp",
-  "../../frameworks/innerkitsimpl/src/communicator/ark_communication_provider.cpp",
-  "../../frameworks/innerkitsimpl/src/communicator/communication_provider.cpp",
-  "../../frameworks/innerkitsimpl/src/communicator/communication_provider_impl.cpp",
-  "../../frameworks/innerkitsimpl/src/communicator/dev_manager.cpp",
-  "../../frameworks/innerkitsimpl/src/communicator/process_communicator_impl.cpp",
-  "../../frameworks/innerkitsimpl/src/communicator/softbus_adapter_standard.cpp",
-  "../../frameworks/innerkitsimpl/src/object_callback_stub.cpp",
-  "../../frameworks/innerkitsimpl/src/object_radar_reporter.cpp",
-  "../../frameworks/innerkitsimpl/src/object_service_proxy.cpp",
-  "../../frameworks/innerkitsimpl/src/object_types_util.cpp",
-]
-object_deps_config = []
-object_external_deps_config = [
-  "access_token:libaccesstoken_sdk",
-  "bounds_checking_function:libsec_shared",
-  "bundle_framework:appexecfwk_base",
-  "bundle_framework:appexecfwk_core",
-  "c_utils:utils",
-  "device_manager:devicemanagersdk",
-  "dmsfwk:distributed_sdk",
-  "dsoftbus:softbus_client",
-  "hisysevent:libhisysevent",
-  "hitrace:hitrace_meter",
-  "hitrace:libhitracechain",
-  "hilog:libhilog",
-  "ipc:ipc_core",
-  "kv_store:distributeddata_inner",
-  "kv_store:distributeddb",
-  "libuv:uv",
-  "samgr:samgr_proxy",
-]
-ohos_shared_library("distributeddataobject_impl") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    ubsan = true
-    boundary_sanitize = true
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
+    ldflags = [ "-Wl,--exclude-libs,ALL" ]
   }
-  part_name = "data_object"
-  sources = object_source_config
-
-  configs = [ ":objectstore_config" ]
-  deps = object_deps_config
-  external_deps = object_external_deps_config
-  public_configs = [ ":objectstore_public_config" ]
-  version_script = "libnative_dataobject.versionscript"
-  innerapi_tags = [ "platformsdk" ]
-  subsystem_name = "distributeddatamgr"
-}
-
-ohos_static_library("distributeddataobject_static") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    ubsan = true
-    boundary_sanitize = true
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
+  
+  config("objectstore_public_config") {
+    visibility = [ ":*" ]
+  
+    include_dirs = [ "." ]
   }
-  part_name = "data_object"
-  sources = object_source_config
-
-  configs = [ ":objectstore_config" ]
-  deps = object_deps_config
-  external_deps = object_external_deps_config
-  public_configs = [ ":objectstore_public_config" ]
-  subsystem_name = "distributeddatamgr"
-}
-
-config("object_public_config") {
-  visibility = [
-    ":*",
-    "${datamgr_service_path}/services/distributeddataservice/service/object:*",
+  
+  object_source_config = [
+    "../../frameworks/innerkitsimpl/src/adaptor/client_adaptor.cpp",
+    "../../frameworks/innerkitsimpl/src/adaptor/distributed_object_impl.cpp",
+    "../../frameworks/innerkitsimpl/src/adaptor/distributed_object_store_impl.cpp",
+    "../../frameworks/innerkitsimpl/src/adaptor/flat_object_storage_engine.cpp",
+    "../../frameworks/innerkitsimpl/src/adaptor/flat_object_store.cpp",
+    "../../frameworks/innerkitsimpl/src/adaptor/asset_change_timer.cpp",
+    "../../frameworks/innerkitsimpl/src/adaptor/object_callback_impl.cpp",
+    "../../frameworks/innerkitsimpl/src/communicator/app_device_handler.cpp",
+    "../../frameworks/innerkitsimpl/src/communicator/app_pipe_handler.cpp",
+    "../../frameworks/innerkitsimpl/src/communicator/app_pipe_mgr.cpp",
+    "../../frameworks/innerkitsimpl/src/communicator/ark_communication_provider.cpp",
+    "../../frameworks/innerkitsimpl/src/communicator/communication_provider.cpp",
+    "../../frameworks/innerkitsimpl/src/communicator/communication_provider_impl.cpp",
+    "../../frameworks/innerkitsimpl/src/communicator/dev_manager.cpp",
+    "../../frameworks/innerkitsimpl/src/communicator/process_communicator_impl.cpp",
+    "../../frameworks/innerkitsimpl/src/communicator/softbus_adapter_standard.cpp",
+    "../../frameworks/innerkitsimpl/src/object_callback_stub.cpp",
+    "../../frameworks/innerkitsimpl/src/object_radar_reporter.cpp",
+    "../../frameworks/innerkitsimpl/src/object_service_proxy.cpp",
+    "../../frameworks/innerkitsimpl/src/object_types_util.cpp",
   ]
-
-  include_dirs = [
-    ".",
-    "../../frameworks/innerkitsimpl/include",
-    "../../frameworks/innerkitsimpl/include/common",
-    "../../frameworks/innerkitsimpl/include/communicator",
+  object_deps_config = []
+  object_external_deps_config = [
+    "access_token:libaccesstoken_sdk",
+    "bounds_checking_function:libsec_shared",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "device_manager:devicemanagersdk",
+    "dmsfwk:distributed_sdk",
+    "dsoftbus:softbus_client",
+    "hisysevent:libhisysevent",
+    "hitrace:hitrace_meter",
+    "hitrace:libhitracechain",
+    "hilog:libhilog",
+    "ipc:ipc_core",
+    "kv_store:distributeddata_inner",
+    "kv_store:distributeddb",
+    "libuv:uv",
+    "samgr:samgr_proxy",
   ]
-}
-
-ohos_static_library("data_object_inner") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    ubsan = true
-    boundary_sanitize = true
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
+  ohos_shared_library("distributeddataobject_impl") {
+    branch_protector_ret = "pac_ret"
+    sanitize = {
+      ubsan = true
+      boundary_sanitize = true
+      cfi = true
+      cfi_cross_dso = true
+      debug = false
+    }
+    part_name = "data_object"
+    sources = object_source_config
+  
+    configs = [ ":objectstore_config" ]
+    deps = object_deps_config
+    external_deps = object_external_deps_config
+    public_configs = [ ":objectstore_public_config" ]
+    version_script = "libnative_dataobject.versionscript"
+    innerapi_tags = [ "platformsdk" ]
+    subsystem_name = "distributeddatamgr"
+  }
+  
+  ohos_static_library("distributeddataobject_static") {
+    branch_protector_ret = "pac_ret"
+    sanitize = {
+      ubsan = true
+      boundary_sanitize = true
+      cfi = true
+      cfi_cross_dso = true
+      debug = false
+    }
+    part_name = "data_object"
+    sources = object_source_config
+  
+    configs = [ ":objectstore_config" ]
+    deps = object_deps_config
+    external_deps = object_external_deps_config
+    public_configs = [ ":objectstore_public_config" ]
+    subsystem_name = "distributeddatamgr"
+  }
+  
+  config("object_public_config") {
+    visibility = [
+      ":*",
+      "${datamgr_service_path}/services/distributeddataservice/service/object:*",
+    ]
+  
+    include_dirs = [
+      ".",
+      "../../frameworks/innerkitsimpl/include",
+      "../../frameworks/innerkitsimpl/include/common",
+      "../../frameworks/innerkitsimpl/include/communicator",
+    ]
+  }
+  
+  ohos_static_library("data_object_inner") {
+    branch_protector_ret = "pac_ret"
+    sanitize = {
+      ubsan = true
+      boundary_sanitize = true
+      cfi = true
+      cfi_cross_dso = true
+      debug = false
+    }
+  
+    public_configs = [ ":object_public_config" ]
+  
+    sources = [ "../../frameworks/innerkitsimpl/src/object_radar_reporter.cpp" ]
+  
+    external_deps = [ "hisysevent:libhisysevent" ]
+  
+    part_name = "data_object"
+    subsystem_name = "distributeddatamgr"
+  }
+} else {
+  config("object_public_config") {
+    visibility = [ ":*" ]
+  
+    include_dirs = [
+      ".",
+      "../../frameworks/innerkitsimpl/include",
+      "../../frameworks/innerkitsimpl/include/common",
+      "../../frameworks/innerkitsimpl/include/communicator",
+      "../../frameworks/innerkitsimpl/include/lite",
+    ]
   }
 
-  public_configs = [ ":object_public_config" ]
+  ohos_static_library("distributeddataobject_static") {
+    branch_protector_ret = "pac_ret"
+    sanitize = {
+      ubsan = true
+      boundary_sanitize = true
+      cfi = true
+      cfi_cross_dso = true
+      debug = false
+    }
+    part_name = "data_object"
+    subsystem_name = "distributeddatamgr"
+  }
 
-  sources = [ "../../frameworks/innerkitsimpl/src/object_radar_reporter.cpp" ]
+  ohos_shared_library("distributeddataobject_impl") {
+    branch_protector_ret = "pac_ret"
+    sanitize = {
+      ubsan = true
+      boundary_sanitize = true
+      cfi = true
+      cfi_cross_dso = true
+      debug = false
+    }
+    public_configs = [ ":object_public_config" ]
+    sources = [ "../../frameworks/innerkitsimpl/src/lite/distributed_objectstore_impl_lite.cpp" ]
+    part_name = "data_object"
+    subsystem_name = "distributeddatamgr"
+  }
 
-  external_deps = [ "hisysevent:libhisysevent" ]
-
-  part_name = "data_object"
-  subsystem_name = "distributeddatamgr"
+  ohos_static_library("data_object_inner") {
+    branch_protector_ret = "pac_ret"
+    sanitize = {
+      ubsan = true
+      boundary_sanitize = true
+      cfi = true
+      cfi_cross_dso = true
+      debug = false
+    }
+    public_configs = [ ":object_public_config" ]
+    part_name = "data_object"
+    subsystem_name = "distributeddatamgr"
+  }
 }

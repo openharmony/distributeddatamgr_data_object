@@ -38,6 +38,7 @@ public:
     void OnLoadSystemAbilitySuccess(int32_t systemAbilityId, const sptr<IRemoteObject> &remoteObject) override;
     void OnLoadSystemAbilityFail(int32_t systemAbilityId) override;
 };
+
 sptr<OHOS::DistributedObject::IObjectService> ClientAdaptor::GetObjectService()
 {
     std::lock_guard<decltype(mutex_)> lockGuard(mutex_);
@@ -67,7 +68,7 @@ std::shared_ptr<ObjectStoreDataServiceProxy> ClientAdaptor::GetDistributedDataMa
     auto remoteObject = manager->CheckSystemAbility(DISTRIBUTED_KV_DATA_SERVICE_ABILITY_ID);
     if (remoteObject == nullptr) {
         // check SA failed, try load SA
-        LOG_ERROR("Get distributed data manager CheckSystemAbility failed.");
+        LOG_WARN("Get distributed data manager CheckSystemAbility failed.");
         // callback of load
         sptr<ServiceProxyLoadCallback> loadCallback = new (std::nothrow) ServiceProxyLoadCallback();
         if (loadCallback == nullptr) {

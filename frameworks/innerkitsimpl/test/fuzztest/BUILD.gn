@@ -16,13 +16,15 @@ import("//foundation/distributeddatamgr/data_object/data_object.gni")
 #########################################################################################
 group("fuzztest") {
   testonly = true
-
-  deps = [
-    "objectstorageengine_fuzzer:fuzztest",
-    "objectstorebindasset_fuzzer:fuzztest",
-    "objectstorecreateobject_fuzzer:fuzztest",
-    "objectstoreget_fuzzer:fuzztest",
-    "objectstoreput_fuzzer:fuzztest",
-    "objectstoresave_fuzzer:fuzztest",
+  deps = []
+  if (!data_object_feature_L1) {
+    deps += [
+      "objectstorageengine_fuzzer:fuzztest",
+      "objectstorebindasset_fuzzer:fuzztest",
+      "objectstorecreateobject_fuzzer:fuzztest",
+      "objectstoreget_fuzzer:fuzztest",
+      "objectstoreput_fuzzer:fuzztest",
+      "objectstoresave_fuzzer:fuzztest",
     ]
+  }
 }
