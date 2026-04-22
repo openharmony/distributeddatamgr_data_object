@@ -204,6 +204,32 @@ ohos_unittest("ClientAdaptorTest") {
   ]
 }
 
+ohos_unittest("ClientAdaptorMockTest") {
+  module_out_path = module_output_path
+
+  sources = [
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/adaptor/client_adaptor.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/object_service_proxy.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/src/object_types_util.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/test/unittest/mock/src/system_ability_manager_mock.cpp",
+    "${data_object_base_path}/frameworks/innerkitsimpl/test/unittest/src/client_adaptor_mock_test.cpp",
+  ]
+
+  cflags_cc = [
+    "-DHILOG_ENABLE",
+    "-Werror=vla",
+  ]
+
+  configs = [ ":module_private_config" ]
+
+  external_deps = common_external_deps
+
+  defines = [
+    "private = public",
+    "protected = public",
+  ]
+}
+
 ohos_unittest("DistributedObjectStoreImplTest") {
   module_out_path = module_output_path
 
@@ -342,6 +368,7 @@ group("unittest") {
     deps += [
       ":AppDeviceHandlerTest",
       ":AssetChangeTimerTest",
+      ":ClientAdaptorMockTest",
       ":ClientAdaptorTest",
       ":DistributedObjectImplTest",
       ":DistributedObjectStoreImplTest",
