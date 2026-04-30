@@ -21,4 +21,9 @@ datamgr_service_path = "//foundation/distributeddatamgr/datamgr_service"
 
 declare_args() {
   data_object_feature_L1 = false
+  if (defined(global_parts_info) && !defined(global_parts_info.hiviewdfx_api_metrics_ext)) {
+    data_object_api_metrics_enabled = false
+  } else {
+    data_object_api_metrics_enabled = true
+  }
 }
