@@ -40,6 +40,7 @@ private:
     static bool GetBundleNameWithContext(napi_env env, napi_value argv, std::string &bundleName);
     static std::string GetBundleName(napi_env env);
     static bool IsSandBox();
+    static void HisTogRam(const char *name, double version);
 };
 } // namespace OHOS::ObjectStore
 #endif // JS_DISTRIBUTEDDATAOBJECTSTORE_H
