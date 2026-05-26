@@ -45,7 +45,7 @@ static napi_module storageModule = {
     .nm_filename = nullptr,
     .nm_register_func = DistributedDataObjectExport,
     .nm_modname = "data.distributedDataObject",
-    .nm_priv = ((void *)0),
+    .nm_priv = nullptr,
     .reserved = { 0 },
 };
 
