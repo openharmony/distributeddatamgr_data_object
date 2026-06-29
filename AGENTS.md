@@ -93,20 +93,6 @@
 - 完整编译和运行测试依赖 OpenHarmony 源码树和产品构建环境（通常为 Linux 环境）。
   在 Windows 环境下只能进行代码审查、文本 diff 和结构验证，无法验证 OHOS 链接或设备运行行为。
 
-## 最小验证习惯
-
-在完成修改并提交代码前，至少在仓库根目录运行以下结构检查：
-
-### Git 结构检查
-
-```bash
-git diff -- AGENTS.md docs/
-rg -n "TO[D]O|TB[D]|PLACE[H]OLDER" AGENTS.md docs/
-rg -n "docs/" AGENTS.md
-```
-
-涉及代码修改时，读取 `bundle.json` 和 `data_object.gni`，选择覆盖改动区域的最小GN构建或单元测试目标。
-
 ### 构建验证
 
 > **注意**：以下命令适用于 OpenHarmony Linux 构建环境。在 Windows 环境下只能进行文本和结构验证，无法执行完整编译。
