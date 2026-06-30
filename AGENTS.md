@@ -29,51 +29,6 @@
 | 核心实现 | C++ InnerKit | frameworks/innerkitsimpl/ |
 | 底层服务 | DistributedDB/SoftBus/IPC | 外部依赖 |
 
-## 核心类关系图
-
-```mermaid
-classDiagram
-    class DistributedObjectImpl {
-        <<入口类>>
-        持有 sessionId
-        Put/Get/Save 接口
-        管理监听器列表
-    }
-    
-    class FlatObjectStore {
-        <<对象存储>>
-        扁平化存储引擎
-        变更检测
-    }
-    
-    class ClientAdaptor {
-        <<IPC适配>>
-        ObjectService 代理
-        Save/RevokeSave 协调
-    }
-    
-    class SoftBusAdapter {
-        <<通信适配>>
-        设备发现/数据传输
-    }
-    
-    class ObjectWatcher {
-        <<监听器管理>>
-        Asset/属性变更分离
-    }
-    
-    class CacheManager {
-        <<缓存管理>>
-        Save/RevokeSave/Resume
-    }
-    
-    DistributedObjectImpl "1" --> "1" FlatObjectStore : 持有
-    DistributedObjectImpl "1" --> "1" ClientAdaptor : 持有
-    DistributedObjectImpl "1" --> "0..*" ObjectWatcher : 管理
-    DistributedObjectImpl "1" --> "0..1" CacheManager : 使用
-    FlatObjectStore "1" --> "1" SoftBusAdapter : 使用
-```
-
 ## 快速代码地图
 
 | 目录 | 职责 |

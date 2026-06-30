@@ -36,6 +36,51 @@ frameworks/innerkitsimpl/
 - 所有数据变更必须通过 `Put()` 接口
 - IPC 服务不可用时需处理 ERR_IPC，实现重试机制
 
+## 核心类关系图
+
+```mermaid
+classDiagram
+    class DistributedObjectImpl {
+        <<入口类>>
+        持有 sessionId
+        Put/Get/Save 接口
+        管理监听器列表
+    }
+    
+    class FlatObjectStore {
+        <<对象存储>>
+        扁平化存储引擎
+        变更检测
+    }
+    
+    class ClientAdaptor {
+        <<IPC适配>>
+        ObjectService 代理
+        Save/RevokeSave 协调
+    }
+    
+    class SoftBusAdapter {
+        <<通信适配>>
+        设备发现/数据传输
+    }
+    
+    class ObjectWatcher {
+        <<监听器管理>>
+        Asset/属性变更分离
+    }
+    
+    class CacheManager {
+        <<缓存管理>>
+        Save/RevokeSave/Resume
+    }
+    
+    DistributedObjectImpl "1" --> "1" FlatObjectStore : 持有
+    DistributedObjectImpl "1" --> "1" ClientAdaptor : 持有
+    DistributedObjectImpl "1" --> "0..*" ObjectWatcher : 管理
+    DistributedObjectImpl "1" --> "0..1" CacheManager : 使用
+    FlatObjectStore "1" --> "1" SoftBusAdapter : 使用
+```
+
 ## sessionId 机制
 
 **sessionId 是同步的核心标识符：**
