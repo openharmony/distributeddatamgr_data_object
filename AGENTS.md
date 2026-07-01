@@ -68,24 +68,12 @@
 - Entity：持有运行状态（sessionId、监听器）
 - Utility：通用 helper 和日志
 
-## 硬约束
-
-- **sessionId**: MUST 使用 `genSessionId()` 生成，NEVER 硬编码
-- **根属性限制**: 仅支持根属性修改检测，嵌套属性需整体赋值
-- **监听器**: NEVER 使用箭头函数，MUST 使用命名函数并移除
-- **IPC**: NEVER 假设服务可用，MUST 检查 ERR_IPC 并重试
-- **向后兼容**: JS/ETS 接口层 NEVER 破坏兼容性
-- **错误码**: MUST 使用 `objectstore_errors.h` 标准错误码
-- **隐私**: NEVER 用 public 占位符打印 sessionId/对象属性
-
 ## 已知陷阱
 
-| 问题 | 反模式 | 正确做法 |
-| --- | --- | --- |
-| 嵌套属性不触发同步 | `obj.list.push(item)` | `obj.list = [...obj.list]` |
-| sessionId 格式非法 | 硬编码 sessionId | 使用 `genSessionId()` |
-| 监听器内存泄漏 | `on('change', () => {})` | 命名函数 + `off()` 移除 |
-| Save 失败 | 假设 IPC 可用 | 检查 ERR_IPC + 重试 |
+- IPC 调用需处理 ERR_IPC，支持重试
+- JS/ETS 接口保持向后兼容
+- 错误码统一用 `objectstore_errors.h` 定义
+- 日志打印敏感信息应使用 `Anonymous::Change()` 脱敏
 
 ## 构建验证
 
@@ -95,10 +83,3 @@
 | --- | --- |
 | 构建组件 | `./build.sh --product-name <product> --build-target data_object` |
 | 构建测试 | `./build.sh --product-name <product> --build-target data_object_test` |
-
-## 文档索引
-
-| 文档 | 内容 |
-| --- | --- |
-| `docs/native-implementation.md` | Native 实现、sessionId、同步、性能优化 |
-| `docs/error_code_layers.md` | 错误码分层体系 |
