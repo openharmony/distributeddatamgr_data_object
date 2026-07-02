@@ -4,7 +4,7 @@
 
 ## 阅读策略
 
-默认只读本文件。涉及代码开发时按任务类型加载专题文档（见知识路由表）。
+默认只读本文件。涉及代码开发时按任务类型加载专题文档（见知识路由）。
 
 ## 仓库定位
 
@@ -17,30 +17,26 @@
 - 子系统：`distributeddatamgr`
 - 部件：`data_object`
 - Bundle：`@ohos.data.distributedDataObject`
-- 主要能力：分布式数据对象管理、跨设备同步、内存持久化、Save/RevokeSave
 
-## 分层模型
+## 核心能力
 
-| 层级 | 组件 | 路径 |
+| 能力 | 说明 | 关键实现 |
 | --- | --- | --- |
-| 公共 API | @ohos.data.dataObject | interfaces/jskits/ |
-| NAPI 绑定 | NAPI wrapper | frameworks/jskitsimpl/ |
-| ETS 绑定 | ANI/Taihe | frameworks/ets/ |
-| 核心实现 | C++ InnerKit | frameworks/innerkitsimpl/ |
-| 底层服务 | DistributedDB/SoftBus/IPC | 外部依赖 |
+| 对象管理 | sessionId 唯一标识分布式对象，单例模式管理生命周期 | `DistributedObjectStoreImpl` |
+| 跨设备同步 | 基于 DistributedDB + SoftBus，AUTO_SYNC 模式自动同步 | `FlatObjectStorageEngine`, `SoftBusAdapter` |
+| 内存持久化 | KvStore 扁平存储（p_前缀+key），类型前缀序列化 | `FlatObjectStore` |
+| Save/RevokeSave | 异步 IPC 调用持久化服务，BlockData 等待（超时5秒） | `CacheManager`, `ObjectServiceProxy` |
 
-## 快速代码地图
+## 代码地图
 
 | 目录 | 职责 |
 | --- | --- |
+| `interfaces/jskits/` | JS 公共 API：对象创建/会话管理/监听/持久化（SDK 8/9+ 兼容） |
 | `interfaces/innerkits/` | C++ InnerKit 接口定义 |
-| `interfaces/jskits/` | JavaScript API 主实现 |
-| `frameworks/innerkitsimpl/adaptor/` | 对象存储与同步核心 |
-| `frameworks/innerkitsimpl/communicator/` | 设备通信与发现 |
-| `frameworks/innerkitsimpl/WatcherProxy/` | Asset/属性变更分离 |
-| `frameworks/innerkitsimpl/CacheManager/` | Save/RevokeSave 缓存管理 |
-| `frameworks/jskitsimpl/` | JS 工具类与 NAPI 绑定 |
-| `frameworks/ets/taihe/` | ETS (Taihe) 实现 |
+| `frameworks/jskitsimpl/` | NAPI 绑定、监听器管理、类型转换 |
+| `frameworks/ets/taihe/` | ETS (ANI) 实现 |
+| `frameworks/innerkitsimpl/adaptor/` | 核心实现：FlatObjectStore、CacheManager、WatcherProxy（Asset/属性变更分离） |
+| `frameworks/innerkitsimpl/communicator/` | 设备通信：SoftBusAdapter、DevManager、ProcessCommunicator |
 
 ## 知识路由
 
