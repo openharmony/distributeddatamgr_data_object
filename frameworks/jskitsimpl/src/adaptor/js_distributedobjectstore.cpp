@@ -215,7 +215,7 @@ napi_value JSDistributedObjectStore::JSDestroyObjectSync(napi_env env, napi_call
     NOT_MATCH_RETURN_NULL(status == napi_ok);
     status = JSUtil::GetValue(env, argv[0], version);
     NOT_MATCH_RETURN_NULL(status == napi_ok && argc >= requireArgc);
-    HisTogRam("ArkData.DataObject.destroyObjectSync", version);
+    HisTogRam("ArkData.DataObject.createObjectSync", version);
 
     JSObjectWrapper *objectWrapper = nullptr;
     status = napi_unwrap(env, argv[1], (void **)&objectWrapper);
@@ -423,7 +423,7 @@ napi_value JSDistributedObjectStore::JSRecordCallback(napi_env env, napi_callbac
 
     status = JSUtil::GetValue(env, argv[0], version);
     NOT_MATCH_RETURN_NULL(status == napi_ok);
-    HisTogRam("ArkData.DataObject.recordCallback", version);
+    HisTogRam("ArkData.DataObject.on", version);
     NAPI_ASSERT_ERRCODE_V9(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("2"));
 
     char type[TYPE_SIZE] = { 0 };
@@ -473,7 +473,7 @@ napi_value JSDistributedObjectStore::JSDeleteCallback(napi_env env, napi_callbac
 
     status = JSUtil::GetValue(env, argv[0], version);
     NOT_MATCH_RETURN_NULL(status == napi_ok);
-    HisTogRam("ArkData.DataObject.deleteCallback", version);
+    HisTogRam("ArkData.DataObject.off", version);
     NAPI_ASSERT_ERRCODE_V9(env, argc >= requireArgc, version, std::make_shared<ParametersNum>("1 or 2"));
 
     char type[TYPE_SIZE] = { 0 };
