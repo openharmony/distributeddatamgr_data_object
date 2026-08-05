@@ -40,6 +40,7 @@ struct AssetValue {
     std::string size;
     std::string hash;
     std::string path;
+    std::string extension;
 };
 using Bytes = std::vector<uint8_t>;
 using Asset = AssetValue;
