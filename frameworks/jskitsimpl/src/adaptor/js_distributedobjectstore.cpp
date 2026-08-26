@@ -488,6 +488,7 @@ napi_value JSDistributedObjectStore::JSDeleteCallback(napi_env env, napi_callbac
 
     bool delResult = true;
     if (argc == 3) {
+        LOG_INFO("Delete callback op = off_all, kit = ArkData, type: %{public}s", type);
         if (!strcmp(Constants::CHANGE, type)) {
             delResult = DelCallback(env, g_changeCallBacks, objectId);
         } else if (!strcmp(Constants::STATUS, type)) {
