@@ -432,7 +432,7 @@ bool DataObjectImpl::DeleteChangeCallback(VarCallbackType taiheCallback)
 {
     std::lock_guard<std::mutex> guard(changeCallBacksMutex_);
     if (std::holds_alternative<std::monostate>(taiheCallback)) {
-        LOG_INFO("DeleteChangeCallback, erase all");
+        LOG_INFO("Delete callback op = off_all, kit = ArkData, type: change");
         changeCallBacks_.clear();
         return true;
     }
@@ -455,7 +455,7 @@ bool DataObjectImpl::DeleteStatusCallback(VarCallbackType taiheCallback)
 {
     std::lock_guard<std::mutex> guard(statusCallBacksMutex_);
     if (std::holds_alternative<std::monostate>(taiheCallback)) {
-        LOG_INFO("DeleteStatusCallback, erase all");
+        LOG_INFO("Delete callback op = off_all, kit = ArkData, type: status");
         statusCallBacks_.clear();
         return true;
     }
@@ -478,7 +478,7 @@ bool DataObjectImpl::DeleteProgressCallback(VarCallbackType taiheCallback)
 {
     std::lock_guard<std::mutex> guard(progressCallBacksMutex_);
     if (std::holds_alternative<std::monostate>(taiheCallback)) {
-        LOG_INFO("DeleteStatusCallback, erase all");
+        LOG_INFO("Delete callback op = off_all, kit = ArkData, type: progress");
         progressCallBacks_.clear();
         return true;
     }
