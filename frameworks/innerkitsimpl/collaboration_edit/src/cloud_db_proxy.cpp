@@ -16,8 +16,8 @@
 #define LOG_TAG "CloudDbProxy"
 
 #include "cloud_db_proxy.h"
+#include "parse_cloud_cursor.h"
 
-#include <cerrno>
 #include <cstring>
 #include <securec.h>
 
@@ -42,8 +42,6 @@ const std::string EQUIP_ID = "equipId";
 const std::string CURSOR = "cursor";
 const std::string SYNC_LOG_EVENT = "syncLogEvent";
 const std::string TIMESTAMP = "timestamp";
-
-constexpr int CURSOR_BASE = 10;
 
 static const std::map<GRD_QueryConditionTypeE, Predicate> PREDICATE_MAP = {
     {GRD_QUERY_CONDITION_TYPE_EQUAL_TO, EQUAL_TO},
@@ -295,15 +293,9 @@ int64_t CloudDbProxy::GetCursorValue(GRD_CloudFieldT &field)
         LOG_ERROR("copy cursor value wrong");
         return cursor;
     }
-    errno = 0;
-    cursor = std::strtol(tmpString.c_str(), nullptr, CURSOR_BASE);
-    if (errno == EINVAL) {
-        LOG_ERROR("cursor field is not integer");
-        cursor = -1;
-    }
-    if (errno == ERANGE) {
-        LOG_ERROR("cursor is too long");
-        cursor = -1;
+    if (!ParseCloudCursorInt64(tmpString, cursor)) {
+        LOG_ERROR("invalid cursor field");
+        return -1;
     }
     return cursor;
 }
