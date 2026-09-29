@@ -16,10 +16,14 @@
 #ifndef FLAT_OBJECT_STORAGE_ENGINE_H
 #define FLAT_OBJECT_STORAGE_ENGINE_H
 
+#include <atomic>
+#include <memory>
+
 #include "object_storage_engine.h"
 
 namespace OHOS::ObjectStore {
-class FlatObjectStorageEngine : public ObjectStorageEngine {
+class FlatObjectStorageEngine : public ObjectStorageEngine,
+    public std::enable_shared_from_this<FlatObjectStorageEngine> {
 public:
     FlatObjectStorageEngine() = default;
     ~FlatObjectStorageEngine() override;
@@ -40,12 +44,14 @@ public:
         const std::function<void(const std::map<std::string, DistributedDB::DBStatus> &)> &onComplete);
     void OnComplete(const std::string &key, const std::map<std::string, DistributedDB::DBStatus> &devices,
         std::shared_ptr<StatusWatcher> statusWatcher);
-    bool isOpened_ = false;
+    std::atomic<bool> isOpened_ = false;
     void NotifyStatus(const std::string &sessionId, const std::string &deviceId, const std::string &status);
     void NotifyChange(const std::string &sessionId, const std::map<std::string, std::vector<uint8_t>> &changedData);
     bool NotifyProgress(const std::string &sessionId, int32_t progress);
 
 private:
+    void HandleStoreStatusChanged(const std::string &storeId, const std::string &deviceId, bool onlineStatus);
+    void HandleSyncComplete(const std::string &storeId, const std::map<std::string, DistributedDB::DBStatus> &devices);
     constexpr static const char *DISTRIBUTED_DATASYNC = "ohos.permission.DISTRIBUTED_DATASYNC";
     std::mutex operationMutex_{};
     std::mutex watcherMutex_{};

@@ -35,6 +35,7 @@ FlatObjectStorageEngine::~FlatObjectStorageEngine()
 
 uint32_t FlatObjectStorageEngine::Open(const std::string &bundleName)
 {
+    std::lock_guard<std::mutex> lock(operationMutex_);
     if (isOpened_) {
         LOG_INFO("FlatObjectDatabase: No need to reopen it");
         return SUCCESS;
@@ -64,11 +65,11 @@ uint32_t FlatObjectStorageEngine::Open(const std::string &bundleName)
 
 uint32_t FlatObjectStorageEngine::Close()
 {
+    std::lock_guard<std::mutex> lock(operationMutex_);
     if (!isOpened_) {
         LOG_INFO("FlatObjectStorageEngine::Close has been closed!");
         return SUCCESS;
     }
-    std::lock_guard<std::mutex> lock(operationMutex_);
     storeManager_ = nullptr;
     isOpened_ = false;
     return SUCCESS;
@@ -135,8 +136,14 @@ uint32_t FlatObjectStorageEngine::CreateTable(const std::string &key)
         std::lock_guard<std::mutex> lock(operationMutex_);
         delegates_.insert_or_assign(key, kvStore);
     }
-    auto onComplete = [key, this](const std::map<std::string, DistributedDB::DBStatus> &devices) {
-        OnComplete(key, devices, statusWatcher_);
+    std::weak_ptr<FlatObjectStorageEngine> weakThis = shared_from_this();
+    auto onComplete = [key, weakThis](const std::map<std::string, DistributedDB::DBStatus> &devices) {
+        auto sharedThis = weakThis.lock();
+        if (sharedThis == nullptr) {
+            LOG_INFO("FlatObjectStorageEngine destroyed, skip OnComplete");
+            return;
+        }
+        sharedThis->OnComplete(key, devices, sharedThis->statusWatcher_);
     };
     std::vector<DeviceInfo> devices = SoftBusAdapter::GetInstance()->GetDeviceList();
     std::vector<std::string> deviceIds;
@@ -348,38 +355,63 @@ uint32_t FlatObjectStorageEngine::SetStatusNotifier(std::shared_ptr<StatusWatche
         LOG_ERROR("FlatObjectStorageEngine::SetStatusNotifier kvStore has not init");
         return ERR_DB_NOT_INIT;
     }
-    auto databaseStatusNotifyCallback = [this](std::string userId, std::string appId, std::string storeId,
-                                            const std::string deviceId, bool onlineStatus) -> void {
-        std::lock_guard<std::mutex> lock(watcherMutex_);
-        LOG_INFO("complete");
-        if (statusWatcher_ == nullptr) {
-            LOG_INFO("FlatObjectStorageEngine::statusWatcher_ null");
+    std::weak_ptr<FlatObjectStorageEngine> weakThis = shared_from_this();
+    auto callback = [weakThis](std::string userId, std::string appId, std::string storeId, const std::string deviceId,
+                        bool onlineStatus) -> void {
+        auto sharedThis = weakThis.lock();
+        if (sharedThis == nullptr) {
+            LOG_INFO("FlatObjectStorageEngine destroyed, skip status notify");
             return;
         }
-        if (onlineStatus) {
-            auto onComplete = [this, storeId](const std::map<std::string, DistributedDB::DBStatus> &devices) {
-                for (auto item : devices) {
-                    LOG_INFO("%{public}s pull data result %{public}d in device %{public}s",
-                        Anonymous::Change(storeId).c_str(), item.second,
-                        Anonymous::Change(SoftBusAdapter::GetInstance()->ToNodeID(item.first)).c_str());
-                }
-                if (statusWatcher_ != nullptr) {
-                    for (auto item : devices) {
-                        statusWatcher_->OnChanged(storeId, SoftBusAdapter::GetInstance()->ToNodeID(item.first),
-                            item.second == DistributedDB::OK ? "online" : "offline");
-                    }
-                }
-            };
-            SyncAllData(storeId, std::vector<std::string>({ deviceId }), onComplete);
-        } else {
-            statusWatcher_->OnChanged(storeId, SoftBusAdapter::GetInstance()->ToNodeID(deviceId), "offline");
-        }
+        sharedThis->HandleStoreStatusChanged(storeId, deviceId, onlineStatus);
     };
-    storeManager_->SetStoreStatusNotifier(databaseStatusNotifyCallback);
+    storeManager_->SetStoreStatusNotifier(callback);
+
     LOG_INFO("FlatObjectStorageEngine::SetStatusNotifier success");
     std::lock_guard<std::mutex> lock(watcherMutex_);
     statusWatcher_ = watcher;
     return SUCCESS;
+}
+
+void FlatObjectStorageEngine::HandleStoreStatusChanged(
+    const std::string &storeId, const std::string &deviceId, bool onlineStatus)
+{
+    std::lock_guard<std::mutex> lock(watcherMutex_);
+    if (statusWatcher_ == nullptr) {
+        LOG_INFO("FlatObjectStorageEngine::statusWatcher_ null");
+        return;
+    }
+    if (!onlineStatus) {
+        statusWatcher_->OnChanged(storeId, SoftBusAdapter::GetInstance()->ToNodeID(deviceId), "offline");
+        return;
+    }
+    std::weak_ptr<FlatObjectStorageEngine> weakThis = shared_from_this();
+    auto onComplete = [weakThis, storeId](const std::map<std::string, DistributedDB::DBStatus> &devices) {
+        auto innerShared = weakThis.lock();
+        if (innerShared == nullptr) {
+            LOG_INFO("FlatObjectStorageEngine destroyed, skip onComplete");
+            return;
+        }
+        innerShared->HandleSyncComplete(storeId, devices);
+    };
+    SyncAllData(storeId, std::vector<std::string>({ deviceId }), onComplete);
+}
+
+void FlatObjectStorageEngine::HandleSyncComplete(
+    const std::string &storeId, const std::map<std::string, DistributedDB::DBStatus> &devices)
+{
+    std::lock_guard<std::mutex> lock(watcherMutex_);
+    for (const auto &item : devices) {
+        LOG_INFO("%{public}s pull data result %{public}d in device %{public}s", Anonymous::Change(storeId).c_str(),
+            item.second, Anonymous::Change(SoftBusAdapter::GetInstance()->ToNodeID(item.first)).c_str());
+    }
+    if (statusWatcher_ == nullptr) {
+        return;
+    }
+    for (const auto &item : devices) {
+        statusWatcher_->OnChanged(storeId, SoftBusAdapter::GetInstance()->ToNodeID(item.first),
+            item.second == DistributedDB::OK ? "online" : "offline");
+    }
 }
 
 uint32_t FlatObjectStorageEngine::SetProgressNotifier(std::shared_ptr<ProgressWatcher> watcher)

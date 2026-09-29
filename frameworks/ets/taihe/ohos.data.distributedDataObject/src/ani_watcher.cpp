@@ -381,21 +381,26 @@ WatcherImpl::~WatcherImpl()
 }
 
 ChangeEventListener::ChangeEventListener(
-    std::weak_ptr<AniWatcher> watcher, DistributedObjectStore *objectStore, DistributedObject *object)
-    : objectStore_(objectStore), object_(object), watcher_(watcher)
+    std::weak_ptr<AniWatcher> watcher, DistributedObjectStore *objectStore, const std::string &sessionId)
+    : objectStore_(objectStore), sessionId_(sessionId), watcher_(watcher)
 {
 }
 
 bool ChangeEventListener::Add(VarCallbackType handler)
 {
-    if (!isWatched_ && object_ != nullptr) {
-        std::shared_ptr<WatcherImpl> watcher = std::make_shared<WatcherImpl>(watcher_);
-        uint32_t ret = objectStore_->Watch(object_, watcher);
-        if (ret != SUCCESS) {
-            LOG_ERROR("Watch %{public}s error", object_->GetSessionId().c_str());
+    if (!isWatched_ && objectStore_ != nullptr) {
+        DistributedObject *object = nullptr;
+        if (objectStore_->Get(sessionId_, &object) == SUCCESS && object != nullptr) {
+            std::shared_ptr<WatcherImpl> watcher = std::make_shared<WatcherImpl>(watcher_);
+            uint32_t ret = objectStore_->Watch(object, watcher);
+            if (ret != SUCCESS) {
+                LOG_ERROR("Watch %{public}s error", sessionId_.c_str());
+            } else {
+                LOG_INFO("Watch %{public}s success", sessionId_.c_str());
+                isWatched_ = true;
+            }
         } else {
-            LOG_INFO("Watch %{public}s success", object_->GetSessionId().c_str());
-            isWatched_ = true;
+            LOG_ERROR("object %{public}s not found", sessionId_.c_str());
         }
     }
     return EventListener::Add(handler);
@@ -404,12 +409,18 @@ bool ChangeEventListener::Add(VarCallbackType handler)
 bool ChangeEventListener::Del(VarCallbackType handler)
 {
     bool isEmpty = EventListener::Del(handler);
-    if (isEmpty && isWatched_ && object_ != nullptr) {
-        uint32_t ret = objectStore_->UnWatch(object_);
-        if (ret != SUCCESS) {
-            LOG_ERROR("UnWatch %{public}s error", object_->GetSessionId().c_str());
+    if (isEmpty && isWatched_ && objectStore_ != nullptr) {
+        DistributedObject *object = nullptr;
+        if (objectStore_->Get(sessionId_, &object) == SUCCESS && object != nullptr) {
+            uint32_t ret = objectStore_->UnWatch(object);
+            if (ret != SUCCESS) {
+                LOG_ERROR("UnWatch %{public}s error", sessionId_.c_str());
+            } else {
+                LOG_INFO("UnWatch %{public}s success", sessionId_.c_str());
+                isWatched_ = false;
+            }
         } else {
-            LOG_INFO("UnWatch %{public}s success", object_->GetSessionId().c_str());
+            LOG_ERROR("object %{public}s not found, skip unwatch", sessionId_.c_str());
             isWatched_ = false;
         }
     }
@@ -419,14 +430,19 @@ bool ChangeEventListener::Del(VarCallbackType handler)
 void ChangeEventListener::Clear()
 {
     EventListener::Clear();
-    if (isWatched_ && object_ != nullptr) {
-        uint32_t ret = objectStore_->UnWatch(object_);
-        if (ret != SUCCESS) {
-            LOG_ERROR("UnWatch %{public}s error", object_->GetSessionId().c_str());
+    if (isWatched_ && objectStore_ != nullptr) {
+        DistributedObject *object = nullptr;
+        if (objectStore_->Get(sessionId_, &object) == SUCCESS && object != nullptr) {
+            uint32_t ret = objectStore_->UnWatch(object);
+            if (ret != SUCCESS) {
+                LOG_ERROR("UnWatch %{public}s error", sessionId_.c_str());
+            } else {
+                LOG_INFO("UnWatch %{public}s success", sessionId_.c_str());
+            }
         } else {
-            LOG_INFO("UnWatch %{public}s success", object_->GetSessionId().c_str());
-            isWatched_ = false;
+            LOG_ERROR("object %{public}s not found, skip unwatch", sessionId_.c_str());
         }
+        isWatched_ = false;
     }
 }
 
