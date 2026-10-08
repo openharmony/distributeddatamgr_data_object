@@ -99,7 +99,7 @@ public:
 class ChangeEventListener : public EventListener {
 public:
     ChangeEventListener(
-        std::weak_ptr<AniWatcher> watcher, DistributedObjectStore *objectStore, DistributedObject *object);
+        std::weak_ptr<AniWatcher> watcher, DistributedObjectStore *objectStore, const std::string &sessionId);
 
     bool Add(VarCallbackType handler) override;
 
@@ -109,7 +109,7 @@ public:
 private:
     bool isWatched_{false};
     DistributedObjectStore *objectStore_ = nullptr;
-    DistributedObject *object_ = nullptr;
+    std::string sessionId_;
     std::weak_ptr<AniWatcher> watcher_{};
 };
 

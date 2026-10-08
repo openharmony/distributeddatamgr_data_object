@@ -69,7 +69,8 @@ bool AniDataobjectSession::AddWatch(
     if (watcher_ == nullptr) {
         watcher_ = std::make_shared<AniWatcher>(objectStore, distributedObj_);
         std::weak_ptr<AniWatcher> watcher = watcher_;
-        auto changeEventListener = new (std::nothrow) ChangeEventListener(watcher, objectStore, distributedObj_);
+        auto changeEventListener = new (std::nothrow)
+            ChangeEventListener(watcher, objectStore, distributedObj_->GetSessionId());
         auto statusEventListener = new (std::nothrow) StatusEventListener(watcher, distributedObj_->GetSessionId());
         auto progressEventListener = new (std::nothrow) ProgressEventListener(watcher, distributedObj_->GetSessionId());
         LOG_DEBUG("AniDataobjectSession::AddWatch, SetListener");
